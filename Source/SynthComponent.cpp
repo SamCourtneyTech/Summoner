@@ -187,6 +187,35 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     delayMixLabel.setText("Mix", juce::dontSendNotification);
     addAndMakeVisible(delayMixLabel);
 
+    // Chorus Section
+    chorusSectionLabel.setText("Chorus", juce::dontSendNotification);
+    chorusSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
+    addAndMakeVisible(chorusSectionLabel);
+
+    chorusRateSlider.setSliderStyle(juce::Slider::Rotary);
+    chorusRateSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(chorusRateSlider);
+    chorusRateLabel.setText("Rate", juce::dontSendNotification);
+    addAndMakeVisible(chorusRateLabel);
+
+    chorusDepthSlider.setSliderStyle(juce::Slider::Rotary);
+    chorusDepthSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(chorusDepthSlider);
+    chorusDepthLabel.setText("Depth", juce::dontSendNotification);
+    addAndMakeVisible(chorusDepthLabel);
+
+    chorusMixSlider.setSliderStyle(juce::Slider::Rotary);
+    chorusMixSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(chorusMixSlider);
+    chorusMixLabel.setText("Mix", juce::dontSendNotification);
+    addAndMakeVisible(chorusMixLabel);
+
+    chorusDelaySlider.setSliderStyle(juce::Slider::Rotary);
+    chorusDelaySlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(chorusDelaySlider);
+    chorusDelayLabel.setText("Delay", juce::dontSendNotification);
+    addAndMakeVisible(chorusDelayLabel);
+
     // Reverb Section
     reverbSectionLabel.setText("Reverb", juce::dontSendNotification);
     reverbSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
@@ -320,6 +349,11 @@ void SynthComponent::initAttachments() {
     delayFeedbackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "delayFeedback", delayFeedbackSlider);
     delayMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "delayMix", delayMixSlider);
 
+    chorusRateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "chorusRate", chorusRateSlider);
+    chorusDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "chorusDepth", chorusDepthSlider);
+    chorusMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "chorusMix", chorusMixSlider);
+    chorusDelayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "chorusDelay", chorusDelaySlider);
+
     reverbRoomSizeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "reverbRoomSize", reverbRoomSizeSlider);
     reverbDampingAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "reverbDamping", reverbDampingSlider);
     reverbWetLevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "reverbWetLevel", reverbWetLevelSlider);
@@ -350,8 +384,9 @@ void SynthComponent::resized() {
     float sectionLabelHeight = 30;
     float comboWidth = 120;
 
-    // Split the window into two columns
-    auto leftColumn = bounds.removeFromLeft(bounds.getWidth() / 2 - 20); // Left column with padding
+    // Split the window into three columns
+    auto leftColumn = bounds.removeFromLeft(bounds.getWidth() / 3 - 20); // Left column with padding
+    auto middleColumn = bounds.removeFromLeft(bounds.getWidth() / 2 - 20); // Middle column with padding
     auto rightColumn = bounds; // Right column
 
     // Left Column: ADSR, Oscillator 1, Oscillator 2, Detune, LFO
@@ -365,16 +400,19 @@ void SynthComponent::resized() {
     leftColumn.removeFromTop(20);
     auto lfoRow = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
 
-    // Right Column: Distortion, Delay, Reverb, Filter, Compressor
-    auto distortionRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    rightColumn.removeFromTop(20);
+    // Middle Column: Distortion, Filter, Compressor
+    auto distortionRow = middleColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    middleColumn.removeFromTop(20);
+    auto filterRow = middleColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    middleColumn.removeFromTop(20);
+    auto compressorRow = middleColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+
+    // Right Column: Delay, Chorus, Reverb
     auto delayRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
     rightColumn.removeFromTop(20);
+    auto chorusRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    rightColumn.removeFromTop(20);
     auto reverbRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    rightColumn.removeFromTop(20);
-    auto filterRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    rightColumn.removeFromTop(20);
-    auto compressorRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
 
     // Left Column Layout
     // ADSR Row: Envelope label, Attack, Decay, Sustain, Release
@@ -434,7 +472,7 @@ void SynthComponent::resized() {
     lfoWaveformLabel.setBounds(lfoWaveformBounds.removeFromTop(labelHeight).toNearestInt());
     lfoWaveformCombo.setBounds(lfoWaveformBounds.withHeight(comboHeight).withY(lfoWaveformLabel.getBottom()).toNearestInt());
 
-    // Right Column Layout
+    // Middle Column Layout
     // Distortion Row: Drive, Tone, Mix
     auto distortionSection = distortionRow.removeFromLeft(knobWidth * 3 + 20);
     distortionSectionLabel.setBounds(distortionSection.removeFromTop(sectionLabelHeight).toNearestInt());
@@ -447,35 +485,6 @@ void SynthComponent::resized() {
     auto distortionMixBounds = distortionSection.removeFromLeft(knobWidth);
     distortionMixLabel.setBounds(distortionMixBounds.removeFromTop(labelHeight).toNearestInt());
     distortionMixSlider.setBounds(distortionMixBounds.toNearestInt());
-
-    // Delay Row: Time, Feedback, Mix
-    auto delaySection = delayRow.removeFromLeft(knobWidth * 3 + 20);
-    delaySectionLabel.setBounds(delaySection.removeFromTop(sectionLabelHeight).toNearestInt());
-    auto delayTimeBounds = delaySection.removeFromLeft(knobWidth);
-    delayTimeLabel.setBounds(delayTimeBounds.removeFromTop(labelHeight).toNearestInt());
-    delayTimeSlider.setBounds(delayTimeBounds.toNearestInt());
-    auto delayFeedbackBounds = delaySection.removeFromLeft(knobWidth);
-    delayFeedbackLabel.setBounds(delayFeedbackBounds.removeFromTop(labelHeight).toNearestInt());
-    delayFeedbackSlider.setBounds(delayFeedbackBounds.toNearestInt());
-    auto delayMixBounds = delaySection.removeFromLeft(knobWidth);
-    delayMixLabel.setBounds(delayMixBounds.removeFromTop(labelHeight).toNearestInt());
-    delayMixSlider.setBounds(delayMixBounds.toNearestInt());
-
-    // Reverb Row: Room Size, Damping, Wet Level, Dry Level
-    auto reverbSection = reverbRow.removeFromLeft(knobWidth * 4 + 20);
-    reverbSectionLabel.setBounds(reverbSection.removeFromTop(sectionLabelHeight).toNearestInt());
-    auto reverbRoomSizeBounds = reverbSection.removeFromLeft(knobWidth);
-    reverbRoomSizeLabel.setBounds(reverbRoomSizeBounds.removeFromTop(labelHeight).toNearestInt());
-    reverbRoomSizeSlider.setBounds(reverbRoomSizeBounds.toNearestInt());
-    auto reverbDampingBounds = reverbSection.removeFromLeft(knobWidth);
-    reverbDampingLabel.setBounds(reverbDampingBounds.removeFromTop(labelHeight).toNearestInt());
-    reverbDampingSlider.setBounds(reverbDampingBounds.toNearestInt());
-    auto reverbWetLevelBounds = reverbSection.removeFromLeft(knobWidth);
-    reverbWetLevelLabel.setBounds(reverbWetLevelBounds.removeFromTop(labelHeight).toNearestInt());
-    reverbWetLevelSlider.setBounds(reverbWetLevelBounds.toNearestInt());
-    auto reverbDryLevelBounds = reverbSection.removeFromLeft(knobWidth);
-    reverbDryLevelLabel.setBounds(reverbDryLevelBounds.removeFromTop(labelHeight).toNearestInt());
-    reverbDryLevelSlider.setBounds(reverbDryLevelBounds.toNearestInt());
 
     // Filter Row: Filter label, Cutoff, Resonance, ADSR Mix, ADSR Depth, Filter Type
     auto filterSection = filterRow;
@@ -518,4 +527,50 @@ void SynthComponent::resized() {
     auto compressorMakeupGainBounds = compressorSection.removeFromLeft(knobWidth);
     compressorMakeupGainLabel.setBounds(compressorMakeupGainBounds.removeFromTop(labelHeight).toNearestInt());
     compressorMakeupGainSlider.setBounds(compressorMakeupGainBounds.toNearestInt());
+
+    // Right Column Layout
+    // Delay Row: Time, Feedback, Mix
+    auto delaySection = delayRow.removeFromLeft(knobWidth * 3 + 20);
+    delaySectionLabel.setBounds(delaySection.removeFromTop(sectionLabelHeight).toNearestInt());
+    auto delayTimeBounds = delaySection.removeFromLeft(knobWidth);
+    delayTimeLabel.setBounds(delayTimeBounds.removeFromTop(labelHeight).toNearestInt());
+    delayTimeSlider.setBounds(delayTimeBounds.toNearestInt());
+    auto delayFeedbackBounds = delaySection.removeFromLeft(knobWidth);
+    delayFeedbackLabel.setBounds(delayFeedbackBounds.removeFromTop(labelHeight).toNearestInt());
+    delayFeedbackSlider.setBounds(delayFeedbackBounds.toNearestInt());
+    auto delayMixBounds = delaySection.removeFromLeft(knobWidth);
+    delayMixLabel.setBounds(delayMixBounds.removeFromTop(labelHeight).toNearestInt());
+    delayMixSlider.setBounds(delayMixBounds.toNearestInt());
+
+    // Chorus Row: Rate, Depth, Mix, Delay
+    auto chorusSection = chorusRow.removeFromLeft(knobWidth * 4 + 20);
+    chorusSectionLabel.setBounds(chorusSection.removeFromTop(sectionLabelHeight).toNearestInt());
+    auto chorusRateBounds = chorusSection.removeFromLeft(knobWidth);
+    chorusRateLabel.setBounds(chorusRateBounds.removeFromTop(labelHeight).toNearestInt());
+    chorusRateSlider.setBounds(chorusRateBounds.toNearestInt());
+    auto chorusDepthBounds = chorusSection.removeFromLeft(knobWidth);
+    chorusDepthLabel.setBounds(chorusDepthBounds.removeFromTop(labelHeight).toNearestInt());
+    chorusDepthSlider.setBounds(chorusDepthBounds.toNearestInt());
+    auto chorusMixBounds = chorusSection.removeFromLeft(knobWidth);
+    chorusMixLabel.setBounds(chorusMixBounds.removeFromTop(labelHeight).toNearestInt());
+    chorusMixSlider.setBounds(chorusMixBounds.toNearestInt());
+    auto chorusDelayBounds = chorusSection.removeFromLeft(knobWidth);
+    chorusDelayLabel.setBounds(chorusDelayBounds.removeFromTop(labelHeight).toNearestInt());
+    chorusDelaySlider.setBounds(chorusDelayBounds.toNearestInt());
+
+    // Reverb Row: Room Size, Damping, Wet Level, Dry Level
+    auto reverbSection = reverbRow.removeFromLeft(knobWidth * 4 + 20);
+    reverbSectionLabel.setBounds(reverbSection.removeFromTop(sectionLabelHeight).toNearestInt());
+    auto reverbRoomSizeBounds = reverbSection.removeFromLeft(knobWidth);
+    reverbRoomSizeLabel.setBounds(reverbRoomSizeBounds.removeFromTop(labelHeight).toNearestInt());
+    reverbRoomSizeSlider.setBounds(reverbRoomSizeBounds.toNearestInt());
+    auto reverbDampingBounds = reverbSection.removeFromLeft(knobWidth);
+    reverbDampingLabel.setBounds(reverbDampingBounds.removeFromTop(labelHeight).toNearestInt());
+    reverbDampingSlider.setBounds(reverbDampingBounds.toNearestInt());
+    auto reverbWetLevelBounds = reverbSection.removeFromLeft(knobWidth);
+    reverbWetLevelLabel.setBounds(reverbWetLevelBounds.removeFromTop(labelHeight).toNearestInt());
+    reverbWetLevelSlider.setBounds(reverbWetLevelBounds.toNearestInt());
+    auto reverbDryLevelBounds = reverbSection.removeFromLeft(knobWidth);
+    reverbDryLevelLabel.setBounds(reverbDryLevelBounds.removeFromTop(labelHeight).toNearestInt());
+    reverbDryLevelSlider.setBounds(reverbDryLevelBounds.toNearestInt());
 }

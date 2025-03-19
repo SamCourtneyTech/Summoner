@@ -41,6 +41,10 @@ private:
     juce::Slider delayTimeSlider, delayFeedbackSlider, delayMixSlider;
     juce::Label delayTimeLabel, delayFeedbackLabel, delayMixLabel, delaySectionLabel;
 
+    // Chorus controls
+    juce::Slider chorusRateSlider, chorusDepthSlider, chorusMixSlider, chorusDelaySlider;
+    juce::Label chorusRateLabel, chorusDepthLabel, chorusMixLabel, chorusDelayLabel, chorusSectionLabel;
+
     // Reverb controls
     juce::Slider reverbRoomSizeSlider, reverbDampingSlider, reverbWetLevelSlider, reverbDryLevelSlider;
     juce::Label reverbRoomSizeLabel, reverbDampingLabel, reverbWetLevelLabel, reverbDryLevelLabel, reverbSectionLabel;
@@ -87,6 +91,12 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> delayTimeAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> delayFeedbackAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> delayMixAttachment;
+
+    // Chorus attachments
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> chorusRateAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> chorusDepthAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> chorusMixAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> chorusDelayAttachment;
 
     // Reverb attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> reverbRoomSizeAttachment;

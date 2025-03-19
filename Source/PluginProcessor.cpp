@@ -36,6 +36,11 @@ SummonerAudioProcessor::SummonerAudioProcessor()
         std::make_unique<juce::AudioParameterFloat>("delayTime", "Delay Time", 0.0f, 1000.0f, 300.0f),
         std::make_unique<juce::AudioParameterFloat>("delayFeedback", "Delay Feedback", 0.0f, 0.9f, 0.3f),
         std::make_unique<juce::AudioParameterFloat>("delayMix", "Delay Mix", 0.0f, 1.0f, 0.5f),
+        // Chorus parameters
+        std::make_unique<juce::AudioParameterFloat>("chorusRate", "Chorus Rate", 0.1f, 10.0f, 0.5f),
+        std::make_unique<juce::AudioParameterFloat>("chorusDepth", "Chorus Depth", 0.0f, 1.0f, 0.5f),
+        std::make_unique<juce::AudioParameterFloat>("chorusMix", "Chorus Mix", 0.0f, 1.0f, 0.5f),
+        std::make_unique<juce::AudioParameterFloat>("chorusDelay", "Chorus Delay", 1.0f, 20.0f, 7.0f),
         // Reverb parameters
         std::make_unique<juce::AudioParameterFloat>("reverbRoomSize", "Reverb Room Size", 0.0f, 1.0f, 0.5f),
         std::make_unique<juce::AudioParameterFloat>("reverbDamping", "Reverb Damping", 0.0f, 1.0f, 0.5f),
@@ -218,6 +223,13 @@ void SummonerAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBloc
     compressorMakeupGain.prepare(spec);
     compressorMakeupGain.setGainDecibels(*parameters.getRawParameterValue("compressorMakeupGain"));
 
+    // Prepare chorus
+    chorus.prepare(spec);
+    chorus.setRate(*parameters.getRawParameterValue("chorusRate"));
+    chorus.setDepth(*parameters.getRawParameterValue("chorusDepth"));
+    chorus.setMix(*parameters.getRawParameterValue("chorusMix"));
+    chorus.setCentreDelay(*parameters.getRawParameterValue("chorusDelay"));
+
     DBG("Synth prepared with sample rate: " << sampleRate);
 }
 
@@ -341,6 +353,12 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     // Update makeup gain
     compressorMakeupGain.setGainDecibels(*parameters.getRawParameterValue("compressorMakeupGain"));
 
+    // Chorus parameters
+    chorus.setRate(*parameters.getRawParameterValue("chorusRate"));
+    chorus.setDepth(*parameters.getRawParameterValue("chorusDepth"));
+    chorus.setMix(*parameters.getRawParameterValue("chorusMix"));
+    chorus.setCentreDelay(*parameters.getRawParameterValue("chorusDelay"));
+
     for (const auto metadata : midiMessages)
     {
         auto msg = metadata.getMessage();
@@ -436,6 +454,9 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
 
         delayWritePosition = (delayWritePosition + 1) % delayBufferSize;
     }
+
+    // Apply chorus effect
+    chorus.process(context);
 
     // Apply reverb effect
     reverb.processStereo(leftChannel, rightChannel, numSamples);

@@ -62,7 +62,10 @@ private:
 
     // Compressor
     juce::dsp::Compressor<float> compressor;
-    juce::dsp::Gain<float> compressorMakeupGain; // Added for makeup gain
+    juce::dsp::Gain<float> compressorMakeupGain;
+
+    // Chorus
+    juce::dsp::Chorus<float> chorus;
 
     // Track last parameter values for filter updates
     float lastFilterCutoff = -1.0f;
