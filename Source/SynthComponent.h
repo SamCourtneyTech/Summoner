@@ -20,5 +20,14 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> waveformAttachment;
     juce::Label attackLabel, decayLabel, sustainLabel, releaseLabel, waveformLabel;
 
+    juce::Slider filterCutoffSlider, filterResonanceSlider, filterADSRMixSlider;
+    juce::ComboBox filterTypeCombo;
+    juce::Label filterCutoffLabel, filterResonanceLabel, filterADSRMixLabel, filterTypeLabel;
+
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterCutoffAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterResonanceAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterADSRMixAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> filterTypeAttachment;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynthComponent)
 };

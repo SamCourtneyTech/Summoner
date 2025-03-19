@@ -24,7 +24,6 @@ public:
         }
     }
 
-
     void setADSR(float attack, float decay, float sustain, float release) {
         envelope.setParameters({ attack, decay, sustain, release });
     }
@@ -67,6 +66,11 @@ public:
             phase -= 2.0 * juce::MathConstants<double>::pi;
         }
         return output;
+    }
+
+    // Add method to get the current envelope value
+    float getEnvelopeValue() {  // Remove 'const'
+        return envelope.getNextSample();
     }
 
 private:

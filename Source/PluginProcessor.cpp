@@ -1,6 +1,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <juce_dsp/juce_dsp.h> // Add this for juce::dsp
 
 SummonerAudioProcessor::SummonerAudioProcessor()
     : AudioProcessor(BusesProperties()
@@ -13,10 +14,16 @@ SummonerAudioProcessor::SummonerAudioProcessor()
     ),
     parameters(*this, nullptr, "PARAMETERS", {
     std::make_unique<juce::AudioParameterFloat>("attack", "Attack", 0.01f, 5.0f, 0.1f),
-    std::make_unique<juce::AudioParameterFloat>("decay", "Decay", 0.01f, 5.0f, 0.3f),
-    std::make_unique<juce::AudioParameterFloat>("sustain", "Sustain", 0.0f, 1.0f, 0.8f),
-    std::make_unique<juce::AudioParameterFloat>("release", "Release", 0.01f, 5.0f, 1.0f),
-    std::make_unique<juce::AudioParameterFloat>("waveform", "Waveform", 0.0f, 1.0f, 0.0f)
+        std::make_unique<juce::AudioParameterFloat>("decay", "Decay", 0.01f, 5.0f, 0.3f),
+        std::make_unique<juce::AudioParameterFloat>("sustain", "Sustain", 0.0f, 1.0f, 0.8f),
+        std::make_unique<juce::AudioParameterFloat>("release", "Release", 0.01f, 5.0f, 1.0f),
+        std::make_unique<juce::AudioParameterFloat>("waveform", "Waveform", 0.0f, 1.0f, 0.0f),
+        // New filter parameters
+        std::make_unique<juce::AudioParameterFloat>("filterCutoff", "Filter Cutoff", 20.0f, 20000.0f, 1000.0f), // 20 Hz to 20 kHz
+        std::make_unique<juce::AudioParameterFloat>("filterResonance", "Filter Resonance", 0.1f, 10.0f, 0.7f), // Q factor
+        std::make_unique<juce::AudioParameterFloat>("filterADSRMix", "Filter ADSR Mix", 0.0f, 1.0f, 0.0f), // Placeholder for ADSR effect mix
+        std::make_unique<juce::AudioParameterChoice>("filterType", "Filter Type", 
+            juce::StringArray("Low Pass", "High Pass", "Band Pass", "Notch"), 0) // Filter type selection
         })
 {
 }
@@ -95,7 +102,46 @@ void SummonerAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBloc
         *parameters.getRawParameterValue("sustain"),
         *parameters.getRawParameterValue("release")
     );
+
+    currentSampleRate = sampleRate;
+    juce::dsp::ProcessSpec spec;
+    spec.sampleRate = sampleRate;
+    spec.maximumBlockSize = samplesPerBlock;
+    spec.numChannels = getTotalNumOutputChannels();
+    filter.prepare(spec);
+    updateFilter(); // Initial filter update
+
     DBG("Synth prepared with sample rate: " << sampleRate);
+}
+
+void SummonerAudioProcessor::updateFilter()
+{
+    float cutoff = *parameters.getRawParameterValue("filterCutoff");
+    float resonance = *parameters.getRawParameterValue("filterResonance");
+    int filterTypeIdx = parameters.getParameter("filterType")->convertFrom0to1(
+        parameters.getParameter("filterType")->getValue()
+    );
+
+    juce::dsp::IIR::Coefficients<float>::Ptr newCoefficients;
+    switch (filterTypeIdx)
+    {
+    case 0: // Low Pass
+        newCoefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(currentSampleRate, cutoff, resonance);
+        break;
+    case 1: // High Pass
+        newCoefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(currentSampleRate, cutoff, resonance);
+        break;
+    case 2: // Band Pass
+        newCoefficients = juce::dsp::IIR::Coefficients<float>::makeBandPass(currentSampleRate, cutoff, resonance);
+        break;
+    case 3: // Notch
+        newCoefficients = juce::dsp::IIR::Coefficients<float>::makeNotch(currentSampleRate, cutoff, resonance);
+        break;
+    default:
+        newCoefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(currentSampleRate, cutoff, resonance);
+    }
+
+    *filter.state = *newCoefficients;
 }
 
 void SummonerAudioProcessor::releaseResources()
@@ -164,12 +210,29 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
 
     auto* leftChannel = buffer.getWritePointer(0);
     auto* rightChannel = buffer.getWritePointer(1);
+    float filterADSRMix = *parameters.getRawParameterValue("filterADSRMix");
     for (int sample = 0; sample < numSamples; ++sample)
     {
-        float output = oscillator.getNextSample() * 0.5f;
-        leftChannel[sample] = output;
-        rightChannel[sample] = output;
+        float oscOutput = oscillator.getNextSample() * 0.5f;
+
+        // Apply ADSR modulation to cutoff
+        float modulatedCutoff = *parameters.getRawParameterValue("filterCutoff");
+        if (filterADSRMix > 0.0f)
+        {
+            float envAmount = oscillator.getEnvelopeValue();
+            modulatedCutoff += (envAmount * filterADSRMix * 5000.0f);
+            modulatedCutoff = juce::jlimit(20.0f, 20000.0f, modulatedCutoff);
+        }
+        updateFilter(); // Update filter dynamically (could be optimized)
+
+        leftChannel[sample] = oscOutput;
+        rightChannel[sample] = oscOutput;
     }
+
+    // Apply filter
+    juce::dsp::AudioBlock<float> block(buffer);
+    juce::dsp::ProcessContextReplacing<float> context(block);
+    filter.process(context);
 }
 
 

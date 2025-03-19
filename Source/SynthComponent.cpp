@@ -54,6 +54,36 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
 
     waveformLabel.setText("Sine", juce::dontSendNotification);
     addAndMakeVisible(waveformLabel);
+
+    // Filter Cutoff
+    filterCutoffSlider.setSliderStyle(juce::Slider::Rotary);
+    filterCutoffSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    addAndMakeVisible(filterCutoffSlider);
+    filterCutoffLabel.setText("Cutoff", juce::dontSendNotification);
+    addAndMakeVisible(filterCutoffLabel);
+
+    // Filter Resonance
+    filterResonanceSlider.setSliderStyle(juce::Slider::Rotary);
+    filterResonanceSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    addAndMakeVisible(filterResonanceSlider);
+    filterResonanceLabel.setText("Resonance", juce::dontSendNotification);
+    addAndMakeVisible(filterResonanceLabel);
+
+    // Filter ADSR Mix
+    filterADSRMixSlider.setSliderStyle(juce::Slider::Rotary);
+    filterADSRMixSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    addAndMakeVisible(filterADSRMixSlider);
+    filterADSRMixLabel.setText("ADSR Mix", juce::dontSendNotification);
+    addAndMakeVisible(filterADSRMixLabel);
+
+    // Filter Type
+    filterTypeCombo.addItem("Low Pass", 1);
+    filterTypeCombo.addItem("High Pass", 2);
+    filterTypeCombo.addItem("Band Pass", 3);
+    filterTypeCombo.addItem("Notch", 4);
+    addAndMakeVisible(filterTypeCombo);
+    filterTypeLabel.setText("Filter Type", juce::dontSendNotification);
+    addAndMakeVisible(filterTypeLabel);
 }
 
 SynthComponent::~SynthComponent() {}
@@ -64,6 +94,11 @@ void SynthComponent::initAttachments() {
     sustainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "sustain", sustainSlider);
     releaseAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "release", releaseSlider);
     waveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "waveform", waveformSlider);
+
+    filterCutoffAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterCutoff", filterCutoffSlider);
+    filterResonanceAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterResonance", filterResonanceSlider);
+    filterADSRMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterADSRMix", filterADSRMixSlider);
+    filterTypeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(params, "filterType", filterTypeCombo);
 }
 
 void SynthComponent::paint(juce::Graphics& g) {
@@ -85,4 +120,13 @@ void SynthComponent::resized() {
     releaseLabel.setBounds(releaseSlider.getBounds().removeFromBottom(20));
     waveformSlider.setBounds(bounds.removeFromLeft(knobWidth).withHeight(knobHeight));
     waveformLabel.setBounds(waveformSlider.getBounds().removeFromBottom(20));
+
+    filterCutoffSlider.setBounds(bounds.removeFromLeft(knobWidth).withHeight(knobHeight));
+    filterCutoffLabel.setBounds(filterCutoffSlider.getBounds().removeFromBottom(20));
+    filterResonanceSlider.setBounds(bounds.removeFromLeft(knobWidth).withHeight(knobHeight));
+    filterResonanceLabel.setBounds(filterResonanceSlider.getBounds().removeFromBottom(20));
+    filterADSRMixSlider.setBounds(bounds.removeFromLeft(knobWidth).withHeight(knobHeight));
+    filterADSRMixLabel.setBounds(filterADSRMixSlider.getBounds().removeFromBottom(20));
+    filterTypeCombo.setBounds(bounds.removeFromLeft(knobWidth).withHeight(30));
+    filterTypeLabel.setBounds(filterTypeCombo.getBounds().removeFromBottom(20));
 }

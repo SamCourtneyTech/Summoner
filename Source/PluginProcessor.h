@@ -40,6 +40,11 @@ private:
     Oscillator oscillator;
     float currentFrequency = 440.0f;
 
+    juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>> filter;
+    double currentSampleRate = 0.0; 
+
+    void updateFilter();
+
     std::vector<std::map<std::string, std::string>> responses;
     int currentResponseIndex = 0;
     juce::CriticalSection responseLock;
