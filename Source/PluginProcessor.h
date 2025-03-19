@@ -43,6 +43,10 @@ private:
     juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>> filter;
     double currentSampleRate = 0.0; 
 
+    float lastFilterCutoff = -1.0f;
+    float lastFilterResonance = -1.0f;
+    int lastFilterType = -1;
+
     void updateFilter();
 
     std::vector<std::map<std::string, std::string>> responses;

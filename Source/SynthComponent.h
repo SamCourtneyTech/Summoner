@@ -24,10 +24,15 @@ private:
     juce::ComboBox filterTypeCombo;
     juce::Label filterCutoffLabel, filterResonanceLabel, filterADSRMixLabel, filterTypeLabel;
 
+    juce::Slider filterADSRDepthSlider;
+    juce::Label filterADSRDepthLabel;
+
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterCutoffAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterResonanceAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterADSRMixAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> filterTypeAttachment;
+
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterADSRDepthAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynthComponent)
 };

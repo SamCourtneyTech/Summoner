@@ -76,6 +76,13 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     filterADSRMixLabel.setText("ADSR Mix", juce::dontSendNotification);
     addAndMakeVisible(filterADSRMixLabel);
 
+    // Filter ADSR Depth
+    filterADSRDepthSlider.setSliderStyle(juce::Slider::Rotary);
+    filterADSRDepthSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    addAndMakeVisible(filterADSRDepthSlider);
+    filterADSRDepthLabel.setText("ADSR Depth", juce::dontSendNotification);
+    addAndMakeVisible(filterADSRDepthLabel);
+
     // Filter Type
     filterTypeCombo.addItem("Low Pass", 1);
     filterTypeCombo.addItem("High Pass", 2);
@@ -99,6 +106,8 @@ void SynthComponent::initAttachments() {
     filterResonanceAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterResonance", filterResonanceSlider);
     filterADSRMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterADSRMix", filterADSRMixSlider);
     filterTypeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(params, "filterType", filterTypeCombo);
+
+    filterADSRDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterADSRDepth", filterADSRDepthSlider);
 }
 
 void SynthComponent::paint(juce::Graphics& g) {
@@ -127,6 +136,8 @@ void SynthComponent::resized() {
     filterResonanceLabel.setBounds(filterResonanceSlider.getBounds().removeFromBottom(20));
     filterADSRMixSlider.setBounds(bounds.removeFromLeft(knobWidth).withHeight(knobHeight));
     filterADSRMixLabel.setBounds(filterADSRMixSlider.getBounds().removeFromBottom(20));
+    filterADSRDepthSlider.setBounds(bounds.removeFromLeft(knobWidth).withHeight(knobHeight));
+    filterADSRDepthLabel.setBounds(filterADSRDepthSlider.getBounds().removeFromBottom(20));
     filterTypeCombo.setBounds(bounds.removeFromLeft(knobWidth).withHeight(30));
     filterTypeLabel.setBounds(filterTypeCombo.getBounds().removeFromBottom(20));
 }
