@@ -20,8 +20,9 @@ SummonerAudioProcessor::SummonerAudioProcessor()
     std::make_unique<juce::AudioParameterFloat>("release", "Release", 0.01f, 5.0f, 0.01f),
     std::make_unique<juce::AudioParameterFloat>("waveform", "Waveform", 0.0f, 1.0f, 0.20f),
     std::make_unique<juce::AudioParameterFloat>("waveform2", "Waveform 2", 0.0f, 1.0f, 0.20f),
-    std::make_unique<juce::AudioParameterFloat>("detune", "Detune", -100.0f, 100.0f, 0.0f), // Detune in cents
-    std::make_unique<juce::AudioParameterFloat>("oscMix", "Osc Mix", 0.0f, 1.0f, 0.5f), // Mix between oscillators (0 = Osc1, 1 = Osc2)
+    std::make_unique<juce::AudioParameterFloat>("detune", "Detune", -100.0f, 100.0f, 0.0f),
+    std::make_unique<juce::AudioParameterFloat>("osc1Level", "Osc1 Level", 0.0f, 1.0f, 0.5f), // New parameter
+    std::make_unique<juce::AudioParameterFloat>("osc2Level", "Osc2 Level", 0.0f, 1.0f, 0.5f), // New parameter
     // Filter parameters
     std::make_unique<juce::AudioParameterFloat>("filterCutoff", "Filter Cutoff", 20.0f, 20000.0f, 7077.26f),
     std::make_unique<juce::AudioParameterFloat>("filterResonance", "Filter Resonance", 0.1f, 10.0f, 1.00f),
@@ -239,7 +240,8 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
         oscillator2.setWaveform(Oscillator::Waveform::PinkNoise);
 
     float detuneCents = *parameters.getRawParameterValue("detune");
-    float oscMix = *parameters.getRawParameterValue("oscMix");
+    float osc1Level = *parameters.getRawParameterValue("osc1Level");
+    float osc2Level = *parameters.getRawParameterValue("osc2Level");
 
     for (const auto metadata : midiMessages)
     {
@@ -248,8 +250,7 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
         {
             currentFrequency = juce::MidiMessage::getMidiNoteInHertz(msg.getNoteNumber());
             oscillator1.setFrequency(currentFrequency, getSampleRate());
-            // Apply detune to oscillator 2 (convert cents to frequency ratio)
-            float detuneFactor = std::pow(2.0f, detuneCents / 1200.0f); // 100 cents = 1 semitone
+            float detuneFactor = std::pow(2.0f, detuneCents / 1200.0f);
             float detunedFrequency = currentFrequency * detuneFactor;
             oscillator2.setFrequency(detunedFrequency, getSampleRate());
             oscillator1.noteOn();
@@ -271,10 +272,9 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
 
     for (int sample = 0; sample < numSamples; ++sample)
     {
-        float osc1Output = oscillator1.getNextSample() * 0.5f;
-        float osc2Output = oscillator2.getNextSample() * 0.5f;
-        // Mix the oscillators based on oscMix (0 = full Osc1, 1 = full Osc2)
-        float mixedOutput = (osc1Output * (1.0f - oscMix)) + (osc2Output * oscMix);
+        float osc1Output = oscillator1.getNextSample() * osc1Level;
+        float osc2Output = oscillator2.getNextSample() * osc2Level;
+        float mixedOutput = (osc1Output + osc2Output) * 0.5f; // Sum and scale to avoid clipping
 
         float modulatedCutoff = baseCutoff;
         if (filterADSRMix > 0.0f)
