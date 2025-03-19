@@ -1,6 +1,7 @@
 #pragma once
 #include <JuceHeader.h>
 #include "Oscillator.h"
+
 class SummonerAudioProcessor : public juce::AudioProcessor
 {
 public:
@@ -36,13 +37,15 @@ public:
     juce::AudioProcessorValueTreeState parameters;
 
 private:
-
-    Oscillator oscillator;
+    Oscillator oscillator1; // Renamed for clarity
+    Oscillator oscillator2; // New second oscillator
     float currentFrequency = 440.0f;
 
+    // Filter object
     juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>> filter;
-    double currentSampleRate = 0.0; 
+    double currentSampleRate = 0.0;
 
+    // Track last parameter values for filter updates
     float lastFilterCutoff = -1.0f;
     float lastFilterResonance = -1.0f;
     int lastFilterType = -1;
@@ -54,6 +57,3 @@ private:
     juce::CriticalSection responseLock;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SummonerAudioProcessor)
 };
-
-
-
