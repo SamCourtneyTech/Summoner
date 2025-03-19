@@ -21,7 +21,10 @@ private:
     juce::Slider waveform2Slider;
     juce::Label waveform2Label;
 
-    // New detune and mix controls
+    // New section labels for oscillators
+    juce::Label oscillator1Label, oscillator2Label;
+
+    // Detune and mix controls
     juce::Slider detuneSlider, oscMixSlider;
     juce::Label detuneLabel, oscMixLabel;
 
@@ -40,7 +43,7 @@ private:
     // Second oscillator attachment
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> waveform2Attachment;
 
-    // New attachments for detune and mix
+    // Attachments for detune and mix
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> detuneAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> oscMixAttachment;
 

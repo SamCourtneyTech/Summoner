@@ -54,6 +54,11 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     waveformLabel.setText("Saw", juce::dontSendNotification);
     addAndMakeVisible(waveformLabel);
 
+    // Oscillator 1 Section Label
+    oscillator1Label.setText("Oscillator 1", juce::dontSendNotification);
+    oscillator1Label.setFont(juce::Font(16.0f, juce::Font::bold));
+    addAndMakeVisible(oscillator1Label);
+
     // Waveform (Oscillator 2)
     waveform2Slider.setSliderStyle(juce::Slider::Rotary);
     waveform2Slider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -78,6 +83,11 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
         };
     waveform2Label.setText("Saw", juce::dontSendNotification);
     addAndMakeVisible(waveform2Label);
+
+    // Oscillator 2 Section Label
+    oscillator2Label.setText("Oscillator 2", juce::dontSendNotification);
+    oscillator2Label.setFont(juce::Font(16.0f, juce::Font::bold));
+    addAndMakeVisible(oscillator2Label);
 
     // Detune
     detuneSlider.setSliderStyle(juce::Slider::Rotary);
@@ -156,21 +166,22 @@ void SynthComponent::paint(juce::Graphics& g) {
 }
 
 void SynthComponent::resized() {
-    auto bounds = getLocalBounds().reduced(10);
+    auto bounds = getLocalBounds().reduced(20); // Increased padding for larger window
     int knobWidth = 100;
     int knobHeight = 100;
     int comboHeight = 30;
     int labelHeight = 20;
+    int sectionLabelHeight = 30; // Height for section labels
     int comboWidth = 120;
 
-    // Split the bounds into three rows to accommodate the new controls
+    // Split the bounds into three rows with some spacing between them
     auto topRow = bounds.removeFromTop(labelHeight + knobHeight);
-    bounds.removeFromTop(10);
-    auto middleRow = bounds.removeFromTop(labelHeight + knobHeight);
-    bounds.removeFromTop(10);
+    bounds.removeFromTop(20);
+    auto middleRow = bounds.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    bounds.removeFromTop(20);
     auto bottomRow = bounds.removeFromTop(labelHeight + knobHeight);
 
-    // Top Row: Oscillator/ADSR controls (Attack, Decay, Sustain, Release)
+    // Top Row: ADSR controls (Attack, Decay, Sustain, Release)
     auto attackBounds = topRow.removeFromLeft(knobWidth);
     attackLabel.setBounds(attackBounds.removeFromTop(labelHeight));
     attackSlider.setBounds(attackBounds);
@@ -188,14 +199,21 @@ void SynthComponent::resized() {
     releaseSlider.setBounds(releaseBounds);
 
     // Middle Row: Oscillator controls (Waveform 1, Waveform 2, Detune, Osc Mix)
-    auto waveformBounds = middleRow.removeFromLeft(knobWidth);
+    // Oscillator 1 Section
+    auto osc1Section = middleRow.removeFromLeft(knobWidth * 2 + 20); // Space for label + waveform
+    oscillator1Label.setBounds(osc1Section.removeFromTop(sectionLabelHeight));
+    auto waveformBounds = osc1Section.removeFromLeft(knobWidth);
     waveformLabel.setBounds(waveformBounds.removeFromTop(labelHeight));
     waveformSlider.setBounds(waveformBounds);
 
-    auto waveform2Bounds = middleRow.removeFromLeft(knobWidth);
+    // Oscillator 2 Section
+    auto osc2Section = middleRow.removeFromLeft(knobWidth * 2 + 20);
+    oscillator2Label.setBounds(osc2Section.removeFromTop(sectionLabelHeight));
+    auto waveform2Bounds = osc2Section.removeFromLeft(knobWidth);
     waveform2Label.setBounds(waveform2Bounds.removeFromTop(labelHeight));
     waveform2Slider.setBounds(waveform2Bounds);
 
+    // Detune and Osc Mix
     auto detuneBounds = middleRow.removeFromLeft(knobWidth);
     detuneLabel.setBounds(detuneBounds.removeFromTop(labelHeight));
     detuneSlider.setBounds(detuneBounds);
