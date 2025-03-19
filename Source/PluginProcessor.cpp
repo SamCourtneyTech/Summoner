@@ -209,8 +209,8 @@ void SummonerAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBloc
     delayBuffer.clear();
     delayWritePosition = 0;
 
-    // Prepare flanger buffer (shorter delay, max 5 ms)
-    flangerBufferSize = static_cast<int>(0.005 * sampleRate) + 1; // 5 ms max delay
+    // Prepare flanger buffer (max delay is 5 ms * 1.5 = 7.5 ms due to modulation)
+    flangerBufferSize = static_cast<int>(0.0075 * sampleRate) + 1; // 7.5 ms max delay
     flangerBuffer.setSize(2, flangerBufferSize);
     flangerBuffer.clear();
     flangerWritePosition = 0;
@@ -497,22 +497,33 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     phaser.process(context);
 
     // Apply custom flanger effect
+    // Apply custom flanger effect
     for (int sample = 0; sample < numSamples; ++sample)
     {
         // Get the current delay time modulated by the LFO
         float lfoValue = flangerLFO.getNextSample(); // -1 to 1
         float delayModulation = (lfoValue * flangerDepth * flangerDelayMs * 0.5f); // Modulation amount in ms
         float totalDelayMs = flangerDelayMs + delayModulation;
+
+        // Ensure totalDelayMs is within bounds (0.1 ms to 7.5 ms)
+        totalDelayMs = juce::jlimit(0.1f, 7.5f, totalDelayMs);
         float delaySamplesFloat = totalDelayMs * currentSampleRate / 1000.0f;
 
-        // Calculate read position with linear interpolation
+        // Calculate read position with wrapping
         float readPosition = flangerWritePosition - delaySamplesFloat;
-        if (readPosition < 0)
+        // Ensure readPosition is within [0, flangerBufferSize)
+        while (readPosition < 0)
             readPosition += flangerBufferSize;
+        while (readPosition >= flangerBufferSize)
+            readPosition -= flangerBufferSize;
 
         int readIndex = static_cast<int>(readPosition);
         float fraction = readPosition - readIndex;
         int nextReadIndex = (readIndex + 1) % flangerBufferSize;
+
+        // Ensure indices are within bounds
+        readIndex = juce::jlimit(0, flangerBufferSize - 1, readIndex);
+        nextReadIndex = juce::jlimit(0, flangerBufferSize - 1, nextReadIndex);
 
         // Linear interpolation for left and right channels
         float delayedLeft = flangerBuffer.getSample(0, readIndex) + fraction * (flangerBuffer.getSample(0, nextReadIndex) - flangerBuffer.getSample(0, readIndex));
