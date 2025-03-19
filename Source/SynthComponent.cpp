@@ -36,9 +36,12 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     addAndMakeVisible(waveformSlider);
     waveformSlider.onValueChange = [this] {
         float value = waveformSlider.getValue();
-        if (value <= 0.33f) waveformLabel.setText("Sine", juce::dontSendNotification);
-        else if (value <= 0.66f) waveformLabel.setText("Saw", juce::dontSendNotification);
-        else waveformLabel.setText("Square", juce::dontSendNotification);
+        if (value <= 0.33f)
+            waveformLabel.setText("Sine", juce::dontSendNotification);
+        else if (value <= 0.66f)
+            waveformLabel.setText("Saw", juce::dontSendNotification);
+        else
+            waveformLabel.setText("Square", juce::dontSendNotification);
         };
     waveformLabel.setText("Sine", juce::dontSendNotification);
     addAndMakeVisible(waveformLabel);

@@ -132,6 +132,14 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
         *parameters.getRawParameterValue("release")
     );
 
+    float waveformValue = *parameters.getRawParameterValue("waveform");
+    if (waveformValue <= 0.33f)
+        oscillator.setWaveform(Oscillator::Waveform::Sine);
+    else if (waveformValue <= 0.66f)
+        oscillator.setWaveform(Oscillator::Waveform::Saw);
+    else
+        oscillator.setWaveform(Oscillator::Waveform::Square);
+
     for (const auto metadata : midiMessages)
     {
         auto msg = metadata.getMessage();
