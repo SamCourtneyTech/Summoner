@@ -17,9 +17,13 @@ private:
     juce::Slider attackSlider, decaySlider, sustainSlider, releaseSlider, waveformSlider;
     juce::Label attackLabel, decayLabel, sustainLabel, releaseLabel, waveformLabel;
 
-    // New slider and label for second oscillator
+    // Second oscillator
     juce::Slider waveform2Slider;
     juce::Label waveform2Label;
+
+    // New detune and mix controls
+    juce::Slider detuneSlider, oscMixSlider;
+    juce::Label detuneLabel, oscMixLabel;
 
     // Filter controls
     juce::Slider filterCutoffSlider, filterResonanceSlider, filterADSRMixSlider, filterADSRDepthSlider;
@@ -33,8 +37,12 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> releaseAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> waveformAttachment;
 
-    // New attachment for second oscillator
+    // Second oscillator attachment
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> waveform2Attachment;
+
+    // New attachments for detune and mix
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> detuneAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> oscMixAttachment;
 
     // Filter attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterCutoffAttachment;

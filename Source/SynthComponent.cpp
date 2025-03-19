@@ -79,6 +79,20 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     waveform2Label.setText("Saw", juce::dontSendNotification);
     addAndMakeVisible(waveform2Label);
 
+    // Detune
+    detuneSlider.setSliderStyle(juce::Slider::Rotary);
+    detuneSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(detuneSlider);
+    detuneLabel.setText("Detune", juce::dontSendNotification);
+    addAndMakeVisible(detuneLabel);
+
+    // Oscillator Mix
+    oscMixSlider.setSliderStyle(juce::Slider::Rotary);
+    oscMixSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(oscMixSlider);
+    oscMixLabel.setText("Osc Mix", juce::dontSendNotification);
+    addAndMakeVisible(oscMixLabel);
+
     // Filter Cutoff
     filterCutoffSlider.setSliderStyle(juce::Slider::Rotary);
     filterCutoffSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -126,7 +140,9 @@ void SynthComponent::initAttachments() {
     sustainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "sustain", sustainSlider);
     releaseAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "release", releaseSlider);
     waveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "waveform", waveformSlider);
-    waveform2Attachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "waveform2", waveform2Slider); // New attachment
+    waveform2Attachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "waveform2", waveform2Slider);
+    detuneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "detune", detuneSlider);
+    oscMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "oscMix", oscMixSlider);
 
     filterCutoffAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterCutoff", filterCutoffSlider);
     filterResonanceAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterResonance", filterResonanceSlider);
@@ -147,12 +163,14 @@ void SynthComponent::resized() {
     int labelHeight = 20;
     int comboWidth = 120;
 
-    // Split the bounds into two rows with some spacing between them
+    // Split the bounds into three rows to accommodate the new controls
     auto topRow = bounds.removeFromTop(labelHeight + knobHeight);
+    bounds.removeFromTop(10);
+    auto middleRow = bounds.removeFromTop(labelHeight + knobHeight);
     bounds.removeFromTop(10);
     auto bottomRow = bounds.removeFromTop(labelHeight + knobHeight);
 
-    // Top Row: Oscillator/ADSR controls (Attack, Decay, Sustain, Release, Waveform 1, Waveform 2)
+    // Top Row: Oscillator/ADSR controls (Attack, Decay, Sustain, Release)
     auto attackBounds = topRow.removeFromLeft(knobWidth);
     attackLabel.setBounds(attackBounds.removeFromTop(labelHeight));
     attackSlider.setBounds(attackBounds);
@@ -169,13 +187,22 @@ void SynthComponent::resized() {
     releaseLabel.setBounds(releaseBounds.removeFromTop(labelHeight));
     releaseSlider.setBounds(releaseBounds);
 
-    auto waveformBounds = topRow.removeFromLeft(knobWidth);
+    // Middle Row: Oscillator controls (Waveform 1, Waveform 2, Detune, Osc Mix)
+    auto waveformBounds = middleRow.removeFromLeft(knobWidth);
     waveformLabel.setBounds(waveformBounds.removeFromTop(labelHeight));
     waveformSlider.setBounds(waveformBounds);
 
-    auto waveform2Bounds = topRow.removeFromLeft(knobWidth);
+    auto waveform2Bounds = middleRow.removeFromLeft(knobWidth);
     waveform2Label.setBounds(waveform2Bounds.removeFromTop(labelHeight));
     waveform2Slider.setBounds(waveform2Bounds);
+
+    auto detuneBounds = middleRow.removeFromLeft(knobWidth);
+    detuneLabel.setBounds(detuneBounds.removeFromTop(labelHeight));
+    detuneSlider.setBounds(detuneBounds);
+
+    auto oscMixBounds = middleRow.removeFromLeft(knobWidth);
+    oscMixLabel.setBounds(oscMixBounds.removeFromTop(labelHeight));
+    oscMixSlider.setBounds(oscMixBounds);
 
     // Bottom Row: Filter controls (Cutoff, Resonance, ADSR Mix, ADSR Depth, Filter Type)
     auto cutoffBounds = bottomRow.removeFromLeft(knobWidth);

@@ -19,7 +19,9 @@ SummonerAudioProcessor::SummonerAudioProcessor()
     std::make_unique<juce::AudioParameterFloat>("sustain", "Sustain", 0.0f, 1.0f, 0.94f),
     std::make_unique<juce::AudioParameterFloat>("release", "Release", 0.01f, 5.0f, 0.01f),
     std::make_unique<juce::AudioParameterFloat>("waveform", "Waveform", 0.0f, 1.0f, 0.20f),
-    std::make_unique<juce::AudioParameterFloat>("waveform2", "Waveform 2", 0.0f, 1.0f, 0.20f), // New parameter for second oscillator (default to Saw)
+    std::make_unique<juce::AudioParameterFloat>("waveform2", "Waveform 2", 0.0f, 1.0f, 0.20f),
+    std::make_unique<juce::AudioParameterFloat>("detune", "Detune", -100.0f, 100.0f, 0.0f), // Detune in cents
+    std::make_unique<juce::AudioParameterFloat>("oscMix", "Osc Mix", 0.0f, 1.0f, 0.5f), // Mix between oscillators (0 = Osc1, 1 = Osc2)
     // Filter parameters
     std::make_unique<juce::AudioParameterFloat>("filterCutoff", "Filter Cutoff", 20.0f, 20000.0f, 7077.26f),
     std::make_unique<juce::AudioParameterFloat>("filterResonance", "Filter Resonance", 0.1f, 10.0f, 1.00f),
@@ -191,7 +193,6 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     auto numSamples = buffer.getNumSamples();
     buffer.clear();
 
-    // Set ADSR for both oscillators
     oscillator1.setADSR(
         *parameters.getRawParameterValue("attack"),
         *parameters.getRawParameterValue("decay"),
@@ -205,7 +206,6 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
         *parameters.getRawParameterValue("release")
     );
 
-    // Set waveform for oscillator 1
     float waveformValue1 = *parameters.getRawParameterValue("waveform");
     if (waveformValue1 <= 0.16f)
         oscillator1.setWaveform(Oscillator::Waveform::Sine);
@@ -222,7 +222,6 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     else
         oscillator1.setWaveform(Oscillator::Waveform::PinkNoise);
 
-    // Set waveform for oscillator 2
     float waveformValue2 = *parameters.getRawParameterValue("waveform2");
     if (waveformValue2 <= 0.16f)
         oscillator2.setWaveform(Oscillator::Waveform::Sine);
@@ -239,6 +238,9 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     else
         oscillator2.setWaveform(Oscillator::Waveform::PinkNoise);
 
+    float detuneCents = *parameters.getRawParameterValue("detune");
+    float oscMix = *parameters.getRawParameterValue("oscMix");
+
     for (const auto metadata : midiMessages)
     {
         auto msg = metadata.getMessage();
@@ -246,7 +248,10 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
         {
             currentFrequency = juce::MidiMessage::getMidiNoteInHertz(msg.getNoteNumber());
             oscillator1.setFrequency(currentFrequency, getSampleRate());
-            oscillator2.setFrequency(currentFrequency, getSampleRate()); // Same frequency for now
+            // Apply detune to oscillator 2 (convert cents to frequency ratio)
+            float detuneFactor = std::pow(2.0f, detuneCents / 1200.0f); // 100 cents = 1 semitone
+            float detunedFrequency = currentFrequency * detuneFactor;
+            oscillator2.setFrequency(detunedFrequency, getSampleRate());
             oscillator1.noteOn();
             oscillator2.noteOn();
         }
@@ -257,7 +262,6 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
         }
     }
 
-    // Get filter parameters
     float baseCutoff = *parameters.getRawParameterValue("filterCutoff");
     float filterADSRMix = *parameters.getRawParameterValue("filterADSRMix");
     float filterADSRDepth = *parameters.getRawParameterValue("filterADSRDepth");
@@ -265,26 +269,23 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     auto* leftChannel = buffer.getWritePointer(0);
     auto* rightChannel = buffer.getWritePointer(1);
 
-    // Process each sample
     for (int sample = 0; sample < numSamples; ++sample)
     {
-        // Mix the two oscillators (50/50 mix for now)
         float osc1Output = oscillator1.getNextSample() * 0.5f;
         float osc2Output = oscillator2.getNextSample() * 0.5f;
-        float mixedOutput = (osc1Output + osc2Output) * 0.5f; // Simple 50/50 mix
+        // Mix the oscillators based on oscMix (0 = full Osc1, 1 = full Osc2)
+        float mixedOutput = (osc1Output * (1.0f - oscMix)) + (osc2Output * oscMix);
 
-        // Compute the modulated cutoff
         float modulatedCutoff = baseCutoff;
         if (filterADSRMix > 0.0f)
         {
-            float envAmount = oscillator1.getEnvelopeValue(); // Use oscillator1's envelope for filter modulation
+            float envAmount = oscillator1.getEnvelopeValue();
             float modulationAmount = envAmount * filterADSRDepth;
             modulatedCutoff = baseCutoff + (modulationAmount * filterADSRMix);
             modulatedCutoff = juce::jlimit(20.0f, 20000.0f, modulatedCutoff);
         }
 
-        // Update filter with the modulated cutoff
-        lastFilterCutoff = -1.0f; // Force update by invalidating last cutoff
+        lastFilterCutoff = -1.0f;
         *parameters.getRawParameterValue("filterCutoff") = modulatedCutoff;
         updateFilter();
         *parameters.getRawParameterValue("filterCutoff") = baseCutoff;
@@ -293,7 +294,6 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
         rightChannel[sample] = mixedOutput;
     }
 
-    // Apply filter
     juce::dsp::AudioBlock<float> block(buffer);
     juce::dsp::ProcessContextReplacing<float> context(block);
     filter.process(context);

@@ -37,8 +37,8 @@ public:
     juce::AudioProcessorValueTreeState parameters;
 
 private:
-    Oscillator oscillator1; // Renamed for clarity
-    Oscillator oscillator2; // New second oscillator
+    Oscillator oscillator1;
+    Oscillator oscillator2;
     float currentFrequency = 440.0f;
 
     // Filter object
