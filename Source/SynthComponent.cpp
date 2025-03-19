@@ -136,6 +136,29 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     lfoWaveformLabel.setText("Waveform", juce::dontSendNotification);
     addAndMakeVisible(lfoWaveformLabel);
 
+    // Distortion Section
+    distortionSectionLabel.setText("Distortion", juce::dontSendNotification);
+    distortionSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
+    addAndMakeVisible(distortionSectionLabel);
+
+    distortionDriveSlider.setSliderStyle(juce::Slider::Rotary);
+    distortionDriveSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(distortionDriveSlider);
+    distortionDriveLabel.setText("Drive", juce::dontSendNotification);
+    addAndMakeVisible(distortionDriveLabel);
+
+    distortionToneSlider.setSliderStyle(juce::Slider::Rotary);
+    distortionToneSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(distortionToneSlider);
+    distortionToneLabel.setText("Tone", juce::dontSendNotification);
+    addAndMakeVisible(distortionToneLabel);
+
+    distortionMixSlider.setSliderStyle(juce::Slider::Rotary);
+    distortionMixSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(distortionMixSlider);
+    distortionMixLabel.setText("Mix", juce::dontSendNotification);
+    addAndMakeVisible(distortionMixLabel);
+
     // Delay Section
     delaySectionLabel.setText("Delay", juce::dontSendNotification);
     delaySectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
@@ -244,6 +267,10 @@ void SynthComponent::initAttachments() {
     lfoDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "lfoDepth", lfoDepthSlider);
     lfoWaveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(params, "lfoWaveform", lfoWaveformCombo);
 
+    distortionDriveAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "distortionDrive", distortionDriveSlider);
+    distortionToneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "distortionTone", distortionToneSlider);
+    distortionMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "distortionMix", distortionMixSlider);
+
     delayTimeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "delayTime", delayTimeSlider);
     delayFeedbackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "delayFeedback", delayFeedbackSlider);
     delayMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "delayMix", delayMixSlider);
@@ -264,7 +291,7 @@ void SynthComponent::paint(juce::Graphics& g) {
 }
 
 void SynthComponent::resized() {
-    auto bounds = getLocalBounds().toFloat().reduced(20); // Keep as float for removeFrom* operations
+    auto bounds = getLocalBounds().toFloat().reduced(20);
     float knobWidth = 100;
     float knobHeight = 100;
     float comboHeight = 30;
@@ -272,12 +299,14 @@ void SynthComponent::resized() {
     float sectionLabelHeight = 30;
     float comboWidth = 120;
 
-    // Split the bounds into six rows with some spacing between them
+    // Split the bounds into seven rows with some spacing between them
     auto topRow = bounds.removeFromTop(labelHeight + knobHeight);
     bounds.removeFromTop(20);
     auto oscRow = bounds.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
     bounds.removeFromTop(20);
     auto lfoRow = bounds.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    bounds.removeFromTop(20);
+    auto distortionRow = bounds.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
     bounds.removeFromTop(20);
     auto delayRow = bounds.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
     bounds.removeFromTop(20);
@@ -337,6 +366,19 @@ void SynthComponent::resized() {
     auto lfoWaveformBounds = lfoSection.removeFromLeft(comboWidth);
     lfoWaveformLabel.setBounds(lfoWaveformBounds.removeFromTop(labelHeight).toNearestInt());
     lfoWaveformCombo.setBounds(lfoWaveformBounds.withHeight(comboHeight).withY(lfoWaveformLabel.getBottom()).toNearestInt());
+
+    // Distortion Row: Distortion controls (Drive, Tone, Mix)
+    auto distortionSection = distortionRow.removeFromLeft(knobWidth * 3 + 20);
+    distortionSectionLabel.setBounds(distortionSection.removeFromTop(sectionLabelHeight).toNearestInt());
+    auto distortionDriveBounds = distortionSection.removeFromLeft(knobWidth);
+    distortionDriveLabel.setBounds(distortionDriveBounds.removeFromTop(labelHeight).toNearestInt());
+    distortionDriveSlider.setBounds(distortionDriveBounds.toNearestInt());
+    auto distortionToneBounds = distortionSection.removeFromLeft(knobWidth);
+    distortionToneLabel.setBounds(distortionToneBounds.removeFromTop(labelHeight).toNearestInt());
+    distortionToneSlider.setBounds(distortionToneBounds.toNearestInt());
+    auto distortionMixBounds = distortionSection.removeFromLeft(knobWidth);
+    distortionMixLabel.setBounds(distortionMixBounds.removeFromTop(labelHeight).toNearestInt());
+    distortionMixSlider.setBounds(distortionMixBounds.toNearestInt());
 
     // Delay Row: Delay controls (Time, Feedback, Mix)
     auto delaySection = delayRow.removeFromLeft(knobWidth * 3 + 20);

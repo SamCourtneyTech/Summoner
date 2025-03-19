@@ -37,6 +37,10 @@ SummonerAudioProcessor::SummonerAudioProcessor()
         std::make_unique<juce::AudioParameterFloat>("reverbDamping", "Reverb Damping", 0.0f, 1.0f, 0.5f),
         std::make_unique<juce::AudioParameterFloat>("reverbWetLevel", "Reverb Wet Level", 0.0f, 1.0f, 0.33f),
         std::make_unique<juce::AudioParameterFloat>("reverbDryLevel", "Reverb Dry Level", 0.0f, 1.0f, 0.4f),
+        // Distortion parameters
+        std::make_unique<juce::AudioParameterFloat>("distortionDrive", "Distortion Drive", 1.0f, 10.0f, 1.0f),
+        std::make_unique<juce::AudioParameterFloat>("distortionTone", "Distortion Tone", 500.0f, 20000.0f, 5000.0f),
+        std::make_unique<juce::AudioParameterFloat>("distortionMix", "Distortion Mix", 0.0f, 1.0f, 0.5f),
         // Filter parameters
         std::make_unique<juce::AudioParameterFloat>("filterCutoff", "Filter Cutoff", 20.0f, 20000.0f, 7077.26f),
         std::make_unique<juce::AudioParameterFloat>("filterResonance", "Filter Resonance", 0.1f, 10.0f, 1.00f),
@@ -193,6 +197,10 @@ void SummonerAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBloc
     reverbParams.dryLevel = *parameters.getRawParameterValue("reverbDryLevel");
     reverb.setParameters(reverbParams);
 
+    // Prepare distortion tone filter
+    distortionToneFilter.prepare(spec);
+    lastDistortionTone = -1.0f; // Force initial update
+
     DBG("Synth prepared with sample rate: " << sampleRate);
 }
 
@@ -289,12 +297,23 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     float delayMix = *parameters.getRawParameterValue("delayMix");
     int delaySamples = static_cast<int>(delayTimeMs * currentSampleRate / 1000.0f);
 
-    // Update reverb parameters
     reverbParams.roomSize = *parameters.getRawParameterValue("reverbRoomSize");
     reverbParams.damping = *parameters.getRawParameterValue("reverbDamping");
     reverbParams.wetLevel = *parameters.getRawParameterValue("reverbWetLevel");
     reverbParams.dryLevel = *parameters.getRawParameterValue("reverbDryLevel");
     reverb.setParameters(reverbParams);
+
+    // Distortion parameters
+    float distortionDrive = *parameters.getRawParameterValue("distortionDrive");
+    float distortionTone = *parameters.getRawParameterValue("distortionTone");
+    float distortionMix = *parameters.getRawParameterValue("distortionMix");
+
+    // Update distortion tone filter if necessary
+    if (distortionTone != lastDistortionTone)
+    {
+        *distortionToneFilter.state = *juce::dsp::IIR::Coefficients<float>::makeLowPass(currentSampleRate, distortionTone, 0.707f);
+        lastDistortionTone = distortionTone;
+    }
 
     for (const auto metadata : midiMessages)
     {
@@ -352,6 +371,29 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     juce::dsp::AudioBlock<float> block(buffer);
     juce::dsp::ProcessContextReplacing<float> context(block);
     filter.process(context);
+
+    // Apply distortion effect
+    juce::AudioBuffer<float> dryBuffer; // Buffer to store the dry signal for mixing
+    dryBuffer.makeCopyOf(buffer); // Copy the buffer before distortion
+
+    // Apply drive (soft clipping with tanh) sample by sample
+    for (int sample = 0; sample < numSamples; ++sample)
+    {
+        leftChannel[sample] = std::tanh(leftChannel[sample] * distortionDrive);
+        rightChannel[sample] = std::tanh(rightChannel[sample] * distortionDrive);
+    }
+
+    // Apply tone filter to the entire block
+    distortionToneFilter.process(context);
+
+    // Mix dry and wet signals
+    auto* dryLeftChannel = dryBuffer.getWritePointer(0);
+    auto* dryRightChannel = dryBuffer.getWritePointer(1);
+    for (int sample = 0; sample < numSamples; ++sample)
+    {
+        leftChannel[sample] = dryLeftChannel[sample] * (1.0f - distortionMix) + leftChannel[sample] * distortionMix;
+        rightChannel[sample] = dryRightChannel[sample] * (1.0f - distortionMix) + rightChannel[sample] * distortionMix;
+    }
 
     // Apply delay effect
     for (int sample = 0; sample < numSamples; ++sample)
