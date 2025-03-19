@@ -7,7 +7,7 @@ SummonerAudioProcessorEditor::SummonerAudioProcessorEditor(SummonerAudioProcesso
     synthComponent(p.parameters)
 {
     setName("SummonerAudioProcessorEditor");
-    setSize(902, 800);
+    setSize(1625, 900);
     tabs.addTab("ChatGPT", juce::Colours::transparentBlack, &chatBar, false);
     tabs.addTab("Synth", juce::Colours::transparentBlack, &synthComponent, false);
     addAndMakeVisible(tabs);
