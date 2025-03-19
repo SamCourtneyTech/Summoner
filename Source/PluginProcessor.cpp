@@ -28,6 +28,10 @@ SummonerAudioProcessor::SummonerAudioProcessor()
     std::make_unique<juce::AudioParameterFloat>("lfoDepth", "LFO Depth", 0.0f, 5000.0f, 0.0f),
     std::make_unique<juce::AudioParameterChoice>("lfoWaveform", "LFO Waveform",
         juce::StringArray("Sine", "Triangle", "Saw", "Square"), 0),
+        // Delay parameters
+        std::make_unique<juce::AudioParameterFloat>("delayTime", "Delay Time", 0.0f, 1000.0f, 300.0f), // in milliseconds
+        std::make_unique<juce::AudioParameterFloat>("delayFeedback", "Delay Feedback", 0.0f, 0.9f, 0.3f),
+        std::make_unique<juce::AudioParameterFloat>("delayMix", "Delay Mix", 0.0f, 1.0f, 0.5f),
         // Filter parameters
         std::make_unique<juce::AudioParameterFloat>("filterCutoff", "Filter Cutoff", 20.0f, 20000.0f, 7077.26f),
         std::make_unique<juce::AudioParameterFloat>("filterResonance", "Filter Resonance", 0.1f, 10.0f, 1.00f),
@@ -107,7 +111,7 @@ void SummonerAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBloc
 {
     oscillator1.prepare(sampleRate);
     oscillator2.prepare(sampleRate);
-    lfo.prepare(sampleRate); // Prepare the LFO
+    lfo.prepare(sampleRate);
     oscillator1.setFrequency(currentFrequency, sampleRate);
     oscillator2.setFrequency(currentFrequency, sampleRate);
     oscillator1.setADSR(
@@ -130,6 +134,12 @@ void SummonerAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBloc
     spec.numChannels = getTotalNumOutputChannels();
     filter.prepare(spec);
     updateFilter();
+
+    // Prepare delay buffer (max 2 seconds at current sample rate)
+    delayBufferSize = static_cast<int>(2.0 * sampleRate);
+    delayBuffer.setSize(2, delayBufferSize);
+    delayBuffer.clear();
+    delayWritePosition = 0;
 
     DBG("Synth prepared with sample rate: " << sampleRate);
 }
@@ -248,7 +258,6 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     float osc1Level = *parameters.getRawParameterValue("osc1Level");
     float osc2Level = *parameters.getRawParameterValue("osc2Level");
 
-    // LFO parameters
     float lfoRate = *parameters.getRawParameterValue("lfoRate");
     float lfoDepth = *parameters.getRawParameterValue("lfoDepth");
     int lfoWaveformIdx = parameters.getParameter("lfoWaveform")->convertFrom0to1(
@@ -261,6 +270,12 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     case 2: lfo.setWaveform(LFO::Waveform::Saw); break;
     case 3: lfo.setWaveform(LFO::Waveform::Square); break;
     }
+
+    // Delay parameters
+    float delayTimeMs = *parameters.getRawParameterValue("delayTime");
+    float delayFeedback = *parameters.getRawParameterValue("delayFeedback");
+    float delayMix = *parameters.getRawParameterValue("delayMix");
+    int delaySamples = static_cast<int>(delayTimeMs * currentSampleRate / 1000.0f);
 
     for (const auto metadata : midiMessages)
     {
@@ -295,7 +310,6 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
         float osc2Output = oscillator2.getNextSample() * osc2Level;
         float mixedOutput = (osc1Output + osc2Output) * 0.5f;
 
-        // Compute the modulated cutoff (ADSR + LFO)
         float modulatedCutoff = baseCutoff;
         if (filterADSRMix > 0.0f)
         {
@@ -303,7 +317,6 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
             float modulationAmount = envAmount * filterADSRDepth;
             modulatedCutoff = baseCutoff + (modulationAmount * filterADSRMix);
         }
-        // Add LFO modulation to the cutoff
         float lfoAmount = lfo.getNextSample() * lfoDepth;
         modulatedCutoff += lfoAmount;
         modulatedCutoff = juce::jlimit(20.0f, 20000.0f, modulatedCutoff);
@@ -320,6 +333,30 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     juce::dsp::AudioBlock<float> block(buffer);
     juce::dsp::ProcessContextReplacing<float> context(block);
     filter.process(context);
+
+    // Apply delay effect
+    for (int sample = 0; sample < numSamples; ++sample)
+    {
+        // Read from delay buffer
+        int delayReadPosition = (delayWritePosition - delaySamples + delayBufferSize) % delayBufferSize;
+        float delayedLeft = delayBuffer.getSample(0, delayReadPosition);
+        float delayedRight = delayBuffer.getSample(1, delayReadPosition);
+
+        // Get the current input sample
+        float inputLeft = leftChannel[sample];
+        float inputRight = rightChannel[sample];
+
+        // Write to delay buffer with feedback
+        delayBuffer.setSample(0, delayWritePosition, inputLeft + delayedLeft * delayFeedback);
+        delayBuffer.setSample(1, delayWritePosition, inputRight + delayedRight * delayFeedback);
+
+        // Mix dry and wet signals
+        leftChannel[sample] = inputLeft * (1.0f - delayMix) + delayedLeft * delayMix;
+        rightChannel[sample] = inputRight * (1.0f - delayMix) + delayedRight * delayMix;
+
+        // Update write position
+        delayWritePosition = (delayWritePosition + 1) % delayBufferSize;
+    }
 }
 
 bool SummonerAudioProcessor::hasEditor() const

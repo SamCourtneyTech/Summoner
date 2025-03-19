@@ -136,6 +136,29 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     lfoWaveformLabel.setText("Waveform", juce::dontSendNotification);
     addAndMakeVisible(lfoWaveformLabel);
 
+    // Delay Section
+    delaySectionLabel.setText("Delay", juce::dontSendNotification);
+    delaySectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
+    addAndMakeVisible(delaySectionLabel);
+
+    delayTimeSlider.setSliderStyle(juce::Slider::Rotary);
+    delayTimeSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(delayTimeSlider);
+    delayTimeLabel.setText("Time", juce::dontSendNotification);
+    addAndMakeVisible(delayTimeLabel);
+
+    delayFeedbackSlider.setSliderStyle(juce::Slider::Rotary);
+    delayFeedbackSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(delayFeedbackSlider);
+    delayFeedbackLabel.setText("Feedback", juce::dontSendNotification);
+    addAndMakeVisible(delayFeedbackLabel);
+
+    delayMixSlider.setSliderStyle(juce::Slider::Rotary);
+    delayMixSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(delayMixSlider);
+    delayMixLabel.setText("Mix", juce::dontSendNotification);
+    addAndMakeVisible(delayMixLabel);
+
     // Filter Cutoff
     filterCutoffSlider.setSliderStyle(juce::Slider::Rotary);
     filterCutoffSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -192,6 +215,10 @@ void SynthComponent::initAttachments() {
     lfoDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "lfoDepth", lfoDepthSlider);
     lfoWaveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(params, "lfoWaveform", lfoWaveformCombo);
 
+    delayTimeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "delayTime", delayTimeSlider);
+    delayFeedbackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "delayFeedback", delayFeedbackSlider);
+    delayMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "delayMix", delayMixSlider);
+
     filterCutoffAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterCutoff", filterCutoffSlider);
     filterResonanceAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterResonance", filterResonanceSlider);
     filterADSRMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterADSRMix", filterADSRMixSlider);
@@ -212,12 +239,14 @@ void SynthComponent::resized() {
     int sectionLabelHeight = 30;
     int comboWidth = 120;
 
-    // Split the bounds into four rows with some spacing between them
+    // Split the bounds into five rows with some spacing between them
     auto topRow = bounds.removeFromTop(labelHeight + knobHeight);
     bounds.removeFromTop(20);
     auto oscRow = bounds.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
     bounds.removeFromTop(20);
     auto lfoRow = bounds.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    bounds.removeFromTop(20);
+    auto delayRow = bounds.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
     bounds.removeFromTop(20);
     auto bottomRow = bounds.removeFromTop(labelHeight + knobHeight);
 
@@ -239,7 +268,6 @@ void SynthComponent::resized() {
     releaseSlider.setBounds(releaseBounds);
 
     // Oscillator Row: Oscillator controls (Waveform 1, Osc1 Level, Waveform 2, Osc2 Level, Detune)
-    // Oscillator 1 Section
     auto osc1Section = oscRow.removeFromLeft(knobWidth * 2 + 20);
     oscillator1Label.setBounds(osc1Section.removeFromTop(sectionLabelHeight));
     auto waveformBounds = osc1Section.removeFromLeft(knobWidth);
@@ -249,7 +277,6 @@ void SynthComponent::resized() {
     osc1LevelLabel.setBounds(osc1LevelBounds.removeFromTop(labelHeight));
     osc1LevelSlider.setBounds(osc1LevelBounds);
 
-    // Oscillator 2 Section
     auto osc2Section = oscRow.removeFromLeft(knobWidth * 2 + 20);
     oscillator2Label.setBounds(osc2Section.removeFromTop(sectionLabelHeight));
     auto waveform2Bounds = osc2Section.removeFromLeft(knobWidth);
@@ -259,7 +286,6 @@ void SynthComponent::resized() {
     osc2LevelLabel.setBounds(osc2LevelBounds.removeFromTop(labelHeight));
     osc2LevelSlider.setBounds(osc2LevelBounds);
 
-    // Detune
     auto detuneBounds = oscRow.removeFromLeft(knobWidth);
     detuneLabel.setBounds(detuneBounds.removeFromTop(labelHeight));
     detuneSlider.setBounds(detuneBounds);
@@ -276,6 +302,19 @@ void SynthComponent::resized() {
     auto lfoWaveformBounds = lfoSection.removeFromLeft(comboWidth);
     lfoWaveformLabel.setBounds(lfoWaveformBounds.removeFromTop(labelHeight));
     lfoWaveformCombo.setBounds(lfoWaveformBounds.withHeight(knobHeight).withY(lfoWaveformLabel.getBottom()));
+
+    // Delay Row: Delay controls (Time, Feedback, Mix)
+    auto delaySection = delayRow.removeFromLeft(knobWidth * 3 + 20);
+    delaySectionLabel.setBounds(delaySection.removeFromTop(sectionLabelHeight));
+    auto delayTimeBounds = delaySection.removeFromLeft(knobWidth);
+    delayTimeLabel.setBounds(delayTimeBounds.removeFromTop(labelHeight));
+    delayTimeSlider.setBounds(delayTimeBounds);
+    auto delayFeedbackBounds = delaySection.removeFromLeft(knobWidth);
+    delayFeedbackLabel.setBounds(delayFeedbackBounds.removeFromTop(labelHeight));
+    delayFeedbackSlider.setBounds(delayFeedbackBounds);
+    auto delayMixBounds = delaySection.removeFromLeft(knobWidth);
+    delayMixLabel.setBounds(delayMixBounds.removeFromTop(labelHeight));
+    delayMixSlider.setBounds(delayMixBounds);
 
     // Bottom Row: Filter controls (Cutoff, Resonance, ADSR Mix, ADSR Depth, Filter Type)
     auto cutoffBounds = bottomRow.removeFromLeft(knobWidth);

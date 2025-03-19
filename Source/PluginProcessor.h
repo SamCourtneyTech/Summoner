@@ -40,12 +40,17 @@ public:
 private:
     Oscillator oscillator1;
     Oscillator oscillator2;
-    LFO lfo; // New LFO
+    LFO lfo;
     float currentFrequency = 440.0f;
 
     // Filter object
     juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>> filter;
     double currentSampleRate = 0.0;
+
+    // Delay buffer
+    juce::AudioBuffer<float> delayBuffer;
+    int delayBufferSize = 0;
+    int delayWritePosition = 0;
 
     // Track last parameter values for filter updates
     float lastFilterCutoff = -1.0f;

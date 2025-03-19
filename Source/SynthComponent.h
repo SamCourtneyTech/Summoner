@@ -33,6 +33,10 @@ private:
     juce::ComboBox lfoWaveformCombo;
     juce::Label lfoRateLabel, lfoDepthLabel, lfoWaveformLabel, lfoSectionLabel;
 
+    // Delay controls
+    juce::Slider delayTimeSlider, delayFeedbackSlider, delayMixSlider;
+    juce::Label delayTimeLabel, delayFeedbackLabel, delayMixLabel, delaySectionLabel;
+
     // Filter controls
     juce::Slider filterCutoffSlider, filterResonanceSlider, filterADSRMixSlider, filterADSRDepthSlider;
     juce::ComboBox filterTypeCombo;
@@ -57,6 +61,11 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> lfoRateAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> lfoDepthAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> lfoWaveformAttachment;
+
+    // Delay attachments
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> delayTimeAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> delayFeedbackAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> delayMixAttachment;
 
     // Filter attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterCutoffAttachment;
