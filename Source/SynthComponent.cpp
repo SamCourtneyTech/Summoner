@@ -115,29 +115,68 @@ void SynthComponent::paint(juce::Graphics& g) {
 }
 
 void SynthComponent::resized() {
-    auto bounds = getLocalBounds().reduced(10);
+    auto bounds = getLocalBounds().reduced(10); // Add some padding
     int knobWidth = 100;
     int knobHeight = 100;
+    int comboHeight = 30; // Height for the dropdown
+    int labelHeight = 20; // Height for labels
+    int comboWidth = 120; // Slightly wider for readability
 
-    attackSlider.setBounds(bounds.removeFromLeft(knobWidth).withHeight(knobHeight));
-    attackLabel.setBounds(attackSlider.getBounds().removeFromBottom(20));
-    decaySlider.setBounds(bounds.removeFromLeft(knobWidth).withHeight(knobHeight));
-    decayLabel.setBounds(decaySlider.getBounds().removeFromBottom(20));
-    sustainSlider.setBounds(bounds.removeFromLeft(knobWidth).withHeight(knobHeight));
-    sustainLabel.setBounds(sustainSlider.getBounds().removeFromBottom(20));
-    releaseSlider.setBounds(bounds.removeFromLeft(knobWidth).withHeight(knobHeight));
-    releaseLabel.setBounds(releaseSlider.getBounds().removeFromBottom(20));
-    waveformSlider.setBounds(bounds.removeFromLeft(knobWidth).withHeight(knobHeight));
-    waveformLabel.setBounds(waveformSlider.getBounds().removeFromBottom(20));
+    // Split the bounds into two rows with some spacing between them
+    auto topRow = bounds.removeFromTop(labelHeight + knobHeight);
+    bounds.removeFromTop(10); // Add 10 pixels of spacing between rows
+    auto bottomRow = bounds.removeFromTop(labelHeight + knobHeight);
 
-    filterCutoffSlider.setBounds(bounds.removeFromLeft(knobWidth).withHeight(knobHeight));
-    filterCutoffLabel.setBounds(filterCutoffSlider.getBounds().removeFromBottom(20));
-    filterResonanceSlider.setBounds(bounds.removeFromLeft(knobWidth).withHeight(knobHeight));
-    filterResonanceLabel.setBounds(filterResonanceSlider.getBounds().removeFromBottom(20));
-    filterADSRMixSlider.setBounds(bounds.removeFromLeft(knobWidth).withHeight(knobHeight));
-    filterADSRMixLabel.setBounds(filterADSRMixSlider.getBounds().removeFromBottom(20));
-    filterADSRDepthSlider.setBounds(bounds.removeFromLeft(knobWidth).withHeight(knobHeight));
-    filterADSRDepthLabel.setBounds(filterADSRDepthSlider.getBounds().removeFromBottom(20));
-    filterTypeCombo.setBounds(bounds.removeFromLeft(knobWidth).withHeight(30));
-    filterTypeLabel.setBounds(filterTypeCombo.getBounds().removeFromBottom(20));
+    // Top Row: Oscillator/ADSR controls (Attack, Decay, Sustain, Release, Waveform)
+    // Attack
+    auto attackBounds = topRow.removeFromLeft(knobWidth);
+    attackLabel.setBounds(attackBounds.removeFromTop(labelHeight));
+    attackSlider.setBounds(attackBounds);
+
+    // Decay
+    auto decayBounds = topRow.removeFromLeft(knobWidth);
+    decayLabel.setBounds(decayBounds.removeFromTop(labelHeight));
+    decaySlider.setBounds(decayBounds);
+
+    // Sustain
+    auto sustainBounds = topRow.removeFromLeft(knobWidth);
+    sustainLabel.setBounds(sustainBounds.removeFromTop(labelHeight));
+    sustainSlider.setBounds(sustainBounds);
+
+    // Release
+    auto releaseBounds = topRow.removeFromLeft(knobWidth);
+    releaseLabel.setBounds(releaseBounds.removeFromTop(labelHeight));
+    releaseSlider.setBounds(releaseBounds);
+
+    // Waveform
+    auto waveformBounds = topRow.removeFromLeft(knobWidth);
+    waveformLabel.setBounds(waveformBounds.removeFromTop(labelHeight));
+    waveformSlider.setBounds(waveformBounds);
+
+    // Bottom Row: Filter controls (Cutoff, Resonance, ADSR Mix, ADSR Depth, Filter Type)
+    // Filter Cutoff
+    auto cutoffBounds = bottomRow.removeFromLeft(knobWidth);
+    filterCutoffLabel.setBounds(cutoffBounds.removeFromTop(labelHeight));
+    filterCutoffSlider.setBounds(cutoffBounds);
+
+    // Filter Resonance
+    auto resonanceBounds = bottomRow.removeFromLeft(knobWidth);
+    filterResonanceLabel.setBounds(resonanceBounds.removeFromTop(labelHeight));
+    filterResonanceSlider.setBounds(resonanceBounds);
+
+    // Filter ADSR Mix
+    auto adsrMixBounds = bottomRow.removeFromLeft(knobWidth);
+    filterADSRMixLabel.setBounds(adsrMixBounds.removeFromTop(labelHeight));
+    filterADSRMixSlider.setBounds(adsrMixBounds);
+
+    // Filter ADSR Depth
+    auto adsrDepthBounds = bottomRow.removeFromLeft(knobWidth);
+    filterADSRDepthLabel.setBounds(adsrDepthBounds.removeFromTop(labelHeight));
+    filterADSRDepthSlider.setBounds(adsrDepthBounds);
+
+    // Filter Type
+    auto filterTypeBounds = bottomRow.removeFromLeft(comboWidth);
+    filterTypeLabel.setBounds(filterTypeBounds.removeFromTop(labelHeight));
+    // Align the dropdown vertically with the sliders by adjusting its height and position
+    filterTypeCombo.setBounds(filterTypeBounds.withHeight(knobHeight).withY(filterTypeLabel.getBottom()));
 }

@@ -13,18 +13,19 @@ SummonerAudioProcessor::SummonerAudioProcessor()
 #endif
     ),
     parameters(*this, nullptr, "PARAMETERS", {
-    std::make_unique<juce::AudioParameterFloat>("attack", "Attack", 0.01f, 5.0f, 0.1f),
-        std::make_unique<juce::AudioParameterFloat>("decay", "Decay", 0.01f, 5.0f, 0.3f),
-        std::make_unique<juce::AudioParameterFloat>("sustain", "Sustain", 0.0f, 1.0f, 0.8f),
-        std::make_unique<juce::AudioParameterFloat>("release", "Release", 0.01f, 5.0f, 1.0f),
-        std::make_unique<juce::AudioParameterFloat>("waveform", "Waveform", 0.0f, 1.0f, 0.0f),
-        // New filter parameters
-        std::make_unique<juce::AudioParameterFloat>("filterCutoff", "Filter Cutoff", 20.0f, 20000.0f, 1000.0f), // 20 Hz to 20 kHz
-        std::make_unique<juce::AudioParameterFloat>("filterResonance", "Filter Resonance", 0.1f, 10.0f, 0.7f), // Q factor
-        std::make_unique<juce::AudioParameterFloat>("filterADSRMix", "Filter ADSR Mix", 0.0f, 1.0f, 0.0f), // Placeholder for ADSR effect mix
-        std::make_unique<juce::AudioParameterChoice>("filterType", "Filter Type", 
-            juce::StringArray("Low Pass", "High Pass", "Band Pass", "Notch"), 0), // Filter type selection
-        std::make_unique<juce::AudioParameterFloat>("filterADSRDepth", "Filter ADSR Depth", 0.0f, 10000.0f, 2000.0f)
+    // Oscillator/ADSR parameters
+    std::make_unique<juce::AudioParameterFloat>("attack", "Attack", 0.01f, 5.0f, 0.01f),  // Default: 0.01
+    std::make_unique<juce::AudioParameterFloat>("decay", "Decay", 0.01f, 5.0f, 0.30f),   // Default: 0.30
+    std::make_unique<juce::AudioParameterFloat>("sustain", "Sustain", 0.0f, 1.0f, 0.94f), // Default: 0.94
+    std::make_unique<juce::AudioParameterFloat>("release", "Release", 0.01f, 5.0f, 0.01f), // Default: 0.01
+    std::make_unique<juce::AudioParameterFloat>("waveform", "Waveform", 0.0f, 1.0f, 0.20f), // Default: 0.20 (Saw)
+    // Filter parameters
+    std::make_unique<juce::AudioParameterFloat>("filterCutoff", "Filter Cutoff", 20.0f, 20000.0f, 7077.26f), // Default: 7077.26 Hz
+    std::make_unique<juce::AudioParameterFloat>("filterResonance", "Filter Resonance", 0.1f, 10.0f, 1.00f), // Default: 1.00
+    std::make_unique<juce::AudioParameterFloat>("filterADSRMix", "Filter ADSR Mix", 0.0f, 1.0f, 1.00f), // Default: 1.00
+    std::make_unique<juce::AudioParameterFloat>("filterADSRDepth", "Filter ADSR Depth", 0.0f, 10000.0f, 10000.0f), // Default: 10000.00 Hz
+    std::make_unique<juce::AudioParameterChoice>("filterType", "Filter Type",
+        juce::StringArray("Low Pass", "High Pass", "Band Pass", "Notch"), 0) // Default: 0 (Low Pass)
         })
 {
 }
