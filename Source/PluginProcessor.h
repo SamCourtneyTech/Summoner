@@ -57,8 +57,12 @@ private:
     juce::Reverb::Parameters reverbParams;
 
     // Distortion
-    juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>> distortionToneFilter; // Low-pass filter for tone control
-    float lastDistortionTone = -1.0f; // Track last tone value to avoid unnecessary updates
+    juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>> distortionToneFilter;
+    float lastDistortionTone = -1.0f;
+
+    // Compressor
+    juce::dsp::Compressor<float> compressor;
+    juce::dsp::Gain<float> compressorMakeupGain; // Added for makeup gain
 
     // Track last parameter values for filter updates
     float lastFilterCutoff = -1.0f;

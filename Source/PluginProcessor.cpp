@@ -28,6 +28,10 @@ SummonerAudioProcessor::SummonerAudioProcessor()
     std::make_unique<juce::AudioParameterFloat>("lfoDepth", "LFO Depth", 0.0f, 5000.0f, 0.0f),
     std::make_unique<juce::AudioParameterChoice>("lfoWaveform", "LFO Waveform",
         juce::StringArray("Sine", "Triangle", "Saw", "Square"), 0),
+        // Distortion parameters
+        std::make_unique<juce::AudioParameterFloat>("distortionDrive", "Distortion Drive", 1.0f, 10.0f, 1.0f),
+        std::make_unique<juce::AudioParameterFloat>("distortionTone", "Distortion Tone", 500.0f, 20000.0f, 5000.0f),
+        std::make_unique<juce::AudioParameterFloat>("distortionMix", "Distortion Mix", 0.0f, 1.0f, 0.5f),
         // Delay parameters
         std::make_unique<juce::AudioParameterFloat>("delayTime", "Delay Time", 0.0f, 1000.0f, 300.0f),
         std::make_unique<juce::AudioParameterFloat>("delayFeedback", "Delay Feedback", 0.0f, 0.9f, 0.3f),
@@ -37,10 +41,12 @@ SummonerAudioProcessor::SummonerAudioProcessor()
         std::make_unique<juce::AudioParameterFloat>("reverbDamping", "Reverb Damping", 0.0f, 1.0f, 0.5f),
         std::make_unique<juce::AudioParameterFloat>("reverbWetLevel", "Reverb Wet Level", 0.0f, 1.0f, 0.33f),
         std::make_unique<juce::AudioParameterFloat>("reverbDryLevel", "Reverb Dry Level", 0.0f, 1.0f, 0.4f),
-        // Distortion parameters
-        std::make_unique<juce::AudioParameterFloat>("distortionDrive", "Distortion Drive", 1.0f, 10.0f, 1.0f),
-        std::make_unique<juce::AudioParameterFloat>("distortionTone", "Distortion Tone", 500.0f, 20000.0f, 5000.0f),
-        std::make_unique<juce::AudioParameterFloat>("distortionMix", "Distortion Mix", 0.0f, 1.0f, 0.5f),
+        // Compressor parameters
+        std::make_unique<juce::AudioParameterFloat>("compressorThreshold", "Compressor Threshold", -60.0f, 0.0f, -24.0f),
+        std::make_unique<juce::AudioParameterFloat>("compressorRatio", "Compressor Ratio", 1.0f, 10.0f, 2.0f),
+        std::make_unique<juce::AudioParameterFloat>("compressorAttack", "Compressor Attack", 0.1f, 100.0f, 10.0f),
+        std::make_unique<juce::AudioParameterFloat>("compressorRelease", "Compressor Release", 10.0f, 1000.0f, 100.0f),
+        std::make_unique<juce::AudioParameterFloat>("compressorMakeupGain", "Compressor Makeup Gain", 0.0f, 24.0f, 0.0f),
         // Filter parameters
         std::make_unique<juce::AudioParameterFloat>("filterCutoff", "Filter Cutoff", 20.0f, 20000.0f, 7077.26f),
         std::make_unique<juce::AudioParameterFloat>("filterResonance", "Filter Resonance", 0.1f, 10.0f, 1.00f),
@@ -199,7 +205,18 @@ void SummonerAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBloc
 
     // Prepare distortion tone filter
     distortionToneFilter.prepare(spec);
-    lastDistortionTone = -1.0f; // Force initial update
+    lastDistortionTone = -1.0f;
+
+    // Prepare compressor
+    compressor.prepare(spec);
+    compressor.setThreshold(*parameters.getRawParameterValue("compressorThreshold"));
+    compressor.setRatio(*parameters.getRawParameterValue("compressorRatio"));
+    compressor.setAttack(*parameters.getRawParameterValue("compressorAttack"));
+    compressor.setRelease(*parameters.getRawParameterValue("compressorRelease"));
+
+    // Prepare makeup gain
+    compressorMakeupGain.prepare(spec);
+    compressorMakeupGain.setGainDecibels(*parameters.getRawParameterValue("compressorMakeupGain"));
 
     DBG("Synth prepared with sample rate: " << sampleRate);
 }
@@ -315,6 +332,15 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
         lastDistortionTone = distortionTone;
     }
 
+    // Compressor parameters
+    compressor.setThreshold(*parameters.getRawParameterValue("compressorThreshold"));
+    compressor.setRatio(*parameters.getRawParameterValue("compressorRatio"));
+    compressor.setAttack(*parameters.getRawParameterValue("compressorAttack"));
+    compressor.setRelease(*parameters.getRawParameterValue("compressorRelease"));
+
+    // Update makeup gain
+    compressorMakeupGain.setGainDecibels(*parameters.getRawParameterValue("compressorMakeupGain"));
+
     for (const auto metadata : midiMessages)
     {
         auto msg = metadata.getMessage();
@@ -373,20 +399,17 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     filter.process(context);
 
     // Apply distortion effect
-    juce::AudioBuffer<float> dryBuffer; // Buffer to store the dry signal for mixing
-    dryBuffer.makeCopyOf(buffer); // Copy the buffer before distortion
+    juce::AudioBuffer<float> dryBuffer;
+    dryBuffer.makeCopyOf(buffer);
 
-    // Apply drive (soft clipping with tanh) sample by sample
     for (int sample = 0; sample < numSamples; ++sample)
     {
         leftChannel[sample] = std::tanh(leftChannel[sample] * distortionDrive);
         rightChannel[sample] = std::tanh(rightChannel[sample] * distortionDrive);
     }
 
-    // Apply tone filter to the entire block
     distortionToneFilter.process(context);
 
-    // Mix dry and wet signals
     auto* dryLeftChannel = dryBuffer.getWritePointer(0);
     auto* dryRightChannel = dryBuffer.getWritePointer(1);
     for (int sample = 0; sample < numSamples; ++sample)
@@ -416,6 +439,12 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
 
     // Apply reverb effect
     reverb.processStereo(leftChannel, rightChannel, numSamples);
+
+    // Apply compressor effect
+    compressor.process(context);
+
+    // Apply makeup gain
+    compressorMakeupGain.process(context);
 }
 
 bool SummonerAudioProcessor::hasEditor() const

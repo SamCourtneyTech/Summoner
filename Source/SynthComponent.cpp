@@ -29,6 +29,11 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     releaseLabel.setText("Release", juce::dontSendNotification);
     addAndMakeVisible(releaseLabel);
 
+    // ADSR Section Label
+    adsrSectionLabel.setText("Envelope", juce::dontSendNotification);
+    adsrSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
+    addAndMakeVisible(adsrSectionLabel);
+
     // Waveform (Oscillator 1)
     waveformSlider.setSliderStyle(juce::Slider::Rotary);
     waveformSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -211,6 +216,11 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     reverbDryLevelLabel.setText("Dry Level", juce::dontSendNotification);
     addAndMakeVisible(reverbDryLevelLabel);
 
+    // Filter Section Label
+    filterSectionLabel.setText("Filter", juce::dontSendNotification);
+    filterSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
+    addAndMakeVisible(filterSectionLabel);
+
     // Filter Cutoff
     filterCutoffSlider.setSliderStyle(juce::Slider::Rotary);
     filterCutoffSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -248,6 +258,41 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     addAndMakeVisible(filterTypeCombo);
     filterTypeLabel.setText("Filter Type", juce::dontSendNotification);
     addAndMakeVisible(filterTypeLabel);
+
+    // Compressor Section
+    compressorSectionLabel.setText("Compressor", juce::dontSendNotification);
+    compressorSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
+    addAndMakeVisible(compressorSectionLabel);
+
+    compressorThresholdSlider.setSliderStyle(juce::Slider::Rotary);
+    compressorThresholdSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(compressorThresholdSlider);
+    compressorThresholdLabel.setText("Threshold", juce::dontSendNotification);
+    addAndMakeVisible(compressorThresholdLabel);
+
+    compressorRatioSlider.setSliderStyle(juce::Slider::Rotary);
+    compressorRatioSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(compressorRatioSlider);
+    compressorRatioLabel.setText("Ratio", juce::dontSendNotification);
+    addAndMakeVisible(compressorRatioLabel);
+
+    compressorAttackSlider.setSliderStyle(juce::Slider::Rotary);
+    compressorAttackSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(compressorAttackSlider);
+    compressorAttackLabel.setText("Attack", juce::dontSendNotification);
+    addAndMakeVisible(compressorAttackLabel);
+
+    compressorReleaseSlider.setSliderStyle(juce::Slider::Rotary);
+    compressorReleaseSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(compressorReleaseSlider);
+    compressorReleaseLabel.setText("Release", juce::dontSendNotification);
+    addAndMakeVisible(compressorReleaseLabel);
+
+    compressorMakeupGainSlider.setSliderStyle(juce::Slider::Rotary);
+    compressorMakeupGainSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(compressorMakeupGainSlider);
+    compressorMakeupGainLabel.setText("Makeup Gain", juce::dontSendNotification);
+    addAndMakeVisible(compressorMakeupGainLabel);
 }
 
 SynthComponent::~SynthComponent() {}
@@ -285,6 +330,12 @@ void SynthComponent::initAttachments() {
     filterADSRMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterADSRMix", filterADSRMixSlider);
     filterADSRDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterADSRDepth", filterADSRDepthSlider);
     filterTypeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(params, "filterType", filterTypeCombo);
+
+    compressorThresholdAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "compressorThreshold", compressorThresholdSlider);
+    compressorRatioAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "compressorRatio", compressorRatioSlider);
+    compressorAttackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "compressorAttack", compressorAttackSlider);
+    compressorReleaseAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "compressorRelease", compressorReleaseSlider);
+    compressorMakeupGainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "compressorMakeupGain", compressorMakeupGainSlider);
 }
 void SynthComponent::paint(juce::Graphics& g) {
     g.fillAll(juce::Colours::darkgrey);
@@ -299,40 +350,54 @@ void SynthComponent::resized() {
     float sectionLabelHeight = 30;
     float comboWidth = 120;
 
-    // Split the bounds into seven rows with some spacing between them
-    auto topRow = bounds.removeFromTop(labelHeight + knobHeight);
-    bounds.removeFromTop(20);
-    auto oscRow = bounds.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    bounds.removeFromTop(20);
-    auto lfoRow = bounds.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    bounds.removeFromTop(20);
-    auto distortionRow = bounds.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    bounds.removeFromTop(20);
-    auto delayRow = bounds.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    bounds.removeFromTop(20);
-    auto reverbRow = bounds.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    bounds.removeFromTop(20);
-    auto bottomRow = bounds.removeFromTop(labelHeight + knobHeight);
+    // Split the window into two columns
+    auto leftColumn = bounds.removeFromLeft(bounds.getWidth() / 2 - 20); // Left column with padding
+    auto rightColumn = bounds; // Right column
 
-    // Top Row: ADSR controls (Attack, Decay, Sustain, Release)
-    auto attackBounds = topRow.removeFromLeft(knobWidth);
+    // Left Column: ADSR, Oscillator 1, Oscillator 2, Detune, LFO
+    auto adsrRow = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    leftColumn.removeFromTop(20);
+    auto osc1Row = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    leftColumn.removeFromTop(20);
+    auto osc2Row = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    leftColumn.removeFromTop(20);
+    auto detuneRow = leftColumn.removeFromTop(labelHeight + knobHeight);
+    leftColumn.removeFromTop(20);
+    auto lfoRow = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+
+    // Right Column: Distortion, Delay, Reverb, Filter, Compressor
+    auto distortionRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    rightColumn.removeFromTop(20);
+    auto delayRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    rightColumn.removeFromTop(20);
+    auto reverbRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    rightColumn.removeFromTop(20);
+    auto filterRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    rightColumn.removeFromTop(20);
+    auto compressorRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+
+    // Left Column Layout
+    // ADSR Row: Envelope label, Attack, Decay, Sustain, Release
+    auto adsrSection = adsrRow;
+    adsrSectionLabel.setBounds(adsrSection.removeFromTop(sectionLabelHeight).toNearestInt());
+    auto attackBounds = adsrSection.removeFromLeft(knobWidth);
     attackLabel.setBounds(attackBounds.removeFromTop(labelHeight).toNearestInt());
     attackSlider.setBounds(attackBounds.toNearestInt());
 
-    auto decayBounds = topRow.removeFromLeft(knobWidth);
+    auto decayBounds = adsrSection.removeFromLeft(knobWidth);
     decayLabel.setBounds(decayBounds.removeFromTop(labelHeight).toNearestInt());
     decaySlider.setBounds(decayBounds.toNearestInt());
 
-    auto sustainBounds = topRow.removeFromLeft(knobWidth);
+    auto sustainBounds = adsrSection.removeFromLeft(knobWidth);
     sustainLabel.setBounds(sustainBounds.removeFromTop(labelHeight).toNearestInt());
     sustainSlider.setBounds(sustainBounds.toNearestInt());
 
-    auto releaseBounds = topRow.removeFromLeft(knobWidth);
+    auto releaseBounds = adsrSection.removeFromLeft(knobWidth);
     releaseLabel.setBounds(releaseBounds.removeFromTop(labelHeight).toNearestInt());
     releaseSlider.setBounds(releaseBounds.toNearestInt());
 
-    // Oscillator Row: Oscillator controls (Waveform 1, Osc1 Level, Waveform 2, Osc2 Level, Detune)
-    auto osc1Section = oscRow.removeFromLeft(knobWidth * 2 + 20);
+    // Oscillator 1 Row: Waveform 1, Osc1 Level
+    auto osc1Section = osc1Row.removeFromLeft(knobWidth * 2 + 20);
     oscillator1Label.setBounds(osc1Section.removeFromTop(sectionLabelHeight).toNearestInt());
     auto waveformBounds = osc1Section.removeFromLeft(knobWidth);
     waveformLabel.setBounds(waveformBounds.removeFromTop(labelHeight).toNearestInt());
@@ -341,7 +406,8 @@ void SynthComponent::resized() {
     osc1LevelLabel.setBounds(osc1LevelBounds.removeFromTop(labelHeight).toNearestInt());
     osc1LevelSlider.setBounds(osc1LevelBounds.toNearestInt());
 
-    auto osc2Section = oscRow.removeFromLeft(knobWidth * 2 + 20);
+    // Oscillator 2 Row: Waveform 2, Osc2 Level
+    auto osc2Section = osc2Row.removeFromLeft(knobWidth * 2 + 20);
     oscillator2Label.setBounds(osc2Section.removeFromTop(sectionLabelHeight).toNearestInt());
     auto waveform2Bounds = osc2Section.removeFromLeft(knobWidth);
     waveform2Label.setBounds(waveform2Bounds.removeFromTop(labelHeight).toNearestInt());
@@ -350,11 +416,12 @@ void SynthComponent::resized() {
     osc2LevelLabel.setBounds(osc2LevelBounds.removeFromTop(labelHeight).toNearestInt());
     osc2LevelSlider.setBounds(osc2LevelBounds.toNearestInt());
 
-    auto detuneBounds = oscRow.removeFromLeft(knobWidth);
+    // Detune Row: Detune
+    auto detuneBounds = detuneRow.removeFromLeft(knobWidth);
     detuneLabel.setBounds(detuneBounds.removeFromTop(labelHeight).toNearestInt());
     detuneSlider.setBounds(detuneBounds.toNearestInt());
 
-    // LFO Row: LFO controls (Rate, Depth, Waveform)
+    // LFO Row: Rate, Depth, Waveform
     auto lfoSection = lfoRow.removeFromLeft(knobWidth * 3 + 40);
     lfoSectionLabel.setBounds(lfoSection.removeFromTop(sectionLabelHeight).toNearestInt());
     auto lfoRateBounds = lfoSection.removeFromLeft(knobWidth);
@@ -367,7 +434,8 @@ void SynthComponent::resized() {
     lfoWaveformLabel.setBounds(lfoWaveformBounds.removeFromTop(labelHeight).toNearestInt());
     lfoWaveformCombo.setBounds(lfoWaveformBounds.withHeight(comboHeight).withY(lfoWaveformLabel.getBottom()).toNearestInt());
 
-    // Distortion Row: Distortion controls (Drive, Tone, Mix)
+    // Right Column Layout
+    // Distortion Row: Drive, Tone, Mix
     auto distortionSection = distortionRow.removeFromLeft(knobWidth * 3 + 20);
     distortionSectionLabel.setBounds(distortionSection.removeFromTop(sectionLabelHeight).toNearestInt());
     auto distortionDriveBounds = distortionSection.removeFromLeft(knobWidth);
@@ -380,7 +448,7 @@ void SynthComponent::resized() {
     distortionMixLabel.setBounds(distortionMixBounds.removeFromTop(labelHeight).toNearestInt());
     distortionMixSlider.setBounds(distortionMixBounds.toNearestInt());
 
-    // Delay Row: Delay controls (Time, Feedback, Mix)
+    // Delay Row: Time, Feedback, Mix
     auto delaySection = delayRow.removeFromLeft(knobWidth * 3 + 20);
     delaySectionLabel.setBounds(delaySection.removeFromTop(sectionLabelHeight).toNearestInt());
     auto delayTimeBounds = delaySection.removeFromLeft(knobWidth);
@@ -393,7 +461,7 @@ void SynthComponent::resized() {
     delayMixLabel.setBounds(delayMixBounds.removeFromTop(labelHeight).toNearestInt());
     delayMixSlider.setBounds(delayMixBounds.toNearestInt());
 
-    // Reverb Row: Reverb controls (Room Size, Damping, Wet Level, Dry Level)
+    // Reverb Row: Room Size, Damping, Wet Level, Dry Level
     auto reverbSection = reverbRow.removeFromLeft(knobWidth * 4 + 20);
     reverbSectionLabel.setBounds(reverbSection.removeFromTop(sectionLabelHeight).toNearestInt());
     auto reverbRoomSizeBounds = reverbSection.removeFromLeft(knobWidth);
@@ -409,24 +477,45 @@ void SynthComponent::resized() {
     reverbDryLevelLabel.setBounds(reverbDryLevelBounds.removeFromTop(labelHeight).toNearestInt());
     reverbDryLevelSlider.setBounds(reverbDryLevelBounds.toNearestInt());
 
-    // Bottom Row: Filter controls (Cutoff, Resonance, ADSR Mix, ADSR Depth, Filter Type)
-    auto cutoffBounds = bottomRow.removeFromLeft(knobWidth);
+    // Filter Row: Filter label, Cutoff, Resonance, ADSR Mix, ADSR Depth, Filter Type
+    auto filterSection = filterRow;
+    filterSectionLabel.setBounds(filterSection.removeFromTop(sectionLabelHeight).toNearestInt());
+    auto cutoffBounds = filterSection.removeFromLeft(knobWidth);
     filterCutoffLabel.setBounds(cutoffBounds.removeFromTop(labelHeight).toNearestInt());
     filterCutoffSlider.setBounds(cutoffBounds.toNearestInt());
 
-    auto resonanceBounds = bottomRow.removeFromLeft(knobWidth);
+    auto resonanceBounds = filterSection.removeFromLeft(knobWidth);
     filterResonanceLabel.setBounds(resonanceBounds.removeFromTop(labelHeight).toNearestInt());
     filterResonanceSlider.setBounds(resonanceBounds.toNearestInt());
 
-    auto adsrMixBounds = bottomRow.removeFromLeft(knobWidth);
+    auto adsrMixBounds = filterSection.removeFromLeft(knobWidth);
     filterADSRMixLabel.setBounds(adsrMixBounds.removeFromTop(labelHeight).toNearestInt());
     filterADSRMixSlider.setBounds(adsrMixBounds.toNearestInt());
 
-    auto adsrDepthBounds = bottomRow.removeFromLeft(knobWidth);
+    auto adsrDepthBounds = filterSection.removeFromLeft(knobWidth);
     filterADSRDepthLabel.setBounds(adsrDepthBounds.removeFromTop(labelHeight).toNearestInt());
     filterADSRDepthSlider.setBounds(adsrDepthBounds.toNearestInt());
 
-    auto filterTypeBounds = bottomRow.removeFromLeft(comboWidth);
+    auto filterTypeBounds = filterSection.removeFromLeft(comboWidth);
     filterTypeLabel.setBounds(filterTypeBounds.removeFromTop(labelHeight).toNearestInt());
     filterTypeCombo.setBounds(filterTypeBounds.withHeight(comboHeight).withY(filterTypeLabel.getBottom()).toNearestInt());
+
+    // Compressor Row: Threshold, Ratio, Attack, Release, Makeup Gain
+    auto compressorSection = compressorRow;
+    compressorSectionLabel.setBounds(compressorSection.removeFromTop(sectionLabelHeight).toNearestInt());
+    auto compressorThresholdBounds = compressorSection.removeFromLeft(knobWidth);
+    compressorThresholdLabel.setBounds(compressorThresholdBounds.removeFromTop(labelHeight).toNearestInt());
+    compressorThresholdSlider.setBounds(compressorThresholdBounds.toNearestInt());
+    auto compressorRatioBounds = compressorSection.removeFromLeft(knobWidth);
+    compressorRatioLabel.setBounds(compressorRatioBounds.removeFromTop(labelHeight).toNearestInt());
+    compressorRatioSlider.setBounds(compressorRatioBounds.toNearestInt());
+    auto compressorAttackBounds = compressorSection.removeFromLeft(knobWidth);
+    compressorAttackLabel.setBounds(compressorAttackBounds.removeFromTop(labelHeight).toNearestInt());
+    compressorAttackSlider.setBounds(compressorAttackBounds.toNearestInt());
+    auto compressorReleaseBounds = compressorSection.removeFromLeft(knobWidth);
+    compressorReleaseLabel.setBounds(compressorReleaseBounds.removeFromTop(labelHeight).toNearestInt());
+    compressorReleaseSlider.setBounds(compressorReleaseBounds.toNearestInt());
+    auto compressorMakeupGainBounds = compressorSection.removeFromLeft(knobWidth);
+    compressorMakeupGainLabel.setBounds(compressorMakeupGainBounds.removeFromTop(labelHeight).toNearestInt());
+    compressorMakeupGainSlider.setBounds(compressorMakeupGainBounds.toNearestInt());
 }
