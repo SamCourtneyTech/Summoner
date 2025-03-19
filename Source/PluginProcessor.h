@@ -52,6 +52,10 @@ private:
     int delayBufferSize = 0;
     int delayWritePosition = 0;
 
+    // Reverb
+    juce::Reverb reverb;
+    juce::Reverb::Parameters reverbParams;
+
     // Track last parameter values for filter updates
     float lastFilterCutoff = -1.0f;
     float lastFilterResonance = -1.0f;

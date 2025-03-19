@@ -159,6 +159,35 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     delayMixLabel.setText("Mix", juce::dontSendNotification);
     addAndMakeVisible(delayMixLabel);
 
+    // Reverb Section
+    reverbSectionLabel.setText("Reverb", juce::dontSendNotification);
+    reverbSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
+    addAndMakeVisible(reverbSectionLabel);
+
+    reverbRoomSizeSlider.setSliderStyle(juce::Slider::Rotary);
+    reverbRoomSizeSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(reverbRoomSizeSlider);
+    reverbRoomSizeLabel.setText("Room Size", juce::dontSendNotification);
+    addAndMakeVisible(reverbRoomSizeLabel);
+
+    reverbDampingSlider.setSliderStyle(juce::Slider::Rotary);
+    reverbDampingSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(reverbDampingSlider);
+    reverbDampingLabel.setText("Damping", juce::dontSendNotification);
+    addAndMakeVisible(reverbDampingLabel);
+
+    reverbWetLevelSlider.setSliderStyle(juce::Slider::Rotary);
+    reverbWetLevelSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(reverbWetLevelSlider);
+    reverbWetLevelLabel.setText("Wet Level", juce::dontSendNotification);
+    addAndMakeVisible(reverbWetLevelLabel);
+
+    reverbDryLevelSlider.setSliderStyle(juce::Slider::Rotary);
+    reverbDryLevelSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(reverbDryLevelSlider);
+    reverbDryLevelLabel.setText("Dry Level", juce::dontSendNotification);
+    addAndMakeVisible(reverbDryLevelLabel);
+
     // Filter Cutoff
     filterCutoffSlider.setSliderStyle(juce::Slider::Rotary);
     filterCutoffSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -219,27 +248,31 @@ void SynthComponent::initAttachments() {
     delayFeedbackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "delayFeedback", delayFeedbackSlider);
     delayMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "delayMix", delayMixSlider);
 
+    reverbRoomSizeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "reverbRoomSize", reverbRoomSizeSlider);
+    reverbDampingAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "reverbDamping", reverbDampingSlider);
+    reverbWetLevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "reverbWetLevel", reverbWetLevelSlider);
+    reverbDryLevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "reverbDryLevel", reverbDryLevelSlider);
+
     filterCutoffAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterCutoff", filterCutoffSlider);
     filterResonanceAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterResonance", filterResonanceSlider);
     filterADSRMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterADSRMix", filterADSRMixSlider);
     filterADSRDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterADSRDepth", filterADSRDepthSlider);
     filterTypeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(params, "filterType", filterTypeCombo);
 }
-
 void SynthComponent::paint(juce::Graphics& g) {
     g.fillAll(juce::Colours::darkgrey);
 }
 
 void SynthComponent::resized() {
-    auto bounds = getLocalBounds().reduced(20);
-    int knobWidth = 100;
-    int knobHeight = 100;
-    int comboHeight = 30;
-    int labelHeight = 20;
-    int sectionLabelHeight = 30;
-    int comboWidth = 120;
+    auto bounds = getLocalBounds().toFloat().reduced(20); // Keep as float for removeFrom* operations
+    float knobWidth = 100;
+    float knobHeight = 100;
+    float comboHeight = 30;
+    float labelHeight = 20;
+    float sectionLabelHeight = 30;
+    float comboWidth = 120;
 
-    // Split the bounds into five rows with some spacing between them
+    // Split the bounds into six rows with some spacing between them
     auto topRow = bounds.removeFromTop(labelHeight + knobHeight);
     bounds.removeFromTop(20);
     auto oscRow = bounds.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
@@ -248,92 +281,110 @@ void SynthComponent::resized() {
     bounds.removeFromTop(20);
     auto delayRow = bounds.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
     bounds.removeFromTop(20);
+    auto reverbRow = bounds.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    bounds.removeFromTop(20);
     auto bottomRow = bounds.removeFromTop(labelHeight + knobHeight);
 
     // Top Row: ADSR controls (Attack, Decay, Sustain, Release)
     auto attackBounds = topRow.removeFromLeft(knobWidth);
-    attackLabel.setBounds(attackBounds.removeFromTop(labelHeight));
-    attackSlider.setBounds(attackBounds);
+    attackLabel.setBounds(attackBounds.removeFromTop(labelHeight).toNearestInt());
+    attackSlider.setBounds(attackBounds.toNearestInt());
 
     auto decayBounds = topRow.removeFromLeft(knobWidth);
-    decayLabel.setBounds(decayBounds.removeFromTop(labelHeight));
-    decaySlider.setBounds(decayBounds);
+    decayLabel.setBounds(decayBounds.removeFromTop(labelHeight).toNearestInt());
+    decaySlider.setBounds(decayBounds.toNearestInt());
 
     auto sustainBounds = topRow.removeFromLeft(knobWidth);
-    sustainLabel.setBounds(sustainBounds.removeFromTop(labelHeight));
-    sustainSlider.setBounds(sustainBounds);
+    sustainLabel.setBounds(sustainBounds.removeFromTop(labelHeight).toNearestInt());
+    sustainSlider.setBounds(sustainBounds.toNearestInt());
 
     auto releaseBounds = topRow.removeFromLeft(knobWidth);
-    releaseLabel.setBounds(releaseBounds.removeFromTop(labelHeight));
-    releaseSlider.setBounds(releaseBounds);
+    releaseLabel.setBounds(releaseBounds.removeFromTop(labelHeight).toNearestInt());
+    releaseSlider.setBounds(releaseBounds.toNearestInt());
 
     // Oscillator Row: Oscillator controls (Waveform 1, Osc1 Level, Waveform 2, Osc2 Level, Detune)
     auto osc1Section = oscRow.removeFromLeft(knobWidth * 2 + 20);
-    oscillator1Label.setBounds(osc1Section.removeFromTop(sectionLabelHeight));
+    oscillator1Label.setBounds(osc1Section.removeFromTop(sectionLabelHeight).toNearestInt());
     auto waveformBounds = osc1Section.removeFromLeft(knobWidth);
-    waveformLabel.setBounds(waveformBounds.removeFromTop(labelHeight));
-    waveformSlider.setBounds(waveformBounds);
+    waveformLabel.setBounds(waveformBounds.removeFromTop(labelHeight).toNearestInt());
+    waveformSlider.setBounds(waveformBounds.toNearestInt());
     auto osc1LevelBounds = osc1Section.removeFromLeft(knobWidth);
-    osc1LevelLabel.setBounds(osc1LevelBounds.removeFromTop(labelHeight));
-    osc1LevelSlider.setBounds(osc1LevelBounds);
+    osc1LevelLabel.setBounds(osc1LevelBounds.removeFromTop(labelHeight).toNearestInt());
+    osc1LevelSlider.setBounds(osc1LevelBounds.toNearestInt());
 
     auto osc2Section = oscRow.removeFromLeft(knobWidth * 2 + 20);
-    oscillator2Label.setBounds(osc2Section.removeFromTop(sectionLabelHeight));
+    oscillator2Label.setBounds(osc2Section.removeFromTop(sectionLabelHeight).toNearestInt());
     auto waveform2Bounds = osc2Section.removeFromLeft(knobWidth);
-    waveform2Label.setBounds(waveform2Bounds.removeFromTop(labelHeight));
-    waveform2Slider.setBounds(waveform2Bounds);
+    waveform2Label.setBounds(waveform2Bounds.removeFromTop(labelHeight).toNearestInt());
+    waveform2Slider.setBounds(waveform2Bounds.toNearestInt());
     auto osc2LevelBounds = osc2Section.removeFromLeft(knobWidth);
-    osc2LevelLabel.setBounds(osc2LevelBounds.removeFromTop(labelHeight));
-    osc2LevelSlider.setBounds(osc2LevelBounds);
+    osc2LevelLabel.setBounds(osc2LevelBounds.removeFromTop(labelHeight).toNearestInt());
+    osc2LevelSlider.setBounds(osc2LevelBounds.toNearestInt());
 
     auto detuneBounds = oscRow.removeFromLeft(knobWidth);
-    detuneLabel.setBounds(detuneBounds.removeFromTop(labelHeight));
-    detuneSlider.setBounds(detuneBounds);
+    detuneLabel.setBounds(detuneBounds.removeFromTop(labelHeight).toNearestInt());
+    detuneSlider.setBounds(detuneBounds.toNearestInt());
 
     // LFO Row: LFO controls (Rate, Depth, Waveform)
     auto lfoSection = lfoRow.removeFromLeft(knobWidth * 3 + 40);
-    lfoSectionLabel.setBounds(lfoSection.removeFromTop(sectionLabelHeight));
+    lfoSectionLabel.setBounds(lfoSection.removeFromTop(sectionLabelHeight).toNearestInt());
     auto lfoRateBounds = lfoSection.removeFromLeft(knobWidth);
-    lfoRateLabel.setBounds(lfoRateBounds.removeFromTop(labelHeight));
-    lfoRateSlider.setBounds(lfoRateBounds);
+    lfoRateLabel.setBounds(lfoRateBounds.removeFromTop(labelHeight).toNearestInt());
+    lfoRateSlider.setBounds(lfoRateBounds.toNearestInt());
     auto lfoDepthBounds = lfoSection.removeFromLeft(knobWidth);
-    lfoDepthLabel.setBounds(lfoDepthBounds.removeFromTop(labelHeight));
-    lfoDepthSlider.setBounds(lfoDepthBounds);
+    lfoDepthLabel.setBounds(lfoDepthBounds.removeFromTop(labelHeight).toNearestInt());
+    lfoDepthSlider.setBounds(lfoDepthBounds.toNearestInt());
     auto lfoWaveformBounds = lfoSection.removeFromLeft(comboWidth);
-    lfoWaveformLabel.setBounds(lfoWaveformBounds.removeFromTop(labelHeight));
-    lfoWaveformCombo.setBounds(lfoWaveformBounds.withHeight(knobHeight).withY(lfoWaveformLabel.getBottom()));
+    lfoWaveformLabel.setBounds(lfoWaveformBounds.removeFromTop(labelHeight).toNearestInt());
+    lfoWaveformCombo.setBounds(lfoWaveformBounds.withHeight(comboHeight).withY(lfoWaveformLabel.getBottom()).toNearestInt());
 
     // Delay Row: Delay controls (Time, Feedback, Mix)
     auto delaySection = delayRow.removeFromLeft(knobWidth * 3 + 20);
-    delaySectionLabel.setBounds(delaySection.removeFromTop(sectionLabelHeight));
+    delaySectionLabel.setBounds(delaySection.removeFromTop(sectionLabelHeight).toNearestInt());
     auto delayTimeBounds = delaySection.removeFromLeft(knobWidth);
-    delayTimeLabel.setBounds(delayTimeBounds.removeFromTop(labelHeight));
-    delayTimeSlider.setBounds(delayTimeBounds);
+    delayTimeLabel.setBounds(delayTimeBounds.removeFromTop(labelHeight).toNearestInt());
+    delayTimeSlider.setBounds(delayTimeBounds.toNearestInt());
     auto delayFeedbackBounds = delaySection.removeFromLeft(knobWidth);
-    delayFeedbackLabel.setBounds(delayFeedbackBounds.removeFromTop(labelHeight));
-    delayFeedbackSlider.setBounds(delayFeedbackBounds);
+    delayFeedbackLabel.setBounds(delayFeedbackBounds.removeFromTop(labelHeight).toNearestInt());
+    delayFeedbackSlider.setBounds(delayFeedbackBounds.toNearestInt());
     auto delayMixBounds = delaySection.removeFromLeft(knobWidth);
-    delayMixLabel.setBounds(delayMixBounds.removeFromTop(labelHeight));
-    delayMixSlider.setBounds(delayMixBounds);
+    delayMixLabel.setBounds(delayMixBounds.removeFromTop(labelHeight).toNearestInt());
+    delayMixSlider.setBounds(delayMixBounds.toNearestInt());
+
+    // Reverb Row: Reverb controls (Room Size, Damping, Wet Level, Dry Level)
+    auto reverbSection = reverbRow.removeFromLeft(knobWidth * 4 + 20);
+    reverbSectionLabel.setBounds(reverbSection.removeFromTop(sectionLabelHeight).toNearestInt());
+    auto reverbRoomSizeBounds = reverbSection.removeFromLeft(knobWidth);
+    reverbRoomSizeLabel.setBounds(reverbRoomSizeBounds.removeFromTop(labelHeight).toNearestInt());
+    reverbRoomSizeSlider.setBounds(reverbRoomSizeBounds.toNearestInt());
+    auto reverbDampingBounds = reverbSection.removeFromLeft(knobWidth);
+    reverbDampingLabel.setBounds(reverbDampingBounds.removeFromTop(labelHeight).toNearestInt());
+    reverbDampingSlider.setBounds(reverbDampingBounds.toNearestInt());
+    auto reverbWetLevelBounds = reverbSection.removeFromLeft(knobWidth);
+    reverbWetLevelLabel.setBounds(reverbWetLevelBounds.removeFromTop(labelHeight).toNearestInt());
+    reverbWetLevelSlider.setBounds(reverbWetLevelBounds.toNearestInt());
+    auto reverbDryLevelBounds = reverbSection.removeFromLeft(knobWidth);
+    reverbDryLevelLabel.setBounds(reverbDryLevelBounds.removeFromTop(labelHeight).toNearestInt());
+    reverbDryLevelSlider.setBounds(reverbDryLevelBounds.toNearestInt());
 
     // Bottom Row: Filter controls (Cutoff, Resonance, ADSR Mix, ADSR Depth, Filter Type)
     auto cutoffBounds = bottomRow.removeFromLeft(knobWidth);
-    filterCutoffLabel.setBounds(cutoffBounds.removeFromTop(labelHeight));
-    filterCutoffSlider.setBounds(cutoffBounds);
+    filterCutoffLabel.setBounds(cutoffBounds.removeFromTop(labelHeight).toNearestInt());
+    filterCutoffSlider.setBounds(cutoffBounds.toNearestInt());
 
     auto resonanceBounds = bottomRow.removeFromLeft(knobWidth);
-    filterResonanceLabel.setBounds(resonanceBounds.removeFromTop(labelHeight));
-    filterResonanceSlider.setBounds(resonanceBounds);
+    filterResonanceLabel.setBounds(resonanceBounds.removeFromTop(labelHeight).toNearestInt());
+    filterResonanceSlider.setBounds(resonanceBounds.toNearestInt());
 
     auto adsrMixBounds = bottomRow.removeFromLeft(knobWidth);
-    filterADSRMixLabel.setBounds(adsrMixBounds.removeFromTop(labelHeight));
-    filterADSRMixSlider.setBounds(adsrMixBounds);
+    filterADSRMixLabel.setBounds(adsrMixBounds.removeFromTop(labelHeight).toNearestInt());
+    filterADSRMixSlider.setBounds(adsrMixBounds.toNearestInt());
 
     auto adsrDepthBounds = bottomRow.removeFromLeft(knobWidth);
-    filterADSRDepthLabel.setBounds(adsrDepthBounds.removeFromTop(labelHeight));
-    filterADSRDepthSlider.setBounds(adsrDepthBounds);
+    filterADSRDepthLabel.setBounds(adsrDepthBounds.removeFromTop(labelHeight).toNearestInt());
+    filterADSRDepthSlider.setBounds(adsrDepthBounds.toNearestInt());
 
     auto filterTypeBounds = bottomRow.removeFromLeft(comboWidth);
-    filterTypeLabel.setBounds(filterTypeBounds.removeFromTop(labelHeight));
-    filterTypeCombo.setBounds(filterTypeBounds.withHeight(knobHeight).withY(filterTypeLabel.getBottom()));
+    filterTypeLabel.setBounds(filterTypeBounds.removeFromTop(labelHeight).toNearestInt());
+    filterTypeCombo.setBounds(filterTypeBounds.withHeight(comboHeight).withY(filterTypeLabel.getBottom()).toNearestInt());
 }

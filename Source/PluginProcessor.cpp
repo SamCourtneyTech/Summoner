@@ -29,9 +29,14 @@ SummonerAudioProcessor::SummonerAudioProcessor()
     std::make_unique<juce::AudioParameterChoice>("lfoWaveform", "LFO Waveform",
         juce::StringArray("Sine", "Triangle", "Saw", "Square"), 0),
         // Delay parameters
-        std::make_unique<juce::AudioParameterFloat>("delayTime", "Delay Time", 0.0f, 1000.0f, 300.0f), // in milliseconds
+        std::make_unique<juce::AudioParameterFloat>("delayTime", "Delay Time", 0.0f, 1000.0f, 300.0f),
         std::make_unique<juce::AudioParameterFloat>("delayFeedback", "Delay Feedback", 0.0f, 0.9f, 0.3f),
         std::make_unique<juce::AudioParameterFloat>("delayMix", "Delay Mix", 0.0f, 1.0f, 0.5f),
+        // Reverb parameters
+        std::make_unique<juce::AudioParameterFloat>("reverbRoomSize", "Reverb Room Size", 0.0f, 1.0f, 0.5f),
+        std::make_unique<juce::AudioParameterFloat>("reverbDamping", "Reverb Damping", 0.0f, 1.0f, 0.5f),
+        std::make_unique<juce::AudioParameterFloat>("reverbWetLevel", "Reverb Wet Level", 0.0f, 1.0f, 0.33f),
+        std::make_unique<juce::AudioParameterFloat>("reverbDryLevel", "Reverb Dry Level", 0.0f, 1.0f, 0.4f),
         // Filter parameters
         std::make_unique<juce::AudioParameterFloat>("filterCutoff", "Filter Cutoff", 20.0f, 20000.0f, 7077.26f),
         std::make_unique<juce::AudioParameterFloat>("filterResonance", "Filter Resonance", 0.1f, 10.0f, 1.00f),
@@ -107,43 +112,6 @@ void SummonerAudioProcessor::changeProgramName(int index, const juce::String& ne
 {
 }
 
-void SummonerAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
-{
-    oscillator1.prepare(sampleRate);
-    oscillator2.prepare(sampleRate);
-    lfo.prepare(sampleRate);
-    oscillator1.setFrequency(currentFrequency, sampleRate);
-    oscillator2.setFrequency(currentFrequency, sampleRate);
-    oscillator1.setADSR(
-        *parameters.getRawParameterValue("attack"),
-        *parameters.getRawParameterValue("decay"),
-        *parameters.getRawParameterValue("sustain"),
-        *parameters.getRawParameterValue("release")
-    );
-    oscillator2.setADSR(
-        *parameters.getRawParameterValue("attack"),
-        *parameters.getRawParameterValue("decay"),
-        *parameters.getRawParameterValue("sustain"),
-        *parameters.getRawParameterValue("release")
-    );
-
-    currentSampleRate = sampleRate;
-    juce::dsp::ProcessSpec spec;
-    spec.sampleRate = sampleRate;
-    spec.maximumBlockSize = samplesPerBlock;
-    spec.numChannels = getTotalNumOutputChannels();
-    filter.prepare(spec);
-    updateFilter();
-
-    // Prepare delay buffer (max 2 seconds at current sample rate)
-    delayBufferSize = static_cast<int>(2.0 * sampleRate);
-    delayBuffer.setSize(2, delayBufferSize);
-    delayBuffer.clear();
-    delayWritePosition = 0;
-
-    DBG("Synth prepared with sample rate: " << sampleRate);
-}
-
 void SummonerAudioProcessor::updateFilter()
 {
     float cutoff = *parameters.getRawParameterValue("filterCutoff");
@@ -181,6 +149,51 @@ void SummonerAudioProcessor::updateFilter()
     }
 
     *filter.state = *newCoefficients;
+}
+
+void SummonerAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
+{
+    oscillator1.prepare(sampleRate);
+    oscillator2.prepare(sampleRate);
+    lfo.prepare(sampleRate);
+    oscillator1.setFrequency(currentFrequency, sampleRate);
+    oscillator2.setFrequency(currentFrequency, sampleRate);
+    oscillator1.setADSR(
+        *parameters.getRawParameterValue("attack"),
+        *parameters.getRawParameterValue("decay"),
+        *parameters.getRawParameterValue("sustain"),
+        *parameters.getRawParameterValue("release")
+    );
+    oscillator2.setADSR(
+        *parameters.getRawParameterValue("attack"),
+        *parameters.getRawParameterValue("decay"),
+        *parameters.getRawParameterValue("sustain"),
+        *parameters.getRawParameterValue("release")
+    );
+
+    currentSampleRate = sampleRate;
+    juce::dsp::ProcessSpec spec;
+    spec.sampleRate = sampleRate;
+    spec.maximumBlockSize = samplesPerBlock;
+    spec.numChannels = getTotalNumOutputChannels();
+    filter.prepare(spec);
+    updateFilter();
+
+    // Prepare delay buffer
+    delayBufferSize = static_cast<int>(2.0 * sampleRate);
+    delayBuffer.setSize(2, delayBufferSize);
+    delayBuffer.clear();
+    delayWritePosition = 0;
+
+    // Prepare reverb
+    reverb.reset();
+    reverbParams.roomSize = *parameters.getRawParameterValue("reverbRoomSize");
+    reverbParams.damping = *parameters.getRawParameterValue("reverbDamping");
+    reverbParams.wetLevel = *parameters.getRawParameterValue("reverbWetLevel");
+    reverbParams.dryLevel = *parameters.getRawParameterValue("reverbDryLevel");
+    reverb.setParameters(reverbParams);
+
+    DBG("Synth prepared with sample rate: " << sampleRate);
 }
 
 void SummonerAudioProcessor::releaseResources()
@@ -271,11 +284,17 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     case 3: lfo.setWaveform(LFO::Waveform::Square); break;
     }
 
-    // Delay parameters
     float delayTimeMs = *parameters.getRawParameterValue("delayTime");
     float delayFeedback = *parameters.getRawParameterValue("delayFeedback");
     float delayMix = *parameters.getRawParameterValue("delayMix");
     int delaySamples = static_cast<int>(delayTimeMs * currentSampleRate / 1000.0f);
+
+    // Update reverb parameters
+    reverbParams.roomSize = *parameters.getRawParameterValue("reverbRoomSize");
+    reverbParams.damping = *parameters.getRawParameterValue("reverbDamping");
+    reverbParams.wetLevel = *parameters.getRawParameterValue("reverbWetLevel");
+    reverbParams.dryLevel = *parameters.getRawParameterValue("reverbDryLevel");
+    reverb.setParameters(reverbParams);
 
     for (const auto metadata : midiMessages)
     {
@@ -337,26 +356,24 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     // Apply delay effect
     for (int sample = 0; sample < numSamples; ++sample)
     {
-        // Read from delay buffer
         int delayReadPosition = (delayWritePosition - delaySamples + delayBufferSize) % delayBufferSize;
         float delayedLeft = delayBuffer.getSample(0, delayReadPosition);
         float delayedRight = delayBuffer.getSample(1, delayReadPosition);
 
-        // Get the current input sample
         float inputLeft = leftChannel[sample];
         float inputRight = rightChannel[sample];
 
-        // Write to delay buffer with feedback
         delayBuffer.setSample(0, delayWritePosition, inputLeft + delayedLeft * delayFeedback);
         delayBuffer.setSample(1, delayWritePosition, inputRight + delayedRight * delayFeedback);
 
-        // Mix dry and wet signals
         leftChannel[sample] = inputLeft * (1.0f - delayMix) + delayedLeft * delayMix;
         rightChannel[sample] = inputRight * (1.0f - delayMix) + delayedRight * delayMix;
 
-        // Update write position
         delayWritePosition = (delayWritePosition + 1) % delayBufferSize;
     }
+
+    // Apply reverb effect
+    reverb.processStereo(leftChannel, rightChannel, numSamples);
 }
 
 bool SummonerAudioProcessor::hasEditor() const
