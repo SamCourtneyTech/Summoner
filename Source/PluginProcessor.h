@@ -47,7 +47,7 @@ private:
     juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>> filter;
     double currentSampleRate = 0.0;
 
-    // Delay buffer
+    // Delay buffer for the main delay effect
     juce::AudioBuffer<float> delayBuffer;
     int delayBufferSize = 0;
     int delayWritePosition = 0;
@@ -66,6 +66,16 @@ private:
 
     // Chorus
     juce::dsp::Chorus<float> chorus;
+
+    // Phaser
+    juce::dsp::Phaser<float> phaser;
+
+    // Custom Flanger implementation
+    juce::AudioBuffer<float> flangerBuffer; // Buffer for flanger delay line
+    int flangerBufferSize = 0;
+    int flangerWritePosition = 0;
+    LFO flangerLFO; // LFO for flanger modulation
+    float flangerPhase = 0.0f;
 
     // Track last parameter values for filter updates
     float lastFilterCutoff = -1.0f;

@@ -45,6 +45,14 @@ private:
     juce::Slider chorusRateSlider, chorusDepthSlider, chorusMixSlider, chorusDelaySlider;
     juce::Label chorusRateLabel, chorusDepthLabel, chorusMixLabel, chorusDelayLabel, chorusSectionLabel;
 
+    // Phaser controls
+    juce::Slider phaserRateSlider, phaserDepthSlider, phaserMixSlider;
+    juce::Label phaserRateLabel, phaserDepthLabel, phaserMixLabel, phaserSectionLabel;
+
+    // Flanger controls
+    juce::Slider flangerRateSlider, flangerDepthSlider, flangerMixSlider, flangerDelaySlider;
+    juce::Label flangerRateLabel, flangerDepthLabel, flangerMixLabel, flangerDelayLabel, flangerSectionLabel;
+
     // Reverb controls
     juce::Slider reverbRoomSizeSlider, reverbDampingSlider, reverbWetLevelSlider, reverbDryLevelSlider;
     juce::Label reverbRoomSizeLabel, reverbDampingLabel, reverbWetLevelLabel, reverbDryLevelLabel, reverbSectionLabel;
@@ -97,6 +105,17 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> chorusDepthAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> chorusMixAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> chorusDelayAttachment;
+
+    // Phaser attachments
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> phaserRateAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> phaserDepthAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> phaserMixAttachment;
+
+    // Flanger attachments
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> flangerRateAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> flangerDepthAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> flangerMixAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> flangerDelayAttachment;
 
     // Reverb attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> reverbRoomSizeAttachment;

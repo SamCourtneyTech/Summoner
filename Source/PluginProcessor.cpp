@@ -41,6 +41,15 @@ SummonerAudioProcessor::SummonerAudioProcessor()
         std::make_unique<juce::AudioParameterFloat>("chorusDepth", "Chorus Depth", 0.0f, 1.0f, 0.5f),
         std::make_unique<juce::AudioParameterFloat>("chorusMix", "Chorus Mix", 0.0f, 1.0f, 0.5f),
         std::make_unique<juce::AudioParameterFloat>("chorusDelay", "Chorus Delay", 1.0f, 20.0f, 7.0f),
+        // Phaser parameters
+        std::make_unique<juce::AudioParameterFloat>("phaserRate", "Phaser Rate", 0.1f, 10.0f, 0.5f),
+        std::make_unique<juce::AudioParameterFloat>("phaserDepth", "Phaser Depth", 0.0f, 1.0f, 0.5f),
+        std::make_unique<juce::AudioParameterFloat>("phaserMix", "Phaser Mix", 0.0f, 1.0f, 0.5f),
+        // Flanger parameters
+        std::make_unique<juce::AudioParameterFloat>("flangerRate", "Flanger Rate", 0.1f, 10.0f, 0.5f),
+        std::make_unique<juce::AudioParameterFloat>("flangerDepth", "Flanger Depth", 0.0f, 1.0f, 0.5f),
+        std::make_unique<juce::AudioParameterFloat>("flangerMix", "Flanger Mix", 0.0f, 1.0f, 0.5f),
+        std::make_unique<juce::AudioParameterFloat>("flangerDelay", "Flanger Delay", 0.1f, 5.0f, 1.0f),
         // Reverb parameters
         std::make_unique<juce::AudioParameterFloat>("reverbRoomSize", "Reverb Room Size", 0.0f, 1.0f, 0.5f),
         std::make_unique<juce::AudioParameterFloat>("reverbDamping", "Reverb Damping", 0.0f, 1.0f, 0.5f),
@@ -194,11 +203,19 @@ void SummonerAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBloc
     filter.prepare(spec);
     updateFilter();
 
-    // Prepare delay buffer
+    // Prepare delay buffer for the main delay effect
     delayBufferSize = static_cast<int>(2.0 * sampleRate);
     delayBuffer.setSize(2, delayBufferSize);
     delayBuffer.clear();
     delayWritePosition = 0;
+
+    // Prepare flanger buffer (shorter delay, max 5 ms)
+    flangerBufferSize = static_cast<int>(0.005 * sampleRate) + 1; // 5 ms max delay
+    flangerBuffer.setSize(2, flangerBufferSize);
+    flangerBuffer.clear();
+    flangerWritePosition = 0;
+    flangerLFO.prepare(sampleRate);
+    flangerLFO.setWaveform(LFO::Waveform::Sine); // Use a sine wave for flanger modulation
 
     // Prepare reverb
     reverb.reset();
@@ -229,6 +246,12 @@ void SummonerAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBloc
     chorus.setDepth(*parameters.getRawParameterValue("chorusDepth"));
     chorus.setMix(*parameters.getRawParameterValue("chorusMix"));
     chorus.setCentreDelay(*parameters.getRawParameterValue("chorusDelay"));
+
+    // Prepare phaser
+    phaser.prepare(spec);
+    phaser.setRate(*parameters.getRawParameterValue("phaserRate"));
+    phaser.setDepth(*parameters.getRawParameterValue("phaserDepth"));
+    phaser.setMix(*parameters.getRawParameterValue("phaserMix"));
 
     DBG("Synth prepared with sample rate: " << sampleRate);
 }
@@ -359,6 +382,18 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     chorus.setMix(*parameters.getRawParameterValue("chorusMix"));
     chorus.setCentreDelay(*parameters.getRawParameterValue("chorusDelay"));
 
+    // Phaser parameters
+    phaser.setRate(*parameters.getRawParameterValue("phaserRate"));
+    phaser.setDepth(*parameters.getRawParameterValue("phaserDepth"));
+    phaser.setMix(*parameters.getRawParameterValue("phaserMix"));
+
+    // Flanger parameters
+    float flangerRate = *parameters.getRawParameterValue("flangerRate");
+    float flangerDepth = *parameters.getRawParameterValue("flangerDepth");
+    float flangerMix = *parameters.getRawParameterValue("flangerMix");
+    float flangerDelayMs = *parameters.getRawParameterValue("flangerDelay");
+    flangerLFO.setFrequency(flangerRate);
+
     for (const auto metadata : midiMessages)
     {
         auto msg = metadata.getMessage();
@@ -457,6 +492,43 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
 
     // Apply chorus effect
     chorus.process(context);
+
+    // Apply phaser effect
+    phaser.process(context);
+
+    // Apply custom flanger effect
+    for (int sample = 0; sample < numSamples; ++sample)
+    {
+        // Get the current delay time modulated by the LFO
+        float lfoValue = flangerLFO.getNextSample(); // -1 to 1
+        float delayModulation = (lfoValue * flangerDepth * flangerDelayMs * 0.5f); // Modulation amount in ms
+        float totalDelayMs = flangerDelayMs + delayModulation;
+        float delaySamplesFloat = totalDelayMs * currentSampleRate / 1000.0f;
+
+        // Calculate read position with linear interpolation
+        float readPosition = flangerWritePosition - delaySamplesFloat;
+        if (readPosition < 0)
+            readPosition += flangerBufferSize;
+
+        int readIndex = static_cast<int>(readPosition);
+        float fraction = readPosition - readIndex;
+        int nextReadIndex = (readIndex + 1) % flangerBufferSize;
+
+        // Linear interpolation for left and right channels
+        float delayedLeft = flangerBuffer.getSample(0, readIndex) + fraction * (flangerBuffer.getSample(0, nextReadIndex) - flangerBuffer.getSample(0, readIndex));
+        float delayedRight = flangerBuffer.getSample(1, readIndex) + fraction * (flangerBuffer.getSample(1, nextReadIndex) - flangerBuffer.getSample(1, readIndex));
+
+        // Write the current sample to the flanger buffer
+        flangerBuffer.setSample(0, flangerWritePosition, leftChannel[sample]);
+        flangerBuffer.setSample(1, flangerWritePosition, rightChannel[sample]);
+
+        // Mix the delayed signal with the dry signal
+        leftChannel[sample] = leftChannel[sample] * (1.0f - flangerMix) + delayedLeft * flangerMix;
+        rightChannel[sample] = rightChannel[sample] * (1.0f - flangerMix) + delayedRight * flangerMix;
+
+        // Increment the write position
+        flangerWritePosition = (flangerWritePosition + 1) % flangerBufferSize;
+    }
 
     // Apply reverb effect
     reverb.processStereo(leftChannel, rightChannel, numSamples);

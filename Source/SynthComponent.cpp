@@ -216,6 +216,58 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     chorusDelayLabel.setText("Delay", juce::dontSendNotification);
     addAndMakeVisible(chorusDelayLabel);
 
+    // Phaser Section
+    phaserSectionLabel.setText("Phaser", juce::dontSendNotification);
+    phaserSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
+    addAndMakeVisible(phaserSectionLabel);
+
+    phaserRateSlider.setSliderStyle(juce::Slider::Rotary);
+    phaserRateSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(phaserRateSlider);
+    phaserRateLabel.setText("Rate", juce::dontSendNotification);
+    addAndMakeVisible(phaserRateLabel);
+
+    phaserDepthSlider.setSliderStyle(juce::Slider::Rotary);
+    phaserDepthSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(phaserDepthSlider);
+    phaserDepthLabel.setText("Depth", juce::dontSendNotification);
+    addAndMakeVisible(phaserDepthLabel);
+
+    phaserMixSlider.setSliderStyle(juce::Slider::Rotary);
+    phaserMixSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(phaserMixSlider);
+    phaserMixLabel.setText("Mix", juce::dontSendNotification);
+    addAndMakeVisible(phaserMixLabel);
+
+    // Flanger Section
+    flangerSectionLabel.setText("Flanger", juce::dontSendNotification);
+    flangerSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
+    addAndMakeVisible(flangerSectionLabel);
+
+    flangerRateSlider.setSliderStyle(juce::Slider::Rotary);
+    flangerRateSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(flangerRateSlider);
+    flangerRateLabel.setText("Rate", juce::dontSendNotification);
+    addAndMakeVisible(flangerRateLabel);
+
+    flangerDepthSlider.setSliderStyle(juce::Slider::Rotary);
+    flangerDepthSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(flangerDepthSlider);
+    flangerDepthLabel.setText("Depth", juce::dontSendNotification);
+    addAndMakeVisible(flangerDepthLabel);
+
+    flangerMixSlider.setSliderStyle(juce::Slider::Rotary);
+    flangerMixSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(flangerMixSlider);
+    flangerMixLabel.setText("Mix", juce::dontSendNotification);
+    addAndMakeVisible(flangerMixLabel);
+
+    flangerDelaySlider.setSliderStyle(juce::Slider::Rotary);
+    flangerDelaySlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(flangerDelaySlider);
+    flangerDelayLabel.setText("Delay", juce::dontSendNotification);
+    addAndMakeVisible(flangerDelayLabel);
+
     // Reverb Section
     reverbSectionLabel.setText("Reverb", juce::dontSendNotification);
     reverbSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
@@ -354,6 +406,15 @@ void SynthComponent::initAttachments() {
     chorusMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "chorusMix", chorusMixSlider);
     chorusDelayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "chorusDelay", chorusDelaySlider);
 
+    phaserRateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "phaserRate", phaserRateSlider);
+    phaserDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "phaserDepth", phaserDepthSlider);
+    phaserMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "phaserMix", phaserMixSlider);
+
+    flangerRateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "flangerRate", flangerRateSlider);
+    flangerDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "flangerDepth", flangerDepthSlider);
+    flangerMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "flangerMix", flangerMixSlider);
+    flangerDelayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "flangerDelay", flangerDelaySlider);
+
     reverbRoomSizeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "reverbRoomSize", reverbRoomSizeSlider);
     reverbDampingAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "reverbDamping", reverbDampingSlider);
     reverbWetLevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "reverbWetLevel", reverbWetLevelSlider);
@@ -407,10 +468,14 @@ void SynthComponent::resized() {
     middleColumn.removeFromTop(20);
     auto compressorRow = middleColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
 
-    // Right Column: Delay, Chorus, Reverb
+    // Right Column: Delay, Chorus, Phaser, Flanger, Reverb
     auto delayRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
     rightColumn.removeFromTop(20);
     auto chorusRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    rightColumn.removeFromTop(20);
+    auto phaserRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    rightColumn.removeFromTop(20);
+    auto flangerRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
     rightColumn.removeFromTop(20);
     auto reverbRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
 
@@ -557,6 +622,35 @@ void SynthComponent::resized() {
     auto chorusDelayBounds = chorusSection.removeFromLeft(knobWidth);
     chorusDelayLabel.setBounds(chorusDelayBounds.removeFromTop(labelHeight).toNearestInt());
     chorusDelaySlider.setBounds(chorusDelayBounds.toNearestInt());
+
+    // Phaser Row: Rate, Depth, Mix
+    auto phaserSection = phaserRow.removeFromLeft(knobWidth * 3 + 20);
+    phaserSectionLabel.setBounds(phaserSection.removeFromTop(sectionLabelHeight).toNearestInt());
+    auto phaserRateBounds = phaserSection.removeFromLeft(knobWidth);
+    phaserRateLabel.setBounds(phaserRateBounds.removeFromTop(labelHeight).toNearestInt());
+    phaserRateSlider.setBounds(phaserRateBounds.toNearestInt());
+    auto phaserDepthBounds = phaserSection.removeFromLeft(knobWidth);
+    phaserDepthLabel.setBounds(phaserDepthBounds.removeFromTop(labelHeight).toNearestInt());
+    phaserDepthSlider.setBounds(phaserDepthBounds.toNearestInt());
+    auto phaserMixBounds = phaserSection.removeFromLeft(knobWidth);
+    phaserMixLabel.setBounds(phaserMixBounds.removeFromTop(labelHeight).toNearestInt());
+    phaserMixSlider.setBounds(phaserMixBounds.toNearestInt());
+
+    // Flanger Row: Rate, Depth, Mix, Delay
+    auto flangerSection = flangerRow.removeFromLeft(knobWidth * 4 + 20);
+    flangerSectionLabel.setBounds(flangerSection.removeFromTop(sectionLabelHeight).toNearestInt());
+    auto flangerRateBounds = flangerSection.removeFromLeft(knobWidth);
+    flangerRateLabel.setBounds(flangerRateBounds.removeFromTop(labelHeight).toNearestInt());
+    flangerRateSlider.setBounds(flangerRateBounds.toNearestInt());
+    auto flangerDepthBounds = flangerSection.removeFromLeft(knobWidth);
+    flangerDepthLabel.setBounds(flangerDepthBounds.removeFromTop(labelHeight).toNearestInt());
+    flangerDepthSlider.setBounds(flangerDepthBounds.toNearestInt());
+    auto flangerMixBounds = flangerSection.removeFromLeft(knobWidth);
+    flangerMixLabel.setBounds(flangerMixBounds.removeFromTop(labelHeight).toNearestInt());
+    flangerMixSlider.setBounds(flangerMixBounds.toNearestInt());
+    auto flangerDelayBounds = flangerSection.removeFromLeft(knobWidth);
+    flangerDelayLabel.setBounds(flangerDelayBounds.removeFromTop(labelHeight).toNearestInt());
+    flangerDelaySlider.setBounds(flangerDelayBounds.toNearestInt());
 
     // Reverb Row: Room Size, Damping, Wet Level, Dry Level
     auto reverbSection = reverbRow.removeFromLeft(knobWidth * 4 + 20);
