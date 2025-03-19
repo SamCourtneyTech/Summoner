@@ -122,7 +122,6 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
 {
     juce::ScopedNoDenormals noDenormals;
     auto numSamples = buffer.getNumSamples();
-
     buffer.clear();
 
     oscillator.setADSR(
@@ -133,12 +132,20 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     );
 
     float waveformValue = *parameters.getRawParameterValue("waveform");
-    if (waveformValue <= 0.33f)
+    if (waveformValue <= 0.16f)
         oscillator.setWaveform(Oscillator::Waveform::Sine);
-    else if (waveformValue <= 0.66f)
+    else if (waveformValue <= 0.32f)
         oscillator.setWaveform(Oscillator::Waveform::Saw);
-    else
+    else if (waveformValue <= 0.48f)
         oscillator.setWaveform(Oscillator::Waveform::Square);
+    else if (waveformValue <= 0.64f)
+        oscillator.setWaveform(Oscillator::Waveform::Triangle);
+    else if (waveformValue <= 0.80f)
+        oscillator.setWaveform(Oscillator::Waveform::Pulse25);
+    else if (waveformValue <= 0.90f)
+        oscillator.setWaveform(Oscillator::Waveform::WhiteNoise);
+    else
+        oscillator.setWaveform(Oscillator::Waveform::PinkNoise);
 
     for (const auto metadata : midiMessages)
     {
@@ -148,7 +155,6 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
             currentFrequency = juce::MidiMessage::getMidiNoteInHertz(msg.getNoteNumber());
             oscillator.setFrequency(currentFrequency, getSampleRate());
             oscillator.noteOn();
-            DBG("Note On: " << currentFrequency << " Hz");
         }
         else if (msg.isNoteOff())
         {
@@ -165,6 +171,7 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
         rightChannel[sample] = output;
     }
 }
+
 
 bool SummonerAudioProcessor::hasEditor() const
 {
