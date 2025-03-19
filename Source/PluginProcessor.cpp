@@ -21,15 +21,20 @@ SummonerAudioProcessor::SummonerAudioProcessor()
     std::make_unique<juce::AudioParameterFloat>("waveform", "Waveform", 0.0f, 1.0f, 0.20f),
     std::make_unique<juce::AudioParameterFloat>("waveform2", "Waveform 2", 0.0f, 1.0f, 0.20f),
     std::make_unique<juce::AudioParameterFloat>("detune", "Detune", -100.0f, 100.0f, 0.0f),
-    std::make_unique<juce::AudioParameterFloat>("osc1Level", "Osc1 Level", 0.0f, 1.0f, 0.5f), // New parameter
-    std::make_unique<juce::AudioParameterFloat>("osc2Level", "Osc2 Level", 0.0f, 1.0f, 0.5f), // New parameter
-    // Filter parameters
-    std::make_unique<juce::AudioParameterFloat>("filterCutoff", "Filter Cutoff", 20.0f, 20000.0f, 7077.26f),
-    std::make_unique<juce::AudioParameterFloat>("filterResonance", "Filter Resonance", 0.1f, 10.0f, 1.00f),
-    std::make_unique<juce::AudioParameterFloat>("filterADSRMix", "Filter ADSR Mix", 0.0f, 1.0f, 1.00f),
-    std::make_unique<juce::AudioParameterFloat>("filterADSRDepth", "Filter ADSR Depth", 0.0f, 10000.0f, 10000.0f),
-    std::make_unique<juce::AudioParameterChoice>("filterType", "Filter Type",
-        juce::StringArray("Low Pass", "High Pass", "Band Pass", "Notch"), 0)
+    std::make_unique<juce::AudioParameterFloat>("osc1Level", "Osc1 Level", 0.0f, 1.0f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat>("osc2Level", "Osc2 Level", 0.0f, 1.0f, 0.5f),
+    // LFO parameters
+    std::make_unique<juce::AudioParameterFloat>("lfoRate", "LFO Rate", 0.1f, 20.0f, 1.0f),
+    std::make_unique<juce::AudioParameterFloat>("lfoDepth", "LFO Depth", 0.0f, 5000.0f, 0.0f),
+    std::make_unique<juce::AudioParameterChoice>("lfoWaveform", "LFO Waveform",
+        juce::StringArray("Sine", "Triangle", "Saw", "Square"), 0),
+        // Filter parameters
+        std::make_unique<juce::AudioParameterFloat>("filterCutoff", "Filter Cutoff", 20.0f, 20000.0f, 7077.26f),
+        std::make_unique<juce::AudioParameterFloat>("filterResonance", "Filter Resonance", 0.1f, 10.0f, 1.00f),
+        std::make_unique<juce::AudioParameterFloat>("filterADSRMix", "Filter ADSR Mix", 0.0f, 1.0f, 1.00f),
+        std::make_unique<juce::AudioParameterFloat>("filterADSRDepth", "Filter ADSR Depth", 0.0f, 10000.0f, 10000.0f),
+        std::make_unique<juce::AudioParameterChoice>("filterType", "Filter Type",
+            juce::StringArray("Low Pass", "High Pass", "Band Pass", "Notch"), 0)
         })
 {
 }
@@ -101,9 +106,10 @@ void SummonerAudioProcessor::changeProgramName(int index, const juce::String& ne
 void SummonerAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
     oscillator1.prepare(sampleRate);
-    oscillator2.prepare(sampleRate); // Prepare the second oscillator
+    oscillator2.prepare(sampleRate);
+    lfo.prepare(sampleRate); // Prepare the LFO
     oscillator1.setFrequency(currentFrequency, sampleRate);
-    oscillator2.setFrequency(currentFrequency, sampleRate); // Same frequency for now
+    oscillator2.setFrequency(currentFrequency, sampleRate);
     oscillator1.setADSR(
         *parameters.getRawParameterValue("attack"),
         *parameters.getRawParameterValue("decay"),
@@ -117,14 +123,13 @@ void SummonerAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBloc
         *parameters.getRawParameterValue("release")
     );
 
-    // Prepare the filter
     currentSampleRate = sampleRate;
     juce::dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.maximumBlockSize = samplesPerBlock;
     spec.numChannels = getTotalNumOutputChannels();
     filter.prepare(spec);
-    updateFilter(); // Initial filter update
+    updateFilter();
 
     DBG("Synth prepared with sample rate: " << sampleRate);
 }
@@ -243,6 +248,20 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     float osc1Level = *parameters.getRawParameterValue("osc1Level");
     float osc2Level = *parameters.getRawParameterValue("osc2Level");
 
+    // LFO parameters
+    float lfoRate = *parameters.getRawParameterValue("lfoRate");
+    float lfoDepth = *parameters.getRawParameterValue("lfoDepth");
+    int lfoWaveformIdx = parameters.getParameter("lfoWaveform")->convertFrom0to1(
+        parameters.getParameter("lfoWaveform")->getValue()
+    );
+    lfo.setFrequency(lfoRate);
+    switch (lfoWaveformIdx) {
+    case 0: lfo.setWaveform(LFO::Waveform::Sine); break;
+    case 1: lfo.setWaveform(LFO::Waveform::Triangle); break;
+    case 2: lfo.setWaveform(LFO::Waveform::Saw); break;
+    case 3: lfo.setWaveform(LFO::Waveform::Square); break;
+    }
+
     for (const auto metadata : midiMessages)
     {
         auto msg = metadata.getMessage();
@@ -274,16 +293,20 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     {
         float osc1Output = oscillator1.getNextSample() * osc1Level;
         float osc2Output = oscillator2.getNextSample() * osc2Level;
-        float mixedOutput = (osc1Output + osc2Output) * 0.5f; // Sum and scale to avoid clipping
+        float mixedOutput = (osc1Output + osc2Output) * 0.5f;
 
+        // Compute the modulated cutoff (ADSR + LFO)
         float modulatedCutoff = baseCutoff;
         if (filterADSRMix > 0.0f)
         {
             float envAmount = oscillator1.getEnvelopeValue();
             float modulationAmount = envAmount * filterADSRDepth;
             modulatedCutoff = baseCutoff + (modulationAmount * filterADSRMix);
-            modulatedCutoff = juce::jlimit(20.0f, 20000.0f, modulatedCutoff);
         }
+        // Add LFO modulation to the cutoff
+        float lfoAmount = lfo.getNextSample() * lfoDepth;
+        modulatedCutoff += lfoAmount;
+        modulatedCutoff = juce::jlimit(20.0f, 20000.0f, modulatedCutoff);
 
         lastFilterCutoff = -1.0f;
         *parameters.getRawParameterValue("filterCutoff") = modulatedCutoff;

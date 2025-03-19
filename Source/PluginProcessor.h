@@ -1,6 +1,7 @@
 #pragma once
 #include <JuceHeader.h>
 #include "Oscillator.h"
+#include "LFO.h"
 
 class SummonerAudioProcessor : public juce::AudioProcessor
 {
@@ -39,6 +40,7 @@ public:
 private:
     Oscillator oscillator1;
     Oscillator oscillator2;
+    LFO lfo; // New LFO
     float currentFrequency = 440.0f;
 
     // Filter object

@@ -25,8 +25,13 @@ private:
     juce::Label oscillator1Label, oscillator2Label;
 
     // Detune and level controls
-    juce::Slider detuneSlider, osc1LevelSlider, osc2LevelSlider; // Replaced oscMixSlider with osc1LevelSlider and osc2LevelSlider
-    juce::Label detuneLabel, osc1LevelLabel, osc2LevelLabel; // Replaced oscMixLabel with osc1LevelLabel and osc2LevelLabel
+    juce::Slider detuneSlider, osc1LevelSlider, osc2LevelSlider;
+    juce::Label detuneLabel, osc1LevelLabel, osc2LevelLabel;
+
+    // LFO controls
+    juce::Slider lfoRateSlider, lfoDepthSlider;
+    juce::ComboBox lfoWaveformCombo;
+    juce::Label lfoRateLabel, lfoDepthLabel, lfoWaveformLabel, lfoSectionLabel;
 
     // Filter controls
     juce::Slider filterCutoffSlider, filterResonanceSlider, filterADSRMixSlider, filterADSRDepthSlider;
@@ -45,8 +50,13 @@ private:
 
     // Attachments for detune and levels
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> detuneAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc1LevelAttachment; // New
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc2LevelAttachment; // New
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc1LevelAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc2LevelAttachment;
+
+    // LFO attachments
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> lfoRateAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> lfoDepthAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> lfoWaveformAttachment;
 
     // Filter attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterCutoffAttachment;

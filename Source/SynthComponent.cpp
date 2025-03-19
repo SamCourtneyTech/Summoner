@@ -110,6 +110,32 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     detuneLabel.setText("Detune", juce::dontSendNotification);
     addAndMakeVisible(detuneLabel);
 
+    // LFO Section
+    lfoSectionLabel.setText("LFO (Filter Cutoff)", juce::dontSendNotification);
+    lfoSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
+    addAndMakeVisible(lfoSectionLabel);
+
+    lfoRateSlider.setSliderStyle(juce::Slider::Rotary);
+    lfoRateSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(lfoRateSlider);
+    lfoRateLabel.setText("Rate", juce::dontSendNotification);
+    addAndMakeVisible(lfoRateLabel);
+
+    lfoDepthSlider.setSliderStyle(juce::Slider::Rotary);
+    lfoDepthSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(lfoDepthSlider);
+    lfoDepthLabel.setText("Depth", juce::dontSendNotification);
+    addAndMakeVisible(lfoDepthLabel);
+
+    lfoWaveformCombo.addItem("Sine", 1);
+    lfoWaveformCombo.addItem("Triangle", 2);
+    lfoWaveformCombo.addItem("Saw", 3);
+    lfoWaveformCombo.addItem("Square", 4);
+    lfoWaveformCombo.setSelectedId(1, juce::dontSendNotification);
+    addAndMakeVisible(lfoWaveformCombo);
+    lfoWaveformLabel.setText("Waveform", juce::dontSendNotification);
+    addAndMakeVisible(lfoWaveformLabel);
+
     // Filter Cutoff
     filterCutoffSlider.setSliderStyle(juce::Slider::Rotary);
     filterCutoffSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -162,6 +188,10 @@ void SynthComponent::initAttachments() {
     osc1LevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc1Level", osc1LevelSlider);
     osc2LevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc2Level", osc2LevelSlider);
 
+    lfoRateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "lfoRate", lfoRateSlider);
+    lfoDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "lfoDepth", lfoDepthSlider);
+    lfoWaveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(params, "lfoWaveform", lfoWaveformCombo);
+
     filterCutoffAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterCutoff", filterCutoffSlider);
     filterResonanceAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterResonance", filterResonanceSlider);
     filterADSRMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterADSRMix", filterADSRMixSlider);
@@ -182,10 +212,12 @@ void SynthComponent::resized() {
     int sectionLabelHeight = 30;
     int comboWidth = 120;
 
-    // Split the bounds into three rows with some spacing between them
+    // Split the bounds into four rows with some spacing between them
     auto topRow = bounds.removeFromTop(labelHeight + knobHeight);
     bounds.removeFromTop(20);
-    auto middleRow = bounds.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    auto oscRow = bounds.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    bounds.removeFromTop(20);
+    auto lfoRow = bounds.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
     bounds.removeFromTop(20);
     auto bottomRow = bounds.removeFromTop(labelHeight + knobHeight);
 
@@ -206,9 +238,9 @@ void SynthComponent::resized() {
     releaseLabel.setBounds(releaseBounds.removeFromTop(labelHeight));
     releaseSlider.setBounds(releaseBounds);
 
-    // Middle Row: Oscillator controls (Waveform 1, Osc1 Level, Waveform 2, Osc2 Level, Detune)
+    // Oscillator Row: Oscillator controls (Waveform 1, Osc1 Level, Waveform 2, Osc2 Level, Detune)
     // Oscillator 1 Section
-    auto osc1Section = middleRow.removeFromLeft(knobWidth * 2 + 20);
+    auto osc1Section = oscRow.removeFromLeft(knobWidth * 2 + 20);
     oscillator1Label.setBounds(osc1Section.removeFromTop(sectionLabelHeight));
     auto waveformBounds = osc1Section.removeFromLeft(knobWidth);
     waveformLabel.setBounds(waveformBounds.removeFromTop(labelHeight));
@@ -218,7 +250,7 @@ void SynthComponent::resized() {
     osc1LevelSlider.setBounds(osc1LevelBounds);
 
     // Oscillator 2 Section
-    auto osc2Section = middleRow.removeFromLeft(knobWidth * 2 + 20);
+    auto osc2Section = oscRow.removeFromLeft(knobWidth * 2 + 20);
     oscillator2Label.setBounds(osc2Section.removeFromTop(sectionLabelHeight));
     auto waveform2Bounds = osc2Section.removeFromLeft(knobWidth);
     waveform2Label.setBounds(waveform2Bounds.removeFromTop(labelHeight));
@@ -228,9 +260,22 @@ void SynthComponent::resized() {
     osc2LevelSlider.setBounds(osc2LevelBounds);
 
     // Detune
-    auto detuneBounds = middleRow.removeFromLeft(knobWidth);
+    auto detuneBounds = oscRow.removeFromLeft(knobWidth);
     detuneLabel.setBounds(detuneBounds.removeFromTop(labelHeight));
     detuneSlider.setBounds(detuneBounds);
+
+    // LFO Row: LFO controls (Rate, Depth, Waveform)
+    auto lfoSection = lfoRow.removeFromLeft(knobWidth * 3 + 40);
+    lfoSectionLabel.setBounds(lfoSection.removeFromTop(sectionLabelHeight));
+    auto lfoRateBounds = lfoSection.removeFromLeft(knobWidth);
+    lfoRateLabel.setBounds(lfoRateBounds.removeFromTop(labelHeight));
+    lfoRateSlider.setBounds(lfoRateBounds);
+    auto lfoDepthBounds = lfoSection.removeFromLeft(knobWidth);
+    lfoDepthLabel.setBounds(lfoDepthBounds.removeFromTop(labelHeight));
+    lfoDepthSlider.setBounds(lfoDepthBounds);
+    auto lfoWaveformBounds = lfoSection.removeFromLeft(comboWidth);
+    lfoWaveformLabel.setBounds(lfoWaveformBounds.removeFromTop(labelHeight));
+    lfoWaveformCombo.setBounds(lfoWaveformBounds.withHeight(knobHeight).withY(lfoWaveformLabel.getBottom()));
 
     // Bottom Row: Filter controls (Cutoff, Resonance, ADSR Mix, ADSR Depth, Filter Type)
     auto cutoffBounds = bottomRow.removeFromLeft(knobWidth);
