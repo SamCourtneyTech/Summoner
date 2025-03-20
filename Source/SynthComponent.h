@@ -28,6 +28,14 @@ private:
     juce::Slider detuneSlider, osc1LevelSlider, osc2LevelSlider;
     juce::Label detuneLabel, osc1LevelLabel, osc2LevelLabel;
 
+    // Number of voices (now polyphony)
+    juce::Slider numVoicesSlider;
+    juce::Label polyphonyLabel; // Renamed from numVoicesLabel
+
+    // Unison controls
+    juce::Slider unisonVoicesSlider, unisonDetuneSlider;
+    juce::Label unisonVoicesLabel, unisonDetuneLabel;
+
     // LFO controls
     juce::Slider lfoRateSlider, lfoDepthSlider;
     juce::ComboBox lfoWaveformCombo;
@@ -70,72 +78,48 @@ private:
     juce::Slider compressorThresholdSlider, compressorRatioSlider, compressorAttackSlider, compressorReleaseSlider, compressorMakeupGainSlider;
     juce::Label compressorThresholdLabel, compressorRatioLabel, compressorAttackLabel, compressorReleaseLabel, compressorMakeupGainLabel, compressorSectionLabel;
 
-    // New controls for number of voices
-    juce::Slider numVoicesSlider;
-    juce::Label numVoicesLabel;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> numVoicesAttachment;
-
-    // Existing attachments
+    // Attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> attackAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> decayAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> sustainAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> releaseAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> waveformAttachment;
-
-    // Second oscillator attachment
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> waveform2Attachment;
-
-    // Attachments for detune and levels
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> detuneAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc1LevelAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc2LevelAttachment;
-
-    // LFO attachments
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> numVoicesAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> unisonVoicesAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> unisonDetuneAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> lfoRateAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> lfoDepthAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> lfoWaveformAttachment;
-
-    // Distortion attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> distortionDriveAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> distortionToneAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> distortionMixAttachment;
-
-    // Delay attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> delayTimeAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> delayFeedbackAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> delayMixAttachment;
-
-    // Chorus attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> chorusRateAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> chorusDepthAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> chorusMixAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> chorusDelayAttachment;
-
-    // Phaser attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> phaserRateAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> phaserDepthAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> phaserMixAttachment;
-
-    // Flanger attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> flangerRateAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> flangerDepthAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> flangerMixAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> flangerDelayAttachment;
-
-    // Reverb attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> reverbRoomSizeAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> reverbDampingAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> reverbWetLevelAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> reverbDryLevelAttachment;
-
-    // Filter attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterCutoffAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterResonanceAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterADSRMixAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterADSRDepthAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> filterTypeAttachment;
-
-    // Compressor attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> compressorThresholdAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> compressorRatioAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> compressorAttackAttachment;

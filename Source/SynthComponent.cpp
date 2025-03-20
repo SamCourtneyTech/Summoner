@@ -115,12 +115,26 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     detuneLabel.setText("Detune", juce::dontSendNotification);
     addAndMakeVisible(detuneLabel);
 
-    // Number of Voices
+    // Number of Voices (now Polyphony)
     numVoicesSlider.setSliderStyle(juce::Slider::Rotary);
     numVoicesSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(numVoicesSlider);
-    numVoicesLabel.setText("Voices", juce::dontSendNotification);
-    addAndMakeVisible(numVoicesLabel);
+    polyphonyLabel.setText("Polyphony", juce::dontSendNotification); // Changed from "Voices"
+    addAndMakeVisible(polyphonyLabel);
+
+    // Unison Voices
+    unisonVoicesSlider.setSliderStyle(juce::Slider::Rotary);
+    unisonVoicesSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(unisonVoicesSlider);
+    unisonVoicesLabel.setText("Unison Voices", juce::dontSendNotification);
+    addAndMakeVisible(unisonVoicesLabel);
+
+    // Unison Detune
+    unisonDetuneSlider.setSliderStyle(juce::Slider::Rotary);
+    unisonDetuneSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(unisonDetuneSlider);
+    unisonDetuneLabel.setText("Unison Detune", juce::dontSendNotification);
+    addAndMakeVisible(unisonDetuneLabel);
 
     // LFO Section
     lfoSectionLabel.setText("LFO (Filter Cutoff)", juce::dontSendNotification);
@@ -395,47 +409,38 @@ void SynthComponent::initAttachments() {
     detuneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "detune", detuneSlider);
     osc1LevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc1Level", osc1LevelSlider);
     osc2LevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc2Level", osc2LevelSlider);
-
-    // New attachment for number of voices
     numVoicesAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "numVoices", numVoicesSlider);
-
+    unisonVoicesAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "unisonVoices", unisonVoicesSlider);
+    unisonDetuneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "unisonDetune", unisonDetuneSlider);
     lfoRateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "lfoRate", lfoRateSlider);
     lfoDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "lfoDepth", lfoDepthSlider);
     lfoWaveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(params, "lfoWaveform", lfoWaveformCombo);
-
     distortionDriveAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "distortionDrive", distortionDriveSlider);
     distortionToneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "distortionTone", distortionToneSlider);
     distortionMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "distortionMix", distortionMixSlider);
-
     delayTimeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "delayTime", delayTimeSlider);
     delayFeedbackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "delayFeedback", delayFeedbackSlider);
     delayMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "delayMix", delayMixSlider);
-
     chorusRateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "chorusRate", chorusRateSlider);
     chorusDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "chorusDepth", chorusDepthSlider);
     chorusMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "chorusMix", chorusMixSlider);
     chorusDelayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "chorusDelay", chorusDelaySlider);
-
     phaserRateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "phaserRate", phaserRateSlider);
     phaserDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "phaserDepth", phaserDepthSlider);
     phaserMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "phaserMix", phaserMixSlider);
-
     flangerRateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "flangerRate", flangerRateSlider);
     flangerDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "flangerDepth", flangerDepthSlider);
     flangerMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "flangerMix", flangerMixSlider);
     flangerDelayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "flangerDelay", flangerDelaySlider);
-
     reverbRoomSizeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "reverbRoomSize", reverbRoomSizeSlider);
     reverbDampingAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "reverbDamping", reverbDampingSlider);
     reverbWetLevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "reverbWetLevel", reverbWetLevelSlider);
     reverbDryLevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "reverbDryLevel", reverbDryLevelSlider);
-
     filterCutoffAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterCutoff", filterCutoffSlider);
     filterResonanceAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterResonance", filterResonanceSlider);
     filterADSRMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterADSRMix", filterADSRMixSlider);
     filterADSRDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterADSRDepth", filterADSRDepthSlider);
     filterTypeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(params, "filterType", filterTypeCombo);
-
     compressorThresholdAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "compressorThreshold", compressorThresholdSlider);
     compressorRatioAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "compressorRatio", compressorRatioSlider);
     compressorAttackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "compressorAttack", compressorAttackSlider);
@@ -450,47 +455,51 @@ void SynthComponent::paint(juce::Graphics& g) {
 
 void SynthComponent::resized() {
     auto bounds = getLocalBounds().toFloat().reduced(20);
-    float knobWidth = 100;
-    float knobHeight = 100;
+    float knobWidth = 80; // Reduced from 100 to 80
+    float knobHeight = 80; // Reduced from 100 to 80
     float comboHeight = 30;
     float labelHeight = 20;
     float sectionLabelHeight = 30;
-    float comboWidth = 120;
+    float comboWidth = 100; // Reduced from 120 to 100 to match smaller knobs
 
     // Split the window into three columns
-    auto leftColumn = bounds.removeFromLeft(bounds.getWidth() / 3 - 20); // Left column with padding
-    auto middleColumn = bounds.removeFromLeft(bounds.getWidth() / 2 - 20); // Middle column with padding
+    auto leftColumn = bounds.removeFromLeft(bounds.getWidth() / 3 - 10); // Reduced padding from 20 to 10
+    auto middleColumn = bounds.removeFromLeft(bounds.getWidth() / 2 - 10); // Reduced padding from 20 to 10
     auto rightColumn = bounds; // Right column
 
-    // Left Column: ADSR, Oscillator 1, Oscillator 2, Detune, Num Voices, LFO
+    // Left Column: ADSR, Oscillator 1, Oscillator 2, Detune, Polyphony, Unison Voices, Unison Detune, LFO
     auto adsrRow = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    leftColumn.removeFromTop(20);
+    leftColumn.removeFromTop(10); // Reduced spacing from 20 to 10
     auto osc1Row = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    leftColumn.removeFromTop(20);
+    leftColumn.removeFromTop(10);
     auto osc2Row = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    leftColumn.removeFromTop(20);
+    leftColumn.removeFromTop(10);
     auto detuneRow = leftColumn.removeFromTop(labelHeight + knobHeight);
-    leftColumn.removeFromTop(20);
-    auto numVoicesRow = leftColumn.removeFromTop(labelHeight + knobHeight); // Added row for num voices
-    leftColumn.removeFromTop(20);
+    leftColumn.removeFromTop(10);
+    auto polyphonyRow = leftColumn.removeFromTop(labelHeight + knobHeight); // Renamed from numVoicesRow
+    leftColumn.removeFromTop(10);
+    auto unisonVoicesRow = leftColumn.removeFromTop(labelHeight + knobHeight);
+    leftColumn.removeFromTop(10);
+    auto unisonDetuneRow = leftColumn.removeFromTop(labelHeight + knobHeight);
+    leftColumn.removeFromTop(10);
     auto lfoRow = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
 
     // Middle Column: Distortion, Filter, Compressor
     auto distortionRow = middleColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    middleColumn.removeFromTop(20);
+    middleColumn.removeFromTop(10); // Reduced spacing from 20 to 10
     auto filterRow = middleColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    middleColumn.removeFromTop(20);
+    middleColumn.removeFromTop(10);
     auto compressorRow = middleColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
 
     // Right Column: Delay, Chorus, Phaser, Flanger, Reverb
     auto delayRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    rightColumn.removeFromTop(20);
+    rightColumn.removeFromTop(10); // Reduced spacing from 20 to 10
     auto chorusRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    rightColumn.removeFromTop(20);
+    rightColumn.removeFromTop(10);
     auto phaserRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    rightColumn.removeFromTop(20);
+    rightColumn.removeFromTop(10);
     auto flangerRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    rightColumn.removeFromTop(20);
+    rightColumn.removeFromTop(10);
     auto reverbRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
 
     // Left Column Layout
@@ -514,7 +523,7 @@ void SynthComponent::resized() {
     releaseSlider.setBounds(releaseBounds.toNearestInt());
 
     // Oscillator 1 Row: Waveform 1, Osc1 Level
-    auto osc1Section = osc1Row.removeFromLeft(knobWidth * 2 + 20);
+    auto osc1Section = osc1Row.removeFromLeft(knobWidth * 2 + 10); // Adjusted for smaller knobs
     oscillator1Label.setBounds(osc1Section.removeFromTop(sectionLabelHeight).toNearestInt());
     auto waveformBounds = osc1Section.removeFromLeft(knobWidth);
     waveformLabel.setBounds(waveformBounds.removeFromTop(labelHeight).toNearestInt());
@@ -524,7 +533,7 @@ void SynthComponent::resized() {
     osc1LevelSlider.setBounds(osc1LevelBounds.toNearestInt());
 
     // Oscillator 2 Row: Waveform 2, Osc2 Level
-    auto osc2Section = osc2Row.removeFromLeft(knobWidth * 2 + 20);
+    auto osc2Section = osc2Row.removeFromLeft(knobWidth * 2 + 10); // Adjusted for smaller knobs
     oscillator2Label.setBounds(osc2Section.removeFromTop(sectionLabelHeight).toNearestInt());
     auto waveform2Bounds = osc2Section.removeFromLeft(knobWidth);
     waveform2Label.setBounds(waveform2Bounds.removeFromTop(labelHeight).toNearestInt());
@@ -538,13 +547,23 @@ void SynthComponent::resized() {
     detuneLabel.setBounds(detuneBounds.removeFromTop(labelHeight).toNearestInt());
     detuneSlider.setBounds(detuneBounds.toNearestInt());
 
-    // Num Voices Row: Number of Voices
-    auto numVoicesBounds = numVoicesRow.removeFromLeft(knobWidth);
-    numVoicesLabel.setBounds(numVoicesBounds.removeFromTop(labelHeight).toNearestInt());
-    numVoicesSlider.setBounds(numVoicesBounds.toNearestInt());
+    // Polyphony Row: Number of Voices (now Polyphony)
+    auto polyphonyBounds = polyphonyRow.removeFromLeft(knobWidth); // Renamed from numVoicesBounds
+    polyphonyLabel.setBounds(polyphonyBounds.removeFromTop(labelHeight).toNearestInt()); // Renamed from numVoicesLabel
+    numVoicesSlider.setBounds(polyphonyBounds.toNearestInt());
+
+    // Unison Voices Row
+    auto unisonVoicesBounds = unisonVoicesRow.removeFromLeft(knobWidth);
+    unisonVoicesLabel.setBounds(unisonVoicesBounds.removeFromTop(labelHeight).toNearestInt());
+    unisonVoicesSlider.setBounds(unisonVoicesBounds.toNearestInt());
+
+    // Unison Detune Row
+    auto unisonDetuneBounds = unisonDetuneRow.removeFromLeft(knobWidth);
+    unisonDetuneLabel.setBounds(unisonDetuneBounds.removeFromTop(labelHeight).toNearestInt());
+    unisonDetuneSlider.setBounds(unisonDetuneBounds.toNearestInt());
 
     // LFO Row: Rate, Depth, Waveform
-    auto lfoSection = lfoRow.removeFromLeft(knobWidth * 3 + 40);
+    auto lfoSection = lfoRow.removeFromLeft(knobWidth * 3 + 20); // Adjusted for smaller knobs
     lfoSectionLabel.setBounds(lfoSection.removeFromTop(sectionLabelHeight).toNearestInt());
     auto lfoRateBounds = lfoSection.removeFromLeft(knobWidth);
     lfoRateLabel.setBounds(lfoRateBounds.removeFromTop(labelHeight).toNearestInt());
@@ -558,7 +577,7 @@ void SynthComponent::resized() {
 
     // Middle Column Layout
     // Distortion Row: Drive, Tone, Mix
-    auto distortionSection = distortionRow.removeFromLeft(knobWidth * 3 + 20);
+    auto distortionSection = distortionRow.removeFromLeft(knobWidth * 3 + 10); // Adjusted for smaller knobs
     distortionSectionLabel.setBounds(distortionSection.removeFromTop(sectionLabelHeight).toNearestInt());
     auto distortionDriveBounds = distortionSection.removeFromLeft(knobWidth);
     distortionDriveLabel.setBounds(distortionDriveBounds.removeFromTop(labelHeight).toNearestInt());
@@ -614,7 +633,7 @@ void SynthComponent::resized() {
 
     // Right Column Layout
     // Delay Row: Time, Feedback, Mix
-    auto delaySection = delayRow.removeFromLeft(knobWidth * 3 + 20);
+    auto delaySection = delayRow.removeFromLeft(knobWidth * 3 + 10); // Adjusted for smaller knobs
     delaySectionLabel.setBounds(delaySection.removeFromTop(sectionLabelHeight).toNearestInt());
     auto delayTimeBounds = delaySection.removeFromLeft(knobWidth);
     delayTimeLabel.setBounds(delayTimeBounds.removeFromTop(labelHeight).toNearestInt());
@@ -627,7 +646,7 @@ void SynthComponent::resized() {
     delayMixSlider.setBounds(delayMixBounds.toNearestInt());
 
     // Chorus Row: Rate, Depth, Mix, Delay
-    auto chorusSection = chorusRow.removeFromLeft(knobWidth * 4 + 20);
+    auto chorusSection = chorusRow.removeFromLeft(knobWidth * 4 + 10); // Adjusted for smaller knobs
     chorusSectionLabel.setBounds(chorusSection.removeFromTop(sectionLabelHeight).toNearestInt());
     auto chorusRateBounds = chorusSection.removeFromLeft(knobWidth);
     chorusRateLabel.setBounds(chorusRateBounds.removeFromTop(labelHeight).toNearestInt());
@@ -643,7 +662,7 @@ void SynthComponent::resized() {
     chorusDelaySlider.setBounds(chorusDelayBounds.toNearestInt());
 
     // Phaser Row: Rate, Depth, Mix
-    auto phaserSection = phaserRow.removeFromLeft(knobWidth * 3 + 20);
+    auto phaserSection = phaserRow.removeFromLeft(knobWidth * 3 + 10); // Adjusted for smaller knobs
     phaserSectionLabel.setBounds(phaserSection.removeFromTop(sectionLabelHeight).toNearestInt());
     auto phaserRateBounds = phaserSection.removeFromLeft(knobWidth);
     phaserRateLabel.setBounds(phaserRateBounds.removeFromTop(labelHeight).toNearestInt());
@@ -656,7 +675,7 @@ void SynthComponent::resized() {
     phaserMixSlider.setBounds(phaserMixBounds.toNearestInt());
 
     // Flanger Row: Rate, Depth, Mix, Delay
-    auto flangerSection = flangerRow.removeFromLeft(knobWidth * 4 + 20);
+    auto flangerSection = flangerRow.removeFromLeft(knobWidth * 4 + 10); // Adjusted for smaller knobs
     flangerSectionLabel.setBounds(flangerSection.removeFromTop(sectionLabelHeight).toNearestInt());
     auto flangerRateBounds = flangerSection.removeFromLeft(knobWidth);
     flangerRateLabel.setBounds(flangerRateBounds.removeFromTop(labelHeight).toNearestInt());
@@ -672,7 +691,7 @@ void SynthComponent::resized() {
     flangerDelaySlider.setBounds(flangerDelayBounds.toNearestInt());
 
     // Reverb Row: Room Size, Damping, Wet Level, Dry Level
-    auto reverbSection = reverbRow.removeFromLeft(knobWidth * 4 + 20);
+    auto reverbSection = reverbRow.removeFromLeft(knobWidth * 4 + 10); // Adjusted for smaller knobs
     reverbSectionLabel.setBounds(reverbSection.removeFromTop(sectionLabelHeight).toNearestInt());
     auto reverbRoomSizeBounds = reverbSection.removeFromLeft(knobWidth);
     reverbRoomSizeLabel.setBounds(reverbRoomSizeBounds.removeFromTop(labelHeight).toNearestInt());

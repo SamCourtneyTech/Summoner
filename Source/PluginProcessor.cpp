@@ -68,12 +68,14 @@ SummonerAudioProcessor::SummonerAudioProcessor()
         std::make_unique<juce::AudioParameterFloat>("filterADSRDepth", "Filter ADSR Depth", 0.0f, 10000.0f, 10000.0f),
         std::make_unique<juce::AudioParameterChoice>("filterType", "Filter Type",
             juce::StringArray("Low Pass", "High Pass", "Band Pass", "Notch"), 0),
-            // New parameter for number of voices
-            std::make_unique<juce::AudioParameterInt>("numVoices", "Num Voices", 1, 16, 8)
+            // Number of voices
+            std::make_unique<juce::AudioParameterInt>("numVoices", "Num Voices", 1, 16, 8),
+            // Unison parameters
+            std::make_unique<juce::AudioParameterInt>("unisonVoices", "Unison Voices", 1, 8, 1), // 1 = off, 2-8 = unison voices
+            std::make_unique<juce::AudioParameterFloat>("unisonDetune", "Unison Detune", 0.0f, 50.0f, 0.0f) // Detune in cents
         })
 {
     parameters.addParameterListener("numVoices", this);
-    // Removed updateNumVoices() call here
 }
 
 void SummonerAudioProcessor::updateNumVoices() {
@@ -411,24 +413,55 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     float flangerDelayMs = *parameters.getRawParameterValue("flangerDelay");
     flangerLFO.setFrequency(flangerRate);
 
+    // Get unison parameters
+    int unisonVoices = static_cast<int>(*parameters.getRawParameterValue("unisonVoices"));
+    float unisonDetune = *parameters.getRawParameterValue("unisonDetune");
+
     for (const auto metadata : midiMessages) {
         auto msg = metadata.getMessage();
         if (msg.isNoteOn()) {
             int noteNumber = msg.getNoteNumber();
             float freq = juce::MidiMessage::getMidiNoteInHertz(noteNumber);
-            Voice* freeVoice = findVoiceToSteal(); // Use new voice-stealing logic
-            if (freeVoice) {
-                freeVoice->setNoteNumber(noteNumber);
-                freeVoice->noteOn(freq, getSampleRate());
+
+            // Clear any existing voices for this note (in case of retrigger)
+            if (noteToVoices.find(noteNumber) != noteToVoices.end()) {
+                for (auto* voice : noteToVoices[noteNumber]) {
+                    voice->noteOff();
+                    voice->setNoteNumber(-1);
+                }
+                noteToVoices.erase(noteNumber);
+            }
+
+            // Allocate unison voices
+            std::vector<Voice*> assignedVoices;
+            for (int i = 0; i < unisonVoices; ++i) {
+                Voice* freeVoice = findVoiceToSteal();
+                if (freeVoice) {
+                    // Calculate detune offset for this unison voice
+                    float detuneOffset = 0.0f;
+                    if (unisonVoices > 1) {
+                        // Spread detune symmetrically: e.g., for 3 voices: -detune, 0, +detune
+                        float step = unisonDetune / (unisonVoices - 1);
+                        detuneOffset = (i * step) - (unisonDetune / 2.0f);
+                    }
+                    freeVoice->setUnisonDetuneOffset(detuneOffset);
+                    freeVoice->setNoteNumber(noteNumber);
+                    freeVoice->noteOn(freq, getSampleRate());
+                    assignedVoices.push_back(freeVoice);
+                }
+            }
+            if (!assignedVoices.empty()) {
+                noteToVoices[noteNumber] = assignedVoices;
             }
         }
         else if (msg.isNoteOff()) {
             int noteNumber = msg.getNoteNumber();
-            for (auto* voice : voices) {
-                if (voice->getIsActive() && voice->getNoteNumber() == noteNumber) {
+            if (noteToVoices.find(noteNumber) != noteToVoices.end()) {
+                for (auto* voice : noteToVoices[noteNumber]) {
                     voice->noteOff();
                     voice->setNoteNumber(-1);
                 }
+                noteToVoices.erase(noteNumber);
             }
         }
     }
@@ -440,13 +473,16 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     auto* leftChannel = buffer.getWritePointer(0);
     auto* rightChannel = buffer.getWritePointer(1);
 
+    // Adjust amplitude based on number of unison voices to prevent clipping
+    float amplitudeScale = 1.0f / std::sqrt(static_cast<float>(unisonVoices));
+
     for (int sample = 0; sample < numSamples; ++sample) {
         float mixedOutput = 0.0f;
         float maxEnvValue = 0.0f;
 
         for (auto* voice : voices) {
             if (voice->getIsActive()) {
-                mixedOutput += voice->getNextSample();
+                mixedOutput += voice->getNextSample() * amplitudeScale;
                 float envValue = voice->getEnvelopeValue();
                 maxEnvValue = std::max(maxEnvValue, envValue);
             }

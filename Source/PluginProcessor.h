@@ -37,7 +37,6 @@ public:
 
     juce::AudioProcessorValueTreeState parameters;
 
-    // Listener method for parameter changes
     void parameterChanged(const juce::String& parameterID, float newValue) override;
 
 private:
@@ -75,10 +74,11 @@ private:
     float lastFilterResonance = -1.0f;
     int lastFilterType = -1;
 
+    // Map to track voices assigned to each note (for unison)
+    std::map<int, std::vector<Voice*>> noteToVoices;
+
     void updateFilter();
     void updateNumVoices();
-
-    // New method for voice stealing
     Voice* findVoiceToSteal();
 
     std::vector<std::map<std::string, std::string>> responses;

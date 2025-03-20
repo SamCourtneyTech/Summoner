@@ -4,7 +4,7 @@
 
 class Voice {
 public:
-    Voice() : noteNumber(-1), isActive(false), fadeOutSamples(0), fadeOutStep(0.0f) {}
+    Voice() : noteNumber(-1), isActive(false), fadeOutSamples(0), fadeOutStep(0.0f), unisonDetuneOffset(0.0f) {}
 
     void prepare(double sampleRate) {
         oscillator1.prepare(sampleRate);
@@ -17,17 +17,23 @@ public:
     int getNoteNumber() const { return noteNumber; }
     bool getIsActive() const { return isActive; }
     bool isInRelease() const {
-        // A voice is in release if it's active but the envelope is no longer in attack/decay/sustain
-        // Since we can't directly check the ADSR state, we approximate by checking if the envelope is active
-        return oscillator1.getIsActive() && oscillator1.getEnvelopeValue() < 0.1f; // Arbitrary threshold
+        return oscillator1.getIsActive() && oscillator1.getEnvelopeValue() < 0.1f;
+    }
+
+    void setUnisonDetuneOffset(float offset) {
+        unisonDetuneOffset = offset;
     }
 
     void noteOn(float freq, double sampleRate) {
         currentFrequency = freq;
-        oscillator1.setFrequency(freq, sampleRate);
+        // Apply unison detune offset
+        float unisonDetuneFactor = std::pow(2.0f, unisonDetuneOffset / 1200.0f);
+        float detunedFreq = freq * unisonDetuneFactor;
+
+        oscillator1.setFrequency(detunedFreq, sampleRate);
         float detuneCents = detunePtr->load();
         float detuneFactor = std::pow(2.0f, detuneCents / 1200.0f);
-        oscillator2.setFrequency(freq * detuneFactor, sampleRate);
+        oscillator2.setFrequency(detunedFreq * detuneFactor, sampleRate);
         oscillator1.noteOn();
         oscillator2.noteOn();
         isActive = true;
@@ -94,6 +100,7 @@ private:
     float currentFrequency = 0.0f;
     int noteNumber;
     bool isActive;
+    float unisonDetuneOffset; // Detune offset for unison voices (in cents)
 
     // Fade-out variables
     int fadeOutSamples; // Number of samples for fade-out
