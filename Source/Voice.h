@@ -4,16 +4,23 @@
 
 class Voice {
 public:
-    Voice() : noteNumber(-1), isActive(false) {}
+    Voice() : noteNumber(-1), isActive(false), fadeOutSamples(0), fadeOutStep(0.0f) {}
 
     void prepare(double sampleRate) {
         oscillator1.prepare(sampleRate);
         oscillator2.prepare(sampleRate);
+        fadeOutSamples = static_cast<int>(0.005 * sampleRate); // 5ms fade-out
+        fadeOutStep = 1.0f / fadeOutSamples;
     }
 
     void setNoteNumber(int note) { noteNumber = note; }
     int getNoteNumber() const { return noteNumber; }
     bool getIsActive() const { return isActive; }
+    bool isInRelease() const {
+        // A voice is in release if it's active but the envelope is no longer in attack/decay/sustain
+        // Since we can't directly check the ADSR state, we approximate by checking if the envelope is active
+        return oscillator1.getIsActive() && oscillator1.getEnvelopeValue() < 0.1f; // Arbitrary threshold
+    }
 
     void noteOn(float freq, double sampleRate) {
         currentFrequency = freq;
@@ -24,11 +31,17 @@ public:
         oscillator1.noteOn();
         oscillator2.noteOn();
         isActive = true;
+        fadeOutCounter = 0; // Reset fade-out
+        amplitude = 1.0f;
     }
 
     void noteOff() {
         oscillator1.noteOff();
         oscillator2.noteOff();
+    }
+
+    void startFadeOut() {
+        fadeOutCounter = fadeOutSamples;
     }
 
     float getNextSample() {
@@ -38,15 +51,24 @@ public:
         float osc2Output = oscillator2.getNextSample() * osc2LevelPtr->load();
         float mixedOutput = (osc1Output + osc2Output) * 0.5f;
 
+        // Apply fade-out if active
+        if (fadeOutCounter > 0) {
+            amplitude = juce::jmax(0.0f, amplitude - fadeOutStep);
+            fadeOutCounter--;
+            if (fadeOutCounter <= 0) {
+                isActive = false; // Deactivate voice after fade-out
+            }
+        }
+
         // Check if both oscillators are done with their envelopes
-        if (!oscillator1.getIsActive() && !oscillator2.getIsActive()) {
+        if (!oscillator1.getIsActive() && !oscillator2.getIsActive() && fadeOutCounter <= 0) {
             isActive = false;
         }
 
-        return mixedOutput;
+        return mixedOutput * amplitude;
     }
 
-    float getEnvelopeValue() {
+    float getEnvelopeValue() const {
         return oscillator1.getEnvelopeValue();
     }
 
@@ -72,6 +94,12 @@ private:
     float currentFrequency = 0.0f;
     int noteNumber;
     bool isActive;
+
+    // Fade-out variables
+    int fadeOutSamples; // Number of samples for fade-out
+    float fadeOutStep;  // Amplitude decrement per sample
+    int fadeOutCounter = 0; // Current fade-out position
+    float amplitude = 1.0f; // Current amplitude during fade-out
 
     // Parameter pointers
     std::atomic<float>* detunePtr = nullptr;

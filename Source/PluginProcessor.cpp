@@ -100,6 +100,37 @@ void SummonerAudioProcessor::updateNumVoices() {
     }
 }
 
+Voice* SummonerAudioProcessor::findVoiceToSteal() {
+    Voice* bestVoice = nullptr;
+    float lowestAmplitude = std::numeric_limits<float>::max();
+
+    // First, look for an inactive voice
+    for (auto* voice : voices) {
+        if (!voice->getIsActive()) {
+            bestVoice = voice;
+            break;
+        }
+    }
+
+    // If no inactive voice, steal the voice with the lowest amplitude
+    if (!bestVoice) {
+        for (auto* voice : voices) {
+            float envValue = voice->getEnvelopeValue();
+            if (envValue < lowestAmplitude) {
+                bestVoice = voice;
+                lowestAmplitude = envValue;
+            }
+        }
+    }
+
+    // If we found a voice to steal and it's active, apply fade-out
+    if (bestVoice && bestVoice->getIsActive()) {
+        bestVoice->startFadeOut();
+    }
+
+    return bestVoice;
+}
+
 void SummonerAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue) {
     if (parameterID == "numVoices" && currentSampleRate > 0.0) {
         updateNumVoices();
@@ -385,18 +416,11 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
         if (msg.isNoteOn()) {
             int noteNumber = msg.getNoteNumber();
             float freq = juce::MidiMessage::getMidiNoteInHertz(noteNumber);
-            Voice* freeVoice = nullptr;
-            for (auto* voice : voices) {
-                if (!voice->getIsActive()) {
-                    freeVoice = voice;
-                    break;
-                }
+            Voice* freeVoice = findVoiceToSteal(); // Use new voice-stealing logic
+            if (freeVoice) {
+                freeVoice->setNoteNumber(noteNumber);
+                freeVoice->noteOn(freq, getSampleRate());
             }
-            if (!freeVoice) {
-                freeVoice = voices[0];
-            }
-            freeVoice->setNoteNumber(noteNumber);
-            freeVoice->noteOn(freq, getSampleRate());
         }
         else if (msg.isNoteOff()) {
             int noteNumber = msg.getNoteNumber();

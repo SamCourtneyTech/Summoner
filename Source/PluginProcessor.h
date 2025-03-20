@@ -41,7 +41,7 @@ public:
     void parameterChanged(const juce::String& parameterID, float newValue) override;
 
 private:
-    juce::OwnedArray<Voice> voices; // Removed static maxVoices
+    juce::OwnedArray<Voice> voices;
     LFO lfo;
     float currentFrequency = 440.0f;
 
@@ -76,7 +76,10 @@ private:
     int lastFilterType = -1;
 
     void updateFilter();
-    void updateNumVoices(); // New method to update voices dynamically
+    void updateNumVoices();
+
+    // New method for voice stealing
+    Voice* findVoiceToSteal();
 
     std::vector<std::map<std::string, std::string>> responses;
     int currentResponseIndex = 0;

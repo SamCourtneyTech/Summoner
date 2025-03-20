@@ -59,7 +59,10 @@ public:
             break;
         }
 
-        output *= envelope.getNextSample();
+        // Update the stored envelope value
+        currentEnvelopeValue = envelope.getNextSample();
+        output *= currentEnvelopeValue;
+
         phase += phaseIncrement;
         if (phase >= 2.0 * juce::MathConstants<double>::pi) {
             phase -= 2.0 * juce::MathConstants<double>::pi;
@@ -71,8 +74,8 @@ public:
         return envelope.isActive();
     }
 
-    float getEnvelopeValue() {
-        return envelope.getNextSample();
+    float getEnvelopeValue() const {
+        return currentEnvelopeValue;
     }
 
 private:
@@ -85,6 +88,7 @@ private:
     juce::Random random;
 
     float pinkNoiseState[6];
+    float currentEnvelopeValue = 0.0f; // Store the current envelope value
 
     float generatePinkNoise() {
         float white = random.nextFloat() * 2.0f - 1.0f;
