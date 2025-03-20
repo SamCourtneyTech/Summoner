@@ -13,76 +13,61 @@ public:
 private:
     juce::AudioProcessorValueTreeState& params;
 
-    // Existing sliders and labels
     juce::Slider attackSlider, decaySlider, sustainSlider, releaseSlider, waveformSlider;
     juce::Label attackLabel, decayLabel, sustainLabel, releaseLabel, waveformLabel;
 
-    // Second oscillator
     juce::Slider waveform2Slider;
     juce::Label waveform2Label;
 
-    // Third oscillator
     juce::Slider waveform3Slider;
     juce::Label waveform3Label;
 
-    // Section labels for oscillators
-    juce::Label oscillator1Label, oscillator2Label, oscillator3Label;
+    juce::Slider noiseWaveformSlider;
+    juce::Label noiseWaveformLabel;
 
-    // Detune and level controls
-    juce::Slider detuneSlider, osc1LevelSlider, osc2LevelSlider, osc3LevelSlider;
-    juce::Label detuneLabel, osc1LevelLabel, osc2LevelLabel, osc3LevelLabel;
+    juce::Label oscillator1Label, oscillator2Label, oscillator3Label, noiseOscillatorLabel;
 
-    // Number of voices (now polyphony)
+    juce::Slider detuneSlider, osc1LevelSlider, osc2LevelSlider, osc3LevelSlider, noiseLevelSlider;
+    juce::Label detuneLabel, osc1LevelLabel, osc2LevelLabel, osc3LevelLabel, noiseLevelLabel;
+
     juce::Slider numVoicesSlider;
-    juce::Label polyphonyLabel; // Renamed from numVoicesLabel
+    juce::Label polyphonyLabel;
 
-    // Unison controls
     juce::Slider unisonVoicesSlider, unisonDetuneSlider;
     juce::Label unisonVoicesLabel, unisonDetuneLabel;
 
-    // LFO controls
     juce::Slider lfoRateSlider, lfoDepthSlider;
     juce::ComboBox lfoWaveformCombo;
     juce::Label lfoRateLabel, lfoDepthLabel, lfoWaveformLabel, lfoSectionLabel;
 
-    // Distortion controls
     juce::Slider distortionDriveSlider, distortionToneSlider, distortionMixSlider;
     juce::Label distortionDriveLabel, distortionToneLabel, distortionMixLabel, distortionSectionLabel;
 
-    // Delay controls
     juce::Slider delayTimeSlider, delayFeedbackSlider, delayMixSlider;
     juce::Label delayTimeLabel, delayFeedbackLabel, delayMixLabel, delaySectionLabel;
 
-    // Chorus controls
     juce::Slider chorusRateSlider, chorusDepthSlider, chorusMixSlider, chorusDelaySlider;
     juce::Label chorusRateLabel, chorusDepthLabel, chorusMixLabel, chorusDelayLabel, chorusSectionLabel;
 
-    // Phaser controls
     juce::Slider phaserRateSlider, phaserDepthSlider, phaserMixSlider;
     juce::Label phaserRateLabel, phaserDepthLabel, phaserMixLabel, phaserSectionLabel;
 
-    // Flanger controls
     juce::Slider flangerRateSlider, flangerDepthSlider, flangerMixSlider, flangerDelaySlider;
     juce::Label flangerRateLabel, flangerDepthLabel, flangerMixLabel, flangerDelayLabel, flangerSectionLabel;
 
-    // Reverb controls
     juce::Slider reverbRoomSizeSlider, reverbDampingSlider, reverbWetLevelSlider, reverbDryLevelSlider;
     juce::Label reverbRoomSizeLabel, reverbDampingLabel, reverbWetLevelLabel, reverbDryLevelLabel, reverbSectionLabel;
 
-    // Filter controls
     juce::Slider filterCutoffSlider, filterResonanceSlider, filterADSRMixSlider, filterADSRDepthSlider;
     juce::ComboBox filterTypeCombo;
     juce::Label filterCutoffLabel, filterResonanceLabel, filterADSRMixLabel, filterADSRDepthLabel, filterTypeLabel;
     juce::Label filterSectionLabel;
 
-    // ADSR section label
     juce::Label adsrSectionLabel;
 
-    // Compressor controls
     juce::Slider compressorThresholdSlider, compressorRatioSlider, compressorAttackSlider, compressorReleaseSlider, compressorMakeupGainSlider;
     juce::Label compressorThresholdLabel, compressorRatioLabel, compressorAttackLabel, compressorReleaseLabel, compressorMakeupGainLabel, compressorSectionLabel;
 
-    // Attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> attackAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> decayAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> sustainAttachment;
@@ -90,10 +75,12 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> waveformAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> waveform2Attachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> waveform3Attachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> noiseWaveformAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> detuneAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc1LevelAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc2LevelAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc3LevelAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> noiseLevelAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> numVoicesAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> unisonVoicesAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> unisonDetuneAttachment;

@@ -20,6 +20,8 @@
     <FILE id="Slnctl" name="LFO.h" compile="0" resource="0" file="Source/LFO.h"/>
     <FILE id="DuZObR" name="LoadingComponent.h" compile="0" resource="0"
           file="Source/LoadingComponent.h"/>
+    <FILE id="Zp7oGJ" name="NoiseOscillator.h" compile="0" resource="0"
+          file="Source/NoiseOscillator.h"/>
     <FILE id="yPg6NB" name="Oscillator.h" compile="0" resource="0" file="Source/Oscillator.h"/>
     <FILE id="wBJcgi" name="SynthComponent.cpp" compile="1" resource="0"
           file="Source/SynthComponent.cpp"/>

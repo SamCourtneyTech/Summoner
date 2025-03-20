@@ -1,179 +1,154 @@
 #include "SynthComponent.h"
 
 SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p) {
-    // Attack
     attackSlider.setSliderStyle(juce::Slider::Rotary);
     attackSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(attackSlider);
     attackLabel.setText("Attack", juce::dontSendNotification);
     addAndMakeVisible(attackLabel);
 
-    // Decay
     decaySlider.setSliderStyle(juce::Slider::Rotary);
     decaySlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(decaySlider);
     decayLabel.setText("Decay", juce::dontSendNotification);
     addAndMakeVisible(decayLabel);
 
-    // Sustain
     sustainSlider.setSliderStyle(juce::Slider::Rotary);
     sustainSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(sustainSlider);
     sustainLabel.setText("Sustain", juce::dontSendNotification);
     addAndMakeVisible(sustainLabel);
 
-    // Release
     releaseSlider.setSliderStyle(juce::Slider::Rotary);
     releaseSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(releaseSlider);
     releaseLabel.setText("Release", juce::dontSendNotification);
     addAndMakeVisible(releaseLabel);
 
-    // ADSR Section Label
     adsrSectionLabel.setText("Envelope", juce::dontSendNotification);
     adsrSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
     addAndMakeVisible(adsrSectionLabel);
 
-    // Waveform (Oscillator 1)
     waveformSlider.setSliderStyle(juce::Slider::Rotary);
     waveformSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    waveformSlider.setRange(0.0, 1.0, 0.01);
+    waveformSlider.setRange(0.0, 0.8, 0.01);
     addAndMakeVisible(waveformSlider);
     waveformSlider.onValueChange = [this] {
         float value = waveformSlider.getValue();
-        if (value <= 0.16f)
-            waveformLabel.setText("Sine", juce::dontSendNotification);
-        else if (value <= 0.32f)
-            waveformLabel.setText("Saw", juce::dontSendNotification);
-        else if (value <= 0.48f)
-            waveformLabel.setText("Square", juce::dontSendNotification);
-        else if (value <= 0.64f)
-            waveformLabel.setText("Triangle", juce::dontSendNotification);
-        else if (value <= 0.80f)
-            waveformLabel.setText("Pulse 25%", juce::dontSendNotification);
-        else if (value <= 0.90f)
-            waveformLabel.setText("White Noise", juce::dontSendNotification);
-        else
-            waveformLabel.setText("Pink Noise", juce::dontSendNotification);
+        if (value <= 0.2f) waveformLabel.setText("Sine", juce::dontSendNotification);
+        else if (value <= 0.4f) waveformLabel.setText("Saw", juce::dontSendNotification);
+        else if (value <= 0.6f) waveformLabel.setText("Square", juce::dontSendNotification);
+        else if (value <= 0.8f) waveformLabel.setText("Triangle", juce::dontSendNotification);
+        else waveformLabel.setText("Pulse 25%", juce::dontSendNotification);
         };
     waveformLabel.setText("Saw", juce::dontSendNotification);
     addAndMakeVisible(waveformLabel);
 
-    // Oscillator 1 Section Label
     oscillator1Label.setText("Oscillator 1", juce::dontSendNotification);
     oscillator1Label.setFont(juce::Font(16.0f, juce::Font::bold));
     addAndMakeVisible(oscillator1Label);
 
-    // Oscillator 1 Level
     osc1LevelSlider.setSliderStyle(juce::Slider::Rotary);
     osc1LevelSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(osc1LevelSlider);
     osc1LevelLabel.setText("Osc1 Level", juce::dontSendNotification);
     addAndMakeVisible(osc1LevelLabel);
 
-    // Waveform (Oscillator 2)
     waveform2Slider.setSliderStyle(juce::Slider::Rotary);
     waveform2Slider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    waveform2Slider.setRange(0.0, 1.0, 0.01);
+    waveform2Slider.setRange(0.0, 0.8, 0.01);
     addAndMakeVisible(waveform2Slider);
     waveform2Slider.onValueChange = [this] {
         float value = waveform2Slider.getValue();
-        if (value <= 0.16f)
-            waveform2Label.setText("Sine", juce::dontSendNotification);
-        else if (value <= 0.32f)
-            waveform2Label.setText("Saw", juce::dontSendNotification);
-        else if (value <= 0.48f)
-            waveform2Label.setText("Square", juce::dontSendNotification);
-        else if (value <= 0.64f)
-            waveform2Label.setText("Triangle", juce::dontSendNotification);
-        else if (value <= 0.80f)
-            waveform2Label.setText("Pulse 25%", juce::dontSendNotification);
-        else if (value <= 0.90f)
-            waveform2Label.setText("White Noise", juce::dontSendNotification);
-        else
-            waveform2Label.setText("Pink Noise", juce::dontSendNotification);
+        if (value <= 0.2f) waveform2Label.setText("Sine", juce::dontSendNotification);
+        else if (value <= 0.4f) waveform2Label.setText("Saw", juce::dontSendNotification);
+        else if (value <= 0.6f) waveform2Label.setText("Square", juce::dontSendNotification);
+        else if (value <= 0.8f) waveform2Label.setText("Triangle", juce::dontSendNotification);
+        else waveform2Label.setText("Pulse 25%", juce::dontSendNotification);
         };
     waveform2Label.setText("Saw", juce::dontSendNotification);
     addAndMakeVisible(waveform2Label);
 
-    // Oscillator 2 Section Label
     oscillator2Label.setText("Oscillator 2", juce::dontSendNotification);
     oscillator2Label.setFont(juce::Font(16.0f, juce::Font::bold));
     addAndMakeVisible(oscillator2Label);
 
-    // Oscillator 2 Level
     osc2LevelSlider.setSliderStyle(juce::Slider::Rotary);
     osc2LevelSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(osc2LevelSlider);
     osc2LevelLabel.setText("Osc2 Level", juce::dontSendNotification);
     addAndMakeVisible(osc2LevelLabel);
 
-    // Waveform (Oscillator 3)
     waveform3Slider.setSliderStyle(juce::Slider::Rotary);
     waveform3Slider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    waveform3Slider.setRange(0.0, 1.0, 0.01);
+    waveform3Slider.setRange(0.0, 0.8, 0.01);
     addAndMakeVisible(waveform3Slider);
     waveform3Slider.onValueChange = [this] {
         float value = waveform3Slider.getValue();
-        if (value <= 0.16f)
-            waveform3Label.setText("Sine", juce::dontSendNotification);
-        else if (value <= 0.32f)
-            waveform3Label.setText("Saw", juce::dontSendNotification);
-        else if (value <= 0.48f)
-            waveform3Label.setText("Square", juce::dontSendNotification);
-        else if (value <= 0.64f)
-            waveform3Label.setText("Triangle", juce::dontSendNotification);
-        else if (value <= 0.80f)
-            waveform3Label.setText("Pulse 25%", juce::dontSendNotification);
-        else if (value <= 0.90f)
-            waveform3Label.setText("White Noise", juce::dontSendNotification);
-        else
-            waveform3Label.setText("Pink Noise", juce::dontSendNotification);
+        if (value <= 0.2f) waveform3Label.setText("Sine", juce::dontSendNotification);
+        else if (value <= 0.4f) waveform3Label.setText("Saw", juce::dontSendNotification);
+        else if (value <= 0.6f) waveform3Label.setText("Square", juce::dontSendNotification);
+        else if (value <= 0.8f) waveform3Label.setText("Triangle", juce::dontSendNotification);
+        else waveform3Label.setText("Pulse 25%", juce::dontSendNotification);
         };
     waveform3Label.setText("Saw", juce::dontSendNotification);
     addAndMakeVisible(waveform3Label);
 
-    // Oscillator 3 Section Label
     oscillator3Label.setText("Oscillator 3", juce::dontSendNotification);
     oscillator3Label.setFont(juce::Font(16.0f, juce::Font::bold));
     addAndMakeVisible(oscillator3Label);
 
-    // Oscillator 3 Level
     osc3LevelSlider.setSliderStyle(juce::Slider::Rotary);
     osc3LevelSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(osc3LevelSlider);
     osc3LevelLabel.setText("Osc3 Level", juce::dontSendNotification);
     addAndMakeVisible(osc3LevelLabel);
 
-    // Detune
+    noiseWaveformSlider.setSliderStyle(juce::Slider::Rotary);
+    noiseWaveformSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    noiseWaveformSlider.setRange(0.0, 1.0, 0.01);
+    addAndMakeVisible(noiseWaveformSlider);
+    noiseWaveformSlider.onValueChange = [this] {
+        float value = noiseWaveformSlider.getValue();
+        noiseWaveformLabel.setText(value <= 0.5f ? "White Noise" : "Pink Noise", juce::dontSendNotification);
+        };
+    noiseWaveformLabel.setText("White Noise", juce::dontSendNotification);
+    addAndMakeVisible(noiseWaveformLabel);
+
+    noiseOscillatorLabel.setText("Noise Oscillator", juce::dontSendNotification);
+    noiseOscillatorLabel.setFont(juce::Font(16.0f, juce::Font::bold));
+    addAndMakeVisible(noiseOscillatorLabel);
+
+    noiseLevelSlider.setSliderStyle(juce::Slider::Rotary);
+    noiseLevelSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(noiseLevelSlider);
+    noiseLevelLabel.setText("Noise Level", juce::dontSendNotification);
+    addAndMakeVisible(noiseLevelLabel);
+
     detuneSlider.setSliderStyle(juce::Slider::Rotary);
     detuneSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(detuneSlider);
     detuneLabel.setText("Detune", juce::dontSendNotification);
     addAndMakeVisible(detuneLabel);
 
-    // Number of Voices (now Polyphony)
     numVoicesSlider.setSliderStyle(juce::Slider::Rotary);
     numVoicesSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(numVoicesSlider);
-    polyphonyLabel.setText("Polyphony", juce::dontSendNotification); // Changed from "Voices"
+    polyphonyLabel.setText("Polyphony", juce::dontSendNotification);
     addAndMakeVisible(polyphonyLabel);
 
-    // Unison Voices
     unisonVoicesSlider.setSliderStyle(juce::Slider::Rotary);
     unisonVoicesSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(unisonVoicesSlider);
     unisonVoicesLabel.setText("Unison Voices", juce::dontSendNotification);
     addAndMakeVisible(unisonVoicesLabel);
 
-    // Unison Detune
     unisonDetuneSlider.setSliderStyle(juce::Slider::Rotary);
     unisonDetuneSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(unisonDetuneSlider);
     unisonDetuneLabel.setText("Unison Detune", juce::dontSendNotification);
     addAndMakeVisible(unisonDetuneLabel);
 
-    // LFO Section
     lfoSectionLabel.setText("LFO (Filter Cutoff)", juce::dontSendNotification);
     lfoSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
     addAndMakeVisible(lfoSectionLabel);
@@ -199,7 +174,6 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     lfoWaveformLabel.setText("Waveform", juce::dontSendNotification);
     addAndMakeVisible(lfoWaveformLabel);
 
-    // Distortion Section
     distortionSectionLabel.setText("Distortion", juce::dontSendNotification);
     distortionSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
     addAndMakeVisible(distortionSectionLabel);
@@ -222,7 +196,6 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     distortionMixLabel.setText("Mix", juce::dontSendNotification);
     addAndMakeVisible(distortionMixLabel);
 
-    // Delay Section
     delaySectionLabel.setText("Delay", juce::dontSendNotification);
     delaySectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
     addAndMakeVisible(delaySectionLabel);
@@ -245,7 +218,6 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     delayMixLabel.setText("Mix", juce::dontSendNotification);
     addAndMakeVisible(delayMixLabel);
 
-    // Chorus Section
     chorusSectionLabel.setText("Chorus", juce::dontSendNotification);
     chorusSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
     addAndMakeVisible(chorusSectionLabel);
@@ -274,7 +246,6 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     chorusDelayLabel.setText("Delay", juce::dontSendNotification);
     addAndMakeVisible(chorusDelayLabel);
 
-    // Phaser Section
     phaserSectionLabel.setText("Phaser", juce::dontSendNotification);
     phaserSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
     addAndMakeVisible(phaserSectionLabel);
@@ -297,7 +268,6 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     phaserMixLabel.setText("Mix", juce::dontSendNotification);
     addAndMakeVisible(phaserMixLabel);
 
-    // Flanger Section
     flangerSectionLabel.setText("Flanger", juce::dontSendNotification);
     flangerSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
     addAndMakeVisible(flangerSectionLabel);
@@ -326,7 +296,6 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     flangerDelayLabel.setText("Delay", juce::dontSendNotification);
     addAndMakeVisible(flangerDelayLabel);
 
-    // Reverb Section
     reverbSectionLabel.setText("Reverb", juce::dontSendNotification);
     reverbSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
     addAndMakeVisible(reverbSectionLabel);
@@ -355,40 +324,34 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     reverbDryLevelLabel.setText("Dry Level", juce::dontSendNotification);
     addAndMakeVisible(reverbDryLevelLabel);
 
-    // Filter Section Label
     filterSectionLabel.setText("Filter", juce::dontSendNotification);
     filterSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
     addAndMakeVisible(filterSectionLabel);
 
-    // Filter Cutoff
     filterCutoffSlider.setSliderStyle(juce::Slider::Rotary);
     filterCutoffSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(filterCutoffSlider);
     filterCutoffLabel.setText("Cutoff", juce::dontSendNotification);
     addAndMakeVisible(filterCutoffLabel);
 
-    // Filter Resonance
     filterResonanceSlider.setSliderStyle(juce::Slider::Rotary);
     filterResonanceSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(filterResonanceSlider);
     filterResonanceLabel.setText("Resonance", juce::dontSendNotification);
     addAndMakeVisible(filterResonanceLabel);
 
-    // Filter ADSR Mix
     filterADSRMixSlider.setSliderStyle(juce::Slider::Rotary);
     filterADSRMixSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(filterADSRMixSlider);
     filterADSRMixLabel.setText("ADSR Mix", juce::dontSendNotification);
     addAndMakeVisible(filterADSRMixLabel);
 
-    // Filter ADSR Depth
     filterADSRDepthSlider.setSliderStyle(juce::Slider::Rotary);
     filterADSRDepthSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(filterADSRDepthSlider);
     filterADSRDepthLabel.setText("ADSR Depth", juce::dontSendNotification);
     addAndMakeVisible(filterADSRDepthLabel);
 
-    // Filter Type Dropdown
     filterTypeCombo.addItem("Low Pass", 1);
     filterTypeCombo.addItem("High Pass", 2);
     filterTypeCombo.addItem("Band Pass", 3);
@@ -398,7 +361,6 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     filterTypeLabel.setText("Filter Type", juce::dontSendNotification);
     addAndMakeVisible(filterTypeLabel);
 
-    // Compressor Section
     compressorSectionLabel.setText("Compressor", juce::dontSendNotification);
     compressorSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
     addAndMakeVisible(compressorSectionLabel);
@@ -444,10 +406,12 @@ void SynthComponent::initAttachments() {
     waveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "waveform", waveformSlider);
     waveform2Attachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "waveform2", waveform2Slider);
     waveform3Attachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "waveform3", waveform3Slider);
+    noiseWaveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "noiseWaveform", noiseWaveformSlider);
     detuneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "detune", detuneSlider);
     osc1LevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc1Level", osc1LevelSlider);
     osc2LevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc2Level", osc2LevelSlider);
     osc3LevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc3Level", osc3LevelSlider);
+    noiseLevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "noiseLevel", noiseLevelSlider);
     numVoicesAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "numVoices", numVoicesSlider);
     unisonVoicesAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "unisonVoices", unisonVoicesSlider);
     unisonDetuneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "unisonDetune", unisonDetuneSlider);
@@ -494,30 +458,32 @@ void SynthComponent::paint(juce::Graphics& g) {
 
 void SynthComponent::resized() {
     auto bounds = getLocalBounds().toFloat().reduced(20);
-    float knobWidth = 80; // Reduced from 100 to 80
-    float knobHeight = 80; // Reduced from 100 to 80
+    float knobWidth = 80;
+    float knobHeight = 80;
     float comboHeight = 30;
     float labelHeight = 20;
     float sectionLabelHeight = 30;
-    float comboWidth = 100; // Reduced from 120 to 100 to match smaller knobs
+    float comboWidth = 100;
 
     // Split the window into three columns
-    auto leftColumn = bounds.removeFromLeft(bounds.getWidth() / 3 - 10); // Reduced padding from 20 to 10
-    auto middleColumn = bounds.removeFromLeft(bounds.getWidth() / 2 - 10); // Reduced padding from 20 to 10
-    auto rightColumn = bounds; // Right column
+    auto leftColumn = bounds.removeFromLeft(bounds.getWidth() / 3 - 10);
+    auto middleColumn = bounds.removeFromLeft(bounds.getWidth() / 2 - 10);
+    auto rightColumn = bounds;
 
-    // Left Column: ADSR, Oscillator 1, Oscillator 2, Oscillator 3, Detune, Polyphony, Unison Voices, Unison Detune, LFO
+    // Left Column: ADSR, Oscillator 1, Oscillator 2, Oscillator 3, Noise Oscillator, Detune, Polyphony, Unison Voices, Unison Detune, LFO
     auto adsrRow = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    leftColumn.removeFromTop(10); // Reduced spacing from 20 to 10
+    leftColumn.removeFromTop(10);
     auto osc1Row = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
     leftColumn.removeFromTop(10);
     auto osc2Row = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
     leftColumn.removeFromTop(10);
     auto osc3Row = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
     leftColumn.removeFromTop(10);
+    auto noiseOscRow = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    leftColumn.removeFromTop(10);
     auto detuneRow = leftColumn.removeFromTop(labelHeight + knobHeight);
     leftColumn.removeFromTop(10);
-    auto polyphonyRow = leftColumn.removeFromTop(labelHeight + knobHeight); // Renamed from numVoicesRow
+    auto polyphonyRow = leftColumn.removeFromTop(labelHeight + knobHeight);
     leftColumn.removeFromTop(10);
     auto unisonVoicesRow = leftColumn.removeFromTop(labelHeight + knobHeight);
     leftColumn.removeFromTop(10);
@@ -527,14 +493,14 @@ void SynthComponent::resized() {
 
     // Middle Column: Distortion, Filter, Compressor
     auto distortionRow = middleColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    middleColumn.removeFromTop(10); // Reduced spacing from 20 to 10
+    middleColumn.removeFromTop(10);
     auto filterRow = middleColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
     middleColumn.removeFromTop(10);
     auto compressorRow = middleColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
 
     // Right Column: Delay, Chorus, Phaser, Flanger, Reverb
     auto delayRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    rightColumn.removeFromTop(10); // Reduced spacing from 20 to 10
+    rightColumn.removeFromTop(10);
     auto chorusRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
     rightColumn.removeFromTop(10);
     auto phaserRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
@@ -544,7 +510,7 @@ void SynthComponent::resized() {
     auto reverbRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
 
     // Left Column Layout
-    // ADSR Row: Envelope label, Attack, Decay, Sustain, Release
+    // ADSR Row
     auto adsrSection = adsrRow;
     adsrSectionLabel.setBounds(adsrSection.removeFromTop(sectionLabelHeight).toNearestInt());
     auto attackBounds = adsrSection.removeFromLeft(knobWidth);
@@ -563,8 +529,8 @@ void SynthComponent::resized() {
     releaseLabel.setBounds(releaseBounds.removeFromTop(labelHeight).toNearestInt());
     releaseSlider.setBounds(releaseBounds.toNearestInt());
 
-    // Oscillator 1 Row: Waveform 1, Osc1 Level
-    auto osc1Section = osc1Row.removeFromLeft(knobWidth * 2 + 10); // Adjusted for smaller knobs
+    // Oscillator 1 Row
+    auto osc1Section = osc1Row.removeFromLeft(knobWidth * 2 + 10);
     oscillator1Label.setBounds(osc1Section.removeFromTop(sectionLabelHeight).toNearestInt());
     auto waveformBounds = osc1Section.removeFromLeft(knobWidth);
     waveformLabel.setBounds(waveformBounds.removeFromTop(labelHeight).toNearestInt());
@@ -573,8 +539,8 @@ void SynthComponent::resized() {
     osc1LevelLabel.setBounds(osc1LevelBounds.removeFromTop(labelHeight).toNearestInt());
     osc1LevelSlider.setBounds(osc1LevelBounds.toNearestInt());
 
-    // Oscillator 2 Row: Waveform 2, Osc2 Level
-    auto osc2Section = osc2Row.removeFromLeft(knobWidth * 2 + 10); // Adjusted for smaller knobs
+    // Oscillator 2 Row
+    auto osc2Section = osc2Row.removeFromLeft(knobWidth * 2 + 10);
     oscillator2Label.setBounds(osc2Section.removeFromTop(sectionLabelHeight).toNearestInt());
     auto waveform2Bounds = osc2Section.removeFromLeft(knobWidth);
     waveform2Label.setBounds(waveform2Bounds.removeFromTop(labelHeight).toNearestInt());
@@ -583,8 +549,8 @@ void SynthComponent::resized() {
     osc2LevelLabel.setBounds(osc2LevelBounds.removeFromTop(labelHeight).toNearestInt());
     osc2LevelSlider.setBounds(osc2LevelBounds.toNearestInt());
 
-    // Oscillator 3 Row: Waveform 3, Osc3 Level
-    auto osc3Section = osc3Row.removeFromLeft(knobWidth * 2 + 10); // Adjusted for smaller knobs
+    // Oscillator 3 Row
+    auto osc3Section = osc3Row.removeFromLeft(knobWidth * 2 + 10);
     oscillator3Label.setBounds(osc3Section.removeFromTop(sectionLabelHeight).toNearestInt());
     auto waveform3Bounds = osc3Section.removeFromLeft(knobWidth);
     waveform3Label.setBounds(waveform3Bounds.removeFromTop(labelHeight).toNearestInt());
@@ -593,14 +559,24 @@ void SynthComponent::resized() {
     osc3LevelLabel.setBounds(osc3LevelBounds.removeFromTop(labelHeight).toNearestInt());
     osc3LevelSlider.setBounds(osc3LevelBounds.toNearestInt());
 
-    // Detune Row: Detune
+    // Noise Oscillator Row
+    auto noiseOscSection = noiseOscRow.removeFromLeft(knobWidth * 2 + 10);
+    noiseOscillatorLabel.setBounds(noiseOscSection.removeFromTop(sectionLabelHeight).toNearestInt());
+    auto noiseWaveformBounds = noiseOscSection.removeFromLeft(knobWidth);
+    noiseWaveformLabel.setBounds(noiseWaveformBounds.removeFromTop(labelHeight).toNearestInt());
+    noiseWaveformSlider.setBounds(noiseWaveformBounds.toNearestInt());
+    auto noiseLevelBounds = noiseOscSection.removeFromLeft(knobWidth);
+    noiseLevelLabel.setBounds(noiseLevelBounds.removeFromTop(labelHeight).toNearestInt());
+    noiseLevelSlider.setBounds(noiseLevelBounds.toNearestInt());
+
+    // Detune Row
     auto detuneBounds = detuneRow.removeFromLeft(knobWidth);
     detuneLabel.setBounds(detuneBounds.removeFromTop(labelHeight).toNearestInt());
     detuneSlider.setBounds(detuneBounds.toNearestInt());
 
-    // Polyphony Row: Number of Voices (now Polyphony)
-    auto polyphonyBounds = polyphonyRow.removeFromLeft(knobWidth); // Renamed from numVoicesBounds
-    polyphonyLabel.setBounds(polyphonyBounds.removeFromTop(labelHeight).toNearestInt()); // Renamed from numVoicesLabel
+    // Polyphony Row
+    auto polyphonyBounds = polyphonyRow.removeFromLeft(knobWidth);
+    polyphonyLabel.setBounds(polyphonyBounds.removeFromTop(labelHeight).toNearestInt());
     numVoicesSlider.setBounds(polyphonyBounds.toNearestInt());
 
     // Unison Voices Row
@@ -613,8 +589,8 @@ void SynthComponent::resized() {
     unisonDetuneLabel.setBounds(unisonDetuneBounds.removeFromTop(labelHeight).toNearestInt());
     unisonDetuneSlider.setBounds(unisonDetuneBounds.toNearestInt());
 
-    // LFO Row: Rate, Depth, Waveform
-    auto lfoSection = lfoRow.removeFromLeft(knobWidth * 3 + 20); // Adjusted for smaller knobs
+    // LFO Row
+    auto lfoSection = lfoRow.removeFromLeft(knobWidth * 3 + 20);
     lfoSectionLabel.setBounds(lfoSection.removeFromTop(sectionLabelHeight).toNearestInt());
     auto lfoRateBounds = lfoSection.removeFromLeft(knobWidth);
     lfoRateLabel.setBounds(lfoRateBounds.removeFromTop(labelHeight).toNearestInt());
@@ -627,8 +603,8 @@ void SynthComponent::resized() {
     lfoWaveformCombo.setBounds(lfoWaveformBounds.withHeight(comboHeight).withY(lfoWaveformLabel.getBottom()).toNearestInt());
 
     // Middle Column Layout
-    // Distortion Row: Drive, Tone, Mix
-    auto distortionSection = distortionRow.removeFromLeft(knobWidth * 3 + 10); // Adjusted for smaller knobs
+    // Distortion Row
+    auto distortionSection = distortionRow.removeFromLeft(knobWidth * 3 + 10);
     distortionSectionLabel.setBounds(distortionSection.removeFromTop(sectionLabelHeight).toNearestInt());
     auto distortionDriveBounds = distortionSection.removeFromLeft(knobWidth);
     distortionDriveLabel.setBounds(distortionDriveBounds.removeFromTop(labelHeight).toNearestInt());
@@ -640,30 +616,26 @@ void SynthComponent::resized() {
     distortionMixLabel.setBounds(distortionMixBounds.removeFromTop(labelHeight).toNearestInt());
     distortionMixSlider.setBounds(distortionMixBounds.toNearestInt());
 
-    // Filter Row: Filter label, Cutoff, Resonance, ADSR Mix, ADSR Depth, Filter Type
+    // Filter Row
     auto filterSection = filterRow;
     filterSectionLabel.setBounds(filterSection.removeFromTop(sectionLabelHeight).toNearestInt());
     auto cutoffBounds = filterSection.removeFromLeft(knobWidth);
     filterCutoffLabel.setBounds(cutoffBounds.removeFromTop(labelHeight).toNearestInt());
     filterCutoffSlider.setBounds(cutoffBounds.toNearestInt());
-
     auto resonanceBounds = filterSection.removeFromLeft(knobWidth);
     filterResonanceLabel.setBounds(resonanceBounds.removeFromTop(labelHeight).toNearestInt());
     filterResonanceSlider.setBounds(resonanceBounds.toNearestInt());
-
     auto adsrMixBounds = filterSection.removeFromLeft(knobWidth);
     filterADSRMixLabel.setBounds(adsrMixBounds.removeFromTop(labelHeight).toNearestInt());
     filterADSRMixSlider.setBounds(adsrMixBounds.toNearestInt());
-
     auto adsrDepthBounds = filterSection.removeFromLeft(knobWidth);
     filterADSRDepthLabel.setBounds(adsrDepthBounds.removeFromTop(labelHeight).toNearestInt());
     filterADSRDepthSlider.setBounds(adsrDepthBounds.toNearestInt());
-
     auto filterTypeBounds = filterSection.removeFromLeft(comboWidth);
     filterTypeLabel.setBounds(filterTypeBounds.removeFromTop(labelHeight).toNearestInt());
     filterTypeCombo.setBounds(filterTypeBounds.withHeight(comboHeight).withY(filterTypeLabel.getBottom()).toNearestInt());
 
-    // Compressor Row: Threshold, Ratio, Attack, Release, Makeup Gain
+    // Compressor Row
     auto compressorSection = compressorRow;
     compressorSectionLabel.setBounds(compressorSection.removeFromTop(sectionLabelHeight).toNearestInt());
     auto compressorThresholdBounds = compressorSection.removeFromLeft(knobWidth);
@@ -683,8 +655,8 @@ void SynthComponent::resized() {
     compressorMakeupGainSlider.setBounds(compressorMakeupGainBounds.toNearestInt());
 
     // Right Column Layout
-    // Delay Row: Time, Feedback, Mix
-    auto delaySection = delayRow.removeFromLeft(knobWidth * 3 + 10); // Adjusted for smaller knobs
+    // Delay Row
+    auto delaySection = delayRow.removeFromLeft(knobWidth * 3 + 10);
     delaySectionLabel.setBounds(delaySection.removeFromTop(sectionLabelHeight).toNearestInt());
     auto delayTimeBounds = delaySection.removeFromLeft(knobWidth);
     delayTimeLabel.setBounds(delayTimeBounds.removeFromTop(labelHeight).toNearestInt());
@@ -696,8 +668,8 @@ void SynthComponent::resized() {
     delayMixLabel.setBounds(delayMixBounds.removeFromTop(labelHeight).toNearestInt());
     delayMixSlider.setBounds(delayMixBounds.toNearestInt());
 
-    // Chorus Row: Rate, Depth, Mix, Delay
-    auto chorusSection = chorusRow.removeFromLeft(knobWidth * 4 + 10); // Adjusted for smaller knobs
+    // Chorus Row
+    auto chorusSection = chorusRow.removeFromLeft(knobWidth * 4 + 10);
     chorusSectionLabel.setBounds(chorusSection.removeFromTop(sectionLabelHeight).toNearestInt());
     auto chorusRateBounds = chorusSection.removeFromLeft(knobWidth);
     chorusRateLabel.setBounds(chorusRateBounds.removeFromTop(labelHeight).toNearestInt());
@@ -712,8 +684,8 @@ void SynthComponent::resized() {
     chorusDelayLabel.setBounds(chorusDelayBounds.removeFromTop(labelHeight).toNearestInt());
     chorusDelaySlider.setBounds(chorusDelayBounds.toNearestInt());
 
-    // Phaser Row: Rate, Depth, Mix
-    auto phaserSection = phaserRow.removeFromLeft(knobWidth * 3 + 10); // Adjusted for smaller knobs
+    // Phaser Row
+    auto phaserSection = phaserRow.removeFromLeft(knobWidth * 3 + 10);
     phaserSectionLabel.setBounds(phaserSection.removeFromTop(sectionLabelHeight).toNearestInt());
     auto phaserRateBounds = phaserSection.removeFromLeft(knobWidth);
     phaserRateLabel.setBounds(phaserRateBounds.removeFromTop(labelHeight).toNearestInt());
@@ -725,8 +697,8 @@ void SynthComponent::resized() {
     phaserMixLabel.setBounds(phaserMixBounds.removeFromTop(labelHeight).toNearestInt());
     phaserMixSlider.setBounds(phaserMixBounds.toNearestInt());
 
-    // Flanger Row: Rate, Depth, Mix, Delay
-    auto flangerSection = flangerRow.removeFromLeft(knobWidth * 4 + 10); // Adjusted for smaller knobs
+    // Flanger Row
+    auto flangerSection = flangerRow.removeFromLeft(knobWidth * 4 + 10);
     flangerSectionLabel.setBounds(flangerSection.removeFromTop(sectionLabelHeight).toNearestInt());
     auto flangerRateBounds = flangerSection.removeFromLeft(knobWidth);
     flangerRateLabel.setBounds(flangerRateBounds.removeFromTop(labelHeight).toNearestInt());
@@ -741,8 +713,8 @@ void SynthComponent::resized() {
     flangerDelayLabel.setBounds(flangerDelayBounds.removeFromTop(labelHeight).toNearestInt());
     flangerDelaySlider.setBounds(flangerDelayBounds.toNearestInt());
 
-    // Reverb Row: Room Size, Damping, Wet Level, Dry Level
-    auto reverbSection = reverbRow.removeFromLeft(knobWidth * 4 + 10); // Adjusted for smaller knobs
+    // Reverb Row
+    auto reverbSection = reverbRow.removeFromLeft(knobWidth * 4 + 10);
     reverbSectionLabel.setBounds(reverbSection.removeFromTop(sectionLabelHeight).toNearestInt());
     auto reverbRoomSizeBounds = reverbSection.removeFromLeft(knobWidth);
     reverbRoomSizeLabel.setBounds(reverbRoomSizeBounds.removeFromTop(labelHeight).toNearestInt());

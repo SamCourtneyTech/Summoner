@@ -18,13 +18,15 @@ SummonerAudioProcessor::SummonerAudioProcessor()
     std::make_unique<juce::AudioParameterFloat>("decay", "Decay", 0.01f, 5.0f, 0.30f),
     std::make_unique<juce::AudioParameterFloat>("sustain", "Sustain", 0.0f, 1.0f, 0.94f),
     std::make_unique<juce::AudioParameterFloat>("release", "Release", 0.01f, 5.0f, 0.01f),
-    std::make_unique<juce::AudioParameterFloat>("waveform", "Waveform", 0.0f, 1.0f, 0.20f),
-    std::make_unique<juce::AudioParameterFloat>("waveform2", "Waveform 2", 0.0f, 1.0f, 0.20f),
-    std::make_unique<juce::AudioParameterFloat>("waveform3", "Waveform 3", 0.0f, 1.0f, 0.20f),
+    std::make_unique<juce::AudioParameterFloat>("waveform", "Waveform", 0.0f, 0.8f, 0.20f),
+    std::make_unique<juce::AudioParameterFloat>("waveform2", "Waveform 2", 0.0f, 0.8f, 0.20f),
+    std::make_unique<juce::AudioParameterFloat>("waveform3", "Waveform 3", 0.0f, 0.8f, 0.20f),
+    std::make_unique<juce::AudioParameterFloat>("noiseWaveform", "Noise Waveform", 0.0f, 1.0f, 0.0f),
     std::make_unique<juce::AudioParameterFloat>("detune", "Detune", -100.0f, 100.0f, 0.0f),
     std::make_unique<juce::AudioParameterFloat>("osc1Level", "Osc1 Level", 0.0f, 1.0f, 0.5f),
     std::make_unique<juce::AudioParameterFloat>("osc2Level", "Osc2 Level", 0.0f, 1.0f, 0.5f),
     std::make_unique<juce::AudioParameterFloat>("osc3Level", "Osc3 Level", 0.0f, 1.0f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat>("noiseLevel", "Noise Level", 0.0f, 1.0f, 0.0f),
     // LFO parameters
     std::make_unique<juce::AudioParameterFloat>("lfoRate", "LFO Rate", 0.1f, 20.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("lfoDepth", "LFO Depth", 0.0f, 5000.0f, 0.0f),
@@ -73,8 +75,8 @@ SummonerAudioProcessor::SummonerAudioProcessor()
             // Number of voices
             std::make_unique<juce::AudioParameterInt>("numVoices", "Num Voices", 1, 16, 8),
             // Unison parameters
-            std::make_unique<juce::AudioParameterInt>("unisonVoices", "Unison Voices", 1, 8, 1), // 1 = off, 2-8 = unison voices
-            std::make_unique<juce::AudioParameterFloat>("unisonDetune", "Unison Detune", 0.0f, 50.0f, 0.0f) // Detune in cents
+            std::make_unique<juce::AudioParameterInt>("unisonVoices", "Unison Voices", 1, 8, 1),
+            std::make_unique<juce::AudioParameterFloat>("unisonDetune", "Unison Detune", 0.0f, 50.0f, 0.0f)
         })
 {
     parameters.addParameterListener("numVoices", this);
@@ -83,23 +85,21 @@ SummonerAudioProcessor::SummonerAudioProcessor()
 void SummonerAudioProcessor::updateNumVoices() {
     int newNumVoices = static_cast<int>(*parameters.getRawParameterValue("numVoices"));
 
-    // Clear existing voices
     for (auto* voice : voices) {
         voice->noteOff();
     }
     voices.clear();
 
-    // Add new voices based on parameter
     for (int i = 0; i < newNumVoices; ++i) {
         voices.add(new Voice());
-        // Only prepare if sample rate is valid
         if (currentSampleRate > 0.0) {
             voices[i]->prepare(currentSampleRate);
             voices[i]->setParameterPointers(
                 parameters.getRawParameterValue("detune"),
                 parameters.getRawParameterValue("osc1Level"),
                 parameters.getRawParameterValue("osc2Level"),
-                parameters.getRawParameterValue("osc3Level")
+                parameters.getRawParameterValue("osc3Level"),
+                parameters.getRawParameterValue("noiseLevel")
             );
         }
     }
@@ -340,36 +340,33 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
 
     float waveformValue1 = *parameters.getRawParameterValue("waveform");
     Oscillator::Waveform wf1;
-    if (waveformValue1 <= 0.16f) wf1 = Oscillator::Waveform::Sine;
-    else if (waveformValue1 <= 0.32f) wf1 = Oscillator::Waveform::Saw;
-    else if (waveformValue1 <= 0.48f) wf1 = Oscillator::Waveform::Square;
-    else if (waveformValue1 <= 0.64f) wf1 = Oscillator::Waveform::Triangle;
-    else if (waveformValue1 <= 0.80f) wf1 = Oscillator::Waveform::Pulse25;
-    else if (waveformValue1 <= 0.90f) wf1 = Oscillator::Waveform::WhiteNoise;
-    else wf1 = Oscillator::Waveform::PinkNoise;
+    if (waveformValue1 <= 0.2f) wf1 = Oscillator::Waveform::Sine;
+    else if (waveformValue1 <= 0.4f) wf1 = Oscillator::Waveform::Saw;
+    else if (waveformValue1 <= 0.6f) wf1 = Oscillator::Waveform::Square;
+    else if (waveformValue1 <= 0.8f) wf1 = Oscillator::Waveform::Triangle;
+    else wf1 = Oscillator::Waveform::Pulse25;
 
     float waveformValue2 = *parameters.getRawParameterValue("waveform2");
     Oscillator::Waveform wf2;
-    if (waveformValue2 <= 0.16f) wf2 = Oscillator::Waveform::Sine;
-    else if (waveformValue2 <= 0.32f) wf2 = Oscillator::Waveform::Saw;
-    else if (waveformValue2 <= 0.48f) wf2 = Oscillator::Waveform::Square;
-    else if (waveformValue2 <= 0.64f) wf2 = Oscillator::Waveform::Triangle;
-    else if (waveformValue2 <= 0.80f) wf2 = Oscillator::Waveform::Pulse25;
-    else if (waveformValue2 <= 0.90f) wf2 = Oscillator::Waveform::WhiteNoise;
-    else wf2 = Oscillator::Waveform::PinkNoise;
+    if (waveformValue2 <= 0.2f) wf2 = Oscillator::Waveform::Sine;
+    else if (waveformValue2 <= 0.4f) wf2 = Oscillator::Waveform::Saw;
+    else if (waveformValue2 <= 0.6f) wf2 = Oscillator::Waveform::Square;
+    else if (waveformValue2 <= 0.8f) wf2 = Oscillator::Waveform::Triangle;
+    else wf2 = Oscillator::Waveform::Pulse25;
 
     float waveformValue3 = *parameters.getRawParameterValue("waveform3");
     Oscillator::Waveform wf3;
-    if (waveformValue3 <= 0.16f) wf3 = Oscillator::Waveform::Sine;
-    else if (waveformValue3 <= 0.32f) wf3 = Oscillator::Waveform::Saw;
-    else if (waveformValue3 <= 0.48f) wf3 = Oscillator::Waveform::Square;
-    else if (waveformValue3 <= 0.64f) wf3 = Oscillator::Waveform::Triangle;
-    else if (waveformValue3 <= 0.80f) wf3 = Oscillator::Waveform::Pulse25;
-    else if (waveformValue3 <= 0.90f) wf3 = Oscillator::Waveform::WhiteNoise;
-    else wf3 = Oscillator::Waveform::PinkNoise;
+    if (waveformValue3 <= 0.2f) wf3 = Oscillator::Waveform::Sine;
+    else if (waveformValue3 <= 0.4f) wf3 = Oscillator::Waveform::Saw;
+    else if (waveformValue3 <= 0.6f) wf3 = Oscillator::Waveform::Square;
+    else if (waveformValue3 <= 0.8f) wf3 = Oscillator::Waveform::Triangle;
+    else wf3 = Oscillator::Waveform::Pulse25;
+
+    float noiseWaveformValue = *parameters.getRawParameterValue("noiseWaveform");
+    NoiseOscillator::Waveform nwf = (noiseWaveformValue <= 0.5f) ? NoiseOscillator::Waveform::WhiteNoise : NoiseOscillator::Waveform::PinkNoise;
 
     for (auto* voice : voices) {
-        voice->setWaveform(wf1, wf2, wf3);
+        voice->setWaveform(wf1, wf2, wf3, nwf);
     }
 
     float lfoRate = *parameters.getRawParameterValue("lfoRate");
@@ -426,7 +423,6 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     float flangerDelayMs = *parameters.getRawParameterValue("flangerDelay");
     flangerLFO.setFrequency(flangerRate);
 
-    // Get unison parameters
     int unisonVoices = static_cast<int>(*parameters.getRawParameterValue("unisonVoices"));
     float unisonDetune = *parameters.getRawParameterValue("unisonDetune");
 
@@ -436,7 +432,6 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
             int noteNumber = msg.getNoteNumber();
             float freq = juce::MidiMessage::getMidiNoteInHertz(noteNumber);
 
-            // Clear any existing voices for this note (in case of retrigger)
             if (noteToVoices.find(noteNumber) != noteToVoices.end()) {
                 for (auto* voice : noteToVoices[noteNumber]) {
                     voice->noteOff();
@@ -445,15 +440,12 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
                 noteToVoices.erase(noteNumber);
             }
 
-            // Allocate unison voices
             std::vector<Voice*> assignedVoices;
             for (int i = 0; i < unisonVoices; ++i) {
                 Voice* freeVoice = findVoiceToSteal();
                 if (freeVoice) {
-                    // Calculate detune offset for this unison voice
                     float detuneOffset = 0.0f;
                     if (unisonVoices > 1) {
-                        // Spread detune symmetrically: e.g., for 3 voices: -detune, 0, +detune
                         float step = unisonDetune / (unisonVoices - 1);
                         detuneOffset = (i * step) - (unisonDetune / 2.0f);
                     }
@@ -486,7 +478,6 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     auto* leftChannel = buffer.getWritePointer(0);
     auto* rightChannel = buffer.getWritePointer(1);
 
-    // Adjust amplitude based on number of unison voices to prevent clipping
     float amplitudeScale = 1.0f / std::sqrt(static_cast<float>(unisonVoices));
 
     for (int sample = 0; sample < numSamples; ++sample) {

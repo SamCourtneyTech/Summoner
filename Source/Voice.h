@@ -1,6 +1,7 @@
 #pragma once
 #include <JuceHeader.h>
 #include "Oscillator.h"
+#include "NoiseOscillator.h"
 
 class Voice {
 public:
@@ -10,6 +11,7 @@ public:
         oscillator1.prepare(sampleRate);
         oscillator2.prepare(sampleRate);
         oscillator3.prepare(sampleRate);
+        noiseOscillator.prepare(sampleRate);
         fadeOutSamples = static_cast<int>(0.005 * sampleRate); // 5ms fade-out
         fadeOutStep = 1.0f / fadeOutSamples;
     }
@@ -27,7 +29,6 @@ public:
 
     void noteOn(float freq, double sampleRate) {
         currentFrequency = freq;
-        // Apply unison detune offset
         float unisonDetuneFactor = std::pow(2.0f, unisonDetuneOffset / 1200.0f);
         float detunedFreq = freq * unisonDetuneFactor;
 
@@ -35,12 +36,13 @@ public:
         float detuneCents = detunePtr->load();
         float detuneFactor = std::pow(2.0f, detuneCents / 1200.0f);
         oscillator2.setFrequency(detunedFreq * detuneFactor, sampleRate);
-        oscillator3.setFrequency(detunedFreq * detuneFactor * 1.01f, sampleRate); // Slight additional detune
+        oscillator3.setFrequency(detunedFreq * detuneFactor * 1.01f, sampleRate);
         oscillator1.noteOn();
         oscillator2.noteOn();
         oscillator3.noteOn();
+        noiseOscillator.noteOn();
         isActive = true;
-        fadeOutCounter = 0; // Reset fade-out
+        fadeOutCounter = 0;
         amplitude = 1.0f;
     }
 
@@ -48,6 +50,7 @@ public:
         oscillator1.noteOff();
         oscillator2.noteOff();
         oscillator3.noteOff();
+        noiseOscillator.noteOff();
     }
 
     void startFadeOut() {
@@ -60,19 +63,18 @@ public:
         float osc1Output = oscillator1.getNextSample() * osc1LevelPtr->load();
         float osc2Output = oscillator2.getNextSample() * osc2LevelPtr->load();
         float osc3Output = oscillator3.getNextSample() * osc3LevelPtr->load();
-        float mixedOutput = (osc1Output + osc2Output + osc3Output) / 3.0f;
+        float noiseOutput = noiseOscillator.getNextSample() * noiseLevelPtr->load();
+        float mixedOutput = (osc1Output + osc2Output + osc3Output + noiseOutput) / 4.0f;
 
-        // Apply fade-out if active
         if (fadeOutCounter > 0) {
             amplitude = juce::jmax(0.0f, amplitude - fadeOutStep);
             fadeOutCounter--;
             if (fadeOutCounter <= 0) {
-                isActive = false; // Deactivate voice after fade-out
+                isActive = false;
             }
         }
 
-        // Check if all oscillators are done with their envelopes
-        if (!oscillator1.getIsActive() && !oscillator2.getIsActive() && !oscillator3.getIsActive() && fadeOutCounter <= 0) {
+        if (!oscillator1.getIsActive() && !oscillator2.getIsActive() && !oscillator3.getIsActive() && !noiseOscillator.getIsActive() && fadeOutCounter <= 0) {
             isActive = false;
         }
 
@@ -87,39 +89,42 @@ public:
         oscillator1.setADSR(attack, decay, sustain, release);
         oscillator2.setADSR(attack, decay, sustain, release);
         oscillator3.setADSR(attack, decay, sustain, release);
+        noiseOscillator.setADSR(attack, decay, sustain, release);
     }
 
-    void setWaveform(Oscillator::Waveform waveform1, Oscillator::Waveform waveform2, Oscillator::Waveform waveform3) {
+    void setWaveform(Oscillator::Waveform waveform1, Oscillator::Waveform waveform2, Oscillator::Waveform waveform3, NoiseOscillator::Waveform noiseWaveform) {
         oscillator1.setWaveform(waveform1);
         oscillator2.setWaveform(waveform2);
         oscillator3.setWaveform(waveform3);
+        noiseOscillator.setWaveform(noiseWaveform);
     }
 
-    void setParameterPointers(std::atomic<float>* detune, std::atomic<float>* osc1Level, std::atomic<float>* osc2Level, std::atomic<float>* osc3Level) {
+    void setParameterPointers(std::atomic<float>* detune, std::atomic<float>* osc1Level, std::atomic<float>* osc2Level, std::atomic<float>* osc3Level, std::atomic<float>* noiseLevel) {
         detunePtr = detune;
         osc1LevelPtr = osc1Level;
         osc2LevelPtr = osc2Level;
         osc3LevelPtr = osc3Level;
+        noiseLevelPtr = noiseLevel;
     }
 
 private:
     Oscillator oscillator1;
     Oscillator oscillator2;
     Oscillator oscillator3;
+    NoiseOscillator noiseOscillator;
     float currentFrequency = 0.0f;
     int noteNumber;
     bool isActive;
-    float unisonDetuneOffset; // Detune offset for unison voices (in cents)
+    float unisonDetuneOffset;
 
-    // Fade-out variables
-    int fadeOutSamples; // Number of samples for fade-out
-    float fadeOutStep;  // Amplitude decrement per sample
-    int fadeOutCounter = 0; // Current fade-out position
-    float amplitude = 1.0f; // Current amplitude during fade-out
+    int fadeOutSamples;
+    float fadeOutStep;
+    int fadeOutCounter = 0;
+    float amplitude = 1.0f;
 
-    // Parameter pointers
     std::atomic<float>* detunePtr = nullptr;
     std::atomic<float>* osc1LevelPtr = nullptr;
     std::atomic<float>* osc2LevelPtr = nullptr;
     std::atomic<float>* osc3LevelPtr = nullptr;
+    std::atomic<float>* noiseLevelPtr = nullptr;
 };
