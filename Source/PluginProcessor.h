@@ -1,6 +1,6 @@
 #pragma once
 #include <JuceHeader.h>
-#include "Oscillator.h"
+#include "Voice.h"
 #include "LFO.h"
 
 class SummonerAudioProcessor : public juce::AudioProcessor
@@ -38,46 +38,37 @@ public:
     juce::AudioProcessorValueTreeState parameters;
 
 private:
-    Oscillator oscillator1;
-    Oscillator oscillator2;
+    static const int maxVoices = 8;
+    juce::OwnedArray<Voice> voices;
     LFO lfo;
     float currentFrequency = 440.0f;
 
-    // Filter object
     juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>> filter;
     double currentSampleRate = 0.0;
 
-    // Delay buffer for the main delay effect
     juce::AudioBuffer<float> delayBuffer;
     int delayBufferSize = 0;
     int delayWritePosition = 0;
 
-    // Reverb
     juce::Reverb reverb;
     juce::Reverb::Parameters reverbParams;
 
-    // Distortion
     juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>> distortionToneFilter;
     float lastDistortionTone = -1.0f;
 
-    // Compressor
     juce::dsp::Compressor<float> compressor;
     juce::dsp::Gain<float> compressorMakeupGain;
 
-    // Chorus
     juce::dsp::Chorus<float> chorus;
 
-    // Phaser
     juce::dsp::Phaser<float> phaser;
 
-    // Custom Flanger implementation
-    juce::AudioBuffer<float> flangerBuffer; // Buffer for flanger delay line
+    juce::AudioBuffer<float> flangerBuffer;
     int flangerBufferSize = 0;
     int flangerWritePosition = 0;
-    LFO flangerLFO; // LFO for flanger modulation
+    LFO flangerLFO;
     float flangerPhase = 0.0f;
 
-    // Track last parameter values for filter updates
     float lastFilterCutoff = -1.0f;
     float lastFilterResonance = -1.0f;
     int lastFilterType = -1;

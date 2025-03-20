@@ -25,6 +25,7 @@
           file="Source/SynthComponent.cpp"/>
     <FILE id="g2xnz4" name="SynthComponent.h" compile="0" resource="0"
           file="Source/SynthComponent.h"/>
+    <FILE id="RLPJYy" name="Voice.h" compile="0" resource="0" file="Source/Voice.h"/>
   </MAINGROUP>
   <MODULES>
     <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>

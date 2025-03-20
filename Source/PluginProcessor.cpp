@@ -70,6 +70,10 @@ SummonerAudioProcessor::SummonerAudioProcessor()
             juce::StringArray("Low Pass", "High Pass", "Band Pass", "Notch"), 0)
         })
 {
+    // Initialize voices
+    for (int i = 0; i < maxVoices; ++i) {
+        voices.add(new Voice());
+    }
 }
 
 SummonerAudioProcessor::~SummonerAudioProcessor()
@@ -175,86 +179,7 @@ void SummonerAudioProcessor::updateFilter()
     *filter.state = *newCoefficients;
 }
 
-void SummonerAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
-{
-    oscillator1.prepare(sampleRate);
-    oscillator2.prepare(sampleRate);
-    lfo.prepare(sampleRate);
-    oscillator1.setFrequency(currentFrequency, sampleRate);
-    oscillator2.setFrequency(currentFrequency, sampleRate);
-    oscillator1.setADSR(
-        *parameters.getRawParameterValue("attack"),
-        *parameters.getRawParameterValue("decay"),
-        *parameters.getRawParameterValue("sustain"),
-        *parameters.getRawParameterValue("release")
-    );
-    oscillator2.setADSR(
-        *parameters.getRawParameterValue("attack"),
-        *parameters.getRawParameterValue("decay"),
-        *parameters.getRawParameterValue("sustain"),
-        *parameters.getRawParameterValue("release")
-    );
 
-    currentSampleRate = sampleRate;
-    juce::dsp::ProcessSpec spec;
-    spec.sampleRate = sampleRate;
-    spec.maximumBlockSize = samplesPerBlock;
-    spec.numChannels = getTotalNumOutputChannels();
-    filter.prepare(spec);
-    updateFilter();
-
-    // Prepare delay buffer for the main delay effect
-    delayBufferSize = static_cast<int>(2.0 * sampleRate);
-    delayBuffer.setSize(2, delayBufferSize);
-    delayBuffer.clear();
-    delayWritePosition = 0;
-
-    // Prepare flanger buffer (max delay is 5 ms * 1.5 = 7.5 ms due to modulation)
-    flangerBufferSize = static_cast<int>(0.0075 * sampleRate) + 1; // 7.5 ms max delay
-    flangerBuffer.setSize(2, flangerBufferSize);
-    flangerBuffer.clear();
-    flangerWritePosition = 0;
-    flangerLFO.prepare(sampleRate);
-    flangerLFO.setWaveform(LFO::Waveform::Sine); // Use a sine wave for flanger modulation
-
-    // Prepare reverb
-    reverb.reset();
-    reverbParams.roomSize = *parameters.getRawParameterValue("reverbRoomSize");
-    reverbParams.damping = *parameters.getRawParameterValue("reverbDamping");
-    reverbParams.wetLevel = *parameters.getRawParameterValue("reverbWetLevel");
-    reverbParams.dryLevel = *parameters.getRawParameterValue("reverbDryLevel");
-    reverb.setParameters(reverbParams);
-
-    // Prepare distortion tone filter
-    distortionToneFilter.prepare(spec);
-    lastDistortionTone = -1.0f;
-
-    // Prepare compressor
-    compressor.prepare(spec);
-    compressor.setThreshold(*parameters.getRawParameterValue("compressorThreshold"));
-    compressor.setRatio(*parameters.getRawParameterValue("compressorRatio"));
-    compressor.setAttack(*parameters.getRawParameterValue("compressorAttack"));
-    compressor.setRelease(*parameters.getRawParameterValue("compressorRelease"));
-
-    // Prepare makeup gain
-    compressorMakeupGain.prepare(spec);
-    compressorMakeupGain.setGainDecibels(*parameters.getRawParameterValue("compressorMakeupGain"));
-
-    // Prepare chorus
-    chorus.prepare(spec);
-    chorus.setRate(*parameters.getRawParameterValue("chorusRate"));
-    chorus.setDepth(*parameters.getRawParameterValue("chorusDepth"));
-    chorus.setMix(*parameters.getRawParameterValue("chorusMix"));
-    chorus.setCentreDelay(*parameters.getRawParameterValue("chorusDelay"));
-
-    // Prepare phaser
-    phaser.prepare(spec);
-    phaser.setRate(*parameters.getRawParameterValue("phaserRate"));
-    phaser.setDepth(*parameters.getRawParameterValue("phaserDepth"));
-    phaser.setMix(*parameters.getRawParameterValue("phaserMix"));
-
-    DBG("Synth prepared with sample rate: " << sampleRate);
-}
 
 void SummonerAudioProcessor::releaseResources()
 {
@@ -276,60 +201,107 @@ bool SummonerAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) 
 }
 #endif
 
-void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
-{
+void SummonerAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
+    lfo.prepare(sampleRate);
+    currentSampleRate = sampleRate;
+
+    for (auto* voice : voices) {
+        voice->prepare(sampleRate);
+        voice->setParameterPointers(
+            parameters.getRawParameterValue("detune"),
+            parameters.getRawParameterValue("osc1Level"),
+            parameters.getRawParameterValue("osc2Level")
+        );
+    }
+
+    juce::dsp::ProcessSpec spec;
+    spec.sampleRate = sampleRate;
+    spec.maximumBlockSize = samplesPerBlock;
+    spec.numChannels = getTotalNumOutputChannels();
+    filter.prepare(spec);
+    updateFilter();
+
+    delayBufferSize = static_cast<int>(2.0 * sampleRate);
+    delayBuffer.setSize(2, delayBufferSize);
+    delayBuffer.clear();
+    delayWritePosition = 0;
+
+    flangerBufferSize = static_cast<int>(0.0075 * sampleRate) + 1;
+    flangerBuffer.setSize(2, flangerBufferSize);
+    flangerBuffer.clear();
+    flangerWritePosition = 0;
+    flangerLFO.prepare(sampleRate);
+    flangerLFO.setWaveform(LFO::Waveform::Sine);
+
+    reverb.reset();
+    reverbParams.roomSize = *parameters.getRawParameterValue("reverbRoomSize");
+    reverbParams.damping = *parameters.getRawParameterValue("reverbDamping");
+    reverbParams.wetLevel = *parameters.getRawParameterValue("reverbWetLevel");
+    reverbParams.dryLevel = *parameters.getRawParameterValue("reverbDryLevel");
+    reverb.setParameters(reverbParams);
+
+    distortionToneFilter.prepare(spec);
+    lastDistortionTone = -1.0f;
+
+    compressor.prepare(spec);
+    compressor.setThreshold(*parameters.getRawParameterValue("compressorThreshold"));
+    compressor.setRatio(*parameters.getRawParameterValue("compressorRatio"));
+    compressor.setAttack(*parameters.getRawParameterValue("compressorAttack"));
+    compressor.setRelease(*parameters.getRawParameterValue("compressorRelease"));
+
+    compressorMakeupGain.prepare(spec);
+    compressorMakeupGain.setGainDecibels(*parameters.getRawParameterValue("compressorMakeupGain"));
+
+    chorus.prepare(spec);
+    chorus.setRate(*parameters.getRawParameterValue("chorusRate"));
+    chorus.setDepth(*parameters.getRawParameterValue("chorusDepth"));
+    chorus.setMix(*parameters.getRawParameterValue("chorusMix"));
+    chorus.setCentreDelay(*parameters.getRawParameterValue("chorusDelay"));
+
+    phaser.prepare(spec);
+    phaser.setRate(*parameters.getRawParameterValue("phaserRate"));
+    phaser.setDepth(*parameters.getRawParameterValue("phaserDepth"));
+    phaser.setMix(*parameters.getRawParameterValue("phaserMix"));
+
+    DBG("Synth prepared with sample rate: " << sampleRate);
+}
+
+void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {
     juce::ScopedNoDenormals noDenormals;
     auto numSamples = buffer.getNumSamples();
     buffer.clear();
 
-    oscillator1.setADSR(
-        *parameters.getRawParameterValue("attack"),
-        *parameters.getRawParameterValue("decay"),
-        *parameters.getRawParameterValue("sustain"),
-        *parameters.getRawParameterValue("release")
-    );
-    oscillator2.setADSR(
-        *parameters.getRawParameterValue("attack"),
-        *parameters.getRawParameterValue("decay"),
-        *parameters.getRawParameterValue("sustain"),
-        *parameters.getRawParameterValue("release")
-    );
+    float attack = *parameters.getRawParameterValue("attack");
+    float decay = *parameters.getRawParameterValue("decay");
+    float sustain = *parameters.getRawParameterValue("sustain");
+    float release = *parameters.getRawParameterValue("release");
+    for (auto* voice : voices) {
+        voice->setADSR(attack, decay, sustain, release);
+    }
 
     float waveformValue1 = *parameters.getRawParameterValue("waveform");
-    if (waveformValue1 <= 0.16f)
-        oscillator1.setWaveform(Oscillator::Waveform::Sine);
-    else if (waveformValue1 <= 0.32f)
-        oscillator1.setWaveform(Oscillator::Waveform::Saw);
-    else if (waveformValue1 <= 0.48f)
-        oscillator1.setWaveform(Oscillator::Waveform::Square);
-    else if (waveformValue1 <= 0.64f)
-        oscillator1.setWaveform(Oscillator::Waveform::Triangle);
-    else if (waveformValue1 <= 0.80f)
-        oscillator1.setWaveform(Oscillator::Waveform::Pulse25);
-    else if (waveformValue1 <= 0.90f)
-        oscillator1.setWaveform(Oscillator::Waveform::WhiteNoise);
-    else
-        oscillator1.setWaveform(Oscillator::Waveform::PinkNoise);
+    Oscillator::Waveform wf1;
+    if (waveformValue1 <= 0.16f) wf1 = Oscillator::Waveform::Sine;
+    else if (waveformValue1 <= 0.32f) wf1 = Oscillator::Waveform::Saw;
+    else if (waveformValue1 <= 0.48f) wf1 = Oscillator::Waveform::Square;
+    else if (waveformValue1 <= 0.64f) wf1 = Oscillator::Waveform::Triangle;
+    else if (waveformValue1 <= 0.80f) wf1 = Oscillator::Waveform::Pulse25;
+    else if (waveformValue1 <= 0.90f) wf1 = Oscillator::Waveform::WhiteNoise;
+    else wf1 = Oscillator::Waveform::PinkNoise;
 
     float waveformValue2 = *parameters.getRawParameterValue("waveform2");
-    if (waveformValue2 <= 0.16f)
-        oscillator2.setWaveform(Oscillator::Waveform::Sine);
-    else if (waveformValue2 <= 0.32f)
-        oscillator2.setWaveform(Oscillator::Waveform::Saw);
-    else if (waveformValue2 <= 0.48f)
-        oscillator2.setWaveform(Oscillator::Waveform::Square);
-    else if (waveformValue2 <= 0.64f)
-        oscillator2.setWaveform(Oscillator::Waveform::Triangle);
-    else if (waveformValue2 <= 0.80f)
-        oscillator2.setWaveform(Oscillator::Waveform::Pulse25);
-    else if (waveformValue2 <= 0.90f)
-        oscillator2.setWaveform(Oscillator::Waveform::WhiteNoise);
-    else
-        oscillator2.setWaveform(Oscillator::Waveform::PinkNoise);
+    Oscillator::Waveform wf2;
+    if (waveformValue2 <= 0.16f) wf2 = Oscillator::Waveform::Sine;
+    else if (waveformValue2 <= 0.32f) wf2 = Oscillator::Waveform::Saw;
+    else if (waveformValue2 <= 0.48f) wf2 = Oscillator::Waveform::Square;
+    else if (waveformValue2 <= 0.64f) wf2 = Oscillator::Waveform::Triangle;
+    else if (waveformValue2 <= 0.80f) wf2 = Oscillator::Waveform::Pulse25;
+    else if (waveformValue2 <= 0.90f) wf2 = Oscillator::Waveform::WhiteNoise;
+    else wf2 = Oscillator::Waveform::PinkNoise;
 
-    float detuneCents = *parameters.getRawParameterValue("detune");
-    float osc1Level = *parameters.getRawParameterValue("osc1Level");
-    float osc2Level = *parameters.getRawParameterValue("osc2Level");
+    for (auto* voice : voices) {
+        voice->setWaveform(wf1, wf2);
+    }
 
     float lfoRate = *parameters.getRawParameterValue("lfoRate");
     float lfoDepth = *parameters.getRawParameterValue("lfoDepth");
@@ -355,62 +327,62 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     reverbParams.dryLevel = *parameters.getRawParameterValue("reverbDryLevel");
     reverb.setParameters(reverbParams);
 
-    // Distortion parameters
     float distortionDrive = *parameters.getRawParameterValue("distortionDrive");
     float distortionTone = *parameters.getRawParameterValue("distortionTone");
     float distortionMix = *parameters.getRawParameterValue("distortionMix");
 
-    // Update distortion tone filter if necessary
-    if (distortionTone != lastDistortionTone)
-    {
+    if (distortionTone != lastDistortionTone) {
         *distortionToneFilter.state = *juce::dsp::IIR::Coefficients<float>::makeLowPass(currentSampleRate, distortionTone, 0.707f);
         lastDistortionTone = distortionTone;
     }
 
-    // Compressor parameters
     compressor.setThreshold(*parameters.getRawParameterValue("compressorThreshold"));
     compressor.setRatio(*parameters.getRawParameterValue("compressorRatio"));
     compressor.setAttack(*parameters.getRawParameterValue("compressorAttack"));
     compressor.setRelease(*parameters.getRawParameterValue("compressorRelease"));
-
-    // Update makeup gain
     compressorMakeupGain.setGainDecibels(*parameters.getRawParameterValue("compressorMakeupGain"));
 
-    // Chorus parameters
     chorus.setRate(*parameters.getRawParameterValue("chorusRate"));
     chorus.setDepth(*parameters.getRawParameterValue("chorusDepth"));
     chorus.setMix(*parameters.getRawParameterValue("chorusMix"));
     chorus.setCentreDelay(*parameters.getRawParameterValue("chorusDelay"));
 
-    // Phaser parameters
     phaser.setRate(*parameters.getRawParameterValue("phaserRate"));
     phaser.setDepth(*parameters.getRawParameterValue("phaserDepth"));
     phaser.setMix(*parameters.getRawParameterValue("phaserMix"));
 
-    // Flanger parameters
     float flangerRate = *parameters.getRawParameterValue("flangerRate");
     float flangerDepth = *parameters.getRawParameterValue("flangerDepth");
     float flangerMix = *parameters.getRawParameterValue("flangerMix");
     float flangerDelayMs = *parameters.getRawParameterValue("flangerDelay");
     flangerLFO.setFrequency(flangerRate);
 
-    for (const auto metadata : midiMessages)
-    {
+    for (const auto metadata : midiMessages) {
         auto msg = metadata.getMessage();
-        if (msg.isNoteOn())
-        {
-            currentFrequency = juce::MidiMessage::getMidiNoteInHertz(msg.getNoteNumber());
-            oscillator1.setFrequency(currentFrequency, getSampleRate());
-            float detuneFactor = std::pow(2.0f, detuneCents / 1200.0f);
-            float detunedFrequency = currentFrequency * detuneFactor;
-            oscillator2.setFrequency(detunedFrequency, getSampleRate());
-            oscillator1.noteOn();
-            oscillator2.noteOn();
+        if (msg.isNoteOn()) {
+            int noteNumber = msg.getNoteNumber();
+            float freq = juce::MidiMessage::getMidiNoteInHertz(noteNumber);
+            Voice* freeVoice = nullptr;
+            for (auto* voice : voices) {
+                if (!voice->getIsActive()) {
+                    freeVoice = voice;
+                    break;
+                }
+            }
+            if (!freeVoice) {
+                freeVoice = voices[0];
+            }
+            freeVoice->setNoteNumber(noteNumber);
+            freeVoice->noteOn(freq, getSampleRate());
         }
-        else if (msg.isNoteOff())
-        {
-            oscillator1.noteOff();
-            oscillator2.noteOff();
+        else if (msg.isNoteOff()) {
+            int noteNumber = msg.getNoteNumber();
+            for (auto* voice : voices) {
+                if (voice->getIsActive() && voice->getNoteNumber() == noteNumber) {
+                    voice->noteOff();
+                    voice->setNoteNumber(-1);
+                }
+            }
         }
     }
 
@@ -421,17 +393,21 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     auto* leftChannel = buffer.getWritePointer(0);
     auto* rightChannel = buffer.getWritePointer(1);
 
-    for (int sample = 0; sample < numSamples; ++sample)
-    {
-        float osc1Output = oscillator1.getNextSample() * osc1Level;
-        float osc2Output = oscillator2.getNextSample() * osc2Level;
-        float mixedOutput = (osc1Output + osc2Output) * 0.5f;
+    for (int sample = 0; sample < numSamples; ++sample) {
+        float mixedOutput = 0.0f;
+        float maxEnvValue = 0.0f;
+
+        for (auto* voice : voices) {
+            if (voice->getIsActive()) {
+                mixedOutput += voice->getNextSample();
+                float envValue = voice->getEnvelopeValue();
+                maxEnvValue = std::max(maxEnvValue, envValue);
+            }
+        }
 
         float modulatedCutoff = baseCutoff;
-        if (filterADSRMix > 0.0f)
-        {
-            float envAmount = oscillator1.getEnvelopeValue();
-            float modulationAmount = envAmount * filterADSRDepth;
+        if (filterADSRMix > 0.0f) {
+            float modulationAmount = maxEnvValue * filterADSRDepth;
             modulatedCutoff = baseCutoff + (modulationAmount * filterADSRMix);
         }
         float lfoAmount = lfo.getNextSample() * lfoDepth;
@@ -451,12 +427,10 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     juce::dsp::ProcessContextReplacing<float> context(block);
     filter.process(context);
 
-    // Apply distortion effect
     juce::AudioBuffer<float> dryBuffer;
     dryBuffer.makeCopyOf(buffer);
 
-    for (int sample = 0; sample < numSamples; ++sample)
-    {
+    for (int sample = 0; sample < numSamples; ++sample) {
         leftChannel[sample] = std::tanh(leftChannel[sample] * distortionDrive);
         rightChannel[sample] = std::tanh(rightChannel[sample] * distortionDrive);
     }
@@ -465,15 +439,12 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
 
     auto* dryLeftChannel = dryBuffer.getWritePointer(0);
     auto* dryRightChannel = dryBuffer.getWritePointer(1);
-    for (int sample = 0; sample < numSamples; ++sample)
-    {
+    for (int sample = 0; sample < numSamples; ++sample) {
         leftChannel[sample] = dryLeftChannel[sample] * (1.0f - distortionMix) + leftChannel[sample] * distortionMix;
         rightChannel[sample] = dryRightChannel[sample] * (1.0f - distortionMix) + rightChannel[sample] * distortionMix;
     }
 
-    // Apply delay effect
-    for (int sample = 0; sample < numSamples; ++sample)
-    {
+    for (int sample = 0; sample < numSamples; ++sample) {
         int delayReadPosition = (delayWritePosition - delaySamples + delayBufferSize) % delayBufferSize;
         float delayedLeft = delayBuffer.getSample(0, delayReadPosition);
         float delayedRight = delayBuffer.getSample(1, delayReadPosition);
@@ -490,64 +461,41 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
         delayWritePosition = (delayWritePosition + 1) % delayBufferSize;
     }
 
-    // Apply chorus effect
     chorus.process(context);
-
-    // Apply phaser effect
     phaser.process(context);
 
-    // Apply custom flanger effect
-    // Apply custom flanger effect
-    for (int sample = 0; sample < numSamples; ++sample)
-    {
-        // Get the current delay time modulated by the LFO
-        float lfoValue = flangerLFO.getNextSample(); // -1 to 1
-        float delayModulation = (lfoValue * flangerDepth * flangerDelayMs * 0.5f); // Modulation amount in ms
+    for (int sample = 0; sample < numSamples; ++sample) {
+        float lfoValue = flangerLFO.getNextSample();
+        float delayModulation = (lfoValue * flangerDepth * flangerDelayMs * 0.5f);
         float totalDelayMs = flangerDelayMs + delayModulation;
-
-        // Ensure totalDelayMs is within bounds (0.1 ms to 7.5 ms)
         totalDelayMs = juce::jlimit(0.1f, 7.5f, totalDelayMs);
         float delaySamplesFloat = totalDelayMs * currentSampleRate / 1000.0f;
 
-        // Calculate read position with wrapping
         float readPosition = flangerWritePosition - delaySamplesFloat;
-        // Ensure readPosition is within [0, flangerBufferSize)
-        while (readPosition < 0)
-            readPosition += flangerBufferSize;
-        while (readPosition >= flangerBufferSize)
-            readPosition -= flangerBufferSize;
+        while (readPosition < 0) readPosition += flangerBufferSize;
+        while (readPosition >= flangerBufferSize) readPosition -= flangerBufferSize;
 
         int readIndex = static_cast<int>(readPosition);
         float fraction = readPosition - readIndex;
         int nextReadIndex = (readIndex + 1) % flangerBufferSize;
 
-        // Ensure indices are within bounds
         readIndex = juce::jlimit(0, flangerBufferSize - 1, readIndex);
         nextReadIndex = juce::jlimit(0, flangerBufferSize - 1, nextReadIndex);
 
-        // Linear interpolation for left and right channels
         float delayedLeft = flangerBuffer.getSample(0, readIndex) + fraction * (flangerBuffer.getSample(0, nextReadIndex) - flangerBuffer.getSample(0, readIndex));
         float delayedRight = flangerBuffer.getSample(1, readIndex) + fraction * (flangerBuffer.getSample(1, nextReadIndex) - flangerBuffer.getSample(1, readIndex));
 
-        // Write the current sample to the flanger buffer
         flangerBuffer.setSample(0, flangerWritePosition, leftChannel[sample]);
         flangerBuffer.setSample(1, flangerWritePosition, rightChannel[sample]);
 
-        // Mix the delayed signal with the dry signal
         leftChannel[sample] = leftChannel[sample] * (1.0f - flangerMix) + delayedLeft * flangerMix;
         rightChannel[sample] = rightChannel[sample] * (1.0f - flangerMix) + delayedRight * flangerMix;
 
-        // Increment the write position
         flangerWritePosition = (flangerWritePosition + 1) % flangerBufferSize;
     }
 
-    // Apply reverb effect
     reverb.processStereo(leftChannel, rightChannel, numSamples);
-
-    // Apply compressor effect
     compressor.process(context);
-
-    // Apply makeup gain
     compressorMakeupGain.process(context);
 }
 

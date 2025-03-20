@@ -18,7 +18,6 @@ public:
         phase = 0.0;
         envelope.setSampleRate(sampleRate);
 
-        // Initialize Pink Noise Filter State
         for (int i = 0; i < 6; ++i) {
             pinkNoiseState[i] = 0.0f;
         }
@@ -68,8 +67,11 @@ public:
         return output;
     }
 
-    // Add method to get the current envelope value
-    float getEnvelopeValue() {  // Remove 'const'
+    bool getIsActive() const {
+        return envelope.isActive();
+    }
+
+    float getEnvelopeValue() {
         return envelope.getNextSample();
     }
 
@@ -80,9 +82,8 @@ private:
     double currentSampleRate = 44100.0;
     juce::ADSR envelope;
     Waveform waveform = Waveform::Sine;
-    juce::Random random; // For white noise
+    juce::Random random;
 
-    // Pink noise filter state
     float pinkNoiseState[6];
 
     float generatePinkNoise() {
