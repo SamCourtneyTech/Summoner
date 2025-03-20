@@ -39,8 +39,17 @@ private:
     juce::Slider numVoicesSlider;
     juce::Label polyphonyLabel;
 
-    juce::Slider unisonVoicesSlider, unisonDetuneSlider;
-    juce::Label unisonVoicesLabel, unisonDetuneLabel;
+    // Remove old unison sliders since we're handling unison per oscillator
+    // juce::Slider unisonVoicesSlider, unisonDetuneSlider;
+    // juce::Label unisonVoicesLabel, unisonDetuneLabel;
+
+    // Add new unison sliders for each oscillator
+    juce::Slider osc1UnisonVoicesSlider, osc1UnisonDetuneSlider;
+    juce::Label osc1UnisonVoicesLabel, osc1UnisonDetuneLabel;
+    juce::Slider osc2UnisonVoicesSlider, osc2UnisonDetuneSlider;
+    juce::Label osc2UnisonVoicesLabel, osc2UnisonDetuneLabel;
+    juce::Slider osc3UnisonVoicesSlider, osc3UnisonDetuneSlider;
+    juce::Label osc3UnisonVoicesLabel, osc3UnisonDetuneLabel;
 
     juce::Slider lfoRateSlider, lfoDepthSlider;
     juce::ComboBox lfoWaveformCombo;
@@ -94,8 +103,16 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc3OctaveAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> subOctaveAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> numVoicesAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> unisonVoicesAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> unisonDetuneAttachment;
+    // Remove old unison attachments
+    // std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> unisonVoicesAttachment;
+    // std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> unisonDetuneAttachment;
+    // Add new unison attachments
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc1UnisonVoicesAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc1UnisonDetuneAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc2UnisonVoicesAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc2UnisonDetuneAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc3UnisonVoicesAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc3UnisonDetuneAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> lfoRateAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> lfoDepthAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> lfoWaveformAttachment;
