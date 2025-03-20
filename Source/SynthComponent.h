@@ -21,12 +21,16 @@ private:
     juce::Slider waveform2Slider;
     juce::Label waveform2Label;
 
+    // Third oscillator
+    juce::Slider waveform3Slider;
+    juce::Label waveform3Label;
+
     // Section labels for oscillators
-    juce::Label oscillator1Label, oscillator2Label;
+    juce::Label oscillator1Label, oscillator2Label, oscillator3Label;
 
     // Detune and level controls
-    juce::Slider detuneSlider, osc1LevelSlider, osc2LevelSlider;
-    juce::Label detuneLabel, osc1LevelLabel, osc2LevelLabel;
+    juce::Slider detuneSlider, osc1LevelSlider, osc2LevelSlider, osc3LevelSlider;
+    juce::Label detuneLabel, osc1LevelLabel, osc2LevelLabel, osc3LevelLabel;
 
     // Number of voices (now polyphony)
     juce::Slider numVoicesSlider;
@@ -85,9 +89,11 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> releaseAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> waveformAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> waveform2Attachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> waveform3Attachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> detuneAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc1LevelAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc2LevelAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc3LevelAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> numVoicesAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> unisonVoicesAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> unisonDetuneAttachment;

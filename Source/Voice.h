@@ -9,6 +9,7 @@ public:
     void prepare(double sampleRate) {
         oscillator1.prepare(sampleRate);
         oscillator2.prepare(sampleRate);
+        oscillator3.prepare(sampleRate);
         fadeOutSamples = static_cast<int>(0.005 * sampleRate); // 5ms fade-out
         fadeOutStep = 1.0f / fadeOutSamples;
     }
@@ -34,8 +35,10 @@ public:
         float detuneCents = detunePtr->load();
         float detuneFactor = std::pow(2.0f, detuneCents / 1200.0f);
         oscillator2.setFrequency(detunedFreq * detuneFactor, sampleRate);
+        oscillator3.setFrequency(detunedFreq * detuneFactor * 1.01f, sampleRate); // Slight additional detune
         oscillator1.noteOn();
         oscillator2.noteOn();
+        oscillator3.noteOn();
         isActive = true;
         fadeOutCounter = 0; // Reset fade-out
         amplitude = 1.0f;
@@ -44,6 +47,7 @@ public:
     void noteOff() {
         oscillator1.noteOff();
         oscillator2.noteOff();
+        oscillator3.noteOff();
     }
 
     void startFadeOut() {
@@ -55,7 +59,8 @@ public:
 
         float osc1Output = oscillator1.getNextSample() * osc1LevelPtr->load();
         float osc2Output = oscillator2.getNextSample() * osc2LevelPtr->load();
-        float mixedOutput = (osc1Output + osc2Output) * 0.5f;
+        float osc3Output = oscillator3.getNextSample() * osc3LevelPtr->load();
+        float mixedOutput = (osc1Output + osc2Output + osc3Output) / 3.0f;
 
         // Apply fade-out if active
         if (fadeOutCounter > 0) {
@@ -66,8 +71,8 @@ public:
             }
         }
 
-        // Check if both oscillators are done with their envelopes
-        if (!oscillator1.getIsActive() && !oscillator2.getIsActive() && fadeOutCounter <= 0) {
+        // Check if all oscillators are done with their envelopes
+        if (!oscillator1.getIsActive() && !oscillator2.getIsActive() && !oscillator3.getIsActive() && fadeOutCounter <= 0) {
             isActive = false;
         }
 
@@ -81,22 +86,26 @@ public:
     void setADSR(float attack, float decay, float sustain, float release) {
         oscillator1.setADSR(attack, decay, sustain, release);
         oscillator2.setADSR(attack, decay, sustain, release);
+        oscillator3.setADSR(attack, decay, sustain, release);
     }
 
-    void setWaveform(Oscillator::Waveform waveform1, Oscillator::Waveform waveform2) {
+    void setWaveform(Oscillator::Waveform waveform1, Oscillator::Waveform waveform2, Oscillator::Waveform waveform3) {
         oscillator1.setWaveform(waveform1);
         oscillator2.setWaveform(waveform2);
+        oscillator3.setWaveform(waveform3);
     }
 
-    void setParameterPointers(std::atomic<float>* detune, std::atomic<float>* osc1Level, std::atomic<float>* osc2Level) {
+    void setParameterPointers(std::atomic<float>* detune, std::atomic<float>* osc1Level, std::atomic<float>* osc2Level, std::atomic<float>* osc3Level) {
         detunePtr = detune;
         osc1LevelPtr = osc1Level;
         osc2LevelPtr = osc2Level;
+        osc3LevelPtr = osc3Level;
     }
 
 private:
     Oscillator oscillator1;
     Oscillator oscillator2;
+    Oscillator oscillator3;
     float currentFrequency = 0.0f;
     int noteNumber;
     bool isActive;
@@ -112,4 +121,5 @@ private:
     std::atomic<float>* detunePtr = nullptr;
     std::atomic<float>* osc1LevelPtr = nullptr;
     std::atomic<float>* osc2LevelPtr = nullptr;
+    std::atomic<float>* osc3LevelPtr = nullptr;
 };

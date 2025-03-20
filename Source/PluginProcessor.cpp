@@ -20,9 +20,11 @@ SummonerAudioProcessor::SummonerAudioProcessor()
     std::make_unique<juce::AudioParameterFloat>("release", "Release", 0.01f, 5.0f, 0.01f),
     std::make_unique<juce::AudioParameterFloat>("waveform", "Waveform", 0.0f, 1.0f, 0.20f),
     std::make_unique<juce::AudioParameterFloat>("waveform2", "Waveform 2", 0.0f, 1.0f, 0.20f),
+    std::make_unique<juce::AudioParameterFloat>("waveform3", "Waveform 3", 0.0f, 1.0f, 0.20f),
     std::make_unique<juce::AudioParameterFloat>("detune", "Detune", -100.0f, 100.0f, 0.0f),
     std::make_unique<juce::AudioParameterFloat>("osc1Level", "Osc1 Level", 0.0f, 1.0f, 0.5f),
     std::make_unique<juce::AudioParameterFloat>("osc2Level", "Osc2 Level", 0.0f, 1.0f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat>("osc3Level", "Osc3 Level", 0.0f, 1.0f, 0.5f),
     // LFO parameters
     std::make_unique<juce::AudioParameterFloat>("lfoRate", "LFO Rate", 0.1f, 20.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("lfoDepth", "LFO Depth", 0.0f, 5000.0f, 0.0f),
@@ -96,7 +98,8 @@ void SummonerAudioProcessor::updateNumVoices() {
             voices[i]->setParameterPointers(
                 parameters.getRawParameterValue("detune"),
                 parameters.getRawParameterValue("osc1Level"),
-                parameters.getRawParameterValue("osc2Level")
+                parameters.getRawParameterValue("osc2Level"),
+                parameters.getRawParameterValue("osc3Level")
             );
         }
     }
@@ -355,8 +358,18 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     else if (waveformValue2 <= 0.90f) wf2 = Oscillator::Waveform::WhiteNoise;
     else wf2 = Oscillator::Waveform::PinkNoise;
 
+    float waveformValue3 = *parameters.getRawParameterValue("waveform3");
+    Oscillator::Waveform wf3;
+    if (waveformValue3 <= 0.16f) wf3 = Oscillator::Waveform::Sine;
+    else if (waveformValue3 <= 0.32f) wf3 = Oscillator::Waveform::Saw;
+    else if (waveformValue3 <= 0.48f) wf3 = Oscillator::Waveform::Square;
+    else if (waveformValue3 <= 0.64f) wf3 = Oscillator::Waveform::Triangle;
+    else if (waveformValue3 <= 0.80f) wf3 = Oscillator::Waveform::Pulse25;
+    else if (waveformValue3 <= 0.90f) wf3 = Oscillator::Waveform::WhiteNoise;
+    else wf3 = Oscillator::Waveform::PinkNoise;
+
     for (auto* voice : voices) {
-        voice->setWaveform(wf1, wf2);
+        voice->setWaveform(wf1, wf2, wf3);
     }
 
     float lfoRate = *parameters.getRawParameterValue("lfoRate");

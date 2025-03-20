@@ -108,6 +108,43 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     osc2LevelLabel.setText("Osc2 Level", juce::dontSendNotification);
     addAndMakeVisible(osc2LevelLabel);
 
+    // Waveform (Oscillator 3)
+    waveform3Slider.setSliderStyle(juce::Slider::Rotary);
+    waveform3Slider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    waveform3Slider.setRange(0.0, 1.0, 0.01);
+    addAndMakeVisible(waveform3Slider);
+    waveform3Slider.onValueChange = [this] {
+        float value = waveform3Slider.getValue();
+        if (value <= 0.16f)
+            waveform3Label.setText("Sine", juce::dontSendNotification);
+        else if (value <= 0.32f)
+            waveform3Label.setText("Saw", juce::dontSendNotification);
+        else if (value <= 0.48f)
+            waveform3Label.setText("Square", juce::dontSendNotification);
+        else if (value <= 0.64f)
+            waveform3Label.setText("Triangle", juce::dontSendNotification);
+        else if (value <= 0.80f)
+            waveform3Label.setText("Pulse 25%", juce::dontSendNotification);
+        else if (value <= 0.90f)
+            waveform3Label.setText("White Noise", juce::dontSendNotification);
+        else
+            waveform3Label.setText("Pink Noise", juce::dontSendNotification);
+        };
+    waveform3Label.setText("Saw", juce::dontSendNotification);
+    addAndMakeVisible(waveform3Label);
+
+    // Oscillator 3 Section Label
+    oscillator3Label.setText("Oscillator 3", juce::dontSendNotification);
+    oscillator3Label.setFont(juce::Font(16.0f, juce::Font::bold));
+    addAndMakeVisible(oscillator3Label);
+
+    // Oscillator 3 Level
+    osc3LevelSlider.setSliderStyle(juce::Slider::Rotary);
+    osc3LevelSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(osc3LevelSlider);
+    osc3LevelLabel.setText("Osc3 Level", juce::dontSendNotification);
+    addAndMakeVisible(osc3LevelLabel);
+
     // Detune
     detuneSlider.setSliderStyle(juce::Slider::Rotary);
     detuneSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -406,9 +443,11 @@ void SynthComponent::initAttachments() {
     releaseAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "release", releaseSlider);
     waveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "waveform", waveformSlider);
     waveform2Attachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "waveform2", waveform2Slider);
+    waveform3Attachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "waveform3", waveform3Slider);
     detuneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "detune", detuneSlider);
     osc1LevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc1Level", osc1LevelSlider);
     osc2LevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc2Level", osc2LevelSlider);
+    osc3LevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc3Level", osc3LevelSlider);
     numVoicesAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "numVoices", numVoicesSlider);
     unisonVoicesAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "unisonVoices", unisonVoicesSlider);
     unisonDetuneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "unisonDetune", unisonDetuneSlider);
@@ -467,12 +506,14 @@ void SynthComponent::resized() {
     auto middleColumn = bounds.removeFromLeft(bounds.getWidth() / 2 - 10); // Reduced padding from 20 to 10
     auto rightColumn = bounds; // Right column
 
-    // Left Column: ADSR, Oscillator 1, Oscillator 2, Detune, Polyphony, Unison Voices, Unison Detune, LFO
+    // Left Column: ADSR, Oscillator 1, Oscillator 2, Oscillator 3, Detune, Polyphony, Unison Voices, Unison Detune, LFO
     auto adsrRow = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
     leftColumn.removeFromTop(10); // Reduced spacing from 20 to 10
     auto osc1Row = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
     leftColumn.removeFromTop(10);
     auto osc2Row = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    leftColumn.removeFromTop(10);
+    auto osc3Row = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
     leftColumn.removeFromTop(10);
     auto detuneRow = leftColumn.removeFromTop(labelHeight + knobHeight);
     leftColumn.removeFromTop(10);
@@ -541,6 +582,16 @@ void SynthComponent::resized() {
     auto osc2LevelBounds = osc2Section.removeFromLeft(knobWidth);
     osc2LevelLabel.setBounds(osc2LevelBounds.removeFromTop(labelHeight).toNearestInt());
     osc2LevelSlider.setBounds(osc2LevelBounds.toNearestInt());
+
+    // Oscillator 3 Row: Waveform 3, Osc3 Level
+    auto osc3Section = osc3Row.removeFromLeft(knobWidth * 2 + 10); // Adjusted for smaller knobs
+    oscillator3Label.setBounds(osc3Section.removeFromTop(sectionLabelHeight).toNearestInt());
+    auto waveform3Bounds = osc3Section.removeFromLeft(knobWidth);
+    waveform3Label.setBounds(waveform3Bounds.removeFromTop(labelHeight).toNearestInt());
+    waveform3Slider.setBounds(waveform3Bounds.toNearestInt());
+    auto osc3LevelBounds = osc3Section.removeFromLeft(knobWidth);
+    osc3LevelLabel.setBounds(osc3LevelBounds.removeFromTop(labelHeight).toNearestInt());
+    osc3LevelSlider.setBounds(osc3LevelBounds.toNearestInt());
 
     // Detune Row: Detune
     auto detuneBounds = detuneRow.removeFromLeft(knobWidth);
