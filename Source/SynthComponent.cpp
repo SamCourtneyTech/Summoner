@@ -57,8 +57,13 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
 
     osc1OctaveSlider.setSliderStyle(juce::Slider::Rotary);
     osc1OctaveSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    osc1OctaveSlider.setRange(-4.0, 4.0, 0.01);
     addAndMakeVisible(osc1OctaveSlider);
-    osc1OctaveLabel.setText("Osc1 Octave", juce::dontSendNotification);
+    osc1OctaveSlider.onValueChange = [this] {
+        int octave = static_cast<int>(std::round(osc1OctaveSlider.getValue()));
+        osc1OctaveLabel.setText("Osc1 Oct: " + juce::String(octave >= 0 ? "+" + juce::String(octave) : juce::String(octave)), juce::dontSendNotification);
+        };
+    osc1OctaveLabel.setText("Osc1 Oct: 0", juce::dontSendNotification);
     addAndMakeVisible(osc1OctaveLabel);
 
     waveform2Slider.setSliderStyle(juce::Slider::Rotary);
@@ -89,8 +94,13 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
 
     osc2OctaveSlider.setSliderStyle(juce::Slider::Rotary);
     osc2OctaveSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    osc2OctaveSlider.setRange(-4.0, 4.0, 0.01);
     addAndMakeVisible(osc2OctaveSlider);
-    osc2OctaveLabel.setText("Osc2 Octave", juce::dontSendNotification);
+    osc2OctaveSlider.onValueChange = [this] {
+        int octave = static_cast<int>(std::round(osc2OctaveSlider.getValue()));
+        osc2OctaveLabel.setText("Osc2 Oct: " + juce::String(octave >= 0 ? "+" + juce::String(octave) : juce::String(octave)), juce::dontSendNotification);
+        };
+    osc2OctaveLabel.setText("Osc2 Oct: 0", juce::dontSendNotification);
     addAndMakeVisible(osc2OctaveLabel);
 
     waveform3Slider.setSliderStyle(juce::Slider::Rotary);
@@ -121,8 +131,13 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
 
     osc3OctaveSlider.setSliderStyle(juce::Slider::Rotary);
     osc3OctaveSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    osc3OctaveSlider.setRange(-4.0, 4.0, 0.01);
     addAndMakeVisible(osc3OctaveSlider);
-    osc3OctaveLabel.setText("Osc3 Octave", juce::dontSendNotification);
+    osc3OctaveSlider.onValueChange = [this] {
+        int octave = static_cast<int>(std::round(osc3OctaveSlider.getValue()));
+        osc3OctaveLabel.setText("Osc3 Oct: " + juce::String(octave >= 0 ? "+" + juce::String(octave) : juce::String(octave)), juce::dontSendNotification);
+        };
+    osc3OctaveLabel.setText("Osc3 Oct: 0", juce::dontSendNotification);
     addAndMakeVisible(osc3OctaveLabel);
 
     noiseWaveformSlider.setSliderStyle(juce::Slider::Rotary);
@@ -174,8 +189,13 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
 
     subOctaveSlider.setSliderStyle(juce::Slider::Rotary);
     subOctaveSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    subOctaveSlider.setRange(-4.0, 4.0, 0.01);
     addAndMakeVisible(subOctaveSlider);
-    subOctaveLabel.setText("Sub Octave", juce::dontSendNotification);
+    subOctaveSlider.onValueChange = [this] {
+        int octave = static_cast<int>(std::round(subOctaveSlider.getValue()));
+        subOctaveLabel.setText("Sub Oct: " + juce::String(octave >= 0 ? "+" + juce::String(octave) : juce::String(octave)), juce::dontSendNotification);
+        };
+    subOctaveLabel.setText("Sub Oct: 0", juce::dontSendNotification);
     addAndMakeVisible(subOctaveLabel);
 
     detuneSlider.setSliderStyle(juce::Slider::Rotary);
