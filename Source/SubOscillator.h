@@ -1,12 +1,11 @@
 #pragma once
 #include <JuceHeader.h>
-#include <random>
 
-class Oscillator {
+class SubOscillator {
 public:
-    enum class Waveform { Sine, Saw, Square, Triangle, Pulse25, Pulse15 };
+    enum class Waveform { Sine, RoundedSine, Triangle, Saw, Square, Pulse33 };
 
-    Oscillator() = default;
+    SubOscillator() = default;
 
     void setFrequency(float freq, double sampleRate) {
         frequency = freq;
@@ -35,20 +34,20 @@ public:
         case Waveform::Sine:
             output = std::sin(phase);
             break;
+        case Waveform::RoundedSine:
+            output = std::sin(phase) * (1.0f - 0.2f * std::sin(phase * 2.0f)); // Simple approximation
+            break;
+        case Waveform::Triangle:
+            output = (2.0f * std::abs(2.0f * (phase / (2.0 * juce::MathConstants<double>::pi)) - 1.0f) - 1.0f);
+            break;
         case Waveform::Saw:
             output = (2.0f * (phase / (2.0 * juce::MathConstants<double>::pi)) - 1.0f);
             break;
         case Waveform::Square:
             output = (std::sin(phase) >= 0.0f) ? 1.0f : -1.0f;
             break;
-        case Waveform::Triangle:
-            output = (2.0f * std::abs(2.0f * (phase / (2.0 * juce::MathConstants<double>::pi)) - 1.0f) - 1.0f);
-            break;
-        case Waveform::Pulse25:
-            output = (phase < (0.25 * 2.0 * juce::MathConstants<double>::pi)) ? 1.0f : -1.0f;
-            break;
-        case Waveform::Pulse15:
-            output = (phase < (0.15 * 2.0 * juce::MathConstants<double>::pi)) ? 1.0f : -1.0f;
+        case Waveform::Pulse33:
+            output = (phase < (0.33 * 2.0 * juce::MathConstants<double>::pi)) ? 1.0f : -1.0f;
             break;
         }
 

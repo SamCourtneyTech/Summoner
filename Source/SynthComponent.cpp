@@ -31,15 +31,16 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
 
     waveformSlider.setSliderStyle(juce::Slider::Rotary);
     waveformSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    waveformSlider.setRange(0.0, 0.8, 0.01);
+    waveformSlider.setRange(0.0, 1.0, 0.01);
     addAndMakeVisible(waveformSlider);
     waveformSlider.onValueChange = [this] {
         float value = waveformSlider.getValue();
-        if (value <= 0.2f) waveformLabel.setText("Sine", juce::dontSendNotification);
-        else if (value <= 0.4f) waveformLabel.setText("Saw", juce::dontSendNotification);
-        else if (value <= 0.6f) waveformLabel.setText("Square", juce::dontSendNotification);
-        else if (value <= 0.8f) waveformLabel.setText("Triangle", juce::dontSendNotification);
-        else waveformLabel.setText("Pulse 25%", juce::dontSendNotification);
+        if (value <= 0.16f) waveformLabel.setText("Sine", juce::dontSendNotification);
+        else if (value <= 0.33f) waveformLabel.setText("Saw", juce::dontSendNotification);
+        else if (value <= 0.50f) waveformLabel.setText("Square", juce::dontSendNotification);
+        else if (value <= 0.66f) waveformLabel.setText("Triangle", juce::dontSendNotification);
+        else if (value <= 0.83f) waveformLabel.setText("Pulse 25%", juce::dontSendNotification);
+        else waveformLabel.setText("Pulse 15%", juce::dontSendNotification);
         };
     waveformLabel.setText("Saw", juce::dontSendNotification);
     addAndMakeVisible(waveformLabel);
@@ -56,15 +57,16 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
 
     waveform2Slider.setSliderStyle(juce::Slider::Rotary);
     waveform2Slider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    waveform2Slider.setRange(0.0, 0.8, 0.01);
+    waveform2Slider.setRange(0.0, 1.0, 0.01);
     addAndMakeVisible(waveform2Slider);
     waveform2Slider.onValueChange = [this] {
         float value = waveform2Slider.getValue();
-        if (value <= 0.2f) waveform2Label.setText("Sine", juce::dontSendNotification);
-        else if (value <= 0.4f) waveform2Label.setText("Saw", juce::dontSendNotification);
-        else if (value <= 0.6f) waveform2Label.setText("Square", juce::dontSendNotification);
-        else if (value <= 0.8f) waveform2Label.setText("Triangle", juce::dontSendNotification);
-        else waveform2Label.setText("Pulse 25%", juce::dontSendNotification);
+        if (value <= 0.16f) waveform2Label.setText("Sine", juce::dontSendNotification);
+        else if (value <= 0.33f) waveform2Label.setText("Saw", juce::dontSendNotification);
+        else if (value <= 0.50f) waveform2Label.setText("Square", juce::dontSendNotification);
+        else if (value <= 0.66f) waveform2Label.setText("Triangle", juce::dontSendNotification);
+        else if (value <= 0.83f) waveform2Label.setText("Pulse 25%", juce::dontSendNotification);
+        else waveform2Label.setText("Pulse 15%", juce::dontSendNotification);
         };
     waveform2Label.setText("Saw", juce::dontSendNotification);
     addAndMakeVisible(waveform2Label);
@@ -81,15 +83,16 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
 
     waveform3Slider.setSliderStyle(juce::Slider::Rotary);
     waveform3Slider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    waveform3Slider.setRange(0.0, 0.8, 0.01);
+    waveform3Slider.setRange(0.0, 1.0, 0.01);
     addAndMakeVisible(waveform3Slider);
     waveform3Slider.onValueChange = [this] {
         float value = waveform3Slider.getValue();
-        if (value <= 0.2f) waveform3Label.setText("Sine", juce::dontSendNotification);
-        else if (value <= 0.4f) waveform3Label.setText("Saw", juce::dontSendNotification);
-        else if (value <= 0.6f) waveform3Label.setText("Square", juce::dontSendNotification);
-        else if (value <= 0.8f) waveform3Label.setText("Triangle", juce::dontSendNotification);
-        else waveform3Label.setText("Pulse 25%", juce::dontSendNotification);
+        if (value <= 0.16f) waveform3Label.setText("Sine", juce::dontSendNotification);
+        else if (value <= 0.33f) waveform3Label.setText("Saw", juce::dontSendNotification);
+        else if (value <= 0.50f) waveform3Label.setText("Square", juce::dontSendNotification);
+        else if (value <= 0.66f) waveform3Label.setText("Triangle", juce::dontSendNotification);
+        else if (value <= 0.83f) waveform3Label.setText("Pulse 25%", juce::dontSendNotification);
+        else waveform3Label.setText("Pulse 15%", juce::dontSendNotification);
         };
     waveform3Label.setText("Saw", juce::dontSendNotification);
     addAndMakeVisible(waveform3Label);
@@ -124,6 +127,32 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     addAndMakeVisible(noiseLevelSlider);
     noiseLevelLabel.setText("Noise Level", juce::dontSendNotification);
     addAndMakeVisible(noiseLevelLabel);
+
+    subWaveformSlider.setSliderStyle(juce::Slider::Rotary);
+    subWaveformSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    subWaveformSlider.setRange(0.0, 1.0, 0.01);
+    addAndMakeVisible(subWaveformSlider);
+    subWaveformSlider.onValueChange = [this] {
+        float value = subWaveformSlider.getValue();
+        if (value <= 0.16f) subWaveformLabel.setText("Sine", juce::dontSendNotification);
+        else if (value <= 0.33f) subWaveformLabel.setText("Rounded Sine", juce::dontSendNotification);
+        else if (value <= 0.50f) subWaveformLabel.setText("Triangle", juce::dontSendNotification);
+        else if (value <= 0.66f) subWaveformLabel.setText("Saw", juce::dontSendNotification);
+        else if (value <= 0.83f) subWaveformLabel.setText("Square", juce::dontSendNotification);
+        else subWaveformLabel.setText("Pulse 33%", juce::dontSendNotification);
+        };
+    subWaveformLabel.setText("Sine", juce::dontSendNotification);
+    addAndMakeVisible(subWaveformLabel);
+
+    subOscillatorLabel.setText("Sub Oscillator", juce::dontSendNotification);
+    subOscillatorLabel.setFont(juce::Font(16.0f, juce::Font::bold));
+    addAndMakeVisible(subOscillatorLabel);
+
+    subLevelSlider.setSliderStyle(juce::Slider::Rotary);
+    subLevelSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(subLevelSlider);
+    subLevelLabel.setText("Sub Level", juce::dontSendNotification);
+    addAndMakeVisible(subLevelLabel);
 
     detuneSlider.setSliderStyle(juce::Slider::Rotary);
     detuneSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -407,11 +436,13 @@ void SynthComponent::initAttachments() {
     waveform2Attachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "waveform2", waveform2Slider);
     waveform3Attachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "waveform3", waveform3Slider);
     noiseWaveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "noiseWaveform", noiseWaveformSlider);
+    subWaveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "subWaveform", subWaveformSlider);
     detuneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "detune", detuneSlider);
     osc1LevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc1Level", osc1LevelSlider);
     osc2LevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc2Level", osc2LevelSlider);
     osc3LevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc3Level", osc3LevelSlider);
     noiseLevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "noiseLevel", noiseLevelSlider);
+    subLevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "subLevel", subLevelSlider);
     numVoicesAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "numVoices", numVoicesSlider);
     unisonVoicesAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "unisonVoices", unisonVoicesSlider);
     unisonDetuneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "unisonDetune", unisonDetuneSlider);
@@ -451,7 +482,6 @@ void SynthComponent::initAttachments() {
     compressorMakeupGainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "compressorMakeupGain", compressorMakeupGainSlider);
 }
 
-
 void SynthComponent::paint(juce::Graphics& g) {
     g.fillAll(juce::Colours::darkgrey);
 }
@@ -470,7 +500,7 @@ void SynthComponent::resized() {
     auto middleColumn = bounds.removeFromLeft(bounds.getWidth() / 2 - 10);
     auto rightColumn = bounds;
 
-    // Left Column: ADSR, Oscillator 1, Oscillator 2, Oscillator 3, Noise Oscillator, Detune, Polyphony, Unison Voices, Unison Detune, LFO
+    // Left Column: ADSR, Oscillator 1, Oscillator 2, Oscillator 3, Noise Oscillator, Sub Oscillator, Detune, Polyphony, Unison Voices, Unison Detune, LFO
     auto adsrRow = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
     leftColumn.removeFromTop(10);
     auto osc1Row = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
@@ -480,6 +510,8 @@ void SynthComponent::resized() {
     auto osc3Row = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
     leftColumn.removeFromTop(10);
     auto noiseOscRow = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    leftColumn.removeFromTop(10);
+    auto subOscRow = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
     leftColumn.removeFromTop(10);
     auto detuneRow = leftColumn.removeFromTop(labelHeight + knobHeight);
     leftColumn.removeFromTop(10);
@@ -568,6 +600,16 @@ void SynthComponent::resized() {
     auto noiseLevelBounds = noiseOscSection.removeFromLeft(knobWidth);
     noiseLevelLabel.setBounds(noiseLevelBounds.removeFromTop(labelHeight).toNearestInt());
     noiseLevelSlider.setBounds(noiseLevelBounds.toNearestInt());
+
+    // Sub Oscillator Row
+    auto subOscSection = subOscRow.removeFromLeft(knobWidth * 2 + 10);
+    subOscillatorLabel.setBounds(subOscSection.removeFromTop(sectionLabelHeight).toNearestInt());
+    auto subWaveformBounds = subOscSection.removeFromLeft(knobWidth);
+    subWaveformLabel.setBounds(subWaveformBounds.removeFromTop(labelHeight).toNearestInt());
+    subWaveformSlider.setBounds(subWaveformBounds.toNearestInt());
+    auto subLevelBounds = subOscSection.removeFromLeft(knobWidth);
+    subLevelLabel.setBounds(subLevelBounds.removeFromTop(labelHeight).toNearestInt());
+    subLevelSlider.setBounds(subLevelBounds.toNearestInt());
 
     // Detune Row
     auto detuneBounds = detuneRow.removeFromLeft(knobWidth);

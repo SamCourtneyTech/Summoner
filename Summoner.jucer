@@ -23,6 +23,7 @@
     <FILE id="Zp7oGJ" name="NoiseOscillator.h" compile="0" resource="0"
           file="Source/NoiseOscillator.h"/>
     <FILE id="yPg6NB" name="Oscillator.h" compile="0" resource="0" file="Source/Oscillator.h"/>
+    <FILE id="cVpeoj" name="SubOscillator.h" compile="0" resource="0" file="Source/SubOscillator.h"/>
     <FILE id="wBJcgi" name="SynthComponent.cpp" compile="1" resource="0"
           file="Source/SynthComponent.cpp"/>
     <FILE id="g2xnz4" name="SynthComponent.h" compile="0" resource="0"

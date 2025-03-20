@@ -25,10 +25,13 @@ private:
     juce::Slider noiseWaveformSlider;
     juce::Label noiseWaveformLabel;
 
-    juce::Label oscillator1Label, oscillator2Label, oscillator3Label, noiseOscillatorLabel;
+    juce::Slider subWaveformSlider;
+    juce::Label subWaveformLabel;
 
-    juce::Slider detuneSlider, osc1LevelSlider, osc2LevelSlider, osc3LevelSlider, noiseLevelSlider;
-    juce::Label detuneLabel, osc1LevelLabel, osc2LevelLabel, osc3LevelLabel, noiseLevelLabel;
+    juce::Label oscillator1Label, oscillator2Label, oscillator3Label, noiseOscillatorLabel, subOscillatorLabel;
+
+    juce::Slider detuneSlider, osc1LevelSlider, osc2LevelSlider, osc3LevelSlider, noiseLevelSlider, subLevelSlider;
+    juce::Label detuneLabel, osc1LevelLabel, osc2LevelLabel, osc3LevelLabel, noiseLevelLabel, subLevelLabel;
 
     juce::Slider numVoicesSlider;
     juce::Label polyphonyLabel;
@@ -76,11 +79,13 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> waveform2Attachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> waveform3Attachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> noiseWaveformAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> subWaveformAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> detuneAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc1LevelAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc2LevelAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc3LevelAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> noiseLevelAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> subLevelAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> numVoicesAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> unisonVoicesAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> unisonDetuneAttachment;

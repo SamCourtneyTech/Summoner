@@ -2,6 +2,7 @@
 #include <JuceHeader.h>
 #include "Oscillator.h"
 #include "NoiseOscillator.h"
+#include "SubOscillator.h"
 
 class Voice {
 public:
@@ -12,7 +13,8 @@ public:
         oscillator2.prepare(sampleRate);
         oscillator3.prepare(sampleRate);
         noiseOscillator.prepare(sampleRate);
-        fadeOutSamples = static_cast<int>(0.005 * sampleRate); // 5ms fade-out
+        subOscillator.prepare(sampleRate);
+        fadeOutSamples = static_cast<int>(0.005 * sampleRate);
         fadeOutStep = 1.0f / fadeOutSamples;
     }
 
@@ -37,10 +39,12 @@ public:
         float detuneFactor = std::pow(2.0f, detuneCents / 1200.0f);
         oscillator2.setFrequency(detunedFreq * detuneFactor, sampleRate);
         oscillator3.setFrequency(detunedFreq * detuneFactor * 1.01f, sampleRate);
+        subOscillator.setFrequency(detunedFreq * 0.5f, sampleRate); // Sub-oscillator at half frequency
         oscillator1.noteOn();
         oscillator2.noteOn();
         oscillator3.noteOn();
         noiseOscillator.noteOn();
+        subOscillator.noteOn();
         isActive = true;
         fadeOutCounter = 0;
         amplitude = 1.0f;
@@ -51,6 +55,7 @@ public:
         oscillator2.noteOff();
         oscillator3.noteOff();
         noiseOscillator.noteOff();
+        subOscillator.noteOff();
     }
 
     void startFadeOut() {
@@ -64,7 +69,8 @@ public:
         float osc2Output = oscillator2.getNextSample() * osc2LevelPtr->load();
         float osc3Output = oscillator3.getNextSample() * osc3LevelPtr->load();
         float noiseOutput = noiseOscillator.getNextSample() * noiseLevelPtr->load();
-        float mixedOutput = (osc1Output + osc2Output + osc3Output + noiseOutput) / 4.0f;
+        float subOutput = subOscillator.getNextSample() * subLevelPtr->load();
+        float mixedOutput = (osc1Output + osc2Output + osc3Output + noiseOutput + subOutput) / 5.0f;
 
         if (fadeOutCounter > 0) {
             amplitude = juce::jmax(0.0f, amplitude - fadeOutStep);
@@ -74,7 +80,8 @@ public:
             }
         }
 
-        if (!oscillator1.getIsActive() && !oscillator2.getIsActive() && !oscillator3.getIsActive() && !noiseOscillator.getIsActive() && fadeOutCounter <= 0) {
+        if (!oscillator1.getIsActive() && !oscillator2.getIsActive() && !oscillator3.getIsActive() &&
+            !noiseOscillator.getIsActive() && !subOscillator.getIsActive() && fadeOutCounter <= 0) {
             isActive = false;
         }
 
@@ -90,21 +97,26 @@ public:
         oscillator2.setADSR(attack, decay, sustain, release);
         oscillator3.setADSR(attack, decay, sustain, release);
         noiseOscillator.setADSR(attack, decay, sustain, release);
+        subOscillator.setADSR(attack, decay, sustain, release);
     }
 
-    void setWaveform(Oscillator::Waveform waveform1, Oscillator::Waveform waveform2, Oscillator::Waveform waveform3, NoiseOscillator::Waveform noiseWaveform) {
+    void setWaveform(Oscillator::Waveform waveform1, Oscillator::Waveform waveform2, Oscillator::Waveform waveform3,
+        NoiseOscillator::Waveform noiseWaveform, SubOscillator::Waveform subWaveform) {
         oscillator1.setWaveform(waveform1);
         oscillator2.setWaveform(waveform2);
         oscillator3.setWaveform(waveform3);
         noiseOscillator.setWaveform(noiseWaveform);
+        subOscillator.setWaveform(subWaveform);
     }
 
-    void setParameterPointers(std::atomic<float>* detune, std::atomic<float>* osc1Level, std::atomic<float>* osc2Level, std::atomic<float>* osc3Level, std::atomic<float>* noiseLevel) {
+    void setParameterPointers(std::atomic<float>* detune, std::atomic<float>* osc1Level, std::atomic<float>* osc2Level,
+        std::atomic<float>* osc3Level, std::atomic<float>* noiseLevel, std::atomic<float>* subLevel) {
         detunePtr = detune;
         osc1LevelPtr = osc1Level;
         osc2LevelPtr = osc2Level;
         osc3LevelPtr = osc3Level;
         noiseLevelPtr = noiseLevel;
+        subLevelPtr = subLevel;
     }
 
 private:
@@ -112,6 +124,7 @@ private:
     Oscillator oscillator2;
     Oscillator oscillator3;
     NoiseOscillator noiseOscillator;
+    SubOscillator subOscillator;
     float currentFrequency = 0.0f;
     int noteNumber;
     bool isActive;
@@ -127,4 +140,5 @@ private:
     std::atomic<float>* osc2LevelPtr = nullptr;
     std::atomic<float>* osc3LevelPtr = nullptr;
     std::atomic<float>* noiseLevelPtr = nullptr;
+    std::atomic<float>* subLevelPtr = nullptr;
 };
