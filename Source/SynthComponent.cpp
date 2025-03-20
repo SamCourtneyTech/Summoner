@@ -115,6 +115,13 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     detuneLabel.setText("Detune", juce::dontSendNotification);
     addAndMakeVisible(detuneLabel);
 
+    // Number of Voices
+    numVoicesSlider.setSliderStyle(juce::Slider::Rotary);
+    numVoicesSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(numVoicesSlider);
+    numVoicesLabel.setText("Voices", juce::dontSendNotification);
+    addAndMakeVisible(numVoicesLabel);
+
     // LFO Section
     lfoSectionLabel.setText("LFO (Filter Cutoff)", juce::dontSendNotification);
     lfoSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
@@ -389,6 +396,9 @@ void SynthComponent::initAttachments() {
     osc1LevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc1Level", osc1LevelSlider);
     osc2LevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc2Level", osc2LevelSlider);
 
+    // New attachment for number of voices
+    numVoicesAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "numVoices", numVoicesSlider);
+
     lfoRateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "lfoRate", lfoRateSlider);
     lfoDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "lfoDepth", lfoDepthSlider);
     lfoWaveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(params, "lfoWaveform", lfoWaveformCombo);
@@ -432,6 +442,8 @@ void SynthComponent::initAttachments() {
     compressorReleaseAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "compressorRelease", compressorReleaseSlider);
     compressorMakeupGainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "compressorMakeupGain", compressorMakeupGainSlider);
 }
+
+
 void SynthComponent::paint(juce::Graphics& g) {
     g.fillAll(juce::Colours::darkgrey);
 }
@@ -450,7 +462,7 @@ void SynthComponent::resized() {
     auto middleColumn = bounds.removeFromLeft(bounds.getWidth() / 2 - 20); // Middle column with padding
     auto rightColumn = bounds; // Right column
 
-    // Left Column: ADSR, Oscillator 1, Oscillator 2, Detune, LFO
+    // Left Column: ADSR, Oscillator 1, Oscillator 2, Detune, Num Voices, LFO
     auto adsrRow = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
     leftColumn.removeFromTop(20);
     auto osc1Row = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
@@ -458,6 +470,8 @@ void SynthComponent::resized() {
     auto osc2Row = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
     leftColumn.removeFromTop(20);
     auto detuneRow = leftColumn.removeFromTop(labelHeight + knobHeight);
+    leftColumn.removeFromTop(20);
+    auto numVoicesRow = leftColumn.removeFromTop(labelHeight + knobHeight); // Added row for num voices
     leftColumn.removeFromTop(20);
     auto lfoRow = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
 
@@ -523,6 +537,11 @@ void SynthComponent::resized() {
     auto detuneBounds = detuneRow.removeFromLeft(knobWidth);
     detuneLabel.setBounds(detuneBounds.removeFromTop(labelHeight).toNearestInt());
     detuneSlider.setBounds(detuneBounds.toNearestInt());
+
+    // Num Voices Row: Number of Voices
+    auto numVoicesBounds = numVoicesRow.removeFromLeft(knobWidth);
+    numVoicesLabel.setBounds(numVoicesBounds.removeFromTop(labelHeight).toNearestInt());
+    numVoicesSlider.setBounds(numVoicesBounds.toNearestInt());
 
     // LFO Row: Rate, Depth, Waveform
     auto lfoSection = lfoRow.removeFromLeft(knobWidth * 3 + 40);

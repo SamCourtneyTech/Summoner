@@ -3,7 +3,7 @@
 #include "Voice.h"
 #include "LFO.h"
 
-class SummonerAudioProcessor : public juce::AudioProcessor
+class SummonerAudioProcessor : public juce::AudioProcessor, public juce::AudioProcessorValueTreeState::Listener
 {
 public:
     SummonerAudioProcessor();
@@ -37,9 +37,11 @@ public:
 
     juce::AudioProcessorValueTreeState parameters;
 
+    // Listener method for parameter changes
+    void parameterChanged(const juce::String& parameterID, float newValue) override;
+
 private:
-    static const int maxVoices = 8;
-    juce::OwnedArray<Voice> voices;
+    juce::OwnedArray<Voice> voices; // Removed static maxVoices
     LFO lfo;
     float currentFrequency = 440.0f;
 
@@ -74,6 +76,7 @@ private:
     int lastFilterType = -1;
 
     void updateFilter();
+    void updateNumVoices(); // New method to update voices dynamically
 
     std::vector<std::map<std::string, std::string>> responses;
     int currentResponseIndex = 0;

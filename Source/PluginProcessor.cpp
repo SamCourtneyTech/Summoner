@@ -67,12 +67,42 @@ SummonerAudioProcessor::SummonerAudioProcessor()
         std::make_unique<juce::AudioParameterFloat>("filterADSRMix", "Filter ADSR Mix", 0.0f, 1.0f, 1.00f),
         std::make_unique<juce::AudioParameterFloat>("filterADSRDepth", "Filter ADSR Depth", 0.0f, 10000.0f, 10000.0f),
         std::make_unique<juce::AudioParameterChoice>("filterType", "Filter Type",
-            juce::StringArray("Low Pass", "High Pass", "Band Pass", "Notch"), 0)
+            juce::StringArray("Low Pass", "High Pass", "Band Pass", "Notch"), 0),
+            // New parameter for number of voices
+            std::make_unique<juce::AudioParameterInt>("numVoices", "Num Voices", 1, 16, 8)
         })
 {
-    // Initialize voices
-    for (int i = 0; i < maxVoices; ++i) {
+    parameters.addParameterListener("numVoices", this);
+    // Removed updateNumVoices() call here
+}
+
+void SummonerAudioProcessor::updateNumVoices() {
+    int newNumVoices = static_cast<int>(*parameters.getRawParameterValue("numVoices"));
+
+    // Clear existing voices
+    for (auto* voice : voices) {
+        voice->noteOff();
+    }
+    voices.clear();
+
+    // Add new voices based on parameter
+    for (int i = 0; i < newNumVoices; ++i) {
         voices.add(new Voice());
+        // Only prepare if sample rate is valid
+        if (currentSampleRate > 0.0) {
+            voices[i]->prepare(currentSampleRate);
+            voices[i]->setParameterPointers(
+                parameters.getRawParameterValue("detune"),
+                parameters.getRawParameterValue("osc1Level"),
+                parameters.getRawParameterValue("osc2Level")
+            );
+        }
+    }
+}
+
+void SummonerAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue) {
+    if (parameterID == "numVoices" && currentSampleRate > 0.0) {
+        updateNumVoices();
     }
 }
 
@@ -205,14 +235,7 @@ void SummonerAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBloc
     lfo.prepare(sampleRate);
     currentSampleRate = sampleRate;
 
-    for (auto* voice : voices) {
-        voice->prepare(sampleRate);
-        voice->setParameterPointers(
-            parameters.getRawParameterValue("detune"),
-            parameters.getRawParameterValue("osc1Level"),
-            parameters.getRawParameterValue("osc2Level")
-        );
-    }
+    updateNumVoices(); // Initialize voices based on parameter
 
     juce::dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;

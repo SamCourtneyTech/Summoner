@@ -70,6 +70,11 @@ private:
     juce::Slider compressorThresholdSlider, compressorRatioSlider, compressorAttackSlider, compressorReleaseSlider, compressorMakeupGainSlider;
     juce::Label compressorThresholdLabel, compressorRatioLabel, compressorAttackLabel, compressorReleaseLabel, compressorMakeupGainLabel, compressorSectionLabel;
 
+    // New controls for number of voices
+    juce::Slider numVoicesSlider;
+    juce::Label numVoicesLabel;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> numVoicesAttachment;
+
     // Existing attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> attackAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> decayAttachment;
