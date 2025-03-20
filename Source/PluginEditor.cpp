@@ -8,8 +8,21 @@ SummonerAudioProcessorEditor::SummonerAudioProcessorEditor(SummonerAudioProcesso
 {
     setName("SummonerAudioProcessorEditor");
     setSize(1625, 900);
+
+    // Set up the SynthComponent inside the Viewport
+    synthViewport.setViewedComponent(&synthComponent, false);
+    synthViewport.setScrollBarsShown(true, false); // Show vertical scrollbar, hide horizontal
+
+    // Set the size of SynthComponent (width matches the editor, height is large for scrolling)
+    const int viewportWidth = 1625 - 20; // Account for some padding
+    synthComponent.setSize(viewportWidth - synthViewport.getScrollBarThickness(), 2000);
+
+    // Add the Viewport to the editor
+    addAndMakeVisible(synthViewport);
+
+    // Add tabs
     tabs.addTab("ChatGPT", juce::Colours::transparentBlack, &chatBar, false);
-    tabs.addTab("Synth", juce::Colours::transparentBlack, &synthComponent, false);
+    tabs.addTab("Synth", juce::Colours::transparentBlack, &synthViewport, false);
     addAndMakeVisible(tabs);
 
     // Initialize attachments after construction
@@ -22,9 +35,16 @@ void SummonerAudioProcessorEditor::paint(juce::Graphics& g) {
     g.fillAll(juce::Colours::black);
     g.setColour(juce::Colours::white);
     g.setFont(juce::FontOptions(30.0f));
-    g.drawFittedText("Summoner", getLocalBounds(), juce::Justification::centred, 1);
+    g.drawFittedText("Summoner", getLocalBounds(), juce::Justification::centredTop, 1);
 }
 
 void SummonerAudioProcessorEditor::resized() {
-    tabs.setBounds(getLocalBounds());
+    auto bounds = getLocalBounds();
+    tabs.setBounds(bounds);
+
+    // Set the Viewport bounds to match the content area of the Synth tab
+    // We use the tab's content area, accounting for the tab bar height
+    auto tabBarHeight = tabs.getTabBarDepth();
+    auto contentBounds = bounds.withTrimmedTop(tabBarHeight).reduced(10); // Add some padding
+    synthViewport.setBounds(contentBounds);
 }
