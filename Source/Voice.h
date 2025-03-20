@@ -34,12 +34,23 @@ public:
         float unisonDetuneFactor = std::pow(2.0f, unisonDetuneOffset / 1200.0f);
         float detunedFreq = freq * unisonDetuneFactor;
 
-        oscillator1.setFrequency(detunedFreq, sampleRate);
+        // Round octave values to nearest integer and apply as discrete steps
+        int osc1Octave = static_cast<int>(std::round(osc1OctavePtr->load()));
+        int osc2Octave = static_cast<int>(std::round(osc2OctavePtr->load()));
+        int osc3Octave = static_cast<int>(std::round(osc3OctavePtr->load()));
+        int subOctave = static_cast<int>(std::round(subOctavePtr->load()));
+
+        float osc1OctaveShift = std::pow(2.0f, static_cast<float>(osc1Octave));
+        float osc2OctaveShift = std::pow(2.0f, static_cast<float>(osc2Octave));
+        float osc3OctaveShift = std::pow(2.0f, static_cast<float>(osc3Octave));
+        float subOctaveShift = std::pow(2.0f, static_cast<float>(subOctave));
+
+        oscillator1.setFrequency(detunedFreq * osc1OctaveShift, sampleRate);
         float detuneCents = detunePtr->load();
         float detuneFactor = std::pow(2.0f, detuneCents / 1200.0f);
-        oscillator2.setFrequency(detunedFreq * detuneFactor, sampleRate);
-        oscillator3.setFrequency(detunedFreq * detuneFactor * 1.01f, sampleRate);
-        subOscillator.setFrequency(detunedFreq * 0.5f, sampleRate); // Sub-oscillator at half frequency
+        oscillator2.setFrequency(detunedFreq * detuneFactor * osc2OctaveShift, sampleRate);
+        oscillator3.setFrequency(detunedFreq * detuneFactor * 1.01f * osc3OctaveShift, sampleRate);
+        subOscillator.setFrequency(detunedFreq * 0.5f * subOctaveShift, sampleRate); // Sub still starts at -1 octave
         oscillator1.noteOn();
         oscillator2.noteOn();
         oscillator3.noteOn();
@@ -110,13 +121,19 @@ public:
     }
 
     void setParameterPointers(std::atomic<float>* detune, std::atomic<float>* osc1Level, std::atomic<float>* osc2Level,
-        std::atomic<float>* osc3Level, std::atomic<float>* noiseLevel, std::atomic<float>* subLevel) {
+        std::atomic<float>* osc3Level, std::atomic<float>* noiseLevel, std::atomic<float>* subLevel,
+        std::atomic<float>* osc1Octave, std::atomic<float>* osc2Octave,
+        std::atomic<float>* osc3Octave, std::atomic<float>* subOctave) {
         detunePtr = detune;
         osc1LevelPtr = osc1Level;
         osc2LevelPtr = osc2Level;
         osc3LevelPtr = osc3Level;
         noiseLevelPtr = noiseLevel;
         subLevelPtr = subLevel;
+        osc1OctavePtr = osc1Octave;
+        osc2OctavePtr = osc2Octave;
+        osc3OctavePtr = osc3Octave;
+        subOctavePtr = subOctave;
     }
 
 private:
@@ -141,4 +158,8 @@ private:
     std::atomic<float>* osc3LevelPtr = nullptr;
     std::atomic<float>* noiseLevelPtr = nullptr;
     std::atomic<float>* subLevelPtr = nullptr;
+    std::atomic<float>* osc1OctavePtr = nullptr;
+    std::atomic<float>* osc2OctavePtr = nullptr;
+    std::atomic<float>* osc3OctavePtr = nullptr;
+    std::atomic<float>* subOctavePtr = nullptr;
 };

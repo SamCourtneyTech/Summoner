@@ -29,6 +29,10 @@ SummonerAudioProcessor::SummonerAudioProcessor()
     std::make_unique<juce::AudioParameterFloat>("osc3Level", "Osc3 Level", 0.0f, 1.0f, 0.5f),
     std::make_unique<juce::AudioParameterFloat>("noiseLevel", "Noise Level", 0.0f, 1.0f, 0.0f),
     std::make_unique<juce::AudioParameterFloat>("subLevel", "Sub Level", 0.0f, 1.0f, 0.0f),
+    std::make_unique<juce::AudioParameterFloat>("osc1Octave", "Osc1 Octave", -4.0f, 4.0f, 0.0f),
+    std::make_unique<juce::AudioParameterFloat>("osc2Octave", "Osc2 Octave", -4.0f, 4.0f, 0.0f),
+    std::make_unique<juce::AudioParameterFloat>("osc3Octave", "Osc3 Octave", -4.0f, 4.0f, 0.0f),
+    std::make_unique<juce::AudioParameterFloat>("subOctave", "Sub Octave", -4.0f, 4.0f, 0.0f),
     // LFO parameters
     std::make_unique<juce::AudioParameterFloat>("lfoRate", "LFO Rate", 0.1f, 20.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("lfoDepth", "LFO Depth", 0.0f, 5000.0f, 0.0f),
@@ -102,7 +106,11 @@ void SummonerAudioProcessor::updateNumVoices() {
                 parameters.getRawParameterValue("osc2Level"),
                 parameters.getRawParameterValue("osc3Level"),
                 parameters.getRawParameterValue("noiseLevel"),
-                parameters.getRawParameterValue("subLevel")
+                parameters.getRawParameterValue("subLevel"),
+                parameters.getRawParameterValue("osc1Octave"),
+                parameters.getRawParameterValue("osc2Octave"),
+                parameters.getRawParameterValue("osc3Octave"),
+                parameters.getRawParameterValue("subOctave")
             );
         }
     }

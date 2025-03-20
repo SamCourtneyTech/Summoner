@@ -33,6 +33,9 @@ private:
     juce::Slider detuneSlider, osc1LevelSlider, osc2LevelSlider, osc3LevelSlider, noiseLevelSlider, subLevelSlider;
     juce::Label detuneLabel, osc1LevelLabel, osc2LevelLabel, osc3LevelLabel, noiseLevelLabel, subLevelLabel;
 
+    juce::Slider osc1OctaveSlider, osc2OctaveSlider, osc3OctaveSlider, subOctaveSlider;
+    juce::Label osc1OctaveLabel, osc2OctaveLabel, osc3OctaveLabel, subOctaveLabel;
+
     juce::Slider numVoicesSlider;
     juce::Label polyphonyLabel;
 
@@ -86,6 +89,10 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc3LevelAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> noiseLevelAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> subLevelAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc1OctaveAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc2OctaveAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc3OctaveAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> subOctaveAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> numVoicesAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> unisonVoicesAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> unisonDetuneAttachment;
