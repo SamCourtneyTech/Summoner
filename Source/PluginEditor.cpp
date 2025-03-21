@@ -18,9 +18,9 @@ SummonerAudioProcessorEditor::SummonerAudioProcessorEditor(SummonerAudioProcesso
     synthViewport.setViewedComponent(&synthComponent, false);
     synthViewport.setScrollBarsShown(true, false);
 
-    // Set the size of SynthComponent
+    // Set the size of SynthComponent, increasing height to 3000 for more scrolling space
     const int viewportWidth = 1625 - 20;
-    synthComponent.setSize(viewportWidth - synthViewport.getScrollBarThickness(), 2000);
+    synthComponent.setSize(viewportWidth - synthViewport.getScrollBarThickness(), 3000);
 
     // Add the Viewport to the editor
     addAndMakeVisible(synthViewport);
