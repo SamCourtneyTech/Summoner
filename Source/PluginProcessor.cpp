@@ -71,11 +71,21 @@ SummonerAudioProcessor::SummonerAudioProcessor()
     std::make_unique<juce::AudioParameterInt>("osc2UnisonVoices", "Osc2 Unison Voices", 1, 8, 1),
     std::make_unique<juce::AudioParameterFloat>("osc2UnisonDetune", "Osc2 Unison Detune", 0.0f, 50.0f, 0.0f),
     std::make_unique<juce::AudioParameterInt>("osc3UnisonVoices", "Osc3 Unison Voices", 1, 8, 1),
-    std::make_unique<juce::AudioParameterFloat>("osc3UnisonDetune", "Osc3 Unison Detune", 0.0f, 50.0f, 0.0f)
+    std::make_unique<juce::AudioParameterFloat>("osc3UnisonDetune", "Osc3 Unison Detune", 0.0f, 50.0f, 0.0f),
+    // Modulation Matrix Parameters
+    std::make_unique<juce::AudioParameterFloat>("lfoToOsc1Freq", "LFO to Osc1 Freq", 0.0f, 100.0f, 0.0f),
+    std::make_unique<juce::AudioParameterFloat>("lfoToOsc2Freq", "LFO to Osc2 Freq", 0.0f, 100.0f, 0.0f),
+    std::make_unique<juce::AudioParameterFloat>("lfoToOsc3Freq", "LFO to Osc3 Freq", 0.0f, 100.0f, 0.0f),
+    std::make_unique<juce::AudioParameterFloat>("lfoToOsc1Level", "LFO to Osc1 Level", 0.0f, 1.0f, 0.0f),
+    std::make_unique<juce::AudioParameterFloat>("lfoToOsc2Level", "LFO to Osc2 Level", 0.0f, 1.0f, 0.0f),
+    std::make_unique<juce::AudioParameterFloat>("lfoToOsc3Level", "LFO to Osc3 Level", 0.0f, 1.0f, 0.0f),
+    std::make_unique<juce::AudioParameterFloat>("lfoToFilterCutoff", "LFO to Filter Cutoff", 0.0f, 12.0f, 0.0f)
         })
 {
     parameters.addParameterListener("numVoices", this);
 }
+
+
 
 void SummonerAudioProcessor::updateNumVoices() {
     int newNumVoices = static_cast<int>(*parameters.getRawParameterValue("numVoices"));
@@ -125,9 +135,83 @@ Voice* SummonerAudioProcessor::findVoiceToSteal() {
     return bestVoice;
 }
 
-void SummonerAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue) {
-    if (parameterID == "numVoices" && currentSampleRate > 0.0) {
+void SummonerAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue)
+{
+    if (parameterID == "filterCutoff" || parameterID == "filterResonance" || parameterID == "filterType")
+    {
+        updateFilter();
+    }
+    else if (parameterID == "numVoices")
+    {
         updateNumVoices();
+    }
+    else if (parameterID == "reverbRoomSize")
+    {
+        reverbParams.roomSize = newValue;
+        reverb.setParameters(reverbParams);
+    }
+    else if (parameterID == "reverbDamping")
+    {
+        reverbParams.damping = newValue;
+        reverb.setParameters(reverbParams);
+    }
+    else if (parameterID == "reverbWetLevel")
+    {
+        reverbParams.wetLevel = newValue;
+        reverb.setParameters(reverbParams);
+    }
+    else if (parameterID == "reverbDryLevel")
+    {
+        reverbParams.dryLevel = newValue;
+        reverb.setParameters(reverbParams);
+    }
+    else if (parameterID == "compressorThreshold")
+    {
+        compressor.setThreshold(newValue);
+    }
+    else if (parameterID == "compressorRatio")
+    {
+        compressor.setRatio(newValue);
+    }
+    else if (parameterID == "compressorAttack")
+    {
+        compressor.setAttack(newValue);
+    }
+    else if (parameterID == "compressorRelease")
+    {
+        compressor.setRelease(newValue);
+    }
+    else if (parameterID == "compressorMakeupGain")
+    {
+        compressorMakeupGain.setGainDecibels(newValue);
+    }
+    else if (parameterID == "chorusRate")
+    {
+        chorus.setRate(newValue);
+    }
+    else if (parameterID == "chorusDepth")
+    {
+        chorus.setDepth(newValue);
+    }
+    else if (parameterID == "chorusMix")
+    {
+        chorus.setMix(newValue);
+    }
+    else if (parameterID == "chorusDelay")
+    {
+        chorus.setCentreDelay(newValue * 1000.0f); // Convert to milliseconds
+    }
+    else if (parameterID == "phaserRate")
+    {
+        phaser.setRate(newValue);
+    }
+    else if (parameterID == "phaserDepth")
+    {
+        phaser.setDepth(newValue);
+    }
+    else if (parameterID == "phaserMix")
+    {
+        phaser.setMix(newValue);
     }
 }
 
@@ -197,44 +281,8 @@ void SummonerAudioProcessor::changeProgramName(int index, const juce::String& ne
 
 void SummonerAudioProcessor::updateFilter()
 {
-    float cutoff = *parameters.getRawParameterValue("filterCutoff");
-    float resonance = *parameters.getRawParameterValue("filterResonance");
-    int filterTypeIdx = parameters.getParameter("filterType")->convertFrom0to1(
-        parameters.getParameter("filterType")->getValue()
-    );
-
-    // Check if parameters have changed
-    if (cutoff == lastFilterCutoff && resonance == lastFilterResonance && filterTypeIdx == lastFilterType)
-        return;
-
-    // Update last known values
-    lastFilterCutoff = cutoff;
-    lastFilterResonance = resonance;
-    lastFilterType = filterTypeIdx;
-
-    juce::dsp::IIR::Coefficients<float>::Ptr newCoefficients;
-    switch (filterTypeIdx)
-    {
-    case 0: // Low Pass
-        newCoefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(currentSampleRate, cutoff, resonance);
-        break;
-    case 1: // High Pass
-        newCoefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(currentSampleRate, cutoff, resonance);
-        break;
-    case 2: // Band Pass
-        newCoefficients = juce::dsp::IIR::Coefficients<float>::makeBandPass(currentSampleRate, cutoff, resonance);
-        break;
-    case 3: // Notch
-        newCoefficients = juce::dsp::IIR::Coefficients<float>::makeNotch(currentSampleRate, cutoff, resonance);
-        break;
-    default:
-        newCoefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(currentSampleRate, cutoff, resonance);
-    }
-
-    *filter.state = *newCoefficients;
+    // Filter cutoff modulation is now handled in processBlock
 }
-
-
 
 void SummonerAudioProcessor::releaseResources()
 {
@@ -257,61 +305,38 @@ bool SummonerAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) 
 #endif
 
 void SummonerAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
-    lfo.prepare(sampleRate);
     currentSampleRate = sampleRate;
+    voices.clear();
+    updateNumVoices();
+    for (auto* voice : voices) {
+        voice->prepare(sampleRate);
+        voice->setParameters(parameters);
+    }
 
-    updateNumVoices(); // Initialize voices based on parameter
+    filter.prepare({ sampleRate, (juce::uint32)samplesPerBlock, 2 });
+    distortionToneFilter.prepare({ sampleRate, (juce::uint32)samplesPerBlock, 2 });
 
-    juce::dsp::ProcessSpec spec;
-    spec.sampleRate = sampleRate;
-    spec.maximumBlockSize = samplesPerBlock;
-    spec.numChannels = getTotalNumOutputChannels();
-    filter.prepare(spec);
-    updateFilter();
-
-    delayBufferSize = static_cast<int>(2.0 * sampleRate);
+    delayBufferSize = static_cast<int>(sampleRate * 2.0);
     delayBuffer.setSize(2, delayBufferSize);
     delayBuffer.clear();
     delayWritePosition = 0;
 
-    flangerBufferSize = static_cast<int>(0.0075 * sampleRate) + 1;
+    flangerBufferSize = static_cast<int>(sampleRate * 0.1);
     flangerBuffer.setSize(2, flangerBufferSize);
     flangerBuffer.clear();
     flangerWritePosition = 0;
     flangerLFO.prepare(sampleRate);
-    flangerLFO.setWaveform(LFO::Waveform::Sine);
 
     reverb.reset();
-    reverbParams.roomSize = *parameters.getRawParameterValue("reverbRoomSize");
-    reverbParams.damping = *parameters.getRawParameterValue("reverbDamping");
-    reverbParams.wetLevel = *parameters.getRawParameterValue("reverbWetLevel");
-    reverbParams.dryLevel = *parameters.getRawParameterValue("reverbDryLevel");
-    reverb.setParameters(reverbParams);
+    compressor.prepare({ sampleRate, (juce::uint32)samplesPerBlock, 2 });
+    compressorMakeupGain.prepare({ sampleRate, (juce::uint32)samplesPerBlock, 2 });
+    chorus.prepare({ sampleRate, (juce::uint32)samplesPerBlock, 2 });
+    phaser.prepare({ sampleRate, (juce::uint32)samplesPerBlock, 2 });
+    limiter.prepare({ sampleRate, (juce::uint32)samplesPerBlock, 2 }); // Initialize limiter
+    limiter.setThreshold(-0.1f); // Set threshold to prevent clipping
+    limiter.setRelease(50.0f); // Moderate release time
 
-    distortionToneFilter.prepare(spec);
-    lastDistortionTone = -1.0f;
-
-    compressor.prepare(spec);
-    compressor.setThreshold(*parameters.getRawParameterValue("compressorThreshold"));
-    compressor.setRatio(*parameters.getRawParameterValue("compressorRatio"));
-    compressor.setAttack(*parameters.getRawParameterValue("compressorAttack"));
-    compressor.setRelease(*parameters.getRawParameterValue("compressorRelease"));
-
-    compressorMakeupGain.prepare(spec);
-    compressorMakeupGain.setGainDecibels(*parameters.getRawParameterValue("compressorMakeupGain"));
-
-    chorus.prepare(spec);
-    chorus.setRate(*parameters.getRawParameterValue("chorusRate"));
-    chorus.setDepth(*parameters.getRawParameterValue("chorusDepth"));
-    chorus.setMix(*parameters.getRawParameterValue("chorusMix"));
-    chorus.setCentreDelay(*parameters.getRawParameterValue("chorusDelay"));
-
-    phaser.prepare(spec);
-    phaser.setRate(*parameters.getRawParameterValue("phaserRate"));
-    phaser.setDepth(*parameters.getRawParameterValue("phaserDepth"));
-    phaser.setMix(*parameters.getRawParameterValue("phaserMix"));
-
-    DBG("Synth prepared with sample rate: " << sampleRate);
+    lfo.prepare(sampleRate);
 }
 
 void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {
@@ -319,15 +344,15 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     auto numSamples = buffer.getNumSamples();
     buffer.clear();
 
-    float attack = *parameters.getRawParameterValue("attack");
-    float decay = *parameters.getRawParameterValue("decay");
-    float sustain = *parameters.getRawParameterValue("sustain");
-    float release = *parameters.getRawParameterValue("release");
+    float attack = parameters.getRawParameterValue("attack")->load();
+    float decay = parameters.getRawParameterValue("decay")->load();
+    float sustain = parameters.getRawParameterValue("sustain")->load();
+    float release = parameters.getRawParameterValue("release")->load();
     for (auto* voice : voices) {
         voice->setADSR(attack, decay, sustain, release);
     }
 
-    float waveformValue1 = *parameters.getRawParameterValue("waveform");
+    float waveformValue1 = parameters.getRawParameterValue("waveform")->load();
     Oscillator::Waveform wf1;
     if (waveformValue1 <= 0.16f) wf1 = Oscillator::Waveform::Sine;
     else if (waveformValue1 <= 0.33f) wf1 = Oscillator::Waveform::Saw;
@@ -336,7 +361,7 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     else if (waveformValue1 <= 0.83f) wf1 = Oscillator::Waveform::Pulse25;
     else wf1 = Oscillator::Waveform::Pulse15;
 
-    float waveformValue2 = *parameters.getRawParameterValue("waveform2");
+    float waveformValue2 = parameters.getRawParameterValue("waveform2")->load();
     Oscillator::Waveform wf2;
     if (waveformValue2 <= 0.16f) wf2 = Oscillator::Waveform::Sine;
     else if (waveformValue2 <= 0.33f) wf2 = Oscillator::Waveform::Saw;
@@ -345,7 +370,7 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     else if (waveformValue2 <= 0.83f) wf2 = Oscillator::Waveform::Pulse25;
     else wf2 = Oscillator::Waveform::Pulse15;
 
-    float waveformValue3 = *parameters.getRawParameterValue("waveform3");
+    float waveformValue3 = parameters.getRawParameterValue("waveform3")->load();
     Oscillator::Waveform wf3;
     if (waveformValue3 <= 0.16f) wf3 = Oscillator::Waveform::Sine;
     else if (waveformValue3 <= 0.33f) wf3 = Oscillator::Waveform::Saw;
@@ -354,10 +379,10 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     else if (waveformValue3 <= 0.83f) wf3 = Oscillator::Waveform::Pulse25;
     else wf3 = Oscillator::Waveform::Pulse15;
 
-    float noiseWaveformValue = *parameters.getRawParameterValue("noiseWaveform");
+    float noiseWaveformValue = parameters.getRawParameterValue("noiseWaveform")->load();
     NoiseOscillator::Waveform nwf = (noiseWaveformValue <= 0.5f) ? NoiseOscillator::Waveform::WhiteNoise : NoiseOscillator::Waveform::PinkNoise;
 
-    float subWaveformValue = *parameters.getRawParameterValue("subWaveform");
+    float subWaveformValue = parameters.getRawParameterValue("subWaveform")->load();
     SubOscillator::Waveform swf;
     if (subWaveformValue <= 0.16f) swf = SubOscillator::Waveform::Sine;
     else if (subWaveformValue <= 0.33f) swf = SubOscillator::Waveform::RoundedSine;
@@ -370,7 +395,7 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
         voice->setWaveform(wf1, wf2, wf3, nwf, swf);
     }
 
-    float lfoRate = *parameters.getRawParameterValue("lfoRate");
+    float lfoRate = parameters.getRawParameterValue("lfoRate")->load();
     int lfoWaveformIdx = parameters.getParameter("lfoWaveform")->convertFrom0to1(
         parameters.getParameter("lfoWaveform")->getValue()
     );
@@ -382,45 +407,45 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     case 3: lfo.setWaveform(LFO::Waveform::Square); break;
     }
 
-    float delayTimeMs = *parameters.getRawParameterValue("delayTime");
-    float delayFeedback = *parameters.getRawParameterValue("delayFeedback");
-    float delayMix = *parameters.getRawParameterValue("delayMix");
+    float delayTimeMs = parameters.getRawParameterValue("delayTime")->load();
+    float delayFeedback = parameters.getRawParameterValue("delayFeedback")->load();
+    float delayMix = parameters.getRawParameterValue("delayMix")->load();
     int delaySamples = juce::jmax(1, static_cast<int>(juce::jlimit(0.0f, 1000.0f, delayTimeMs) * currentSampleRate / 1000.0f));
 
-    reverbParams.roomSize = *parameters.getRawParameterValue("reverbRoomSize");
-    reverbParams.damping = *parameters.getRawParameterValue("reverbDamping");
-    reverbParams.wetLevel = *parameters.getRawParameterValue("reverbWetLevel");
-    reverbParams.dryLevel = *parameters.getRawParameterValue("reverbDryLevel");
+    reverbParams.roomSize = parameters.getRawParameterValue("reverbRoomSize")->load();
+    reverbParams.damping = parameters.getRawParameterValue("reverbDamping")->load();
+    reverbParams.wetLevel = parameters.getRawParameterValue("reverbWetLevel")->load();
+    reverbParams.dryLevel = parameters.getRawParameterValue("reverbDryLevel")->load();
     reverb.setParameters(reverbParams);
 
-    float distortionDrive = *parameters.getRawParameterValue("distortionDrive");
-    float distortionTone = *parameters.getRawParameterValue("distortionTone");
-    float distortionMix = *parameters.getRawParameterValue("distortionMix");
+    float distortionDrive = parameters.getRawParameterValue("distortionDrive")->load();
+    float distortionTone = parameters.getRawParameterValue("distortionTone")->load();
+    float distortionMix = parameters.getRawParameterValue("distortionMix")->load();
 
     if (distortionTone != lastDistortionTone) {
         *distortionToneFilter.state = *juce::dsp::IIR::Coefficients<float>::makeLowPass(currentSampleRate, distortionTone, 0.707f);
         lastDistortionTone = distortionTone;
     }
 
-    compressor.setThreshold(*parameters.getRawParameterValue("compressorThreshold"));
-    compressor.setRatio(*parameters.getRawParameterValue("compressorRatio"));
-    compressor.setAttack(*parameters.getRawParameterValue("compressorAttack"));
-    compressor.setRelease(*parameters.getRawParameterValue("compressorRelease"));
-    compressorMakeupGain.setGainDecibels(*parameters.getRawParameterValue("compressorMakeupGain"));
+    compressor.setThreshold(parameters.getRawParameterValue("compressorThreshold")->load());
+    compressor.setRatio(parameters.getRawParameterValue("compressorRatio")->load());
+    compressor.setAttack(parameters.getRawParameterValue("compressorAttack")->load());
+    compressor.setRelease(parameters.getRawParameterValue("compressorRelease")->load());
+    compressorMakeupGain.setGainDecibels(parameters.getRawParameterValue("compressorMakeupGain")->load());
 
-    chorus.setRate(*parameters.getRawParameterValue("chorusRate"));
-    chorus.setDepth(*parameters.getRawParameterValue("chorusDepth"));
-    chorus.setMix(*parameters.getRawParameterValue("chorusMix"));
-    chorus.setCentreDelay(*parameters.getRawParameterValue("chorusDelay"));
+    chorus.setRate(parameters.getRawParameterValue("chorusRate")->load());
+    chorus.setDepth(parameters.getRawParameterValue("chorusDepth")->load());
+    chorus.setMix(parameters.getRawParameterValue("chorusMix")->load());
+    chorus.setCentreDelay(parameters.getRawParameterValue("chorusDelay")->load());
 
-    phaser.setRate(*parameters.getRawParameterValue("phaserRate"));
-    phaser.setDepth(*parameters.getRawParameterValue("phaserDepth"));
-    phaser.setMix(*parameters.getRawParameterValue("phaserMix"));
+    phaser.setRate(parameters.getRawParameterValue("phaserRate")->load());
+    phaser.setDepth(parameters.getRawParameterValue("phaserDepth")->load());
+    phaser.setMix(parameters.getRawParameterValue("phaserMix")->load());
 
-    float flangerRate = *parameters.getRawParameterValue("flangerRate");
-    float flangerDepth = *parameters.getRawParameterValue("flangerDepth");
-    float flangerMix = *parameters.getRawParameterValue("flangerMix");
-    float flangerDelayMs = *parameters.getRawParameterValue("flangerDelay");
+    float flangerRate = parameters.getRawParameterValue("flangerRate")->load();
+    float flangerDepth = parameters.getRawParameterValue("flangerDepth")->load();
+    float flangerMix = parameters.getRawParameterValue("flangerMix")->load();
+    float flangerDelayMs = parameters.getRawParameterValue("flangerDelay")->load();
     flangerLFO.setFrequency(flangerRate);
 
     for (const auto metadata : midiMessages) {
@@ -459,22 +484,78 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     auto* leftChannel = buffer.getWritePointer(0);
     auto* rightChannel = buffer.getWritePointer(1);
 
+    // Sum voices with enhanced normalization
     for (int sample = 0; sample < numSamples; ++sample) {
         float mixedOutput = 0.0f;
+        int activeVoices = 0;
 
         for (auto* voice : voices) {
             if (voice->getIsActive()) {
                 float voiceOutput = voice->getNextSample();
-                voiceOutput = juce::jlimit(-1.0f, 1.0f, voiceOutput);
                 mixedOutput += voiceOutput;
+                activeVoices++;
             }
         }
+
+        // Enhanced normalization: scale down more aggressively
+        if (activeVoices > 0) {
+            mixedOutput /= (std::sqrt(static_cast<float>(activeVoices)) * 0.5f * activeVoices);
+        }
+
+        // Apply LFO modulation to amplitude
+        float lfoValue = lfo.getNextSample();
+        float lfoToOsc1Level = parameters.getRawParameterValue("lfoToOsc1Level")->load();
+        float lfoToOsc2Level = parameters.getRawParameterValue("lfoToOsc2Level")->load();
+        float lfoToOsc3Level = parameters.getRawParameterValue("lfoToOsc3Level")->load();
+
+        float osc1LevelMod = 1.0f + (lfoValue * lfoToOsc1Level * 0.3f); // Reduced modulation depth
+        float osc2LevelMod = 1.0f + (lfoValue * lfoToOsc2Level * 0.3f);
+        float osc3LevelMod = 1.0f + (lfoValue * lfoToOsc3Level * 0.3f);
+
+        mixedOutput *= (osc1LevelMod + osc2LevelMod + osc3LevelMod) / 3.0f;
 
         leftChannel[sample] = mixedOutput;
         rightChannel[sample] = mixedOutput;
     }
 
-    updateFilter();
+    // Apply LFO to filter cutoff
+    float baseCutoff = parameters.getRawParameterValue("filterCutoff")->load();
+    float lfoToCutoff = parameters.getRawParameterValue("lfoToFilterCutoff")->load();
+    float lfoValue = lfo.getNextSample();
+    float modulatedCutoff = baseCutoff * std::pow(2.0f, lfoValue * lfoToCutoff / 12.0f);
+    modulatedCutoff = juce::jlimit(20.0f, 20000.0f, modulatedCutoff);
+
+    float resonance = parameters.getRawParameterValue("filterResonance")->load();
+    resonance = juce::jlimit(0.1f, 5.0f, resonance); // Limit resonance to prevent excessive gain
+    int filterTypeIdx = parameters.getParameter("filterType")->convertFrom0to1(
+        parameters.getParameter("filterType")->getValue()
+    );
+
+    if (modulatedCutoff != lastFilterCutoff || resonance != lastFilterResonance || filterTypeIdx != lastFilterType) {
+        lastFilterCutoff = modulatedCutoff;
+        lastFilterResonance = resonance;
+        lastFilterType = filterTypeIdx;
+
+        juce::dsp::IIR::Coefficients<float>::Ptr newCoefficients;
+        switch (filterTypeIdx) {
+        case 0: // Low Pass
+            newCoefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(currentSampleRate, modulatedCutoff, resonance);
+            break;
+        case 1: // High Pass
+            newCoefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(currentSampleRate, modulatedCutoff, resonance);
+            break;
+        case 2: // Band Pass
+            newCoefficients = juce::dsp::IIR::Coefficients<float>::makeBandPass(currentSampleRate, modulatedCutoff, resonance);
+            break;
+        case 3: // Notch
+            newCoefficients = juce::dsp::IIR::Coefficients<float>::makeNotch(currentSampleRate, modulatedCutoff, resonance);
+            break;
+        default:
+            newCoefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(currentSampleRate, modulatedCutoff, resonance);
+        }
+        *filter.state = *newCoefficients;
+    }
+
     juce::dsp::AudioBlock<float> block(buffer);
     juce::dsp::ProcessContextReplacing<float> context(block);
     filter.process(context);
@@ -482,9 +563,11 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     juce::AudioBuffer<float> dryBuffer;
     dryBuffer.makeCopyOf(buffer);
 
+    // Apply distortion with reduced drive impact
     for (int sample = 0; sample < numSamples; ++sample) {
-        leftChannel[sample] = std::tanh(leftChannel[sample] * distortionDrive);
-        rightChannel[sample] = std::tanh(rightChannel[sample] * distortionDrive);
+        float drive = juce::jlimit(1.0f, 5.0f, distortionDrive); // Limit drive to prevent excessive distortion
+        leftChannel[sample] = std::tanh(leftChannel[sample] * drive);
+        rightChannel[sample] = std::tanh(rightChannel[sample] * drive);
     }
 
     distortionToneFilter.process(context);
@@ -552,6 +635,9 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     reverb.processStereo(leftChannel, rightChannel, numSamples);
     compressor.process(context);
     compressorMakeupGain.process(context);
+
+    // Apply limiter as the final stage
+    limiter.process(context);
 }
 
 bool SummonerAudioProcessor::hasEditor() const

@@ -19,7 +19,7 @@ public:
     }
 
     void setParameters(juce::AudioProcessorValueTreeState& params) {
-        parameters = &params; // Fixed: Use &params to assign the address
+        parameters = &params;
     }
 
     void setNoteNumber(int note) { noteNumber = note; }

@@ -70,7 +70,7 @@ private:
 
     juce::Slider filterCutoffSlider, filterResonanceSlider;
     juce::ComboBox filterTypeCombo;
-    juce::Label filterCutoffLabel, filterResonanceLabel,  filterTypeLabel;
+    juce::Label filterCutoffLabel, filterResonanceLabel, filterTypeLabel;
     juce::Label filterSectionLabel;
 
     juce::Label adsrSectionLabel;

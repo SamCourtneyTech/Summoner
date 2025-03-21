@@ -70,11 +70,12 @@ private:
     LFO flangerLFO;
     float flangerPhase = 0.0f;
 
+    juce::dsp::Limiter<float> limiter; // Added limiter
+
     float lastFilterCutoff = -1.0f;
     float lastFilterResonance = -1.0f;
     int lastFilterType = -1;
 
-    // Map to track voices assigned to each note (for unison)
     std::map<int, std::vector<Voice*>> noteToVoices;
 
     void updateFilter();
