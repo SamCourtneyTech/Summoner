@@ -39,24 +39,24 @@ SummonerAudioProcessor::SummonerAudioProcessor()
         juce::StringArray("Sine", "Triangle", "Saw", "Square"), 0),
     std::make_unique<juce::AudioParameterFloat>("distortionDrive", "Distortion Drive", 1.0f, 10.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("distortionTone", "Distortion Tone", 500.0f, 20000.0f, 5000.0f),
-    std::make_unique<juce::AudioParameterFloat>("distortionMix", "Distortion Mix", 0.0f, 1.0f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat>("distortionMix", "Distortion Mix", 0.0f, 1.0f, 0.0f), // Changed to 0.0f
     std::make_unique<juce::AudioParameterFloat>("delayTime", "Delay Time", 0.0f, 1000.0f, 300.0f),
     std::make_unique<juce::AudioParameterFloat>("delayFeedback", "Delay Feedback", 0.0f, 0.9f, 0.3f),
-    std::make_unique<juce::AudioParameterFloat>("delayMix", "Delay Mix", 0.0f, 1.0f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat>("delayMix", "Delay Mix", 0.0f, 1.0f, 0.0f), // Changed to 0.0f
     std::make_unique<juce::AudioParameterFloat>("chorusRate", "Chorus Rate", 0.1f, 10.0f, 0.5f),
     std::make_unique<juce::AudioParameterFloat>("chorusDepth", "Chorus Depth", 0.0f, 1.0f, 0.5f),
-    std::make_unique<juce::AudioParameterFloat>("chorusMix", "Chorus Mix", 0.0f, 1.0f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat>("chorusMix", "Chorus Mix", 0.0f, 1.0f, 0.0f), // Changed to 0.0f
     std::make_unique<juce::AudioParameterFloat>("chorusDelay", "Chorus Delay", 1.0f, 20.0f, 7.0f),
     std::make_unique<juce::AudioParameterFloat>("phaserRate", "Phaser Rate", 0.1f, 10.0f, 0.5f),
     std::make_unique<juce::AudioParameterFloat>("phaserDepth", "Phaser Depth", 0.0f, 1.0f, 0.5f),
-    std::make_unique<juce::AudioParameterFloat>("phaserMix", "Phaser Mix", 0.0f, 1.0f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat>("phaserMix", "Phaser Mix", 0.0f, 1.0f, 0.0f), // Changed to 0.0f
     std::make_unique<juce::AudioParameterFloat>("flangerRate", "Flanger Rate", 0.1f, 10.0f, 0.5f),
     std::make_unique<juce::AudioParameterFloat>("flangerDepth", "Flanger Depth", 0.0f, 1.0f, 0.5f),
-    std::make_unique<juce::AudioParameterFloat>("flangerMix", "Flanger Mix", 0.0f, 1.0f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat>("flangerMix", "Flanger Mix", 0.0f, 1.0f, 0.0f), // Changed to 0.0f
     std::make_unique<juce::AudioParameterFloat>("flangerDelay", "Flanger Delay", 0.1f, 5.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("reverbRoomSize", "Reverb Room Size", 0.0f, 1.0f, 0.5f),
     std::make_unique<juce::AudioParameterFloat>("reverbDamping", "Reverb Damping", 0.0f, 1.0f, 0.5f),
-    std::make_unique<juce::AudioParameterFloat>("reverbWetLevel", "Reverb Wet Level", 0.0f, 1.0f, 0.33f),
+    std::make_unique<juce::AudioParameterFloat>("reverbWetLevel", "Reverb Wet Level", 0.0f, 1.0f, 0.0f), // Changed to 0.0f
     std::make_unique<juce::AudioParameterFloat>("reverbDryLevel", "Reverb Dry Level", 0.0f, 1.0f, 0.4f),
     std::make_unique<juce::AudioParameterFloat>("compressorThreshold", "Compressor Threshold", -60.0f, 0.0f, -24.0f),
     std::make_unique<juce::AudioParameterFloat>("compressorRatio", "Compressor Ratio", 1.0f, 10.0f, 2.0f),
