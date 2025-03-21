@@ -619,260 +619,176 @@ void SynthComponent::resized() {
     float labelHeight = 20;
     float sectionLabelHeight = 30;
     float comboWidth = 100;
+    float padding = 10;
 
-    auto leftColumn = bounds.removeFromLeft(bounds.getWidth() / 3 - 10);
-    auto middleColumn = bounds.removeFromLeft(bounds.getWidth() / 2 - 10);
-    auto rightColumn = bounds;
+    // Define single column for all sections
+    auto column = bounds;
+    float currentY = column.getY();
 
-    auto adsrRow = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    leftColumn.removeFromTop(10);
-    auto osc1Row = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight * 2);
-    leftColumn.removeFromTop(10);
-    auto osc2Row = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight * 2);
-    leftColumn.removeFromTop(10);
-    auto osc3Row = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight * 2);
-    leftColumn.removeFromTop(10);
-    auto noiseOscRow = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    leftColumn.removeFromTop(10);
-    auto subOscRow = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    leftColumn.removeFromTop(10);
-    auto detuneRow = leftColumn.removeFromTop(labelHeight + knobHeight);
-    leftColumn.removeFromTop(10);
-    auto polyphonyRow = leftColumn.removeFromTop(labelHeight + knobHeight);
-    leftColumn.removeFromTop(10);
-    auto lfoRow = leftColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    // Helper lambda to place section label
+    auto placeSectionLabel = [&](juce::Label& label) {
+        label.setBounds(column.getX(), currentY, column.getWidth(), sectionLabelHeight);
+        currentY += sectionLabelHeight + padding;
+        };
 
-    auto distortionRow = middleColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    middleColumn.removeFromTop(10);
-    auto filterRow = middleColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    middleColumn.removeFromTop(10);
-    auto compressorRow = middleColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    // Helper lambda to place a horizontal row of knobs
+    auto placeKnobRow = [&](std::vector<std::pair<juce::Label*, juce::Slider*>> knobs) {
+        auto rowBounds = juce::Rectangle<float>(column.getX(), currentY, column.getWidth(), labelHeight + knobHeight);
+        float currentX = rowBounds.getX();
+        for (auto& [label, slider] : knobs) {
+            auto knobBounds = juce::Rectangle<float>(currentX, currentY, knobWidth, labelHeight + knobHeight);
+            label->setBounds(knobBounds.removeFromTop(labelHeight).toNearestInt());
+            slider->setBounds(knobBounds.toNearestInt());
+            currentX += knobWidth + padding;
+        }
+        currentY += labelHeight + knobHeight + padding;
+        };
 
-    auto delayRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    rightColumn.removeFromTop(10);
-    auto chorusRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    rightColumn.removeFromTop(10);
-    auto phaserRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    rightColumn.removeFromTop(10);
-    auto flangerRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
-    rightColumn.removeFromTop(10);
-    auto reverbRow = rightColumn.removeFromTop(sectionLabelHeight + labelHeight + knobHeight);
+    // Helper lambda to place a horizontal row with a combo box
+    auto placeComboRow = [&](std::vector<std::pair<juce::Label*, juce::Slider*>> knobs, juce::Label& comboLabel, juce::ComboBox& combo) {
+        auto rowBounds = juce::Rectangle<float>(column.getX(), currentY, column.getWidth(), labelHeight + std::max(knobHeight, comboHeight));
+        float currentX = rowBounds.getX();
+        for (auto& [label, slider] : knobs) {
+            auto knobBounds = juce::Rectangle<float>(currentX, currentY, knobWidth, labelHeight + knobHeight);
+            label->setBounds(knobBounds.removeFromTop(labelHeight).toNearestInt());
+            slider->setBounds(knobBounds.toNearestInt());
+            currentX += knobWidth + padding;
+        }
+        auto comboBounds = juce::Rectangle<float>(currentX, currentY, comboWidth, labelHeight + comboHeight);
+        comboLabel.setBounds(comboBounds.removeFromTop(labelHeight).toNearestInt());
+        combo.setBounds(comboBounds.withHeight(comboHeight).toNearestInt());
+        currentY += labelHeight + std::max(knobHeight, comboHeight) + padding;
+        };
 
-    auto adsrSection = adsrRow;
-    adsrSectionLabel.setBounds(adsrSection.removeFromTop(sectionLabelHeight).toNearestInt());
-    auto attackBounds = adsrSection.removeFromLeft(knobWidth);
-    attackLabel.setBounds(attackBounds.removeFromTop(labelHeight).toNearestInt());
-    attackSlider.setBounds(attackBounds.toNearestInt());
-    auto decayBounds = adsrSection.removeFromLeft(knobWidth);
-    decayLabel.setBounds(decayBounds.removeFromTop(labelHeight).toNearestInt());
-    decaySlider.setBounds(decayBounds.toNearestInt());
-    auto sustainBounds = adsrSection.removeFromLeft(knobWidth);
-    sustainLabel.setBounds(sustainBounds.removeFromTop(labelHeight).toNearestInt());
-    sustainSlider.setBounds(sustainBounds.toNearestInt());
-    auto releaseBounds = adsrSection.removeFromLeft(knobWidth);
-    releaseLabel.setBounds(releaseBounds.removeFromTop(labelHeight).toNearestInt());
-    releaseSlider.setBounds(releaseBounds.toNearestInt());
+    // ADSR Section
+    placeSectionLabel(adsrSectionLabel);
+    placeKnobRow({
+        {&attackLabel, &attackSlider},
+        {&decayLabel, &decaySlider},
+        {&sustainLabel, &sustainSlider},
+        {&releaseLabel, &releaseSlider}
+        });
 
-    auto osc1Section = osc1Row.removeFromLeft(knobWidth * 5 + 40);
-    oscillator1Label.setBounds(osc1Section.removeFromTop(sectionLabelHeight).toNearestInt());
-    auto osc1TopRow = osc1Section.removeFromTop(labelHeight + knobHeight);
-    auto waveformBounds = osc1TopRow.removeFromLeft(knobWidth);
-    waveformLabel.setBounds(waveformBounds.removeFromTop(labelHeight).toNearestInt());
-    waveformSlider.setBounds(waveformBounds.toNearestInt());
-    auto osc1LevelBounds = osc1TopRow.removeFromLeft(knobWidth);
-    osc1LevelLabel.setBounds(osc1LevelBounds.removeFromTop(labelHeight).toNearestInt());
-    osc1LevelSlider.setBounds(osc1LevelBounds.toNearestInt());
-    auto osc1OctaveBounds = osc1TopRow.removeFromLeft(knobWidth);
-    osc1OctaveLabel.setBounds(osc1OctaveBounds.removeFromTop(labelHeight).toNearestInt());
-    osc1OctaveSlider.setBounds(osc1OctaveBounds.toNearestInt());
-    auto osc1UnisonVoicesBounds = osc1Section.removeFromLeft(knobWidth);
-    osc1UnisonVoicesLabel.setBounds(osc1UnisonVoicesBounds.removeFromTop(labelHeight).toNearestInt());
-    osc1UnisonVoicesSlider.setBounds(osc1UnisonVoicesBounds.toNearestInt());
-    auto osc1UnisonDetuneBounds = osc1Section.removeFromLeft(knobWidth);
-    osc1UnisonDetuneLabel.setBounds(osc1UnisonDetuneBounds.removeFromTop(labelHeight).toNearestInt());
-    osc1UnisonDetuneSlider.setBounds(osc1UnisonDetuneBounds.toNearestInt());
+    // Oscillator 1 Section
+    placeSectionLabel(oscillator1Label);
+    placeKnobRow({
+        {&waveformLabel, &waveformSlider},
+        {&osc1LevelLabel, &osc1LevelSlider},
+        {&osc1OctaveLabel, &osc1OctaveSlider},
+        {&osc1UnisonVoicesLabel, &osc1UnisonVoicesSlider},
+        {&osc1UnisonDetuneLabel, &osc1UnisonDetuneSlider}
+        });
 
-    auto osc2Section = osc2Row.removeFromLeft(knobWidth * 5 + 40);
-    oscillator2Label.setBounds(osc2Section.removeFromTop(sectionLabelHeight).toNearestInt());
-    auto osc2TopRow = osc2Section.removeFromTop(labelHeight + knobHeight);
-    auto waveform2Bounds = osc2TopRow.removeFromLeft(knobWidth);
-    waveform2Label.setBounds(waveform2Bounds.removeFromTop(labelHeight).toNearestInt());
-    waveform2Slider.setBounds(waveform2Bounds.toNearestInt());
-    auto osc2LevelBounds = osc2TopRow.removeFromLeft(knobWidth);
-    osc2LevelLabel.setBounds(osc2LevelBounds.removeFromTop(labelHeight).toNearestInt());
-    osc2LevelSlider.setBounds(osc2LevelBounds.toNearestInt());
-    auto osc2OctaveBounds = osc2TopRow.removeFromLeft(knobWidth);
-    osc2OctaveLabel.setBounds(osc2OctaveBounds.removeFromTop(labelHeight).toNearestInt());
-    osc2OctaveSlider.setBounds(osc2OctaveBounds.toNearestInt());
-    auto osc2UnisonVoicesBounds = osc2Section.removeFromLeft(knobWidth);
-    osc2UnisonVoicesLabel.setBounds(osc2UnisonVoicesBounds.removeFromTop(labelHeight).toNearestInt());
-    osc2UnisonVoicesSlider.setBounds(osc2UnisonVoicesBounds.toNearestInt());
-    auto osc2UnisonDetuneBounds = osc2Section.removeFromLeft(knobWidth);
-    osc2UnisonDetuneLabel.setBounds(osc2UnisonDetuneBounds.removeFromTop(labelHeight).toNearestInt());
-    osc2UnisonDetuneSlider.setBounds(osc2UnisonDetuneBounds.toNearestInt());
+    // Oscillator 2 Section
+    placeSectionLabel(oscillator2Label);
+    placeKnobRow({
+        {&waveform2Label, &waveform2Slider},
+        {&osc2LevelLabel, &osc2LevelSlider},
+        {&osc2OctaveLabel, &osc2OctaveSlider},
+        {&osc2UnisonVoicesLabel, &osc2UnisonVoicesSlider},
+        {&osc2UnisonDetuneLabel, &osc2UnisonDetuneSlider}
+        });
 
-    auto osc3Section = osc3Row.removeFromLeft(knobWidth * 5 + 40);
-    oscillator3Label.setBounds(osc3Section.removeFromTop(sectionLabelHeight).toNearestInt());
-    auto osc3TopRow = osc3Section.removeFromTop(labelHeight + knobHeight);
-    auto waveform3Bounds = osc3TopRow.removeFromLeft(knobWidth);
-    waveform3Label.setBounds(waveform3Bounds.removeFromTop(labelHeight).toNearestInt());
-    waveform3Slider.setBounds(waveform3Bounds.toNearestInt());
-    auto osc3LevelBounds = osc3TopRow.removeFromLeft(knobWidth);
-    osc3LevelLabel.setBounds(osc3LevelBounds.removeFromTop(labelHeight).toNearestInt());
-    osc3LevelSlider.setBounds(osc3LevelBounds.toNearestInt());
-    auto osc3OctaveBounds = osc3TopRow.removeFromLeft(knobWidth);
-    osc3OctaveLabel.setBounds(osc3OctaveBounds.removeFromTop(labelHeight).toNearestInt());
-    osc3OctaveSlider.setBounds(osc3OctaveBounds.toNearestInt());
-    auto osc3UnisonVoicesBounds = osc3Section.removeFromLeft(knobWidth);
-    osc3UnisonVoicesLabel.setBounds(osc3UnisonVoicesBounds.removeFromTop(labelHeight).toNearestInt());
-    osc3UnisonVoicesSlider.setBounds(osc3UnisonVoicesBounds.toNearestInt());
-    auto noiseOscSection = noiseOscRow.removeFromLeft(knobWidth * 2 + 10);
-    noiseOscillatorLabel.setBounds(noiseOscSection.removeFromTop(sectionLabelHeight).toNearestInt());
-    auto noiseWaveformBounds = noiseOscSection.removeFromLeft(knobWidth);
-    noiseWaveformLabel.setBounds(noiseWaveformBounds.removeFromTop(labelHeight).toNearestInt());
-    noiseWaveformSlider.setBounds(noiseWaveformBounds.toNearestInt());
-    auto noiseLevelBounds = noiseOscSection.removeFromLeft(knobWidth);
-    noiseLevelLabel.setBounds(noiseLevelBounds.removeFromTop(labelHeight).toNearestInt());
-    noiseLevelSlider.setBounds(noiseLevelBounds.toNearestInt());
+    // Oscillator 3 Section
+    placeSectionLabel(oscillator3Label);
+    placeKnobRow({
+        {&waveform3Label, &waveform3Slider},
+        {&osc3LevelLabel, &osc3LevelSlider},
+        {&osc3OctaveLabel, &osc3OctaveSlider},
+        {&osc3UnisonVoicesLabel, &osc3UnisonVoicesSlider},
+        {&osc3UnisonDetuneLabel, &osc3UnisonDetuneSlider}
+        });
 
-    auto subOscSection = subOscRow.removeFromLeft(knobWidth * 3 + 20);
-    subOscillatorLabel.setBounds(subOscSection.removeFromTop(sectionLabelHeight).toNearestInt());
-    auto subWaveformBounds = subOscSection.removeFromLeft(knobWidth);
-    subWaveformLabel.setBounds(subWaveformBounds.removeFromTop(labelHeight).toNearestInt());
-    subWaveformSlider.setBounds(subWaveformBounds.toNearestInt());
-    auto subLevelBounds = subOscSection.removeFromLeft(knobWidth);
-    subLevelLabel.setBounds(subLevelBounds.removeFromTop(labelHeight).toNearestInt());
-    subLevelSlider.setBounds(subLevelBounds.toNearestInt());
-    auto subOctaveBounds = subOscSection.removeFromLeft(knobWidth);
-    subOctaveLabel.setBounds(subOctaveBounds.removeFromTop(labelHeight).toNearestInt());
-    subOctaveSlider.setBounds(subOctaveBounds.toNearestInt());
+    // Noise Oscillator Section
+    placeSectionLabel(noiseOscillatorLabel);
+    placeKnobRow({
+        {&noiseWaveformLabel, &noiseWaveformSlider},
+        {&noiseLevelLabel, &noiseLevelSlider}
+        });
 
-    auto detuneBounds = detuneRow.removeFromLeft(knobWidth);
-    detuneLabel.setBounds(detuneBounds.removeFromTop(labelHeight).toNearestInt());
-    detuneSlider.setBounds(detuneBounds.toNearestInt());
+    // Sub Oscillator Section
+    placeSectionLabel(subOscillatorLabel);
+    placeKnobRow({
+        {&subWaveformLabel, &subWaveformSlider},
+        {&subLevelLabel, &subLevelSlider},
+        {&subOctaveLabel, &subOctaveSlider}
+        });
 
-    auto polyphonyBounds = polyphonyRow.removeFromLeft(knobWidth);
-    polyphonyLabel.setBounds(polyphonyBounds.removeFromTop(labelHeight).toNearestInt());
-    numVoicesSlider.setBounds(polyphonyBounds.toNearestInt());
+    // Detune and Polyphony
+    placeKnobRow({
+        {&detuneLabel, &detuneSlider},
+        {&polyphonyLabel, &numVoicesSlider}
+        });
 
-    auto lfoSection = lfoRow.removeFromLeft(knobWidth * 2 + 20); // Reduced width since lfoDepthSlider is removed
-    lfoSectionLabel.setBounds(lfoSection.removeFromTop(sectionLabelHeight).toNearestInt());
-    auto lfoRateBounds = lfoSection.removeFromLeft(knobWidth);
-    lfoRateLabel.setBounds(lfoRateBounds.removeFromTop(labelHeight).toNearestInt());
-    lfoRateSlider.setBounds(lfoRateBounds.toNearestInt());
-    auto lfoWaveformBounds = lfoSection.removeFromLeft(comboWidth);
-    lfoWaveformLabel.setBounds(lfoWaveformBounds.removeFromTop(labelHeight).toNearestInt());
-    lfoWaveformCombo.setBounds(lfoWaveformBounds.withHeight(comboHeight).withY(lfoWaveformLabel.getBottom()).toNearestInt());
+    // LFO Section
+    placeSectionLabel(lfoSectionLabel);
+    placeComboRow({ {&lfoRateLabel, &lfoRateSlider} }, lfoWaveformLabel, lfoWaveformCombo);
 
-    auto distortionSection = distortionRow.removeFromLeft(knobWidth * 3 + 10);
-    distortionSectionLabel.setBounds(distortionSection.removeFromTop(sectionLabelHeight).toNearestInt());
-    auto distortionDriveBounds = distortionSection.removeFromLeft(knobWidth);
-    distortionDriveLabel.setBounds(distortionDriveBounds.removeFromTop(labelHeight).toNearestInt());
-    distortionDriveSlider.setBounds(distortionDriveBounds.toNearestInt());
-    auto distortionToneBounds = distortionSection.removeFromLeft(knobWidth);
-    distortionToneLabel.setBounds(distortionToneBounds.removeFromTop(labelHeight).toNearestInt());
-    distortionToneSlider.setBounds(distortionToneBounds.toNearestInt());
-    auto distortionMixBounds = distortionSection.removeFromLeft(knobWidth);
-    distortionMixLabel.setBounds(distortionMixBounds.removeFromTop(labelHeight).toNearestInt());
-    distortionMixSlider.setBounds(distortionMixBounds.toNearestInt());
+    // Distortion Section
+    placeSectionLabel(distortionSectionLabel);
+    placeKnobRow({
+        {&distortionDriveLabel, &distortionDriveSlider},
+        {&distortionToneLabel, &distortionToneSlider},
+        {&distortionMixLabel, &distortionMixSlider}
+        });
 
-    auto filterSection = filterRow.removeFromLeft(knobWidth * 3 + 20); // Adjusted width since filterADSRDepthSlider is removed
-    filterSectionLabel.setBounds(filterSection.removeFromTop(sectionLabelHeight).toNearestInt());
-    auto cutoffBounds = filterSection.removeFromLeft(knobWidth);
-    filterCutoffLabel.setBounds(cutoffBounds.removeFromTop(labelHeight).toNearestInt());
-    filterCutoffSlider.setBounds(cutoffBounds.toNearestInt());
-    auto resonanceBounds = filterSection.removeFromLeft(knobWidth);
-    filterResonanceLabel.setBounds(resonanceBounds.removeFromTop(labelHeight).toNearestInt());
-    filterResonanceSlider.setBounds(resonanceBounds.toNearestInt());
+    // Filter Section
+    placeSectionLabel(filterSectionLabel);
+    placeComboRow({
+        {&filterCutoffLabel, &filterCutoffSlider},
+        {&filterResonanceLabel, &filterResonanceSlider}
+        }, filterTypeLabel, filterTypeCombo);
 
-    auto filterTypeBounds = filterSection.removeFromLeft(comboWidth);
-    filterTypeLabel.setBounds(filterTypeBounds.removeFromTop(labelHeight).toNearestInt());
-    filterTypeCombo.setBounds(filterTypeBounds.withHeight(comboHeight).withY(filterTypeLabel.getBottom()).toNearestInt());
+    // Compressor Section
+    placeSectionLabel(compressorSectionLabel);
+    placeKnobRow({
+        {&compressorThresholdLabel, &compressorThresholdSlider},
+        {&compressorRatioLabel, &compressorRatioSlider},
+        {&compressorAttackLabel, &compressorAttackSlider},
+        {&compressorReleaseLabel, &compressorReleaseSlider},
+        {&compressorMakeupGainLabel, &compressorMakeupGainSlider}
+        });
 
-    auto compressorSection = compressorRow;
-    compressorSectionLabel.setBounds(compressorSection.removeFromTop(sectionLabelHeight).toNearestInt());
-    auto compressorThresholdBounds = compressorSection.removeFromLeft(knobWidth);
-    compressorThresholdLabel.setBounds(compressorThresholdBounds.removeFromTop(labelHeight).toNearestInt());
-    compressorThresholdSlider.setBounds(compressorThresholdBounds.toNearestInt());
-    auto compressorRatioBounds = compressorSection.removeFromLeft(knobWidth);
-    compressorRatioLabel.setBounds(compressorRatioBounds.removeFromTop(labelHeight).toNearestInt());
-    compressorRatioSlider.setBounds(compressorRatioBounds.toNearestInt());
-    auto compressorAttackBounds = compressorSection.removeFromLeft(knobWidth);
-    compressorAttackLabel.setBounds(compressorAttackBounds.removeFromTop(labelHeight).toNearestInt());
-    compressorAttackSlider.setBounds(compressorAttackBounds.toNearestInt());
-    auto compressorReleaseBounds = compressorSection.removeFromLeft(knobWidth);
-    compressorReleaseLabel.setBounds(compressorReleaseBounds.removeFromTop(labelHeight).toNearestInt());
-    compressorReleaseSlider.setBounds(compressorReleaseBounds.toNearestInt());
-    auto compressorMakeupGainBounds = compressorSection.removeFromLeft(knobWidth);
-    compressorMakeupGainLabel.setBounds(compressorMakeupGainBounds.removeFromTop(labelHeight).toNearestInt());
-    compressorMakeupGainSlider.setBounds(compressorMakeupGainBounds.toNearestInt());
+    // Delay Section
+    placeSectionLabel(delaySectionLabel);
+    placeKnobRow({
+        {&delayTimeLabel, &delayTimeSlider},
+        {&delayFeedbackLabel, &delayFeedbackSlider},
+        {&delayMixLabel, &delayMixSlider}
+        });
 
-    auto delaySection = delayRow.removeFromLeft(knobWidth * 3 + 10);
-    delaySectionLabel.setBounds(delaySection.removeFromTop(sectionLabelHeight).toNearestInt());
-    auto delayTimeBounds = delaySection.removeFromLeft(knobWidth);
-    delayTimeLabel.setBounds(delayTimeBounds.removeFromTop(labelHeight).toNearestInt());
-    delayTimeSlider.setBounds(delayTimeBounds.toNearestInt());
-    auto delayFeedbackBounds = delaySection.removeFromLeft(knobWidth);
-    delayFeedbackLabel.setBounds(delayFeedbackBounds.removeFromTop(labelHeight).toNearestInt());
-    delayFeedbackSlider.setBounds(delayFeedbackBounds.toNearestInt());
-    auto delayMixBounds = delaySection.removeFromLeft(knobWidth);
-    delayMixLabel.setBounds(delayMixBounds.removeFromTop(labelHeight).toNearestInt());
-    delayMixSlider.setBounds(delayMixBounds.toNearestInt());
+    // Chorus Section
+    placeSectionLabel(chorusSectionLabel);
+    placeKnobRow({
+        {&chorusRateLabel, &chorusRateSlider},
+        {&chorusDepthLabel, &chorusDepthSlider},
+        {&chorusMixLabel, &chorusMixSlider},
+        {&chorusDelayLabel, &chorusDelaySlider}
+        });
 
-    auto chorusSection = chorusRow.removeFromLeft(knobWidth * 4 + 10);
-    chorusSectionLabel.setBounds(chorusSection.removeFromTop(sectionLabelHeight).toNearestInt());
-    auto chorusRateBounds = chorusSection.removeFromLeft(knobWidth);
-    chorusRateLabel.setBounds(chorusRateBounds.removeFromTop(labelHeight).toNearestInt());
-    chorusRateSlider.setBounds(chorusRateBounds.toNearestInt());
-    auto chorusDepthBounds = chorusSection.removeFromLeft(knobWidth);
-    chorusDepthLabel.setBounds(chorusDepthBounds.removeFromTop(labelHeight).toNearestInt());
-    chorusDepthSlider.setBounds(chorusDepthBounds.toNearestInt());
-    auto chorusMixBounds = chorusSection.removeFromLeft(knobWidth);
-    chorusMixLabel.setBounds(chorusMixBounds.removeFromTop(labelHeight).toNearestInt());
-    chorusMixSlider.setBounds(chorusMixBounds.toNearestInt());
-    auto chorusDelayBounds = chorusSection.removeFromLeft(knobWidth);
-    chorusDelayLabel.setBounds(chorusDelayBounds.removeFromTop(labelHeight).toNearestInt());
-    chorusDelaySlider.setBounds(chorusDelayBounds.toNearestInt());
+    // Phaser Section
+    placeSectionLabel(phaserSectionLabel);
+    placeKnobRow({
+        {&phaserRateLabel, &phaserRateSlider},
+        {&phaserDepthLabel, &phaserDepthSlider},
+        {&phaserMixLabel, &phaserMixSlider}
+        });
 
-    auto phaserSection = phaserRow.removeFromLeft(knobWidth * 3 + 10);
-    phaserSectionLabel.setBounds(phaserSection.removeFromTop(sectionLabelHeight).toNearestInt());
-    auto phaserRateBounds = phaserSection.removeFromLeft(knobWidth);
-    phaserRateLabel.setBounds(phaserRateBounds.removeFromTop(labelHeight).toNearestInt());
-    phaserRateSlider.setBounds(phaserRateBounds.toNearestInt());
-    auto phaserDepthBounds = phaserSection.removeFromLeft(knobWidth);
-    phaserDepthLabel.setBounds(phaserDepthBounds.removeFromTop(labelHeight).toNearestInt());
-    phaserDepthSlider.setBounds(phaserDepthBounds.toNearestInt());
-    auto phaserMixBounds = phaserSection.removeFromLeft(knobWidth);
-    phaserMixLabel.setBounds(phaserMixBounds.removeFromTop(labelHeight).toNearestInt());
-    phaserMixSlider.setBounds(phaserMixBounds.toNearestInt());
+    // Flanger Section
+    placeSectionLabel(flangerSectionLabel);
+    placeKnobRow({
+        {&flangerRateLabel, &flangerRateSlider},
+        {&flangerDepthLabel, &flangerDepthSlider},
+        {&flangerMixLabel, &flangerMixSlider},
+        {&flangerDelayLabel, &flangerDelaySlider}
+        });
 
-    auto flangerSection = flangerRow.removeFromLeft(knobWidth * 4 + 10);
-    flangerSectionLabel.setBounds(flangerSection.removeFromTop(sectionLabelHeight).toNearestInt());
-    auto flangerRateBounds = flangerSection.removeFromLeft(knobWidth);
-    flangerRateLabel.setBounds(flangerRateBounds.removeFromTop(labelHeight).toNearestInt());
-    flangerRateSlider.setBounds(flangerRateBounds.toNearestInt());
-    auto flangerDepthBounds = flangerSection.removeFromLeft(knobWidth);
-    flangerDepthLabel.setBounds(flangerDepthBounds.removeFromTop(labelHeight).toNearestInt());
-    flangerDepthSlider.setBounds(flangerDepthBounds.toNearestInt());
-    auto flangerMixBounds = flangerSection.removeFromLeft(knobWidth);
-    flangerMixLabel.setBounds(flangerMixBounds.removeFromTop(labelHeight).toNearestInt());
-    flangerMixSlider.setBounds(flangerMixBounds.toNearestInt());
-    auto flangerDelayBounds = flangerSection.removeFromLeft(knobWidth);
-    flangerDelayLabel.setBounds(flangerDelayBounds.removeFromTop(labelHeight).toNearestInt());
-    flangerDelaySlider.setBounds(flangerDelayBounds.toNearestInt());
-
-    auto reverbSection = reverbRow.removeFromLeft(knobWidth * 4 + 10);
-    reverbSectionLabel.setBounds(reverbSection.removeFromTop(sectionLabelHeight).toNearestInt());
-    auto reverbRoomSizeBounds = reverbSection.removeFromLeft(knobWidth);
-    reverbRoomSizeLabel.setBounds(reverbRoomSizeBounds.removeFromTop(labelHeight).toNearestInt());
-    reverbRoomSizeSlider.setBounds(reverbRoomSizeBounds.toNearestInt());
-    auto reverbDampingBounds = reverbSection.removeFromLeft(knobWidth);
-    reverbDampingLabel.setBounds(reverbDampingBounds.removeFromTop(labelHeight).toNearestInt());
-    reverbDampingSlider.setBounds(reverbDampingBounds.toNearestInt());
-    auto reverbWetLevelBounds = reverbSection.removeFromLeft(knobWidth);
-    reverbWetLevelLabel.setBounds(reverbWetLevelBounds.removeFromTop(labelHeight).toNearestInt());
-    reverbWetLevelSlider.setBounds(reverbWetLevelBounds.toNearestInt());
-    auto reverbDryLevelBounds = reverbSection.removeFromLeft(knobWidth);
-    reverbDryLevelLabel.setBounds(reverbDryLevelBounds.removeFromTop(labelHeight).toNearestInt());
-    reverbDryLevelSlider.setBounds(reverbDryLevelBounds.toNearestInt());
+    // Reverb Section
+    placeSectionLabel(reverbSectionLabel);
+    placeKnobRow({
+        {&reverbRoomSizeLabel, &reverbRoomSizeSlider},
+        {&reverbDampingLabel, &reverbDampingSlider},
+        {&reverbWetLevelLabel, &reverbWetLevelSlider},
+        {&reverbDryLevelLabel, &reverbDryLevelSlider}
+        });
 }
