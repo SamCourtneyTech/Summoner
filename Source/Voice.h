@@ -19,7 +19,7 @@ public:
     }
 
     void setParameters(juce::AudioProcessorValueTreeState& params) {
-        parameters = &params;
+        parameters = &params; // Fixed: Use &params to assign the address
     }
 
     void setNoteNumber(int note) { noteNumber = note; }
@@ -111,7 +111,8 @@ public:
         for (int i = 0; i < osc1UnisonVoices; ++i) {
             osc1Output += oscillator1s[i].getNextSample();
         }
-        osc1Output = (osc1UnisonVoices > 0) ? osc1Output / osc1UnisonVoices : 0.0f;
+        float osc1Normalization = osc1UnisonVoices > 0 ? 1.0f / std::sqrt(static_cast<float>(osc1UnisonVoices)) : 0.0f;
+        osc1Output *= osc1Normalization;
         osc1Output *= *parameters->getRawParameterValue("osc1Level");
 
         float osc2Output = 0.0f;
@@ -119,7 +120,8 @@ public:
         for (int i = 0; i < osc2UnisonVoices; ++i) {
             osc2Output += oscillator2s[i].getNextSample();
         }
-        osc2Output = (osc2UnisonVoices > 0) ? osc2Output / osc2UnisonVoices : 0.0f;
+        float osc2Normalization = osc2UnisonVoices > 0 ? 1.0f / std::sqrt(static_cast<float>(osc2UnisonVoices)) : 0.0f;
+        osc2Output *= osc2Normalization;
         osc2Output *= *parameters->getRawParameterValue("osc2Level");
 
         float osc3Output = 0.0f;
@@ -127,7 +129,8 @@ public:
         for (int i = 0; i < osc3UnisonVoices; ++i) {
             osc3Output += oscillator3s[i].getNextSample();
         }
-        osc3Output = (osc3UnisonVoices > 0) ? osc3Output / osc3UnisonVoices : 0.0f;
+        float osc3Normalization = osc3UnisonVoices > 0 ? 1.0f / std::sqrt(static_cast<float>(osc3UnisonVoices)) : 0.0f;
+        osc3Output *= osc3Normalization;
         osc3Output *= *parameters->getRawParameterValue("osc3Level");
 
         float noiseOutput = noiseOscillator.getNextSample() * *parameters->getRawParameterValue("noiseLevel");
