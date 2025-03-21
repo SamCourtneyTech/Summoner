@@ -4,7 +4,8 @@ SummonerAudioProcessorEditor::SummonerAudioProcessorEditor(SummonerAudioProcesso
     : AudioProcessorEditor(&p),
     audioProcessor(p),
     chatBar(p),
-    synthComponent(p.parameters)
+    synthComponent(p.parameters),
+    octaveOffset(0)
 {
     setName("SummonerAudioProcessorEditor");
     setSize(1625, 900);
@@ -58,23 +59,36 @@ bool SummonerAudioProcessorEditor::keyPressed(const juce::KeyPress& key, juce::C
     int keyCode = key.getKeyCode();
     int midiNote = -1;
 
-    // Map keys to MIDI notes starting from C4 (MIDI note 60)
+    // Handle octave shifting
+    if (keyCode == 'Z') {
+        octaveOffset = juce::jmax(octaveOffset - 1, -5); // Lower octave, limit to 5 octaves down
+        return true;
+    }
+    else if (keyCode == 'X') {
+        octaveOffset = juce::jmin(octaveOffset + 1, 5); // Raise octave, limit to 5 octaves up
+        return true;
+    }
+
+    // Map keys to MIDI notes starting from C4 (MIDI note 60) with octave offset
     switch (keyCode) {
-    case 'A': midiNote = 60; break; // C4
-    case 'W': midiNote = 61; break; // C#4
-    case 'S': midiNote = 62; break; // D4
-    case 'E': midiNote = 63; break; // D#4
-    case 'D': midiNote = 64; break; // E4
-    case 'F': midiNote = 65; break; // F4
-    case 'T': midiNote = 66; break; // F#4
-    case 'G': midiNote = 67; break; // G4
-    case 'Y': midiNote = 68; break; // G#4
-    case 'H': midiNote = 69; break; // A4
-    case 'U': midiNote = 70; break; // A#4
-    case 'J': midiNote = 71; break; // B4
-    case 'K': midiNote = 72; break; // C5
+    case 'A': midiNote = 60 + (octaveOffset * 12); break; // C
+    case 'W': midiNote = 61 + (octaveOffset * 12); break; // C#
+    case 'S': midiNote = 62 + (octaveOffset * 12); break; // D
+    case 'E': midiNote = 63 + (octaveOffset * 12); break; // D#
+    case 'D': midiNote = 64 + (octaveOffset * 12); break; // E
+    case 'F': midiNote = 65 + (octaveOffset * 12); break; // F
+    case 'T': midiNote = 66 + (octaveOffset * 12); break; // F#
+    case 'G': midiNote = 67 + (octaveOffset * 12); break; // G
+    case 'Y': midiNote = 68 + (octaveOffset * 12); break; // G#
+    case 'H': midiNote = 69 + (octaveOffset * 12); break; // A
+    case 'U': midiNote = 70 + (octaveOffset * 12); break; // A#
+    case 'J': midiNote = 71 + (octaveOffset * 12); break; // B
+    case 'K': midiNote = 72 + (octaveOffset * 12); break; // C (next octave)
     default: return false;
     }
+
+    // Ensure MIDI note is within valid range (0 to 127)
+    midiNote = juce::jlimit(0, 127, midiNote);
 
     if (midiNote != -1 && activeNotes.find(midiNote) == activeNotes.end()) {
         // Send note on

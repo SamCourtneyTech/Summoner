@@ -24,6 +24,7 @@ private:
 
     // Map for tracking active notes
     std::map<int, int> activeNotes; // MIDI note number -> key code
+    int octaveOffset = 0; // Octave offset for shifting (1 octave = 12 MIDI notes)
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SummonerAudioProcessorEditor)
 };
