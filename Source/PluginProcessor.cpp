@@ -391,7 +391,7 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     float delayTimeMs = *parameters.getRawParameterValue("delayTime");
     float delayFeedback = *parameters.getRawParameterValue("delayFeedback");
     float delayMix = *parameters.getRawParameterValue("delayMix");
-    int delaySamples = static_cast<int>(delayTimeMs * currentSampleRate / 1000.0f);
+    int delaySamples = juce::jmax(1, static_cast<int>(juce::jlimit(0.0f, 1000.0f, delayTimeMs) * currentSampleRate / 1000.0f)); // Clamp delayTimeMs
 
     reverbParams.roomSize = *parameters.getRawParameterValue("reverbRoomSize");
     reverbParams.damping = *parameters.getRawParameterValue("reverbDamping");
@@ -475,7 +475,9 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
 
         for (auto* voice : voices) {
             if (voice->getIsActive()) {
-                mixedOutput += voice->getNextSample();
+                float voiceOutput = voice->getNextSample();
+                voiceOutput = juce::jlimit(-1.0f, 1.0f, voiceOutput);
+                mixedOutput += voiceOutput;
                 float envValue = voice->getEnvelopeValue();
                 maxEnvValue = std::max(maxEnvValue, envValue);
             }
@@ -486,7 +488,7 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
             float modulationAmount = maxEnvValue * filterADSRDepth;
             modulatedCutoff = baseCutoff + (modulationAmount * filterADSRMix);
         }
-        float lfoAmount = lfo.getNextSample() * lfoDepth;
+        float lfoAmount = lfo.getNextSample() * juce::jlimit(0.0f, 5000.0f, lfoDepth); // Limit LFO depth effect
         modulatedCutoff += lfoAmount;
         modulatedCutoff = juce::jlimit(20.0f, 20000.0f, modulatedCutoff);
 
@@ -527,6 +529,9 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
 
         float inputLeft = leftChannel[sample];
         float inputRight = rightChannel[sample];
+
+        delayedLeft = juce::jlimit(-1.0f, 1.0f, delayedLeft);
+        delayedRight = juce::jlimit(-1.0f, 1.0f, delayedRight);
 
         delayBuffer.setSample(0, delayWritePosition, inputLeft + delayedLeft * delayFeedback);
         delayBuffer.setSample(1, delayWritePosition, inputRight + delayedRight * delayFeedback);
