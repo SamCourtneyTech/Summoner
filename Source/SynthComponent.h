@@ -39,11 +39,6 @@ private:
     juce::Slider numVoicesSlider;
     juce::Label polyphonyLabel;
 
-    // Remove old unison sliders since we're handling unison per oscillator
-    // juce::Slider unisonVoicesSlider, unisonDetuneSlider;
-    // juce::Label unisonVoicesLabel, unisonDetuneLabel;
-
-    // Add new unison sliders for each oscillator
     juce::Slider osc1UnisonVoicesSlider, osc1UnisonDetuneSlider;
     juce::Label osc1UnisonVoicesLabel, osc1UnisonDetuneLabel;
     juce::Slider osc2UnisonVoicesSlider, osc2UnisonDetuneSlider;
@@ -51,9 +46,9 @@ private:
     juce::Slider osc3UnisonVoicesSlider, osc3UnisonDetuneSlider;
     juce::Label osc3UnisonVoicesLabel, osc3UnisonDetuneLabel;
 
-    juce::Slider lfoRateSlider, lfoDepthSlider;
+    juce::Slider lfoRateSlider;
     juce::ComboBox lfoWaveformCombo;
-    juce::Label lfoRateLabel, lfoDepthLabel, lfoWaveformLabel, lfoSectionLabel;
+    juce::Label lfoRateLabel, lfoWaveformLabel, lfoSectionLabel;
 
     juce::Slider distortionDriveSlider, distortionToneSlider, distortionMixSlider;
     juce::Label distortionDriveLabel, distortionToneLabel, distortionMixLabel, distortionSectionLabel;
@@ -73,9 +68,9 @@ private:
     juce::Slider reverbRoomSizeSlider, reverbDampingSlider, reverbWetLevelSlider, reverbDryLevelSlider;
     juce::Label reverbRoomSizeLabel, reverbDampingLabel, reverbWetLevelLabel, reverbDryLevelLabel, reverbSectionLabel;
 
-    juce::Slider filterCutoffSlider, filterResonanceSlider, filterADSRMixSlider, filterADSRDepthSlider;
+    juce::Slider filterCutoffSlider, filterResonanceSlider;
     juce::ComboBox filterTypeCombo;
-    juce::Label filterCutoffLabel, filterResonanceLabel, filterADSRMixLabel, filterADSRDepthLabel, filterTypeLabel;
+    juce::Label filterCutoffLabel, filterResonanceLabel,  filterTypeLabel;
     juce::Label filterSectionLabel;
 
     juce::Label adsrSectionLabel;
@@ -103,10 +98,6 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc3OctaveAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> subOctaveAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> numVoicesAttachment;
-    // Remove old unison attachments
-    // std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> unisonVoicesAttachment;
-    // std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> unisonDetuneAttachment;
-    // Add new unison attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc1UnisonVoicesAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc1UnisonDetuneAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc2UnisonVoicesAttachment;
@@ -114,7 +105,6 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc3UnisonVoicesAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc3UnisonDetuneAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> lfoRateAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> lfoDepthAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> lfoWaveformAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> distortionDriveAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> distortionToneAttachment;
@@ -139,8 +129,6 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> reverbDryLevelAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterCutoffAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterResonanceAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterADSRMixAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterADSRDepthAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> filterTypeAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> compressorThresholdAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> compressorRatioAttachment;

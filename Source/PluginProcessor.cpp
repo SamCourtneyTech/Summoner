@@ -13,7 +13,6 @@ SummonerAudioProcessor::SummonerAudioProcessor()
 #endif
     ),
     parameters(*this, nullptr, "PARAMETERS", {
-    // Existing parameters...
     std::make_unique<juce::AudioParameterFloat>("attack", "Attack", 0.01f, 5.0f, 0.01f),
     std::make_unique<juce::AudioParameterFloat>("decay", "Decay", 0.01f, 5.0f, 0.30f),
     std::make_unique<juce::AudioParameterFloat>("sustain", "Sustain", 0.0f, 1.0f, 0.94f),
@@ -34,29 +33,28 @@ SummonerAudioProcessor::SummonerAudioProcessor()
     std::make_unique<juce::AudioParameterFloat>("osc3Octave", "Osc3 Octave", -4.0f, 4.0f, 0.0f),
     std::make_unique<juce::AudioParameterFloat>("subOctave", "Sub Octave", -4.0f, 4.0f, 0.0f),
     std::make_unique<juce::AudioParameterFloat>("lfoRate", "LFO Rate", 0.1f, 20.0f, 1.0f),
-    std::make_unique<juce::AudioParameterFloat>("lfoDepth", "LFO Depth", 0.0f, 5000.0f, 0.0f),
     std::make_unique<juce::AudioParameterChoice>("lfoWaveform", "LFO Waveform",
         juce::StringArray("Sine", "Triangle", "Saw", "Square"), 0),
     std::make_unique<juce::AudioParameterFloat>("distortionDrive", "Distortion Drive", 1.0f, 10.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("distortionTone", "Distortion Tone", 500.0f, 20000.0f, 5000.0f),
-    std::make_unique<juce::AudioParameterFloat>("distortionMix", "Distortion Mix", 0.0f, 1.0f, 0.0f), // Changed to 0.0f
+    std::make_unique<juce::AudioParameterFloat>("distortionMix", "Distortion Mix", 0.0f, 1.0f, 0.0f),
     std::make_unique<juce::AudioParameterFloat>("delayTime", "Delay Time", 0.0f, 1000.0f, 300.0f),
     std::make_unique<juce::AudioParameterFloat>("delayFeedback", "Delay Feedback", 0.0f, 0.9f, 0.3f),
-    std::make_unique<juce::AudioParameterFloat>("delayMix", "Delay Mix", 0.0f, 1.0f, 0.0f), // Changed to 0.0f
+    std::make_unique<juce::AudioParameterFloat>("delayMix", "Delay Mix", 0.0f, 1.0f, 0.0f),
     std::make_unique<juce::AudioParameterFloat>("chorusRate", "Chorus Rate", 0.1f, 10.0f, 0.5f),
     std::make_unique<juce::AudioParameterFloat>("chorusDepth", "Chorus Depth", 0.0f, 1.0f, 0.5f),
-    std::make_unique<juce::AudioParameterFloat>("chorusMix", "Chorus Mix", 0.0f, 1.0f, 0.0f), // Changed to 0.0f
+    std::make_unique<juce::AudioParameterFloat>("chorusMix", "Chorus Mix", 0.0f, 1.0f, 0.0f),
     std::make_unique<juce::AudioParameterFloat>("chorusDelay", "Chorus Delay", 1.0f, 20.0f, 7.0f),
     std::make_unique<juce::AudioParameterFloat>("phaserRate", "Phaser Rate", 0.1f, 10.0f, 0.5f),
     std::make_unique<juce::AudioParameterFloat>("phaserDepth", "Phaser Depth", 0.0f, 1.0f, 0.5f),
-    std::make_unique<juce::AudioParameterFloat>("phaserMix", "Phaser Mix", 0.0f, 1.0f, 0.0f), // Changed to 0.0f
+    std::make_unique<juce::AudioParameterFloat>("phaserMix", "Phaser Mix", 0.0f, 1.0f, 0.0f),
     std::make_unique<juce::AudioParameterFloat>("flangerRate", "Flanger Rate", 0.1f, 10.0f, 0.5f),
     std::make_unique<juce::AudioParameterFloat>("flangerDepth", "Flanger Depth", 0.0f, 1.0f, 0.5f),
-    std::make_unique<juce::AudioParameterFloat>("flangerMix", "Flanger Mix", 0.0f, 1.0f, 0.0f), // Changed to 0.0f
+    std::make_unique<juce::AudioParameterFloat>("flangerMix", "Flanger Mix", 0.0f, 1.0f, 0.0f),
     std::make_unique<juce::AudioParameterFloat>("flangerDelay", "Flanger Delay", 0.1f, 5.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("reverbRoomSize", "Reverb Room Size", 0.0f, 1.0f, 0.5f),
     std::make_unique<juce::AudioParameterFloat>("reverbDamping", "Reverb Damping", 0.0f, 1.0f, 0.5f),
-    std::make_unique<juce::AudioParameterFloat>("reverbWetLevel", "Reverb Wet Level", 0.0f, 1.0f, 0.0f), // Changed to 0.0f
+    std::make_unique<juce::AudioParameterFloat>("reverbWetLevel", "Reverb Wet Level", 0.0f, 1.0f, 0.0f),
     std::make_unique<juce::AudioParameterFloat>("reverbDryLevel", "Reverb Dry Level", 0.0f, 1.0f, 0.4f),
     std::make_unique<juce::AudioParameterFloat>("compressorThreshold", "Compressor Threshold", -60.0f, 0.0f, -24.0f),
     std::make_unique<juce::AudioParameterFloat>("compressorRatio", "Compressor Ratio", 1.0f, 10.0f, 2.0f),
@@ -65,12 +63,9 @@ SummonerAudioProcessor::SummonerAudioProcessor()
     std::make_unique<juce::AudioParameterFloat>("compressorMakeupGain", "Compressor Makeup Gain", 0.0f, 24.0f, 0.0f),
     std::make_unique<juce::AudioParameterFloat>("filterCutoff", "Filter Cutoff", 20.0f, 20000.0f, 7077.26f),
     std::make_unique<juce::AudioParameterFloat>("filterResonance", "Filter Resonance", 0.1f, 10.0f, 1.00f),
-    std::make_unique<juce::AudioParameterFloat>("filterADSRMix", "Filter ADSR Mix", 0.0f, 1.0f, 1.00f),
-    std::make_unique<juce::AudioParameterFloat>("filterADSRDepth", "Filter ADSR Depth", 0.0f, 10000.0f, 10000.0f),
     std::make_unique<juce::AudioParameterChoice>("filterType", "Filter Type",
         juce::StringArray("Low Pass", "High Pass", "Band Pass", "Notch"), 0),
     std::make_unique<juce::AudioParameterInt>("numVoices", "Num Voices", 1, 16, 8),
-    // Unison parameters for each oscillator
     std::make_unique<juce::AudioParameterInt>("osc1UnisonVoices", "Osc1 Unison Voices", 1, 8, 1),
     std::make_unique<juce::AudioParameterFloat>("osc1UnisonDetune", "Osc1 Unison Detune", 0.0f, 50.0f, 0.0f),
     std::make_unique<juce::AudioParameterInt>("osc2UnisonVoices", "Osc2 Unison Voices", 1, 8, 1),
@@ -376,7 +371,6 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     }
 
     float lfoRate = *parameters.getRawParameterValue("lfoRate");
-    float lfoDepth = *parameters.getRawParameterValue("lfoDepth");
     int lfoWaveformIdx = parameters.getParameter("lfoWaveform")->convertFrom0to1(
         parameters.getParameter("lfoWaveform")->getValue()
     );
@@ -391,7 +385,7 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     float delayTimeMs = *parameters.getRawParameterValue("delayTime");
     float delayFeedback = *parameters.getRawParameterValue("delayFeedback");
     float delayMix = *parameters.getRawParameterValue("delayMix");
-    int delaySamples = juce::jmax(1, static_cast<int>(juce::jlimit(0.0f, 1000.0f, delayTimeMs) * currentSampleRate / 1000.0f)); // Clamp delayTimeMs
+    int delaySamples = juce::jmax(1, static_cast<int>(juce::jlimit(0.0f, 1000.0f, delayTimeMs) * currentSampleRate / 1000.0f));
 
     reverbParams.roomSize = *parameters.getRawParameterValue("reverbRoomSize");
     reverbParams.damping = *parameters.getRawParameterValue("reverbDamping");
@@ -462,45 +456,25 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
         }
     }
 
-    float baseCutoff = *parameters.getRawParameterValue("filterCutoff");
-    float filterADSRMix = *parameters.getRawParameterValue("filterADSRMix");
-    float filterADSRDepth = *parameters.getRawParameterValue("filterADSRDepth");
-
     auto* leftChannel = buffer.getWritePointer(0);
     auto* rightChannel = buffer.getWritePointer(1);
 
     for (int sample = 0; sample < numSamples; ++sample) {
         float mixedOutput = 0.0f;
-        float maxEnvValue = 0.0f;
 
         for (auto* voice : voices) {
             if (voice->getIsActive()) {
                 float voiceOutput = voice->getNextSample();
                 voiceOutput = juce::jlimit(-1.0f, 1.0f, voiceOutput);
                 mixedOutput += voiceOutput;
-                float envValue = voice->getEnvelopeValue();
-                maxEnvValue = std::max(maxEnvValue, envValue);
             }
         }
-
-        float modulatedCutoff = baseCutoff;
-        if (filterADSRMix > 0.0f) {
-            float modulationAmount = maxEnvValue * filterADSRDepth;
-            modulatedCutoff = baseCutoff + (modulationAmount * filterADSRMix);
-        }
-        float lfoAmount = lfo.getNextSample() * juce::jlimit(0.0f, 5000.0f, lfoDepth); // Limit LFO depth effect
-        modulatedCutoff += lfoAmount;
-        modulatedCutoff = juce::jlimit(20.0f, 20000.0f, modulatedCutoff);
-
-        lastFilterCutoff = -1.0f;
-        *parameters.getRawParameterValue("filterCutoff") = modulatedCutoff;
-        updateFilter();
-        *parameters.getRawParameterValue("filterCutoff") = baseCutoff;
 
         leftChannel[sample] = mixedOutput;
         rightChannel[sample] = mixedOutput;
     }
 
+    updateFilter();
     juce::dsp::AudioBlock<float> block(buffer);
     juce::dsp::ProcessContextReplacing<float> context(block);
     filter.process(context);
