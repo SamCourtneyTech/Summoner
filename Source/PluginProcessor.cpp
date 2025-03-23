@@ -486,6 +486,15 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
 
     // Sum voices with enhanced normalization
     for (int sample = 0; sample < numSamples; ++sample) {
+        float lfoValue = lfo.getNextSample();
+
+        // Apply LFO to all active voices for frequency modulation
+        for (auto* voice : voices) {
+            if (voice->getIsActive()) {
+                voice->setLFOValue(lfoValue, currentSampleRate);
+            }
+        }
+
         float mixedOutput = 0.0f;
         int activeVoices = 0;
 
@@ -501,18 +510,6 @@ void SummonerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
         if (activeVoices > 0) {
             mixedOutput /= (std::sqrt(static_cast<float>(activeVoices)) * 0.5f * activeVoices);
         }
-
-        // Apply LFO modulation to amplitude
-        float lfoValue = lfo.getNextSample();
-        float lfoToOsc1Level = parameters.getRawParameterValue("lfoToOsc1Level")->load();
-        float lfoToOsc2Level = parameters.getRawParameterValue("lfoToOsc2Level")->load();
-        float lfoToOsc3Level = parameters.getRawParameterValue("lfoToOsc3Level")->load();
-
-        float osc1LevelMod = 1.0f + (lfoValue * lfoToOsc1Level * 0.3f); // Reduced modulation depth
-        float osc2LevelMod = 1.0f + (lfoValue * lfoToOsc2Level * 0.3f);
-        float osc3LevelMod = 1.0f + (lfoValue * lfoToOsc3Level * 0.3f);
-
-        mixedOutput *= (osc1LevelMod + osc2LevelMod + osc3LevelMod) / 3.0f;
 
         leftChannel[sample] = mixedOutput;
         rightChannel[sample] = mixedOutput;

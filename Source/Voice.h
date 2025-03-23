@@ -89,6 +89,11 @@ public:
         isActive = true;
         fadeOutCounter = 0;
         amplitude = 1.0f;
+
+        // Cache base frequencies for modulation
+        baseFreqOsc1 = freq * osc1OctaveShift;
+        baseFreqOsc2 = freq * detuneFactor * osc2OctaveShift;
+        baseFreqOsc3 = freq * detuneFactor * 1.01f * osc3OctaveShift;
     }
 
     void noteOff() {
@@ -103,8 +108,66 @@ public:
         fadeOutCounter = fadeOutSamples;
     }
 
+    // New method to set LFO value for modulation
+    void setLFOValue(float lfoValue, double sampleRate) {
+        this->lfoValue = lfoValue;
+
+        // Apply frequency modulation
+        float lfoToOsc1Freq = *parameters->getRawParameterValue("lfoToOsc1Freq");
+        float lfoToOsc2Freq = *parameters->getRawParameterValue("lfoToOsc2Freq");
+        float lfoToOsc3Freq = *parameters->getRawParameterValue("lfoToOsc3Freq");
+
+        int osc1UnisonVoices = static_cast<int>(*parameters->getRawParameterValue("osc1UnisonVoices"));
+        float osc1UnisonDetune = *parameters->getRawParameterValue("osc1UnisonDetune");
+        for (int i = 0; i < osc1UnisonVoices; ++i) {
+            float detuneOffset = 0.0f;
+            if (osc1UnisonVoices > 1) {
+                float step = osc1UnisonDetune / (osc1UnisonVoices - 1);
+                detuneOffset = (i * step) - (osc1UnisonDetune / 2.0f);
+            }
+            float detuneFactor = std::pow(2.0f, detuneOffset / 1200.0f);
+            float modFactor = std::pow(2.0f, (lfoValue * lfoToOsc1Freq) / 1200.0f); // Modulation in cents
+            oscillator1s[i].setFrequency(baseFreqOsc1 * detuneFactor * modFactor, sampleRate);
+        }
+
+        int osc2UnisonVoices = static_cast<int>(*parameters->getRawParameterValue("osc2UnisonVoices"));
+        float osc2UnisonDetune = *parameters->getRawParameterValue("osc2UnisonDetune");
+        for (int i = 0; i < osc2UnisonVoices; ++i) {
+            float detuneOffset = 0.0f;
+            if (osc2UnisonVoices > 1) {
+                float step = osc2UnisonDetune / (osc2UnisonVoices - 1);
+                detuneOffset = (i * step) - (osc2UnisonDetune / 2.0f);
+            }
+            float unisonDetuneFactor = std::pow(2.0f, detuneOffset / 1200.0f);
+            float modFactor = std::pow(2.0f, (lfoValue * lfoToOsc2Freq) / 1200.0f);
+            oscillator2s[i].setFrequency(baseFreqOsc2 * unisonDetuneFactor * modFactor, sampleRate);
+        }
+
+        int osc3UnisonVoices = static_cast<int>(*parameters->getRawParameterValue("osc3UnisonVoices"));
+        float osc3UnisonDetune = *parameters->getRawParameterValue("osc3UnisonDetune");
+        for (int i = 0; i < osc3UnisonVoices; ++i) {
+            float detuneOffset = 0.0f;
+            if (osc3UnisonVoices > 1) {
+                float step = osc3UnisonDetune / (osc3UnisonVoices - 1);
+                detuneOffset = (i * step) - (osc3UnisonDetune / 2.0f);
+            }
+            float unisonDetuneFactor = std::pow(2.0f, detuneOffset / 1200.0f);
+            float modFactor = std::pow(2.0f, (lfoValue * lfoToOsc3Freq) / 1200.0f);
+            oscillator3s[i].setFrequency(baseFreqOsc3 * unisonDetuneFactor * modFactor, sampleRate);
+        }
+    }
+
     float getNextSample() {
         if (!isActive) return 0.0f;
+
+        // Apply level modulation using the current LFO value
+        float lfoToOsc1Level = *parameters->getRawParameterValue("lfoToOsc1Level");
+        float lfoToOsc2Level = *parameters->getRawParameterValue("lfoToOsc2Level");
+        float lfoToOsc3Level = *parameters->getRawParameterValue("lfoToOsc3Level");
+
+        float osc1LevelMod = 1.0f + (lfoValue * lfoToOsc1Level);
+        float osc2LevelMod = 1.0f + (lfoValue * lfoToOsc2Level);
+        float osc3LevelMod = 1.0f + (lfoValue * lfoToOsc3Level);
 
         float osc1Output = 0.0f;
         int osc1UnisonVoices = static_cast<int>(*parameters->getRawParameterValue("osc1UnisonVoices"));
@@ -113,7 +176,7 @@ public:
         }
         float osc1Normalization = osc1UnisonVoices > 0 ? 1.0f / std::sqrt(static_cast<float>(osc1UnisonVoices)) : 0.0f;
         osc1Output *= osc1Normalization;
-        osc1Output *= *parameters->getRawParameterValue("osc1Level");
+        osc1Output *= (*parameters->getRawParameterValue("osc1Level") * osc1LevelMod);
 
         float osc2Output = 0.0f;
         int osc2UnisonVoices = static_cast<int>(*parameters->getRawParameterValue("osc2UnisonVoices"));
@@ -122,7 +185,7 @@ public:
         }
         float osc2Normalization = osc2UnisonVoices > 0 ? 1.0f / std::sqrt(static_cast<float>(osc2UnisonVoices)) : 0.0f;
         osc2Output *= osc2Normalization;
-        osc2Output *= *parameters->getRawParameterValue("osc2Level");
+        osc2Output *= (*parameters->getRawParameterValue("osc2Level") * osc2LevelMod);
 
         float osc3Output = 0.0f;
         int osc3UnisonVoices = static_cast<int>(*parameters->getRawParameterValue("osc3UnisonVoices"));
@@ -131,7 +194,7 @@ public:
         }
         float osc3Normalization = osc3UnisonVoices > 0 ? 1.0f / std::sqrt(static_cast<float>(osc3UnisonVoices)) : 0.0f;
         osc3Output *= osc3Normalization;
-        osc3Output *= *parameters->getRawParameterValue("osc3Level");
+        osc3Output *= (*parameters->getRawParameterValue("osc3Level") * osc3LevelMod);
 
         float noiseOutput = noiseOscillator.getNextSample() * *parameters->getRawParameterValue("noiseLevel");
         float subOutput = subOscillator.getNextSample() * *parameters->getRawParameterValue("subLevel");
@@ -189,6 +252,12 @@ private:
     float fadeOutStep;
     int fadeOutCounter = 0;
     float amplitude = 1.0f;
+
+    // Store base frequencies for modulation
+    float baseFreqOsc1 = 0.0f;
+    float baseFreqOsc2 = 0.0f;
+    float baseFreqOsc3 = 0.0f;
+    float lfoValue = 0.0f; // Current LFO value for modulation
 
     juce::AudioProcessorValueTreeState* parameters = nullptr;
 };
