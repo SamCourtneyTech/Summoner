@@ -1,6 +1,7 @@
 #include "SynthComponent.h"
 
 SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p) {
+    // Existing constructor code (unchanged until LFO section)
     attackSlider.setSliderStyle(juce::Slider::Rotary);
     attackSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(attackSlider);
@@ -268,6 +269,54 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     lfoSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
     addAndMakeVisible(lfoSectionLabel);
 
+    // New modulation matrix components
+    modMatrixSectionLabel.setText("Modulation Matrix", juce::dontSendNotification);
+    modMatrixSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
+    addAndMakeVisible(modMatrixSectionLabel);
+
+    lfoToOsc1FreqSlider.setSliderStyle(juce::Slider::Rotary);
+    lfoToOsc1FreqSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(lfoToOsc1FreqSlider);
+    lfoToOsc1FreqLabel.setText("LFO->Osc1 Freq", juce::dontSendNotification);
+    addAndMakeVisible(lfoToOsc1FreqLabel);
+
+    lfoToOsc2FreqSlider.setSliderStyle(juce::Slider::Rotary);
+    lfoToOsc2FreqSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(lfoToOsc2FreqSlider);
+    lfoToOsc2FreqLabel.setText("LFO->Osc2 Freq", juce::dontSendNotification);
+    addAndMakeVisible(lfoToOsc2FreqLabel);
+
+    lfoToOsc3FreqSlider.setSliderStyle(juce::Slider::Rotary);
+    lfoToOsc3FreqSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(lfoToOsc3FreqSlider);
+    lfoToOsc3FreqLabel.setText("LFO->Osc3 Freq", juce::dontSendNotification);
+    addAndMakeVisible(lfoToOsc3FreqLabel);
+
+    lfoToOsc1LevelSlider.setSliderStyle(juce::Slider::Rotary);
+    lfoToOsc1LevelSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(lfoToOsc1LevelSlider);
+    lfoToOsc1LevelLabel.setText("LFO->Osc1 Level", juce::dontSendNotification);
+    addAndMakeVisible(lfoToOsc1LevelLabel);
+
+    lfoToOsc2LevelSlider.setSliderStyle(juce::Slider::Rotary);
+    lfoToOsc2LevelSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(lfoToOsc2LevelSlider);
+    lfoToOsc2LevelLabel.setText("LFO->Osc2 Level", juce::dontSendNotification);
+    addAndMakeVisible(lfoToOsc2LevelLabel);
+
+    lfoToOsc3LevelSlider.setSliderStyle(juce::Slider::Rotary);
+    lfoToOsc3LevelSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(lfoToOsc3LevelSlider);
+    lfoToOsc3LevelLabel.setText("LFO->Osc3 Level", juce::dontSendNotification);
+    addAndMakeVisible(lfoToOsc3LevelLabel);
+
+    lfoToFilterCutoffSlider.setSliderStyle(juce::Slider::Rotary);
+    lfoToFilterCutoffSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(lfoToFilterCutoffSlider);
+    lfoToFilterCutoffLabel.setText("LFO->Filter Cutoff", juce::dontSendNotification);
+    addAndMakeVisible(lfoToFilterCutoffLabel);
+
+    // Rest of existing constructor (unchanged)
     distortionDriveSlider.setSliderStyle(juce::Slider::Rotary);
     distortionDriveSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(distortionDriveSlider);
@@ -476,70 +525,13 @@ SynthComponent::SynthComponent(juce::AudioProcessorValueTreeState& p) : params(p
     compressorSectionLabel.setFont(juce::Font(16.0f, juce::Font::bold));
     addAndMakeVisible(compressorSectionLabel);
 
-    attackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "attack", attackSlider);
-    decayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "decay", decaySlider);
-    sustainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "sustain", sustainSlider);
-    releaseAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "release", releaseSlider);
-    waveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "waveform", waveformSlider);
-    waveform2Attachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "waveform2", waveform2Slider);
-    waveform3Attachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "waveform3", waveform3Slider);
-    noiseWaveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "noiseWaveform", noiseWaveformSlider);
-    subWaveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "subWaveform", subWaveformSlider);
-    detuneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "detune", detuneSlider);
-    osc1LevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc1Level", osc1LevelSlider);
-    osc2LevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc2Level", osc2LevelSlider);
-    osc3LevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc3Level", osc3LevelSlider);
-    noiseLevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "noiseLevel", noiseLevelSlider);
-    subLevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "subLevel", subLevelSlider);
-    osc1OctaveAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc1Octave", osc1OctaveSlider);
-    osc2OctaveAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc2Octave", osc2OctaveSlider);
-    osc3OctaveAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc3Octave", osc3OctaveSlider);
-    subOctaveAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "subOctave", subOctaveSlider);
-    numVoicesAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "numVoices", numVoicesSlider);
-    lfoRateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "lfoRate", lfoRateSlider);
-    lfoWaveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(params, "lfoWaveform", lfoWaveformCombo);
-    distortionDriveAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "distortionDrive", distortionDriveSlider);
-    distortionToneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "distortionTone", distortionToneSlider);
-    distortionMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "distortionMix", distortionMixSlider);
-    delayTimeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "delayTime", delayTimeSlider);
-    delayFeedbackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "delayFeedback", delayFeedbackSlider);
-    delayMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "delayMix", delayMixSlider);
-    chorusRateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "chorusRate", chorusRateSlider);
-    chorusDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "chorusDepth", chorusDepthSlider);
-    chorusMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "chorusMix", chorusMixSlider);
-    chorusDelayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "chorusDelay", chorusDelaySlider);
-    phaserRateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "phaserRate", phaserRateSlider);
-    phaserDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "phaserDepth", phaserDepthSlider);
-    phaserMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "phaserMix", phaserMixSlider);
-    flangerRateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "flangerRate", flangerRateSlider);
-    flangerDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "flangerDepth", flangerDepthSlider);
-    flangerMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "flangerMix", flangerMixSlider);
-    flangerDelayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "flangerDelay", flangerDelaySlider);
-    reverbRoomSizeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "reverbRoomSize", reverbRoomSizeSlider);
-    reverbDampingAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "reverbDamping", reverbDampingSlider);
-    reverbWetLevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "reverbWetLevel", reverbWetLevelSlider);
-    reverbDryLevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "reverbDryLevel", reverbDryLevelSlider);
-    filterCutoffAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterCutoff", filterCutoffSlider);
-    filterResonanceAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterResonance", filterResonanceSlider);
-
-    filterTypeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(params, "filterType", filterTypeCombo);
-    compressorThresholdAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "compressorThreshold", compressorThresholdSlider);
-    compressorRatioAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "compressorRatio", compressorRatioSlider);
-    compressorAttackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "compressorAttack", compressorAttackSlider);
-    compressorReleaseAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "compressorRelease", compressorReleaseSlider);
-    compressorMakeupGainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "compressorMakeupGain", compressorMakeupGainSlider);
-
-    osc1UnisonVoicesAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc1UnisonVoices", osc1UnisonVoicesSlider);
-    osc1UnisonDetuneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc1UnisonDetune", osc1UnisonDetuneSlider);
-    osc2UnisonVoicesAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc2UnisonVoices", osc2UnisonVoicesSlider);
-    osc2UnisonDetuneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc2UnisonDetune", osc2UnisonDetuneSlider);
-    osc3UnisonVoicesAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc3UnisonVoices", osc3UnisonVoicesSlider);
-    osc3UnisonDetuneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc3UnisonDetune", osc3UnisonDetuneSlider);
+    // Existing attachments (moved to initAttachments)
 }
 
 SynthComponent::~SynthComponent() {}
 
 void SynthComponent::initAttachments() {
+    // Existing attachments
     attackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "attack", attackSlider);
     decayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "decay", decaySlider);
     sustainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "sustain", sustainSlider);
@@ -560,11 +552,13 @@ void SynthComponent::initAttachments() {
     osc3OctaveAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc3Octave", osc3OctaveSlider);
     subOctaveAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "subOctave", subOctaveSlider);
     numVoicesAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "numVoices", numVoicesSlider);
-    // Remove the old unison attachments since we're handling unison per oscillator now
-    // unisonVoicesAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "unisonVoices", unisonVoicesSlider);
-    // unisonDetuneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "unisonDetune", unisonDetuneSlider);
+    osc1UnisonVoicesAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc1UnisonVoices", osc1UnisonVoicesSlider);
+    osc1UnisonDetuneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc1UnisonDetune", osc1UnisonDetuneSlider);
+    osc2UnisonVoicesAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc2UnisonVoices", osc2UnisonVoicesSlider);
+    osc2UnisonDetuneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc2UnisonDetune", osc2UnisonDetuneSlider);
+    osc3UnisonVoicesAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc3UnisonVoices", osc3UnisonVoicesSlider);
+    osc3UnisonDetuneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc3UnisonDetune", osc3UnisonDetuneSlider);
     lfoRateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "lfoRate", lfoRateSlider);
-
     lfoWaveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(params, "lfoWaveform", lfoWaveformCombo);
     distortionDriveAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "distortionDrive", distortionDriveSlider);
     distortionToneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "distortionTone", distortionToneSlider);
@@ -589,8 +583,6 @@ void SynthComponent::initAttachments() {
     reverbDryLevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "reverbDryLevel", reverbDryLevelSlider);
     filterCutoffAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterCutoff", filterCutoffSlider);
     filterResonanceAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "filterResonance", filterResonanceSlider);
-
-
     filterTypeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(params, "filterType", filterTypeCombo);
     compressorThresholdAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "compressorThreshold", compressorThresholdSlider);
     compressorRatioAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "compressorRatio", compressorRatioSlider);
@@ -598,13 +590,14 @@ void SynthComponent::initAttachments() {
     compressorReleaseAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "compressorRelease", compressorReleaseSlider);
     compressorMakeupGainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "compressorMakeupGain", compressorMakeupGainSlider);
 
-    // Add attachments for the new unison parameters
-    osc1UnisonVoicesAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc1UnisonVoices", osc1UnisonVoicesSlider);
-    osc1UnisonDetuneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc1UnisonDetune", osc1UnisonDetuneSlider);
-    osc2UnisonVoicesAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc2UnisonVoices", osc2UnisonVoicesSlider);
-    osc2UnisonDetuneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc2UnisonDetune", osc2UnisonDetuneSlider);
-    osc3UnisonVoicesAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc3UnisonVoices", osc3UnisonVoicesSlider);
-    osc3UnisonDetuneAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "osc3UnisonDetune", osc3UnisonDetuneSlider);
+    // New modulation matrix attachments
+    lfoToOsc1FreqAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "lfoToOsc1Freq", lfoToOsc1FreqSlider);
+    lfoToOsc2FreqAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "lfoToOsc2Freq", lfoToOsc2FreqSlider);
+    lfoToOsc3FreqAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "lfoToOsc3Freq", lfoToOsc3FreqSlider);
+    lfoToOsc1LevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "lfoToOsc1Level", lfoToOsc1LevelSlider);
+    lfoToOsc2LevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "lfoToOsc2Level", lfoToOsc2LevelSlider);
+    lfoToOsc3LevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "lfoToOsc3Level", lfoToOsc3LevelSlider);
+    lfoToFilterCutoffAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(params, "lfoToFilterCutoff", lfoToFilterCutoffSlider);
 }
 
 void SynthComponent::paint(juce::Graphics& g) {
@@ -621,18 +614,20 @@ void SynthComponent::resized() {
     float comboWidth = 100;
     float padding = 10;
 
-    // Define single column for all sections
-    auto column = bounds;
-    float currentY = column.getY();
+    // Split into two columns: main controls on left, mod matrix on right
+    auto leftColumn = bounds.withWidth(bounds.getWidth() * 0.7f);
+    auto rightColumn = bounds.withLeft(leftColumn.getRight() + padding).withWidth(bounds.getWidth() * 0.25f);
+    float currentYLeft = leftColumn.getY();
+    float currentYRight = rightColumn.getY();
 
     // Helper lambda to place section label
-    auto placeSectionLabel = [&](juce::Label& label) {
+    auto placeSectionLabel = [&](juce::Label& label, juce::Rectangle<float>& column, float& currentY) {
         label.setBounds(column.getX(), currentY, column.getWidth(), sectionLabelHeight);
         currentY += sectionLabelHeight + padding;
         };
 
     // Helper lambda to place a horizontal row of knobs
-    auto placeKnobRow = [&](std::vector<std::pair<juce::Label*, juce::Slider*>> knobs) {
+    auto placeKnobRow = [&](std::vector<std::pair<juce::Label*, juce::Slider*>> knobs, juce::Rectangle<float>& column, float& currentY) {
         auto rowBounds = juce::Rectangle<float>(column.getX(), currentY, column.getWidth(), labelHeight + knobHeight);
         float currentX = rowBounds.getX();
         for (auto& [label, slider] : knobs) {
@@ -645,7 +640,7 @@ void SynthComponent::resized() {
         };
 
     // Helper lambda to place a horizontal row with a combo box
-    auto placeComboRow = [&](std::vector<std::pair<juce::Label*, juce::Slider*>> knobs, juce::Label& comboLabel, juce::ComboBox& combo) {
+    auto placeComboRow = [&](std::vector<std::pair<juce::Label*, juce::Slider*>> knobs, juce::Label& comboLabel, juce::ComboBox& combo, juce::Rectangle<float>& column, float& currentY) {
         auto rowBounds = juce::Rectangle<float>(column.getX(), currentY, column.getWidth(), labelHeight + std::max(knobHeight, comboHeight));
         float currentX = rowBounds.getX();
         for (auto& [label, slider] : knobs) {
@@ -660,135 +655,138 @@ void SynthComponent::resized() {
         currentY += labelHeight + std::max(knobHeight, comboHeight) + padding;
         };
 
-    // ADSR Section
-    placeSectionLabel(adsrSectionLabel);
+    // Left Column: Main Controls
+    placeSectionLabel(adsrSectionLabel, leftColumn, currentYLeft);
     placeKnobRow({
         {&attackLabel, &attackSlider},
         {&decayLabel, &decaySlider},
         {&sustainLabel, &sustainSlider},
         {&releaseLabel, &releaseSlider}
-        });
+        }, leftColumn, currentYLeft);
 
-    // Oscillator 1 Section
-    placeSectionLabel(oscillator1Label);
+    placeSectionLabel(oscillator1Label, leftColumn, currentYLeft);
     placeKnobRow({
         {&waveformLabel, &waveformSlider},
         {&osc1LevelLabel, &osc1LevelSlider},
         {&osc1OctaveLabel, &osc1OctaveSlider},
         {&osc1UnisonVoicesLabel, &osc1UnisonVoicesSlider},
         {&osc1UnisonDetuneLabel, &osc1UnisonDetuneSlider}
-        });
+        }, leftColumn, currentYLeft);
 
-    // Oscillator 2 Section
-    placeSectionLabel(oscillator2Label);
+    placeSectionLabel(oscillator2Label, leftColumn, currentYLeft);
     placeKnobRow({
         {&waveform2Label, &waveform2Slider},
         {&osc2LevelLabel, &osc2LevelSlider},
         {&osc2OctaveLabel, &osc2OctaveSlider},
         {&osc2UnisonVoicesLabel, &osc2UnisonVoicesSlider},
         {&osc2UnisonDetuneLabel, &osc2UnisonDetuneSlider}
-        });
+        }, leftColumn, currentYLeft);
 
-    // Oscillator 3 Section
-    placeSectionLabel(oscillator3Label);
+    placeSectionLabel(oscillator3Label, leftColumn, currentYLeft);
     placeKnobRow({
         {&waveform3Label, &waveform3Slider},
         {&osc3LevelLabel, &osc3LevelSlider},
         {&osc3OctaveLabel, &osc3OctaveSlider},
         {&osc3UnisonVoicesLabel, &osc3UnisonVoicesSlider},
         {&osc3UnisonDetuneLabel, &osc3UnisonDetuneSlider}
-        });
+        }, leftColumn, currentYLeft);
 
-    // Noise Oscillator Section
-    placeSectionLabel(noiseOscillatorLabel);
+    placeSectionLabel(noiseOscillatorLabel, leftColumn, currentYLeft);
     placeKnobRow({
         {&noiseWaveformLabel, &noiseWaveformSlider},
         {&noiseLevelLabel, &noiseLevelSlider}
-        });
+        }, leftColumn, currentYLeft);
 
-    // Sub Oscillator Section
-    placeSectionLabel(subOscillatorLabel);
+    placeSectionLabel(subOscillatorLabel, leftColumn, currentYLeft);
     placeKnobRow({
         {&subWaveformLabel, &subWaveformSlider},
         {&subLevelLabel, &subLevelSlider},
         {&subOctaveLabel, &subOctaveSlider}
-        });
+        }, leftColumn, currentYLeft);
 
-    // Detune and Polyphony
     placeKnobRow({
         {&detuneLabel, &detuneSlider},
         {&polyphonyLabel, &numVoicesSlider}
-        });
+        }, leftColumn, currentYLeft);
 
-    // LFO Section
-    placeSectionLabel(lfoSectionLabel);
-    placeComboRow({ {&lfoRateLabel, &lfoRateSlider} }, lfoWaveformLabel, lfoWaveformCombo);
+    placeSectionLabel(lfoSectionLabel, leftColumn, currentYLeft);
+    placeComboRow({ {&lfoRateLabel, &lfoRateSlider} }, lfoWaveformLabel, lfoWaveformCombo, leftColumn, currentYLeft);
 
-    // Distortion Section
-    placeSectionLabel(distortionSectionLabel);
+    placeSectionLabel(distortionSectionLabel, leftColumn, currentYLeft);
     placeKnobRow({
         {&distortionDriveLabel, &distortionDriveSlider},
         {&distortionToneLabel, &distortionToneSlider},
         {&distortionMixLabel, &distortionMixSlider}
-        });
+        }, leftColumn, currentYLeft);
 
-    // Filter Section
-    placeSectionLabel(filterSectionLabel);
+    placeSectionLabel(filterSectionLabel, leftColumn, currentYLeft);
     placeComboRow({
         {&filterCutoffLabel, &filterCutoffSlider},
         {&filterResonanceLabel, &filterResonanceSlider}
-        }, filterTypeLabel, filterTypeCombo);
+        }, filterTypeLabel, filterTypeCombo, leftColumn, currentYLeft);
 
-    // Compressor Section
-    placeSectionLabel(compressorSectionLabel);
+    placeSectionLabel(compressorSectionLabel, leftColumn, currentYLeft);
     placeKnobRow({
         {&compressorThresholdLabel, &compressorThresholdSlider},
         {&compressorRatioLabel, &compressorRatioSlider},
         {&compressorAttackLabel, &compressorAttackSlider},
         {&compressorReleaseLabel, &compressorReleaseSlider},
         {&compressorMakeupGainLabel, &compressorMakeupGainSlider}
-        });
+        }, leftColumn, currentYLeft);
 
-    // Delay Section
-    placeSectionLabel(delaySectionLabel);
+    placeSectionLabel(delaySectionLabel, leftColumn, currentYLeft);
     placeKnobRow({
         {&delayTimeLabel, &delayTimeSlider},
         {&delayFeedbackLabel, &delayFeedbackSlider},
         {&delayMixLabel, &delayMixSlider}
-        });
+        }, leftColumn, currentYLeft);
 
-    // Chorus Section
-    placeSectionLabel(chorusSectionLabel);
+    placeSectionLabel(chorusSectionLabel, leftColumn, currentYLeft);
     placeKnobRow({
         {&chorusRateLabel, &chorusRateSlider},
         {&chorusDepthLabel, &chorusDepthSlider},
         {&chorusMixLabel, &chorusMixSlider},
         {&chorusDelayLabel, &chorusDelaySlider}
-        });
+        }, leftColumn, currentYLeft);
 
-    // Phaser Section
-    placeSectionLabel(phaserSectionLabel);
+    placeSectionLabel(phaserSectionLabel, leftColumn, currentYLeft);
     placeKnobRow({
         {&phaserRateLabel, &phaserRateSlider},
         {&phaserDepthLabel, &phaserDepthSlider},
         {&phaserMixLabel, &phaserMixSlider}
-        });
+        }, leftColumn, currentYLeft);
 
-    // Flanger Section
-    placeSectionLabel(flangerSectionLabel);
+    placeSectionLabel(flangerSectionLabel, leftColumn, currentYLeft);
     placeKnobRow({
         {&flangerRateLabel, &flangerRateSlider},
         {&flangerDepthLabel, &flangerDepthSlider},
         {&flangerMixLabel, &flangerMixSlider},
         {&flangerDelayLabel, &flangerDelaySlider}
-        });
+        }, leftColumn, currentYLeft);
 
-    // Reverb Section
-    placeSectionLabel(reverbSectionLabel);
+    placeSectionLabel(reverbSectionLabel, leftColumn, currentYLeft);
     placeKnobRow({
         {&reverbRoomSizeLabel, &reverbRoomSizeSlider},
         {&reverbDampingLabel, &reverbDampingSlider},
         {&reverbWetLevelLabel, &reverbWetLevelSlider},
         {&reverbDryLevelLabel, &reverbDryLevelSlider}
-        });
+        }, leftColumn, currentYLeft);
+
+    // Right Column: Modulation Matrix
+    placeSectionLabel(modMatrixSectionLabel, rightColumn, currentYRight);
+    placeKnobRow({
+        {&lfoToOsc1FreqLabel, &lfoToOsc1FreqSlider},
+        {&lfoToOsc2FreqLabel, &lfoToOsc2FreqSlider},
+        {&lfoToOsc3FreqLabel, &lfoToOsc3FreqSlider}
+        }, rightColumn, currentYRight);
+
+    placeKnobRow({
+        {&lfoToOsc1LevelLabel, &lfoToOsc1LevelSlider},
+        {&lfoToOsc2LevelLabel, &lfoToOsc2LevelSlider},
+        {&lfoToOsc3LevelLabel, &lfoToOsc3LevelSlider}
+        }, rightColumn, currentYRight);
+
+    placeKnobRow({
+        {&lfoToFilterCutoffLabel, &lfoToFilterCutoffSlider}
+        }, rightColumn, currentYRight);
 }
