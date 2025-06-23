@@ -1,6 +1,5 @@
 #pragma once
 #include <JuceHeader.h>
-#include "SerumInterfaceComponent.h"
 #include "SettingsComponent.h"
 
 class SummonerXSerum2AudioProcessor : public juce::AudioProcessor
@@ -25,7 +24,6 @@ public:
     bool isMidiEffect() const override;
     double getTailLengthSeconds() const override;
 
-    void listSerumParameters();
     std::function<void()> onPresetApplied;
 
     int getNumPrograms() override;
@@ -37,10 +35,6 @@ public:
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
 
-    juce::AudioPluginInstance* getSerumInstance();
-    SerumInterfaceComponent& getSerumInterface() { return serumInterface; }
-    void setSerumPath(const juce::String& newPath);
-    void applyPresetToSerum(const std::map<std::string, std::string>& ChatResponse);
     void setResponses(const std::vector<std::map<std::string, std::string>>& newResponses);
     void applyResponseAtIndex(int index);
     void nextResponse();
@@ -58,9 +52,7 @@ private:
     void setParameterByName(const std::pair<std::string, float>& paramData);
     float parseValue(const std::string& value);
 
-    SerumInterfaceComponent serumInterface;
     SettingsComponent settingsComponent;
-    juce::String serumPluginPath = "C:/Program Files/Common Files/VST3/Serum2.vst3";
     std::vector<std::map<std::string, std::string>> responses;
     int currentResponseIndex = 0;
     mutable juce::CriticalSection responseLock;

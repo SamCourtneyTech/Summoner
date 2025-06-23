@@ -7,9 +7,9 @@ public:
     static bool isLoggedIn()
     {
         juce::PropertiesFile::Options options;
-        options.applicationName = "SummonerXSerum2";
+        options.applicationName = "Summoner";
         options.filenameSuffix = ".settings";
-        options.folderName = "SummonerXSerum2App";
+        options.folderName = "SummonerApp";
         options.osxLibrarySubFolder = "Application Support";
         juce::ApplicationProperties appProps;
         appProps.setStorageParameters(options);
@@ -19,9 +19,9 @@ public:
     static juce::String getAccessToken()
     {
         juce::PropertiesFile::Options options;
-        options.applicationName = "SummonerXSerum2";
+        options.applicationName = "Summoner";
         options.filenameSuffix = ".settings";
-        options.folderName = "SummonerXSerum2App";
+        options.folderName = "SummonerApp";
         options.osxLibrarySubFolder = "Application Support";
         juce::ApplicationProperties appProps;
         appProps.setStorageParameters(options);
@@ -31,9 +31,9 @@ public:
     static int getCredits()
     {
         juce::PropertiesFile::Options options;
-        options.applicationName = "SummonerXSerum2";
+        options.applicationName = "Summoner";
         options.filenameSuffix = ".settings";
-        options.folderName = "SummonerXSerum2App";
+        options.folderName = "SummonerApp";
         options.osxLibrarySubFolder = "Application Support";
         juce::ApplicationProperties appProps;
         appProps.setStorageParameters(options);
@@ -43,9 +43,9 @@ public:
     static void setLoginState(const juce::String& accessToken, int credits, bool loggedIn)
     {
         juce::PropertiesFile::Options options;
-        options.applicationName = "SummonerXSerum2";
+        options.applicationName = "Summoner";
         options.filenameSuffix = ".settings";
-        options.folderName = "SummonerXSerum2App";
+        options.folderName = "SummonerApp";
         options.osxLibrarySubFolder = "Application Support";
         juce::ApplicationProperties appProps;
         appProps.setStorageParameters(options);
@@ -58,9 +58,9 @@ public:
     static void clearLoginState()
     {
         juce::PropertiesFile::Options options;
-        options.applicationName = "SummonerXSerum2";
+        options.applicationName = "Summoner";
         options.filenameSuffix = ".settings";
-        options.folderName = "SummonerXSerum2App";
+        options.folderName = "SummonerApp";
         options.osxLibrarySubFolder = "Application Support";
         juce::ApplicationProperties appProps;
         appProps.setStorageParameters(options);

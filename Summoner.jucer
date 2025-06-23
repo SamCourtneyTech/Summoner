@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="q3XrGV" name="Summoner X Serum2" projectType="audioplug"
+<JUCERPROJECT id="q3XrGV" name="Summoner" projectType="audioplug"
               useAppConfig="0" addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1"
               pluginFormats="buildVST3" pluginCharacteristicsValue="pluginIsSynth,pluginWantsMidiIn">
-  <MAINGROUP id="sBXuQf" name="Summoner X Serum2">
+  <MAINGROUP id="sBXuQf" name="Summoner">
     <GROUP id="{87376E03-C05A-C098-4871-B29802E5486E}" name="Source">
       <FILE id="gb9987" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
@@ -28,14 +28,14 @@
           file="Source/ParameterNormalizer.cpp"/>
     <FILE id="BrBTY3" name="ParameterNormalizer.h" compile="0" resource="0"
           file="Source/ParameterNormalizer.h"/>
-    <FILE id="u0H3jb" name="SerumInterfaceComponent.cpp" compile="1" resource="0"
-          file="Source/SerumInterfaceComponent.cpp"/>
-    <FILE id="XOqY1Z" name="SerumInterfaceComponent.h" compile="0" resource="0"
-          file="Source/SerumInterfaceComponent.h"/>
     <FILE id="bv7Rbx" name="SettingsComponent.cpp" compile="1" resource="0"
           file="Source/SettingsComponent.cpp"/>
     <FILE id="tNEyba" name="SettingsComponent.h" compile="0" resource="0"
           file="Source/SettingsComponent.h"/>
+    <FILE id="SynthComp1" name="SynthesizerComponent.cpp" compile="1" resource="0"
+          file="Source/SynthesizerComponent.cpp"/>
+    <FILE id="SynthComp2" name="SynthesizerComponent.h" compile="0" resource="0"
+          file="Source/SynthesizerComponent.h"/>
   </MAINGROUP>
   <MODULES>
     <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
@@ -57,8 +57,8 @@
   <EXPORTFORMATS>
     <VS2022 targetFolder="Builds/VisualStudio2022">
       <CONFIGURATIONS>
-        <CONFIGURATION isDebug="1" name="Debug" targetName="Summoner X Serum2"/>
-        <CONFIGURATION isDebug="0" name="Release" targetName="Summoner X Serum2"/>
+        <CONFIGURATION isDebug="1" name="Debug" targetName="Summoner"/>
+        <CONFIGURATION isDebug="0" name="Release" targetName="Summoner"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_audio_basics" path="../../JUCE/modules"/>

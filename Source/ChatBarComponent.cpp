@@ -39,9 +39,9 @@ ChatBarComponent::ChatBarComponent(SummonerXSerum2AudioProcessor& p) : processor
 
     // Initialize appProps for accessing the access token
     juce::PropertiesFile::Options options;
-    options.applicationName = "SummonerXSerum2";
+    options.applicationName = "Summoner";
     options.filenameSuffix = ".settings";
-    options.folderName = "SummonerXSerum2App";
+    options.folderName = "SummonerApp";
     options.osxLibrarySubFolder = "Application Support";
     appProps.setStorageParameters(options);
 
@@ -317,10 +317,7 @@ void ChatBarComponent::sendPromptToGenerateParameters(const juce::String& userPr
                 juce::MessageManager::callAsync([this, parameterMap]() {
                     std::vector<std::map<std::string, std::string>> responses = { parameterMap };
                     processor.setResponses(responses);
-                    if (auto* serumInterface = dynamic_cast<SerumInterfaceComponent*>(&processor.getSerumInterface()))
-                    {
-                        serumInterface->updateResponseCounter();
-                    }
+                    // SerumInterface removed - internal synthesizer will handle response counter
 
                     // Update credits after successful response
                     int credits = fetchUserCredits();
@@ -374,7 +371,8 @@ void ChatBarComponent::sendPromptToGenerateParameters(const juce::String& userPr
 
 void ChatBarComponent::sendAIResponseToProcessor(const std::map<std::string, std::string>& aiResponse)
 {
-    processor.applyPresetToSerum(aiResponse);
+    // TODO: Apply AI response to internal synthesizer instead of Serum
+    juce::ignoreUnused(aiResponse);
 }
 
 void ChatBarComponent::setCredits(int credits)

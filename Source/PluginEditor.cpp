@@ -11,6 +11,7 @@ SummonerXSerum2AudioProcessorEditor::SummonerXSerum2AudioProcessorEditor(Summone
     : AudioProcessorEditor(&p),
     audioProcessor(p),
     settings(p),
+    synthesizer(p),
     chatBar(p),
     loadingManager(std::make_unique<LoadingScreenManager>(this))
 {
@@ -18,15 +19,15 @@ SummonerXSerum2AudioProcessorEditor::SummonerXSerum2AudioProcessorEditor(Summone
     setSize(1192, 815);
 
     juce::PropertiesFile::Options options;
-    options.applicationName = "SummonerXSerum2";
+    options.applicationName = "Summoner";
     options.filenameSuffix = ".settings";
-    options.folderName = "SummonerXSerum2App";
+    options.folderName = "SummonerApp";
     options.osxLibrarySubFolder = "Application Support";
     appProps.setStorageParameters(options);
 
     // Setup tabs but don't make visible yet
     tabs.addTab("ChatGPT", juce::Colours::transparentBlack, &chatBar, false);
-    tabs.addTab("Serum", juce::Colours::transparentBlack, &audioProcessor.getSerumInterface(), false);
+    tabs.addTab("Synthesizer", juce::Colours::transparentBlack, &synthesizer, false);
     tabs.addTab("Settings", juce::Colours::transparentBlack, &settings, false);
     addAndMakeVisible(tabs);
     tabs.setVisible(false);
@@ -129,7 +130,7 @@ SummonerXSerum2AudioProcessorEditor::SummonerXSerum2AudioProcessorEditor(Summone
 
     settings.onPathChanged = [this](const juce::String& newPath) {
         DBG("onPathChanged triggered with path: " + newPath);
-        audioProcessor.setSerumPath(newPath);
+        // TODO: Apply path to internal synthesizer instead of Serum
         };
 
     audioProcessor.onPresetApplied = [this]() {
@@ -138,7 +139,7 @@ SummonerXSerum2AudioProcessorEditor::SummonerXSerum2AudioProcessorEditor(Summone
 
     auto initialPath = settings.loadSavedPath();
     settings.updatePathDisplay(initialPath);
-    audioProcessor.setSerumPath(initialPath);
+    // TODO: Initialize internal synthesizer with path
 
     // Determine initial UI state
     bool loggedIn = appProps.getUserSettings()->getBoolValue("isLoggedIn", false);
@@ -216,7 +217,7 @@ void SummonerXSerum2AudioProcessorEditor::loadPluginFromSettings(const juce::Str
     juce::File pluginFile(path);
     if (pluginFile.existsAsFile())
     {
-        audioProcessor.setSerumPath(path);
+        // TODO: Load internal synthesizer instead of Serum
         DBG("Loaded plugin from: " + path);
     }
     else
@@ -434,7 +435,7 @@ bool SummonerXSerum2AudioProcessorEditor::isFirstTimeUser()
 void SummonerXSerum2AudioProcessorEditor::setupWelcomeScreen()
 {
     // Welcome title
-    welcomeTitle.setText("Welcome to Summoner x Serum 2", juce::dontSendNotification);
+    welcomeTitle.setText("Welcome to Summoner", juce::dontSendNotification);
     welcomeTitle.setFont(juce::Font("Press Start 2P", 24.0f, juce::Font::plain));
     welcomeTitle.setColour(juce::Label::textColourId, juce::Colours::white);
     welcomeTitle.setJustificationType(juce::Justification::centred);
@@ -460,7 +461,7 @@ void SummonerXSerum2AudioProcessorEditor::setupWelcomeScreen()
 void SummonerXSerum2AudioProcessorEditor::setupLoggedOutScreen()
 {
     // Logged out title - only used for chat overlay now
-    loggedOutTitle.setText("Summoner x Serum 2", juce::dontSendNotification);
+    loggedOutTitle.setText("Summoner", juce::dontSendNotification);
     loggedOutTitle.setFont(juce::Font("Press Start 2P", 28.0f, juce::Font::plain));
     loggedOutTitle.setColour(juce::Label::textColourId, juce::Colours::white);
     loggedOutTitle.setJustificationType(juce::Justification::centred);

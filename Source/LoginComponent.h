@@ -29,9 +29,9 @@ public:
         };
 
         juce::PropertiesFile::Options options;
-        options.applicationName = "SummonerXSerum2";
+        options.applicationName = "Summoner";
         options.filenameSuffix = ".settings";
-        options.folderName = "SummonerXSerum2App";
+        options.folderName = "SummonerApp";
         options.osxLibrarySubFolder = "Application Support";
         appProps.setStorageParameters(options);
 
@@ -172,7 +172,7 @@ public:
                         "\r\n"
                         "<html><body>"
                         "<h1>Login Successful</h1>"
-                        "<p>You have been logged in to SummonerXSerum2. Please close this window and return to the plugin.</p>"
+                        "<p>You have been logged in to Summoner. Please close this window and return to the plugin.</p>"
                         "<script>try { window.close(); } catch (e) { console.log('Could not close window:', e); }</script>"
                         "</body></html>";
                     clientSocket->write(response.toRawUTF8(), response.length());

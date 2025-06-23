@@ -30,13 +30,13 @@ SettingsComponent::SettingsComponent(SummonerXSerum2AudioProcessor& processor)
 {
     static SettingsButtonLookAndFeel customSettingsButtons;
     juce::PropertiesFile::Options options;
-    options.applicationName = "SummonerXSerum2";
+    options.applicationName = "Summoner";
     options.filenameSuffix = ".settings";
-    options.folderName = "SummonerXSerum2App";
+    options.folderName = "SummonerApp";
     options.osxLibrarySubFolder = "Application Support";
     applicationProperties.setStorageParameters(options);
 #if JUCE_WINDOWS
-    defaultPath = "C:/Program Files/Common Files/VST3/Serum2.vst3";
+    // Serum path removed - will use internal synthesizer
 #elif JUCE_MAC
     defaultPath = "/Library/Audio/Plug-Ins/VST3/Serum2.vst3";
 #else

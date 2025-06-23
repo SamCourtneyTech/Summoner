@@ -3,8 +3,8 @@
 #include <atomic>
 #include "PluginProcessor.h"
 #include "ChatBarComponent.h"
-#include "SerumInterfaceComponent.h"
 #include "SettingsComponent.h"
+#include "SynthesizerComponent.h"
 #include "LoadingComponent.h"
 #include "LoginComponent.h"
 #include "LoginState.h"
@@ -44,6 +44,7 @@ private:
     SummonerXSerum2AudioProcessor& audioProcessor;
     CustomTabbedComponent tabs{ juce::TabbedButtonBar::TabsAtTop };
     ChatBarComponent chatBar;
+    SynthesizerComponent synthesizer;
     SettingsComponent settings;
     std::unique_ptr<LoadingScreenManager> loadingManager;
 
