@@ -160,11 +160,17 @@ private:
                     {
                         currentSample = (float)(std::sin(currentAngle) * level);
                     }
-                    else // Saw wave
+                    else if (oscillatorType == 1) // Saw wave
                     {
                         // Sawtooth wave: normalize angle to 0-1 range, then scale to -1 to 1
                         auto normalizedAngle = std::fmod(currentAngle, 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
                         currentSample = (float)((2.0 * normalizedAngle - 1.0) * level);
+                    }
+                    else // Square wave
+                    {
+                        // Square wave: +1 for first half of cycle, -1 for second half
+                        auto normalizedAngle = std::fmod(currentAngle, 2.0 * juce::MathConstants<double>::pi);
+                        currentSample = (float)((normalizedAngle < juce::MathConstants<double>::pi ? 1.0 : -1.0) * level);
                     }
                     
                     auto envelopeValue = envelope.getNextSample();

@@ -124,6 +124,15 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     sawWaveButton.setClickingTogglesState(true);
     sawWaveButton.addListener(this);
     addAndMakeVisible(sawWaveButton);
+    
+    squareWaveButton.setButtonText("SQUARE");
+    squareWaveButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff333333));
+    squareWaveButton.setColour(juce::TextButton::buttonOnColourId, juce::Colours::white);
+    squareWaveButton.setColour(juce::TextButton::textColourOnId, juce::Colours::black);
+    squareWaveButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+    squareWaveButton.setClickingTogglesState(true);
+    squareWaveButton.addListener(this);
+    addAndMakeVisible(squareWaveButton);
 }
 
 SynthesizerComponent::~SynthesizerComponent()
@@ -184,14 +193,16 @@ void SynthesizerComponent::resized()
     // Oscillator type buttons
     auto buttonHeight = 30;
     auto buttonRow = bounds.removeFromTop(buttonHeight);
-    auto buttonWidth = 80;
+    auto buttonWidth = 70;
+    auto buttonSpacing = 15;
     
-    // Center the buttons
-    auto totalButtonWidth = buttonWidth * 2 + 20; // 2 buttons + spacing
+    // Center the 3 buttons
+    auto totalButtonWidth = buttonWidth * 3 + buttonSpacing * 2; // 3 buttons + 2 spacings
     auto startX = (buttonRow.getWidth() - totalButtonWidth) / 2;
     
     sineWaveButton.setBounds(startX, buttonRow.getY(), buttonWidth, buttonHeight);
-    sawWaveButton.setBounds(startX + buttonWidth + 20, buttonRow.getY(), buttonWidth, buttonHeight);
+    sawWaveButton.setBounds(startX + buttonWidth + buttonSpacing, buttonRow.getY(), buttonWidth, buttonHeight);
+    squareWaveButton.setBounds(startX + (buttonWidth + buttonSpacing) * 2, buttonRow.getY(), buttonWidth, buttonHeight);
     
     bounds.removeFromTop(20); // spacing between rows
     
@@ -252,6 +263,7 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
         if (sineWaveButton.getToggleState())
         {
             sawWaveButton.setToggleState(false, juce::dontSendNotification);
+            squareWaveButton.setToggleState(false, juce::dontSendNotification);
             audioProcessor.setOscillatorType(0); // 0 = sine wave
         }
         else
@@ -264,11 +276,25 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
         if (sawWaveButton.getToggleState())
         {
             sineWaveButton.setToggleState(false, juce::dontSendNotification);
+            squareWaveButton.setToggleState(false, juce::dontSendNotification);
             audioProcessor.setOscillatorType(1); // 1 = saw wave
         }
         else
         {
             sawWaveButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
+        }
+    }
+    else if (button == &squareWaveButton)
+    {
+        if (squareWaveButton.getToggleState())
+        {
+            sineWaveButton.setToggleState(false, juce::dontSendNotification);
+            sawWaveButton.setToggleState(false, juce::dontSendNotification);
+            audioProcessor.setOscillatorType(2); // 2 = square wave
+        }
+        else
+        {
+            squareWaveButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
         }
     }
 }
