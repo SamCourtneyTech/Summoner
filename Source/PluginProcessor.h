@@ -56,6 +56,18 @@ public:
     }
     float getSynthAttack() const { return synthAttack; }
     
+    void setSynthDecay(float decay) { 
+        synthDecay = decay; 
+        updateEnvelopeParameters();
+    }
+    float getSynthDecay() const { return synthDecay; }
+    
+    void setSynthSustain(float sustain) { 
+        synthSustain = sustain; 
+        updateEnvelopeParameters();
+    }
+    float getSynthSustain() const { return synthSustain; }
+    
     void setSynthRelease(float release) { 
         synthRelease = release; 
         updateEnvelopeParameters();
@@ -79,6 +91,8 @@ private:
     juce::Synthesiser synthesiser;
     float synthVolume = 0.5f;
     float synthAttack = 0.1f;
+    float synthDecay = 0.2f;
+    float synthSustain = 0.7f;
     float synthRelease = 0.3f;
     
     struct SineWaveSound : public juce::SynthesiserSound

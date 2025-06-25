@@ -144,7 +144,7 @@ void SummonerXSerum2AudioProcessor::updateEnvelopeParameters()
     {
         if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
         {
-            voice->setEnvelopeParameters(synthAttack, 0.8f, 0.3f, synthRelease);
+            voice->setEnvelopeParameters(synthAttack, synthDecay, synthSustain, synthRelease);
         }
     }
 }

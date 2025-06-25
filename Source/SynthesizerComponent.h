@@ -78,6 +78,10 @@ private:
     juce::Label filterLabel;
     juce::Slider attackSlider;
     juce::Label attackLabel;
+    juce::Slider decaySlider;
+    juce::Label decayLabel;
+    juce::Slider sustainSlider;
+    juce::Label sustainLabel;
     juce::Slider releaseSlider;
     juce::Label releaseLabel;
 
