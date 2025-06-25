@@ -19,14 +19,34 @@ public:
         auto rw = radius * 2.0f;
         auto angle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
         
-        // Draw the smooth arc based on slider position
+        // Draw the block arc based on slider position
         if (sliderPos > 0.0f)
         {
             g.setColour(juce::Colours::white);
-            juce::Path valueArc;
-            valueArc.addCentredArc(centreX, centreY, radius - 1, radius - 1, 0.0f,
-                                  rotaryStartAngle, angle, true);
-            g.strokePath(valueArc, juce::PathStrokeType(5.0f));
+            
+            // Create evenly spaced white blocks
+            auto arcRadius = radius - 1;
+            auto blockSize = 0.08f; // Smaller blocks for rounder appearance
+            auto gapSize = 0.02f; // Smaller gaps for smoother look
+            auto currentAngle = rotaryStartAngle;
+            
+            while (currentAngle < angle)
+            {
+                auto blockEndAngle = juce::jmin(currentAngle + blockSize, angle);
+                
+                // Draw white rectangular block
+                auto startX = centreX + arcRadius * std::cos(currentAngle - juce::MathConstants<float>::halfPi);
+                auto startY = centreY + arcRadius * std::sin(currentAngle - juce::MathConstants<float>::halfPi);
+                auto endX = centreX + arcRadius * std::cos(blockEndAngle - juce::MathConstants<float>::halfPi);
+                auto endY = centreY + arcRadius * std::sin(blockEndAngle - juce::MathConstants<float>::halfPi);
+                
+                // Draw thick line segment
+                juce::Path blockPath;
+                blockPath.addLineSegment(juce::Line<float>(startX, startY, endX, endY), 5.0f);
+                g.fillPath(blockPath);
+                
+                currentAngle += blockSize + gapSize;
+            }
         }
     }
 };
