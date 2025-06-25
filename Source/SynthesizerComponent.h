@@ -30,7 +30,7 @@ public:
             juce::Path valueArc;
             valueArc.addCentredArc(centreX, centreY, radius - 1, radius - 1, 0.0f,
                                   rotaryStartAngle, angle, true);
-            g.strokePath(valueArc, juce::PathStrokeType(3.0f));
+            g.strokePath(valueArc, juce::PathStrokeType(5.0f));
         }
     }
 };
