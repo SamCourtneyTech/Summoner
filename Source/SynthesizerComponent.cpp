@@ -52,7 +52,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     attackLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(attackLabel);
     
-    attackSlider.setSliderStyle(juce::Slider::LinearHorizontal);
+    attackSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     attackSlider.setRange(0.01, 2.0, 0.01);
     attackSlider.setValue(0.1);
     attackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
@@ -66,7 +66,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     releaseLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(releaseLabel);
     
-    releaseSlider.setSliderStyle(juce::Slider::LinearHorizontal);
+    releaseSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     releaseSlider.setRange(0.01, 3.0, 0.01);
     releaseSlider.setValue(0.3);
     releaseSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
