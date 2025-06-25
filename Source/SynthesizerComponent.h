@@ -10,7 +10,7 @@ public:
                          float sliderPos, float rotaryStartAngle, float rotaryEndAngle,
                          juce::Slider& slider) override
     {
-        auto bounds = juce::Rectangle<float>(x, y, width, height).reduced(10);
+        auto bounds = juce::Rectangle<float>(x, y, width, height).reduced(5);
         auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) / 2.0f;
         auto centreX = bounds.getCentreX();
         auto centreY = bounds.getCentreY();
@@ -32,19 +32,6 @@ public:
                                   rotaryStartAngle, angle, true);
             g.strokePath(valueArc, juce::PathStrokeType(3.0f));
         }
-        
-        // Draw center dot
-        g.setColour(juce::Colours::white);
-        auto dotSize = radius * 0.1f;
-        g.fillEllipse(centreX - dotSize, centreY - dotSize, dotSize * 2, dotSize * 2);
-        
-        // Draw pointer line
-        juce::Path pointer;
-        auto pointerLength = radius * 0.7f;
-        auto pointerThickness = 2.0f;
-        pointer.addRectangle(-pointerThickness * 0.5f, -pointerLength, pointerThickness, pointerLength);
-        pointer.applyTransform(juce::AffineTransform::rotation(angle).translated(centreX, centreY));
-        g.fillPath(pointer);
     }
 };
 

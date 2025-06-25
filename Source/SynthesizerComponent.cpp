@@ -110,7 +110,7 @@ void SynthesizerComponent::resized()
     bounds.removeFromTop(30);
     
     // Controls in a 2x2 grid
-    auto controlHeight = 80;
+    auto controlHeight = 120;
     auto controlWidth = bounds.getWidth() / 2 - 10;
     
     // Top row
