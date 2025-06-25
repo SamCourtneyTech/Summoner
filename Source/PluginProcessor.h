@@ -49,12 +49,26 @@ public:
     // Synthesizer controls
     void setSynthVolume(float volume) { synthVolume = volume; }
     float getSynthVolume() const { return synthVolume; }
+    
+    void setSynthAttack(float attack) { 
+        synthAttack = attack; 
+        updateEnvelopeParameters();
+    }
+    float getSynthAttack() const { return synthAttack; }
+    
+    void setSynthRelease(float release) { 
+        synthRelease = release; 
+        updateEnvelopeParameters();
+    }
+    float getSynthRelease() const { return synthRelease; }
 
 private:
     std::map<std::string, int> parameterMap;
     void enumerateParameters();
     void setParameterByName(const std::pair<std::string, float>& paramData);
     float parseValue(const std::string& value);
+    
+    void updateEnvelopeParameters();
 
     SettingsComponent settingsComponent;
     std::vector<std::map<std::string, std::string>> responses;
@@ -64,6 +78,8 @@ private:
     // Synthesizer components
     juce::Synthesiser synthesiser;
     float synthVolume = 0.5f;
+    float synthAttack = 0.1f;
+    float synthRelease = 0.3f;
     
     struct SineWaveSound : public juce::SynthesiserSound
     {
@@ -73,6 +89,12 @@ private:
     
     struct SineWaveVoice : public juce::SynthesiserVoice
     {
+        SineWaveVoice()
+        {
+            envelope.setSampleRate(44100.0);
+            envelope.setParameters({0.1f, 0.8f, 0.3f, 0.5f});
+        }
+        
         bool canPlaySound(juce::SynthesiserSound* sound) override
         {
             return dynamic_cast<SineWaveSound*>(sound) != nullptr;
@@ -82,19 +104,18 @@ private:
         {
             frequency = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
             level = velocity * 0.15;
-            tailOff = 0.0;
             angleDelta = frequency * 2.0 * juce::MathConstants<double>::pi / getSampleRate();
             currentAngle = 0.0;
+            
+            envelope.setSampleRate(getSampleRate());
+            envelope.noteOn();
         }
         
         void stopNote(float, bool allowTailOff) override
         {
-            if (allowTailOff)
-            {
-                if (tailOff == 0.0)
-                    tailOff = 1.0;
-            }
-            else
+            envelope.noteOff();
+            
+            if (!allowTailOff)
             {
                 clearCurrentNote();
                 angleDelta = 0.0;
@@ -108,47 +129,37 @@ private:
         {
             if (angleDelta != 0.0)
             {
-                if (tailOff > 0.0)
+                while (--numSamples >= 0)
                 {
-                    while (--numSamples >= 0)
+                    auto currentSample = (float)(std::sin(currentAngle) * level);
+                    auto envelopeValue = envelope.getNextSample();
+                    currentSample *= envelopeValue;
+                    
+                    for (auto i = outputBuffer.getNumChannels(); --i >= 0;)
+                        outputBuffer.addSample(i, startSample, currentSample);
+                    
+                    currentAngle += angleDelta;
+                    ++startSample;
+                    
+                    if (!envelope.isActive())
                     {
-                        auto currentSample = (float)(std::sin(currentAngle) * level * tailOff);
-                        
-                        for (auto i = outputBuffer.getNumChannels(); --i >= 0;)
-                            outputBuffer.addSample(i, startSample, currentSample);
-                        
-                        currentAngle += angleDelta;
-                        ++startSample;
-                        
-                        tailOff *= 0.99;
-                        
-                        if (tailOff <= 0.005)
-                        {
-                            clearCurrentNote();
-                            angleDelta = 0.0;
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    while (--numSamples >= 0)
-                    {
-                        auto currentSample = (float)(std::sin(currentAngle) * level);
-                        
-                        for (auto i = outputBuffer.getNumChannels(); --i >= 0;)
-                            outputBuffer.addSample(i, startSample, currentSample);
-                        
-                        currentAngle += angleDelta;
-                        ++startSample;
+                        clearCurrentNote();
+                        angleDelta = 0.0;
+                        break;
                     }
                 }
             }
         }
         
+        void setEnvelopeParameters(float attack, float decay, float sustain, float release)
+        {
+            envelope.setParameters({attack, decay, sustain, release});
+        }
+        
     private:
-        double currentAngle = 0.0, angleDelta = 0.0, level = 0.0, tailOff = 0.0;
+        double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
+        juce::ADSR envelope;
     };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SummonerXSerum2AudioProcessor)

@@ -138,6 +138,17 @@ void SummonerXSerum2AudioProcessor::processBlock(juce::AudioBuffer<float>& buffe
     buffer.applyGain(synthVolume);
 }
 
+void SummonerXSerum2AudioProcessor::updateEnvelopeParameters()
+{
+    for (int i = 0; i < synthesiser.getNumVoices(); ++i)
+    {
+        if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
+        {
+            voice->setEnvelopeParameters(synthAttack, 0.8f, 0.3f, synthRelease);
+        }
+    }
+}
+
 bool SummonerXSerum2AudioProcessor::hasEditor() const
 {
     return true;

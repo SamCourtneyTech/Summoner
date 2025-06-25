@@ -53,9 +53,10 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     addAndMakeVisible(attackLabel);
     
     attackSlider.setSliderStyle(juce::Slider::LinearHorizontal);
-    attackSlider.setRange(0.0, 1.0, 0.01);
+    attackSlider.setRange(0.01, 2.0, 0.01);
     attackSlider.setValue(0.1);
     attackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    attackSlider.addListener(this);
     addAndMakeVisible(attackSlider);
     
     // Release control
@@ -66,9 +67,10 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     addAndMakeVisible(releaseLabel);
     
     releaseSlider.setSliderStyle(juce::Slider::LinearHorizontal);
-    releaseSlider.setRange(0.0, 1.0, 0.01);
+    releaseSlider.setRange(0.01, 3.0, 0.01);
     releaseSlider.setValue(0.3);
     releaseSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    releaseSlider.addListener(this);
     addAndMakeVisible(releaseSlider);
 }
 
@@ -141,5 +143,13 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     if (slider == &volumeSlider)
     {
         audioProcessor.setSynthVolume(static_cast<float>(volumeSlider.getValue()));
+    }
+    else if (slider == &attackSlider)
+    {
+        audioProcessor.setSynthAttack(static_cast<float>(attackSlider.getValue()));
+    }
+    else if (slider == &releaseSlider)
+    {
+        audioProcessor.setSynthRelease(static_cast<float>(releaseSlider.getValue()));
     }
 }
