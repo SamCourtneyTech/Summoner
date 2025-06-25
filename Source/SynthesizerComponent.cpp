@@ -56,6 +56,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     attackSlider.setRange(0.01, 2.0, 0.01);
     attackSlider.setValue(0.1);
     attackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    attackSlider.setLookAndFeel(&customKnobLookAndFeel);
     attackSlider.addListener(this);
     addAndMakeVisible(attackSlider);
     
@@ -70,13 +71,16 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     releaseSlider.setRange(0.01, 3.0, 0.01);
     releaseSlider.setValue(0.3);
     releaseSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    releaseSlider.setLookAndFeel(&customKnobLookAndFeel);
     releaseSlider.addListener(this);
     addAndMakeVisible(releaseSlider);
 }
 
 SynthesizerComponent::~SynthesizerComponent()
 {
-    // Clean destructor implementation
+    // Reset custom look and feel to avoid dangling pointers
+    attackSlider.setLookAndFeel(nullptr);
+    releaseSlider.setLookAndFeel(nullptr);
 }
 
 void SynthesizerComponent::paint(juce::Graphics& g)
