@@ -133,6 +133,15 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     squareWaveButton.setClickingTogglesState(true);
     squareWaveButton.addListener(this);
     addAndMakeVisible(squareWaveButton);
+    
+    triangleWaveButton.setButtonText("TRI");
+    triangleWaveButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff333333));
+    triangleWaveButton.setColour(juce::TextButton::buttonOnColourId, juce::Colours::white);
+    triangleWaveButton.setColour(juce::TextButton::textColourOnId, juce::Colours::black);
+    triangleWaveButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+    triangleWaveButton.setClickingTogglesState(true);
+    triangleWaveButton.addListener(this);
+    addAndMakeVisible(triangleWaveButton);
 }
 
 SynthesizerComponent::~SynthesizerComponent()
@@ -193,16 +202,17 @@ void SynthesizerComponent::resized()
     // Oscillator type buttons
     auto buttonHeight = 30;
     auto buttonRow = bounds.removeFromTop(buttonHeight);
-    auto buttonWidth = 70;
-    auto buttonSpacing = 15;
+    auto buttonWidth = 60;
+    auto buttonSpacing = 10;
     
-    // Center the 3 buttons
-    auto totalButtonWidth = buttonWidth * 3 + buttonSpacing * 2; // 3 buttons + 2 spacings
+    // Center the 4 buttons
+    auto totalButtonWidth = buttonWidth * 4 + buttonSpacing * 3; // 4 buttons + 3 spacings
     auto startX = (buttonRow.getWidth() - totalButtonWidth) / 2;
     
     sineWaveButton.setBounds(startX, buttonRow.getY(), buttonWidth, buttonHeight);
-    sawWaveButton.setBounds(startX + buttonWidth + buttonSpacing, buttonRow.getY(), buttonWidth, buttonHeight);
+    sawWaveButton.setBounds(startX + (buttonWidth + buttonSpacing), buttonRow.getY(), buttonWidth, buttonHeight);
     squareWaveButton.setBounds(startX + (buttonWidth + buttonSpacing) * 2, buttonRow.getY(), buttonWidth, buttonHeight);
+    triangleWaveButton.setBounds(startX + (buttonWidth + buttonSpacing) * 3, buttonRow.getY(), buttonWidth, buttonHeight);
     
     bounds.removeFromTop(20); // spacing between rows
     
@@ -264,6 +274,7 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
         {
             sawWaveButton.setToggleState(false, juce::dontSendNotification);
             squareWaveButton.setToggleState(false, juce::dontSendNotification);
+            triangleWaveButton.setToggleState(false, juce::dontSendNotification);
             audioProcessor.setOscillatorType(0); // 0 = sine wave
         }
         else
@@ -277,6 +288,7 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
         {
             sineWaveButton.setToggleState(false, juce::dontSendNotification);
             squareWaveButton.setToggleState(false, juce::dontSendNotification);
+            triangleWaveButton.setToggleState(false, juce::dontSendNotification);
             audioProcessor.setOscillatorType(1); // 1 = saw wave
         }
         else
@@ -290,11 +302,26 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
         {
             sineWaveButton.setToggleState(false, juce::dontSendNotification);
             sawWaveButton.setToggleState(false, juce::dontSendNotification);
+            triangleWaveButton.setToggleState(false, juce::dontSendNotification);
             audioProcessor.setOscillatorType(2); // 2 = square wave
         }
         else
         {
             squareWaveButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
+        }
+    }
+    else if (button == &triangleWaveButton)
+    {
+        if (triangleWaveButton.getToggleState())
+        {
+            sineWaveButton.setToggleState(false, juce::dontSendNotification);
+            sawWaveButton.setToggleState(false, juce::dontSendNotification);
+            squareWaveButton.setToggleState(false, juce::dontSendNotification);
+            audioProcessor.setOscillatorType(3); // 3 = triangle wave
+        }
+        else
+        {
+            triangleWaveButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
         }
     }
 }

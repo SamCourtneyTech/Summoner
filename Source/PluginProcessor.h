@@ -166,11 +166,20 @@ private:
                         auto normalizedAngle = std::fmod(currentAngle, 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
                         currentSample = (float)((2.0 * normalizedAngle - 1.0) * level);
                     }
-                    else // Square wave
+                    else if (oscillatorType == 2) // Square wave
                     {
                         // Square wave: +1 for first half of cycle, -1 for second half
                         auto normalizedAngle = std::fmod(currentAngle, 2.0 * juce::MathConstants<double>::pi);
                         currentSample = (float)((normalizedAngle < juce::MathConstants<double>::pi ? 1.0 : -1.0) * level);
+                    }
+                    else // Triangle wave
+                    {
+                        // Triangle wave: ramps up from -1 to 1, then back down to -1
+                        auto normalizedAngle = std::fmod(currentAngle, 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
+                        if (normalizedAngle < 0.5)
+                            currentSample = (float)((4.0 * normalizedAngle - 1.0) * level); // Rising: -1 to 1
+                        else
+                            currentSample = (float)((3.0 - 4.0 * normalizedAngle) * level); // Falling: 1 to -1
                     }
                     
                     auto envelopeValue = envelope.getNextSample();
