@@ -19,11 +19,7 @@ public:
         auto rw = radius * 2.0f;
         auto angle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
         
-        // Draw background circle (dark outline)
-        g.setColour(juce::Colour(0xff333333));
-        g.drawEllipse(rx, ry, rw, rw, 2.0f);
-        
-        // Draw the filled arc based on slider position
+        // Draw the smooth arc based on slider position
         if (sliderPos > 0.0f)
         {
             g.setColour(juce::Colours::white);
