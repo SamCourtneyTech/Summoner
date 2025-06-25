@@ -51,7 +51,7 @@ public:
     }
 };
 
-class SynthesizerComponent : public juce::Component, private juce::Slider::Listener
+class SynthesizerComponent : public juce::Component, private juce::Slider::Listener, private juce::Button::Listener
 {
 public:
     explicit SynthesizerComponent(SummonerXSerum2AudioProcessor& processor);
@@ -62,6 +62,9 @@ public:
     
     // Slider listener
     void sliderValueChanged(juce::Slider* slider) override;
+    
+    // Button listener
+    void buttonClicked(juce::Button* button) override;
 
 private:
     SummonerXSerum2AudioProcessor& audioProcessor;
@@ -84,6 +87,10 @@ private:
     juce::Label sustainLabel;
     juce::Slider releaseSlider;
     juce::Label releaseLabel;
+    
+    // Oscillator type buttons
+    juce::TextButton sineWaveButton;
+    juce::TextButton sawWaveButton;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynthesizerComponent)
 };

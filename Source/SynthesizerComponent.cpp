@@ -104,6 +104,26 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     releaseSlider.setLookAndFeel(&customKnobLookAndFeel);
     releaseSlider.addListener(this);
     addAndMakeVisible(releaseSlider);
+    
+    // Oscillator type buttons
+    sineWaveButton.setButtonText("SINE");
+    sineWaveButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff333333));
+    sineWaveButton.setColour(juce::TextButton::buttonOnColourId, juce::Colours::white);
+    sineWaveButton.setColour(juce::TextButton::textColourOnId, juce::Colours::black);
+    sineWaveButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+    sineWaveButton.setClickingTogglesState(true);
+    sineWaveButton.setToggleState(true, juce::dontSendNotification); // Start with sine selected
+    sineWaveButton.addListener(this);
+    addAndMakeVisible(sineWaveButton);
+    
+    sawWaveButton.setButtonText("SAW");
+    sawWaveButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff333333));
+    sawWaveButton.setColour(juce::TextButton::buttonOnColourId, juce::Colours::white);
+    sawWaveButton.setColour(juce::TextButton::textColourOnId, juce::Colours::black);
+    sawWaveButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+    sawWaveButton.setClickingTogglesState(true);
+    sawWaveButton.addListener(this);
+    addAndMakeVisible(sawWaveButton);
 }
 
 SynthesizerComponent::~SynthesizerComponent()
@@ -161,6 +181,20 @@ void SynthesizerComponent::resized()
     
     bounds.removeFromTop(20); // spacing between rows
     
+    // Oscillator type buttons
+    auto buttonHeight = 30;
+    auto buttonRow = bounds.removeFromTop(buttonHeight);
+    auto buttonWidth = 80;
+    
+    // Center the buttons
+    auto totalButtonWidth = buttonWidth * 2 + 20; // 2 buttons + spacing
+    auto startX = (buttonRow.getWidth() - totalButtonWidth) / 2;
+    
+    sineWaveButton.setBounds(startX, buttonRow.getY(), buttonWidth, buttonHeight);
+    sawWaveButton.setBounds(startX + buttonWidth + 20, buttonRow.getY(), buttonWidth, buttonHeight);
+    
+    bounds.removeFromTop(20); // spacing between rows
+    
     // Bottom row - ADSR knobs
     auto adsrRow = bounds.removeFromTop(controlHeight);
     
@@ -208,5 +242,33 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     else if (slider == &releaseSlider)
     {
         audioProcessor.setSynthRelease(static_cast<float>(releaseSlider.getValue()));
+    }
+}
+
+void SynthesizerComponent::buttonClicked(juce::Button* button)
+{
+    if (button == &sineWaveButton)
+    {
+        if (sineWaveButton.getToggleState())
+        {
+            sawWaveButton.setToggleState(false, juce::dontSendNotification);
+            audioProcessor.setOscillatorType(0); // 0 = sine wave
+        }
+        else
+        {
+            sineWaveButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
+        }
+    }
+    else if (button == &sawWaveButton)
+    {
+        if (sawWaveButton.getToggleState())
+        {
+            sineWaveButton.setToggleState(false, juce::dontSendNotification);
+            audioProcessor.setOscillatorType(1); // 1 = saw wave
+        }
+        else
+        {
+            sawWaveButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
+        }
     }
 }

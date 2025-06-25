@@ -149,6 +149,17 @@ void SummonerXSerum2AudioProcessor::updateEnvelopeParameters()
     }
 }
 
+void SummonerXSerum2AudioProcessor::updateOscillatorType()
+{
+    for (int i = 0; i < synthesiser.getNumVoices(); ++i)
+    {
+        if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
+        {
+            voice->setOscillatorType(oscillatorType);
+        }
+    }
+}
+
 bool SummonerXSerum2AudioProcessor::hasEditor() const
 {
     return true;
