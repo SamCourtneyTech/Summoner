@@ -12,7 +12,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     addAndMakeVisible(titleLabel);
     
     // Placeholder text
-    placeholderLabel.setText("Synthesizer controls will be implemented here", juce::dontSendNotification);
+    placeholderLabel.setText("Sine wave oscillator - play MIDI keys!", juce::dontSendNotification);
     placeholderLabel.setFont(juce::Font("Press Start 2P", 12.0f, juce::Font::plain));
     placeholderLabel.setColour(juce::Label::textColourId, juce::Colours::lightgrey);
     placeholderLabel.setJustificationType(juce::Justification::centred);
@@ -29,6 +29,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     volumeSlider.setRange(0.0, 1.0, 0.01);
     volumeSlider.setValue(0.5);
     volumeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    volumeSlider.addListener(this);
     addAndMakeVisible(volumeSlider);
     
     // Filter control  
@@ -133,4 +134,12 @@ void SynthesizerComponent::resized()
     auto releaseArea = bottomRow;
     releaseLabel.setBounds(releaseArea.removeFromTop(20));
     releaseSlider.setBounds(releaseArea);
+}
+
+void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
+{
+    if (slider == &volumeSlider)
+    {
+        audioProcessor.setSynthVolume(static_cast<float>(volumeSlider.getValue()));
+    }
 }

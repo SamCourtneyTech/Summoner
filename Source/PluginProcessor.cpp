@@ -83,7 +83,19 @@ void SummonerXSerum2AudioProcessor::changeProgramName(int index, const juce::Str
 
 void SummonerXSerum2AudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-    // Initialize the internal synthesizer here
+    // Initialize the internal synthesizer
+    synthesiser.clearVoices();
+    synthesiser.clearSounds();
+    
+    // Add 4 voices for polyphony
+    for (int i = 0; i < 4; ++i)
+        synthesiser.addVoice(new SineWaveVoice());
+    
+    // Add the sound
+    synthesiser.addSound(new SineWaveSound());
+    
+    // Set sample rate
+    synthesiser.setCurrentPlaybackSampleRate(sampleRate);
 }
 
 void SummonerXSerum2AudioProcessor::releaseResources()
@@ -115,9 +127,15 @@ void SummonerXSerum2AudioProcessor::processBlock(juce::AudioBuffer<float>& buffe
 {
     juce::ScopedNoDenormals noDenormals;
     
-    // Clear the buffer for now - this is where the internal synthesizer will render audio
+    // Clear the buffer first
     for (auto i = 0; i < buffer.getNumChannels(); ++i)
         buffer.clear(i, 0, buffer.getNumSamples());
+    
+    // Render the synthesizer
+    synthesiser.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+    
+    // Apply volume control
+    buffer.applyGain(synthVolume);
 }
 
 bool SummonerXSerum2AudioProcessor::hasEditor() const

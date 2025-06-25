@@ -3,7 +3,7 @@
 
 class SummonerXSerum2AudioProcessor;
 
-class SynthesizerComponent : public juce::Component
+class SynthesizerComponent : public juce::Component, private juce::Slider::Listener
 {
 public:
     explicit SynthesizerComponent(SummonerXSerum2AudioProcessor& processor);
@@ -11,6 +11,9 @@ public:
 
     void paint(juce::Graphics& g) override;
     void resized() override;
+    
+    // Slider listener
+    void sliderValueChanged(juce::Slider* slider) override;
 
 private:
     SummonerXSerum2AudioProcessor& audioProcessor;
