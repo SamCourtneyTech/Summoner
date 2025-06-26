@@ -105,8 +105,8 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     releaseSlider.addListener(this);
     addAndMakeVisible(releaseSlider);
     
-    // Oscillator type buttons
-    sineWaveButton.setButtonText("SINE");
+    // Oscillator type buttons - using simple text for now
+    sineWaveButton.setButtonText("SIN");
     sineWaveButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff333333));
     sineWaveButton.setColour(juce::TextButton::buttonOnColourId, juce::Colours::white);
     sineWaveButton.setColour(juce::TextButton::textColourOnId, juce::Colours::black);
@@ -125,7 +125,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     sawWaveButton.addListener(this);
     addAndMakeVisible(sawWaveButton);
     
-    squareWaveButton.setButtonText("SQUARE");
+    squareWaveButton.setButtonText("SQR");
     squareWaveButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff333333));
     squareWaveButton.setColour(juce::TextButton::buttonOnColourId, juce::Colours::white);
     squareWaveButton.setColour(juce::TextButton::textColourOnId, juce::Colours::black);
@@ -200,10 +200,10 @@ void SynthesizerComponent::resized()
     bounds.removeFromTop(20); // spacing between rows
     
     // Oscillator type buttons
-    auto buttonHeight = 30;
+    auto buttonHeight = 40;
     auto buttonRow = bounds.removeFromTop(buttonHeight);
-    auto buttonWidth = 60;
-    auto buttonSpacing = 10;
+    auto buttonWidth = 40;
+    auto buttonSpacing = 15;
     
     // Center the 4 buttons
     auto totalButtonWidth = buttonWidth * 4 + buttonSpacing * 3; // 4 buttons + 3 spacings
