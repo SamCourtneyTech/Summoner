@@ -139,6 +139,7 @@ SettingsComponent::SettingsComponent(SummonerXSerum2AudioProcessor& processor)
         hackerSkinButton.setToggleState(true, juce::dontSendNotification);
         defaultSkinButton.setToggleState(false, juce::dontSendNotification);
         isHackerSkin = true;
+        initializeMatrixColumns(); // Reinitialize columns when hacker skin is activated
         if (onSkinChanged)
             onSkinChanged(true);
         repaint();
@@ -339,6 +340,12 @@ void SettingsComponent::resized()
 
     // Logout button
     logoutButton.setBounds(bounds.getX(), bounds.getY(), buttonWidth, buttonHeight);
+    
+    // Reinitialize Matrix columns when component is resized (if hacker skin is active)
+    if (isHackerSkin)
+    {
+        initializeMatrixColumns();
+    }
 }
 
 
@@ -548,14 +555,18 @@ int SettingsComponent::getQuadrant(float x, float y)
 
 void SettingsComponent::initializeMatrixColumns()
 {
-    int numColumns = 60; // Number of columns across the screen
+    int columnSpacing = 12; // 12 pixels apart
+    int screenWidth = getWidth();
+    if (screenWidth <= 0) screenWidth = 800; // Fallback width
+    int numColumns = screenWidth / columnSpacing; // Calculate columns based on screen width
+    
     matrixColumns.clear();
     matrixColumns.reserve(numColumns);
     
     for (int i = 0; i < numColumns; ++i)
     {
         MatrixColumn column;
-        column.x = i * 12; // 12 pixels apart
+        column.x = i * columnSpacing;
         column.length = random.nextInt(15) + 10; // 10-25 characters long
         column.speed = random.nextFloat() * 2.0f + 1.0f; // Speed between 1-3
         column.headPosition = -column.length; // Start off screen
