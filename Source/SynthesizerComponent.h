@@ -154,7 +154,6 @@ private:
     juce::TextButton triangleWaveButton;
     juce::TextButton noiseWaveButton;
     juce::TextButton pinkNoiseButton;
-    juce::TextButton pulseWaveButton;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynthesizerComponent)
 };

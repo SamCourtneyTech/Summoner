@@ -170,24 +170,32 @@ private:
                     }
                     else if (oscillatorType == 1) // Saw wave
                     {
-                        // Sawtooth wave: normalize angle to 0-1 range, then scale to -1 to 1
+                        // Sawtooth wave: variable ramp using pulse width (0.5 = normal saw, <0.5 = reverse bias, >0.5 = forward bias)
                         auto normalizedAngle = std::fmod(currentAngle, 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
-                        currentSample = (float)((2.0 * normalizedAngle - 1.0) * level);
+                        if (pulseWidth < 0.5) {
+                            // More reverse saw character
+                            auto adjustedAngle = normalizedAngle * (1.0 - pulseWidth) + pulseWidth;
+                            currentSample = (float)((2.0 * (1.0 - adjustedAngle) - 1.0) * level);
+                        } else {
+                            // More forward saw character
+                            auto adjustedAngle = normalizedAngle * pulseWidth;
+                            currentSample = (float)((2.0 * adjustedAngle - 1.0) * level);
+                        }
                     }
                     else if (oscillatorType == 2) // Square wave
                     {
-                        // Square wave: +1 for first half of cycle, -1 for second half
-                        auto normalizedAngle = std::fmod(currentAngle, 2.0 * juce::MathConstants<double>::pi);
-                        currentSample = (float)((normalizedAngle < juce::MathConstants<double>::pi ? 1.0 : -1.0) * level);
+                        // Square wave: variable duty cycle using pulse width
+                        auto normalizedAngle = std::fmod(currentAngle, 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
+                        currentSample = (float)((normalizedAngle < pulseWidth ? 1.0 : -1.0) * level);
                     }
                     else if (oscillatorType == 3) // Triangle wave
                     {
-                        // Triangle wave: ramps up from -1 to 1, then back down to -1
+                        // Triangle wave: variable peak position using pulse width
                         auto normalizedAngle = std::fmod(currentAngle, 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
-                        if (normalizedAngle < 0.5)
-                            currentSample = (float)((4.0 * normalizedAngle - 1.0) * level); // Rising: -1 to 1
+                        if (normalizedAngle < pulseWidth)
+                            currentSample = (float)((normalizedAngle / pulseWidth * 2.0 - 1.0) * level); // Rising: -1 to 1
                         else
-                            currentSample = (float)((3.0 - 4.0 * normalizedAngle) * level); // Falling: 1 to -1
+                            currentSample = (float)((1.0 - (normalizedAngle - pulseWidth) / (1.0 - pulseWidth)) * 2.0 - 1.0) * level; // Falling: 1 to -1
                     }
                     else if (oscillatorType == 4) // White noise
                     {
@@ -211,11 +219,10 @@ private:
                         
                         currentSample = (float)(pink * 0.11f * level); // Scale down to prevent clipping
                     }
-                    else // Pulse wave (oscillatorType == 6)
+                    else
                     {
-                        // Pulse wave: variable duty cycle
-                        auto normalizedAngle = std::fmod(currentAngle, 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
-                        currentSample = (float)((normalizedAngle < pulseWidth ? 1.0 : -1.0) * level);
+                        // Default to sine wave for unknown oscillator types
+                        currentSample = (float)(std::sin(currentAngle) * level);
                     }
                     
                     auto envelopeValue = envelope.getNextSample();
