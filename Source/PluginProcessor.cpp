@@ -171,6 +171,17 @@ void SummonerXSerum2AudioProcessor::updatePulseWidth()
     }
 }
 
+void SummonerXSerum2AudioProcessor::updateOctave()
+{
+    for (int i = 0; i < synthesiser.getNumVoices(); ++i)
+    {
+        if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
+        {
+            voice->setOctave(octave);
+        }
+    }
+}
+
 bool SummonerXSerum2AudioProcessor::hasEditor() const
 {
     return true;

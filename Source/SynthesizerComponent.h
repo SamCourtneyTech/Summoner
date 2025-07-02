@@ -147,6 +147,10 @@ private:
     juce::Slider pulseWidthSlider;
     juce::Label pulseWidthLabel;
     
+    // Octave control
+    juce::Slider octaveSlider;
+    juce::Label octaveLabel;
+    
     // Oscillator type buttons
     juce::TextButton sineWaveButton;
     juce::TextButton sawWaveButton;

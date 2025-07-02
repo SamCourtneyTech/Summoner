@@ -85,6 +85,12 @@ public:
         updatePulseWidth();
     }
     float getPulseWidth() const { return pulseWidth; }
+    
+    void setOctave(int oct) { 
+        octave = oct; 
+        updateOctave();
+    }
+    int getOctave() const { return octave; }
 
 private:
     std::map<std::string, int> parameterMap;
@@ -95,6 +101,7 @@ private:
     void updateEnvelopeParameters();
     void updateOscillatorType();
     void updatePulseWidth();
+    void updateOctave();
 
     SettingsComponent settingsComponent;
     std::vector<std::map<std::string, std::string>> responses;
@@ -109,6 +116,7 @@ private:
     float synthSustain = 0.7f;
     float synthRelease = 0.3f;
     float pulseWidth = 0.5f;
+    int octave = 0; // -4 to +4 octaves
     int oscillatorType = 0; // 0 = sine, 1 = saw
     
     struct SineWaveSound : public juce::SynthesiserSound
@@ -133,6 +141,8 @@ private:
         void startNote(int midiNoteNumber, float velocity, juce::SynthesiserSound*, int) override
         {
             frequency = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
+            // Apply octave shift: each octave doubles/halves the frequency
+            frequency *= std::pow(2.0, octave);
             level = velocity * 0.15;
             angleDelta = frequency * 2.0 * juce::MathConstants<double>::pi / getSampleRate();
             currentAngle = 0.0;
@@ -259,11 +269,17 @@ private:
             pulseWidth = width;
         }
         
+        void setOctave(int oct)
+        {
+            octave = oct;
+        }
+        
     private:
         double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
-        int oscillatorType = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise, 5 = pink noise, 6 = pulse
+        int oscillatorType = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise, 5 = pink noise
         float pulseWidth = 0.5f;
+        int octave = 0; // -4 to +4 octaves
         juce::ADSR envelope;
         juce::Random random;
         

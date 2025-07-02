@@ -122,6 +122,23 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     addAndMakeVisible(pulseWidthSlider);
     addAndMakeVisible(pulseWidthLabel);
     
+    // Octave slider
+    octaveSlider.setSliderStyle(juce::Slider::LinearVertical);
+    octaveSlider.setRange(-4, 4, 1);
+    octaveSlider.setValue(0);
+    octaveLabel.setText("Octave", juce::dontSendNotification);
+    octaveLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
+    octaveLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    octaveLabel.setJustificationType(juce::Justification::centred);
+    octaveSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
+    octaveSlider.setColour(juce::Slider::textBoxTextColourId, juce::Colours::white);
+    octaveSlider.setColour(juce::Slider::textBoxBackgroundColourId, juce::Colours::transparentBlack);
+    octaveSlider.setColour(juce::Slider::trackColourId, juce::Colours::grey);
+    octaveSlider.setColour(juce::Slider::thumbColourId, juce::Colours::white);
+    octaveSlider.addListener(this);
+    addAndMakeVisible(octaveSlider);
+    addAndMakeVisible(octaveLabel);
+    
     // Oscillator type buttons - using simple text for now
     sineWaveButton.setButtonText("SIN");
     sineWaveButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff333333));
@@ -294,12 +311,21 @@ void SynthesizerComponent::resized()
     releaseLabel.setBounds(releaseArea.removeFromTop(20));
     releaseSlider.setBounds(releaseArea);
     
-    // Pulse width control at bottom left
+    // Bottom controls - Pulse width and Octave
     bounds.removeFromTop(20); // spacing
-    auto pulseWidthRow = bounds.removeFromTop(60);
-    auto pulseWidthArea = pulseWidthRow.removeFromLeft(200);
+    auto bottomControlsRow = bounds.removeFromTop(80);
+    
+    // Pulse width control (left)
+    auto pulseWidthArea = bottomControlsRow.removeFromLeft(200);
     pulseWidthLabel.setBounds(pulseWidthArea.removeFromTop(20));
     pulseWidthSlider.setBounds(pulseWidthArea);
+    
+    bottomControlsRow.removeFromLeft(20); // spacing
+    
+    // Octave control (vertical slider, next to pulse width)
+    auto octaveArea = bottomControlsRow.removeFromLeft(60);
+    octaveLabel.setBounds(octaveArea.removeFromTop(20));
+    octaveSlider.setBounds(octaveArea);
 }
 
 void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
@@ -327,6 +353,10 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     else if (slider == &pulseWidthSlider)
     {
         audioProcessor.setPulseWidth(static_cast<float>(pulseWidthSlider.getValue()));
+    }
+    else if (slider == &octaveSlider)
+    {
+        audioProcessor.setOctave(static_cast<int>(octaveSlider.getValue()));
     }
 }
 
