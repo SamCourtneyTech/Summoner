@@ -216,28 +216,32 @@ void SynthesizerComponent::resized()
     
     bounds.removeFromTop(20); // spacing between rows
     
-    // Bottom row - ADSR knobs
+    // Bottom row - ADSR knobs (left third of screen)
     auto adsrRow = bounds.removeFromTop(controlHeight);
+    auto adsrSection = adsrRow.removeFromLeft(bounds.getWidth() / 3);
     
-    auto attackArea = adsrRow.removeFromLeft(knobWidth);
+    // Calculate smaller knob width for 4 knobs in 1/3 of screen width
+    auto adsrKnobWidth = (adsrSection.getWidth() - 45) / 4; // 45 = 3 spacings of 15px each
+    
+    auto attackArea = adsrSection.removeFromLeft(adsrKnobWidth);
     attackLabel.setBounds(attackArea.removeFromTop(20));
     attackSlider.setBounds(attackArea);
     
-    adsrRow.removeFromLeft(15); // spacing
+    adsrSection.removeFromLeft(15); // spacing
     
-    auto decayArea = adsrRow.removeFromLeft(knobWidth);
+    auto decayArea = adsrSection.removeFromLeft(adsrKnobWidth);
     decayLabel.setBounds(decayArea.removeFromTop(20));
     decaySlider.setBounds(decayArea);
     
-    adsrRow.removeFromLeft(15); // spacing
+    adsrSection.removeFromLeft(15); // spacing
     
-    auto sustainArea = adsrRow.removeFromLeft(knobWidth);
+    auto sustainArea = adsrSection.removeFromLeft(adsrKnobWidth);
     sustainLabel.setBounds(sustainArea.removeFromTop(20));
     sustainSlider.setBounds(sustainArea);
     
-    adsrRow.removeFromLeft(15); // spacing
+    adsrSection.removeFromLeft(15); // spacing
     
-    auto releaseArea = adsrRow;
+    auto releaseArea = adsrSection;
     releaseLabel.setBounds(releaseArea.removeFromTop(20));
     releaseSlider.setBounds(releaseArea);
 }
