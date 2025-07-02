@@ -47,11 +47,28 @@ private:
         int maxLifeTime;
     };
     
+    // Matrix raincode effect
+    struct MatrixColumn
+    {
+        int x;
+        std::vector<char> characters;
+        std::vector<float> alphas;
+        int length;
+        float speed;
+        int headPosition;
+        bool active;
+        int spawnDelay;
+    };
+    
     std::vector<FloatingBox> floatingBoxes;
+    std::vector<MatrixColumn> matrixColumns;
     std::array<int, 4> quadrantCounts = {0, 0, 0, 0}; // Track boxes per quadrant
     void updateFloatingBoxes();
     void createRandomBox();
     int getQuadrant(float x, float y);
+    void updateMatrixEffect();
+    void initializeMatrixColumns();
+    char getRandomMatrixCharacter();
     juce::Random random;
     juce::Label pathLabel;
     juce::Label pathDisplay;
@@ -68,6 +85,12 @@ private:
     juce::Label creditsLabel;
     juce::TextButton purchaseCreditsButton;
     int currentCredits = 0;
+    
+    // Skin selection buttons
+    juce::Label skinLabel;
+    juce::TextButton defaultSkinButton;
+    juce::TextButton hackerSkinButton;
+    bool isHackerSkin = false;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SettingsComponent)
 };
