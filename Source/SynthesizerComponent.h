@@ -59,7 +59,17 @@ public:
     {
         auto font = juce::Font("Press Start 2P", 10.0f, juce::Font::plain);
         g.setFont(font);
-        g.setColour(button.findColour(juce::TextButton::textColourOffId));
+        
+        // Use blue text when button is toggled (selected), otherwise use the default color
+        if (button.getToggleState())
+        {
+            g.setColour(juce::Colours::blue);
+        }
+        else
+        {
+            g.setColour(button.findColour(juce::TextButton::textColourOffId));
+        }
+        
         g.drawFittedText(button.getButtonText(), button.getLocalBounds(),
             juce::Justification::centred, 1);
     }
