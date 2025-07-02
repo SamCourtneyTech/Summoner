@@ -146,6 +146,16 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     triangleWaveButton.setClickingTogglesState(true);
     triangleWaveButton.addListener(this);
     addAndMakeVisible(triangleWaveButton);
+    
+    noiseWaveButton.setButtonText("NOISE");
+    noiseWaveButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff333333));
+    noiseWaveButton.setColour(juce::TextButton::buttonOnColourId, juce::Colours::white);
+    noiseWaveButton.setColour(juce::TextButton::textColourOnId, juce::Colours::black);
+    noiseWaveButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+    noiseWaveButton.setLookAndFeel(&customWaveButtonLookAndFeel);
+    noiseWaveButton.setClickingTogglesState(true);
+    noiseWaveButton.addListener(this);
+    addAndMakeVisible(noiseWaveButton);
 }
 
 SynthesizerComponent::~SynthesizerComponent()
@@ -155,6 +165,11 @@ SynthesizerComponent::~SynthesizerComponent()
     decaySlider.setLookAndFeel(nullptr);
     sustainSlider.setLookAndFeel(nullptr);
     releaseSlider.setLookAndFeel(nullptr);
+    sineWaveButton.setLookAndFeel(nullptr);
+    sawWaveButton.setLookAndFeel(nullptr);
+    squareWaveButton.setLookAndFeel(nullptr);
+    triangleWaveButton.setLookAndFeel(nullptr);
+    noiseWaveButton.setLookAndFeel(nullptr);
 }
 
 void SynthesizerComponent::paint(juce::Graphics& g)
@@ -209,13 +224,14 @@ void SynthesizerComponent::resized()
     auto buttonWidth = 40;
     auto buttonSpacing = 15;
     
-    // Left align the 4 buttons
+    // Left align the 5 buttons
     auto startX = 0;
     
     sineWaveButton.setBounds(startX, buttonRow.getY(), buttonWidth, buttonHeight);
     sawWaveButton.setBounds(startX + (buttonWidth + buttonSpacing), buttonRow.getY(), buttonWidth, buttonHeight);
     squareWaveButton.setBounds(startX + (buttonWidth + buttonSpacing) * 2, buttonRow.getY(), buttonWidth, buttonHeight);
     triangleWaveButton.setBounds(startX + (buttonWidth + buttonSpacing) * 3, buttonRow.getY(), buttonWidth, buttonHeight);
+    noiseWaveButton.setBounds(startX + (buttonWidth + buttonSpacing) * 4, buttonRow.getY(), buttonWidth, buttonHeight);
     
     bounds.removeFromTop(20); // spacing between rows
     
@@ -282,6 +298,7 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             sawWaveButton.setToggleState(false, juce::dontSendNotification);
             squareWaveButton.setToggleState(false, juce::dontSendNotification);
             triangleWaveButton.setToggleState(false, juce::dontSendNotification);
+            noiseWaveButton.setToggleState(false, juce::dontSendNotification);
             audioProcessor.setOscillatorType(0); // 0 = sine wave
         }
         else
@@ -296,6 +313,7 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             sineWaveButton.setToggleState(false, juce::dontSendNotification);
             squareWaveButton.setToggleState(false, juce::dontSendNotification);
             triangleWaveButton.setToggleState(false, juce::dontSendNotification);
+            noiseWaveButton.setToggleState(false, juce::dontSendNotification);
             audioProcessor.setOscillatorType(1); // 1 = saw wave
         }
         else
@@ -310,6 +328,7 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             sineWaveButton.setToggleState(false, juce::dontSendNotification);
             sawWaveButton.setToggleState(false, juce::dontSendNotification);
             triangleWaveButton.setToggleState(false, juce::dontSendNotification);
+            noiseWaveButton.setToggleState(false, juce::dontSendNotification);
             audioProcessor.setOscillatorType(2); // 2 = square wave
         }
         else
@@ -324,11 +343,27 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             sineWaveButton.setToggleState(false, juce::dontSendNotification);
             sawWaveButton.setToggleState(false, juce::dontSendNotification);
             squareWaveButton.setToggleState(false, juce::dontSendNotification);
+            noiseWaveButton.setToggleState(false, juce::dontSendNotification);
             audioProcessor.setOscillatorType(3); // 3 = triangle wave
         }
         else
         {
             triangleWaveButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
+        }
+    }
+    else if (button == &noiseWaveButton)
+    {
+        if (noiseWaveButton.getToggleState())
+        {
+            sineWaveButton.setToggleState(false, juce::dontSendNotification);
+            sawWaveButton.setToggleState(false, juce::dontSendNotification);
+            squareWaveButton.setToggleState(false, juce::dontSendNotification);
+            triangleWaveButton.setToggleState(false, juce::dontSendNotification);
+            audioProcessor.setOscillatorType(4); // 4 = white noise
+        }
+        else
+        {
+            noiseWaveButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
         }
     }
 }

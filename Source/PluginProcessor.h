@@ -172,7 +172,7 @@ private:
                         auto normalizedAngle = std::fmod(currentAngle, 2.0 * juce::MathConstants<double>::pi);
                         currentSample = (float)((normalizedAngle < juce::MathConstants<double>::pi ? 1.0 : -1.0) * level);
                     }
-                    else // Triangle wave
+                    else if (oscillatorType == 3) // Triangle wave
                     {
                         // Triangle wave: ramps up from -1 to 1, then back down to -1
                         auto normalizedAngle = std::fmod(currentAngle, 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
@@ -180,6 +180,11 @@ private:
                             currentSample = (float)((4.0 * normalizedAngle - 1.0) * level); // Rising: -1 to 1
                         else
                             currentSample = (float)((3.0 - 4.0 * normalizedAngle) * level); // Falling: 1 to -1
+                    }
+                    else // White noise (oscillatorType == 4)
+                    {
+                        // White noise: random values between -1 and 1
+                        currentSample = (float)((random.nextFloat() * 2.0f - 1.0f) * level);
                     }
                     
                     auto envelopeValue = envelope.getNextSample();
@@ -214,8 +219,9 @@ private:
     private:
         double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
-        int oscillatorType = 0; // 0 = sine, 1 = saw
+        int oscillatorType = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise
         juce::ADSR envelope;
+        juce::Random random;
     };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SummonerXSerum2AudioProcessor)
