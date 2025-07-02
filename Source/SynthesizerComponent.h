@@ -51,6 +51,32 @@ public:
     }
 };
 
+class WaveButtonLookAndFeel : public juce::LookAndFeel_V4
+{
+public:
+    void drawButtonText(juce::Graphics& g, juce::TextButton& button,
+        bool /*isMouseOverButton*/, bool /*isButtonDown*/) override
+    {
+        auto font = juce::Font("Press Start 2P", 10.0f, juce::Font::plain);
+        g.setFont(font);
+        g.setColour(button.findColour(juce::TextButton::textColourOffId));
+        g.drawFittedText(button.getButtonText(), button.getLocalBounds(),
+            juce::Justification::centred, 1);
+    }
+    
+    void drawButtonBackground(juce::Graphics& g, juce::Button& button,
+        const juce::Colour& backgroundColour,
+        bool isMouseOverButton, bool isButtonDown) override
+    {
+        auto bounds = button.getLocalBounds().toFloat();
+        juce::Colour fillColour = isButtonDown ? juce::Colours::lightgrey
+            : isMouseOverButton ? juce::Colours::grey
+            : backgroundColour;
+        g.setColour(fillColour);
+        g.fillRect(bounds);
+    }
+};
+
 class SynthesizerComponent : public juce::Component, private juce::Slider::Listener, private juce::Button::Listener
 {
 public:
@@ -71,6 +97,9 @@ private:
     
     // Custom look and feel for knobs
     CustomKnobLookAndFeel customKnobLookAndFeel;
+    
+    // Custom look and feel for wave buttons
+    WaveButtonLookAndFeel customWaveButtonLookAndFeel;
     
     // Placeholder UI elements for the synthesizer
     juce::Label titleLabel;

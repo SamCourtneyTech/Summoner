@@ -111,6 +111,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     sineWaveButton.setColour(juce::TextButton::buttonOnColourId, juce::Colours::white);
     sineWaveButton.setColour(juce::TextButton::textColourOnId, juce::Colours::black);
     sineWaveButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+    sineWaveButton.setLookAndFeel(&customWaveButtonLookAndFeel);
     sineWaveButton.setClickingTogglesState(true);
     sineWaveButton.setToggleState(true, juce::dontSendNotification); // Start with sine selected
     sineWaveButton.addListener(this);
@@ -121,6 +122,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     sawWaveButton.setColour(juce::TextButton::buttonOnColourId, juce::Colours::white);
     sawWaveButton.setColour(juce::TextButton::textColourOnId, juce::Colours::black);
     sawWaveButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+    sawWaveButton.setLookAndFeel(&customWaveButtonLookAndFeel);
     sawWaveButton.setClickingTogglesState(true);
     sawWaveButton.addListener(this);
     addAndMakeVisible(sawWaveButton);
@@ -130,6 +132,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     squareWaveButton.setColour(juce::TextButton::buttonOnColourId, juce::Colours::white);
     squareWaveButton.setColour(juce::TextButton::textColourOnId, juce::Colours::black);
     squareWaveButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+    squareWaveButton.setLookAndFeel(&customWaveButtonLookAndFeel);
     squareWaveButton.setClickingTogglesState(true);
     squareWaveButton.addListener(this);
     addAndMakeVisible(squareWaveButton);
@@ -139,6 +142,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     triangleWaveButton.setColour(juce::TextButton::buttonOnColourId, juce::Colours::white);
     triangleWaveButton.setColour(juce::TextButton::textColourOnId, juce::Colours::black);
     triangleWaveButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+    triangleWaveButton.setLookAndFeel(&customWaveButtonLookAndFeel);
     triangleWaveButton.setClickingTogglesState(true);
     triangleWaveButton.addListener(this);
     addAndMakeVisible(triangleWaveButton);
