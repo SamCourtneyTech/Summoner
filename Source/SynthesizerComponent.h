@@ -143,6 +143,10 @@ private:
     juce::Slider releaseSlider;
     juce::Label releaseLabel;
     
+    // Pulse width control
+    juce::Slider pulseWidthSlider;
+    juce::Label pulseWidthLabel;
+    
     // Oscillator type buttons
     juce::TextButton sineWaveButton;
     juce::TextButton sawWaveButton;
@@ -150,6 +154,7 @@ private:
     juce::TextButton triangleWaveButton;
     juce::TextButton noiseWaveButton;
     juce::TextButton pinkNoiseButton;
+    juce::TextButton pulseWaveButton;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynthesizerComponent)
 };

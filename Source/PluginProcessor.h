@@ -79,6 +79,12 @@ public:
         updateOscillatorType();
     }
     int getOscillatorType() const { return oscillatorType; }
+    
+    void setPulseWidth(float width) { 
+        pulseWidth = width; 
+        updatePulseWidth();
+    }
+    float getPulseWidth() const { return pulseWidth; }
 
 private:
     std::map<std::string, int> parameterMap;
@@ -88,6 +94,7 @@ private:
     
     void updateEnvelopeParameters();
     void updateOscillatorType();
+    void updatePulseWidth();
 
     SettingsComponent settingsComponent;
     std::vector<std::map<std::string, std::string>> responses;
@@ -101,6 +108,7 @@ private:
     float synthDecay = 0.2f;
     float synthSustain = 0.7f;
     float synthRelease = 0.3f;
+    float pulseWidth = 0.5f;
     int oscillatorType = 0; // 0 = sine, 1 = saw
     
     struct SineWaveSound : public juce::SynthesiserSound
@@ -186,7 +194,7 @@ private:
                         // White noise: random values between -1 and 1
                         currentSample = (float)((random.nextFloat() * 2.0f - 1.0f) * level);
                     }
-                    else // Pink noise (oscillatorType == 5)
+                    else if (oscillatorType == 5) // Pink noise
                     {
                         // Pink noise using Paul Kellett's method
                         float white = random.nextFloat() * 2.0f - 1.0f;
@@ -202,6 +210,12 @@ private:
                         pinkFilter[6] = white * 0.115926f;
                         
                         currentSample = (float)(pink * 0.11f * level); // Scale down to prevent clipping
+                    }
+                    else // Pulse wave (oscillatorType == 6)
+                    {
+                        // Pulse wave: variable duty cycle
+                        auto normalizedAngle = std::fmod(currentAngle, 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
+                        currentSample = (float)((normalizedAngle < pulseWidth ? 1.0 : -1.0) * level);
                     }
                     
                     auto envelopeValue = envelope.getNextSample();
@@ -233,10 +247,16 @@ private:
             oscillatorType = type;
         }
         
+        void setPulseWidth(float width)
+        {
+            pulseWidth = width;
+        }
+        
     private:
         double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
-        int oscillatorType = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise, 5 = pink noise
+        int oscillatorType = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise, 5 = pink noise, 6 = pulse
+        float pulseWidth = 0.5f;
         juce::ADSR envelope;
         juce::Random random;
         

@@ -160,6 +160,17 @@ void SummonerXSerum2AudioProcessor::updateOscillatorType()
     }
 }
 
+void SummonerXSerum2AudioProcessor::updatePulseWidth()
+{
+    for (int i = 0; i < synthesiser.getNumVoices(); ++i)
+    {
+        if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
+        {
+            voice->setPulseWidth(pulseWidth);
+        }
+    }
+}
+
 bool SummonerXSerum2AudioProcessor::hasEditor() const
 {
     return true;
