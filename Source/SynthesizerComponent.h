@@ -79,9 +79,25 @@ public:
         bool isMouseOverButton, bool isButtonDown) override
     {
         auto bounds = button.getLocalBounds().toFloat();
-        juce::Colour fillColour = isButtonDown ? juce::Colours::lightgrey
-            : isMouseOverButton ? juce::Colours::grey
-            : backgroundColour;
+        
+        // Check if button is toggled (selected)
+        auto* textButton = dynamic_cast<juce::TextButton*>(&button);
+        bool isToggled = textButton && textButton->getToggleState();
+        
+        juce::Colour fillColour;
+        if (isToggled)
+        {
+            // When selected, don't change background on hover/click
+            fillColour = backgroundColour;
+        }
+        else
+        {
+            // When not selected, apply hover/click effects
+            fillColour = isButtonDown ? juce::Colours::lightgrey
+                : isMouseOverButton ? juce::Colours::grey
+                : backgroundColour;
+        }
+        
         g.setColour(fillColour);
         g.fillRect(bounds);
     }
