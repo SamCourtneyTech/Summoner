@@ -147,7 +147,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     triangleWaveButton.addListener(this);
     addAndMakeVisible(triangleWaveButton);
     
-    noiseWaveButton.setButtonText("NOISE");
+    noiseWaveButton.setButtonText("WHT");
     noiseWaveButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff333333));
     noiseWaveButton.setColour(juce::TextButton::buttonOnColourId, juce::Colours::white);
     noiseWaveButton.setColour(juce::TextButton::textColourOnId, juce::Colours::black);
@@ -157,7 +157,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     noiseWaveButton.addListener(this);
     addAndMakeVisible(noiseWaveButton);
     
-    pinkNoiseButton.setButtonText("PINK");
+    pinkNoiseButton.setButtonText("PNK");
     pinkNoiseButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff333333));
     pinkNoiseButton.setColour(juce::TextButton::buttonOnColourId, juce::Colours::white);
     pinkNoiseButton.setColour(juce::TextButton::textColourOnId, juce::Colours::black);
