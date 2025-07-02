@@ -199,15 +199,14 @@ void SynthesizerComponent::resized()
     
     bounds.removeFromTop(20); // spacing between rows
     
-    // Oscillator type buttons
+    // Oscillator type buttons (left aligned)
     auto buttonHeight = 40;
     auto buttonRow = bounds.removeFromTop(buttonHeight);
     auto buttonWidth = 40;
     auto buttonSpacing = 15;
     
-    // Center the 4 buttons
-    auto totalButtonWidth = buttonWidth * 4 + buttonSpacing * 3; // 4 buttons + 3 spacings
-    auto startX = (buttonRow.getWidth() - totalButtonWidth) / 2;
+    // Left align the 4 buttons
+    auto startX = 0;
     
     sineWaveButton.setBounds(startX, buttonRow.getY(), buttonWidth, buttonHeight);
     sawWaveButton.setBounds(startX + (buttonWidth + buttonSpacing), buttonRow.getY(), buttonWidth, buttonHeight);
