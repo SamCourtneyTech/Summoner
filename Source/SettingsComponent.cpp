@@ -122,6 +122,8 @@ SettingsComponent::SettingsComponent(SummonerXSerum2AudioProcessor& processor)
         defaultSkinButton.setToggleState(true, juce::dontSendNotification);
         hackerSkinButton.setToggleState(false, juce::dontSendNotification);
         isHackerSkin = false;
+        if (onSkinChanged)
+            onSkinChanged(false);
         repaint();
     };
     addAndMakeVisible(defaultSkinButton);
@@ -137,6 +139,8 @@ SettingsComponent::SettingsComponent(SummonerXSerum2AudioProcessor& processor)
         hackerSkinButton.setToggleState(true, juce::dontSendNotification);
         defaultSkinButton.setToggleState(false, juce::dontSendNotification);
         isHackerSkin = true;
+        if (onSkinChanged)
+            onSkinChanged(true);
         repaint();
     };
     addAndMakeVisible(hackerSkinButton);

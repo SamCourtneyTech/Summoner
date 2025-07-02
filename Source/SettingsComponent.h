@@ -27,6 +27,7 @@ public:
 
     std::function<void()> onLogout;
     std::function<void()> onLogin;
+    std::function<void(bool)> onSkinChanged;
     
     void updateLoginState(bool isLoggedIn);
     void setCredits(int credits);

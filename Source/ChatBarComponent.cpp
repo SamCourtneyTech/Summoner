@@ -98,6 +98,10 @@ ChatBarComponent::ChatBarComponent(SummonerXSerum2AudioProcessor& p) : processor
 
     // Initialize mystical floating boxes effect
     floatingBoxes.reserve(40); // Reserve space for up to 40 boxes
+    
+    // Initialize matrix effect
+    initializeMatrixColumns();
+    
     startTimer(50); // 50ms timer for smooth animation (20 FPS)
 }
 
@@ -111,13 +115,47 @@ void ChatBarComponent::paint(juce::Graphics& g)
 {
     g.fillAll(juce::Colours::black);
     
-    // Draw mystical floating boxes
-    for (const auto& box : floatingBoxes)
+    if (isHackerSkin)
     {
-        if (box.alpha > 0.0f)
+        // Draw Matrix raincode effect
+        g.setFont(juce::Font("Courier New", 12.0f, juce::Font::plain));
+        
+        for (const auto& column : matrixColumns)
         {
-            g.setColour(box.color.withAlpha(box.alpha));
-            g.fillRect(box.x, box.y, box.size, box.size);
+            if (column.active)
+            {
+                for (int i = 0; i < column.characters.size(); ++i)
+                {
+                    if (column.alphas[i] > 0.0f)
+                    {
+                        float brightness = column.alphas[i];
+                        juce::Colour color = juce::Colour::fromRGB(
+                            (juce::uint8)(brightness * 0),     // No red
+                            (juce::uint8)(brightness * 255),   // Full green scaled by alpha
+                            (juce::uint8)(brightness * 0)      // No blue
+                        );
+                        
+                        g.setColour(color);
+                        g.drawSingleLineText(
+                            juce::String::charToString(column.characters[i]),
+                            column.x,
+                            i * 15 + 15
+                        );
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        // Draw mystical floating boxes
+        for (const auto& box : floatingBoxes)
+        {
+            if (box.alpha > 0.0f)
+            {
+                g.setColour(box.color.withAlpha(box.alpha));
+                g.fillRect(box.x, box.y, box.size, box.size);
+            }
         }
     }
     
@@ -719,12 +757,19 @@ void ChatBarComponent::OutOfCreditsModalWindow::resized()
 
 void ChatBarComponent::timerCallback()
 {
-    updateFloatingBoxes();
-    
-    // Randomly create new boxes
-    if (random.nextFloat() < 0.12f && floatingBoxes.size() < 35) // 12% chance per frame, max 35 boxes
+    if (isHackerSkin)
     {
-        createRandomBox();
+        updateMatrixEffect();
+    }
+    else
+    {
+        updateFloatingBoxes();
+        
+        // Randomly create new boxes
+        if (random.nextFloat() < 0.12f && floatingBoxes.size() < 35) // 12% chance per frame, max 35 boxes
+        {
+            createRandomBox();
+        }
     }
     
     repaint();
@@ -868,4 +913,126 @@ int ChatBarComponent::getQuadrant(float x, float y)
         return 2; // Bottom-left
     else
         return 3; // Bottom-right
+}
+
+void ChatBarComponent::setHackerSkin(bool enabled)
+{
+    isHackerSkin = enabled;
+    repaint();
+}
+
+void ChatBarComponent::initializeMatrixColumns()
+{
+    int numColumns = 60; // Number of columns across the screen
+    matrixColumns.clear();
+    matrixColumns.reserve(numColumns);
+    
+    for (int i = 0; i < numColumns; ++i)
+    {
+        MatrixColumn column;
+        column.x = i * 12; // 12 pixels apart
+        column.length = random.nextInt(15) + 10; // 10-25 characters long
+        column.speed = random.nextFloat() * 2.0f + 1.0f; // Speed between 1-3
+        column.headPosition = -column.length; // Start off screen
+        column.active = false;
+        column.spawnDelay = random.nextInt(200); // Random spawn delay
+        
+        // Initialize character and alpha vectors
+        column.characters.resize(50); // Max height in characters
+        column.alphas.resize(50);
+        
+        // Fill with random characters
+        for (int j = 0; j < column.characters.size(); ++j)
+        {
+            column.characters[j] = getRandomMatrixCharacter();
+            column.alphas[j] = 0.0f;
+        }
+        
+        matrixColumns.push_back(column);
+    }
+}
+
+char ChatBarComponent::getRandomMatrixCharacter()
+{
+    // Mix of numbers, letters, and some special characters for Matrix effect
+    static const char chars[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()";
+    return chars[random.nextInt(sizeof(chars) - 1)];
+}
+
+void ChatBarComponent::updateMatrixEffect()
+{
+    int maxHeight = getHeight() / 15; // Screen height in character rows
+    
+    for (auto& column : matrixColumns)
+    {
+        // Handle spawn delay
+        if (!column.active && column.spawnDelay > 0)
+        {
+            column.spawnDelay--;
+            continue;
+        }
+        
+        if (!column.active)
+        {
+            column.active = true;
+            column.headPosition = 0;
+        }
+        
+        // Move the column down
+        column.headPosition += column.speed;
+        
+        // Update alphas for trailing effect
+        for (int i = 0; i < column.alphas.size() && i < maxHeight; ++i)
+        {
+            // Distance from head
+            int distanceFromHead = i - (int)column.headPosition;
+            
+            if (distanceFromHead >= 0 && distanceFromHead < column.length)
+            {
+                // Character is part of the active trail
+                if (distanceFromHead == 0)
+                {
+                    // Head character - brightest
+                    column.alphas[i] = 1.0f;
+                }
+                else
+                {
+                    // Trailing characters - fade based on distance from head
+                    float fadeRatio = 1.0f - (float)distanceFromHead / (float)column.length;
+                    column.alphas[i] = fadeRatio * 0.8f; // Max 80% brightness for trail
+                }
+                
+                // Occasionally change characters for dynamic effect
+                if (random.nextFloat() < 0.05f) // 5% chance per frame
+                {
+                    column.characters[i] = getRandomMatrixCharacter();
+                }
+            }
+            else
+            {
+                // Fade out characters that are no longer part of the trail
+                column.alphas[i] *= 0.95f; // Gradual fade
+                if (column.alphas[i] < 0.01f)
+                {
+                    column.alphas[i] = 0.0f;
+                }
+            }
+        }
+        
+        // Reset column when it's completely off screen
+        if (column.headPosition > maxHeight + column.length)
+        {
+            column.active = false;
+            column.headPosition = -column.length;
+            column.spawnDelay = random.nextInt(300) + 50; // Random delay before restart
+            column.length = random.nextInt(15) + 10; // New random length
+            column.speed = random.nextFloat() * 2.0f + 1.0f; // New random speed
+            
+            // Clear all alphas
+            for (auto& alpha : column.alphas)
+            {
+                alpha = 0.0f;
+            }
+        }
+    }
 }

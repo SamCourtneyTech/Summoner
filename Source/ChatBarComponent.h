@@ -26,6 +26,9 @@ public:
     std::function<void(bool)> onLoadingStateChanged;
     std::function<void()> onRefreshTokenRequested;
     std::function<void(int)> onCreditsUpdated;
+    
+    // Skin management
+    void setHackerSkin(bool enabled);
 
 private:
     // Mystical floating boxes effect
@@ -41,11 +44,29 @@ private:
         int maxLifeTime;
     };
     
+    // Matrix raincode effect
+    struct MatrixColumn
+    {
+        int x;
+        std::vector<char> characters;
+        std::vector<float> alphas;
+        int length;
+        float speed;
+        int headPosition;
+        bool active;
+        int spawnDelay;
+    };
+    
     std::vector<FloatingBox> floatingBoxes;
+    std::vector<MatrixColumn> matrixColumns;
     std::array<int, 4> quadrantCounts = {0, 0, 0, 0}; // Track boxes per quadrant
     void updateFloatingBoxes();
     void createRandomBox();
     int getQuadrant(float x, float y);
+    void updateMatrixEffect();
+    void initializeMatrixColumns();
+    char getRandomMatrixCharacter();
+    bool isHackerSkin = false;
     juce::Random random;
     // Custom Credits Modal
     class CreditsModalWindow : public juce::Component

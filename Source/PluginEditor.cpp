@@ -133,6 +133,10 @@ SummonerXSerum2AudioProcessorEditor::SummonerXSerum2AudioProcessorEditor(Summone
         // TODO: Apply path to internal synthesizer instead of Serum
         };
 
+    settings.onSkinChanged = [this](bool isHackerSkin) {
+        chatBar.setHackerSkin(isHackerSkin);
+        };
+
     audioProcessor.onPresetApplied = [this]() {
         tabs.setCurrentTabIndex(1);
         };
