@@ -25,10 +25,11 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     volumeLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(volumeLabel);
     
-    volumeSlider.setSliderStyle(juce::Slider::LinearHorizontal);
+    volumeSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     volumeSlider.setRange(0.0, 1.0, 0.01);
     volumeSlider.setValue(0.5);
     volumeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    volumeSlider.setLookAndFeel(&customKnobLookAndFeel);
     volumeSlider.addListener(this);
     addAndMakeVisible(volumeSlider);
     
@@ -105,7 +106,8 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     releaseSlider.addListener(this);
     addAndMakeVisible(releaseSlider);
     
-    // Pulse width slider
+    // Pulse width slider (commented out for now)
+    /*
     pulseWidthSlider.setSliderStyle(juce::Slider::LinearHorizontal);
     pulseWidthSlider.setRange(0.1, 0.9, 0.01);
     pulseWidthSlider.setValue(0.5);
@@ -121,6 +123,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     pulseWidthSlider.addListener(this);
     addAndMakeVisible(pulseWidthSlider);
     addAndMakeVisible(pulseWidthLabel);
+    */
     
     // Octave control
     octaveLabel.setText("Octave", juce::dontSendNotification);
@@ -279,7 +282,7 @@ SynthesizerComponent::~SynthesizerComponent()
     noiseWaveButton.setLookAndFeel(nullptr);
     pinkNoiseButton.setLookAndFeel(nullptr);
     randomPhaseButton.setLookAndFeel(nullptr);
-    pulseWidthSlider.setLookAndFeel(nullptr);
+    // pulseWidthSlider.setLookAndFeel(nullptr); // commented out
 }
 
 void SynthesizerComponent::paint(juce::Graphics& g)
@@ -383,12 +386,14 @@ void SynthesizerComponent::resized()
     bounds.removeFromTop(20); // spacing
     auto bottomControlsRow = bounds.removeFromTop(80);
     
-    // Pulse width control (left)
+    // Pulse width control (commented out for now)
+    /*
     auto pulseWidthArea = bottomControlsRow.removeFromLeft(200);
     pulseWidthLabel.setBounds(pulseWidthArea.removeFromTop(20));
     pulseWidthSlider.setBounds(pulseWidthArea);
     
     bottomControlsRow.removeFromLeft(20); // spacing
+    */
     
     // Octave control (draggable label)
     auto octaveArea = bottomControlsRow.removeFromLeft(60);
@@ -439,10 +444,12 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     {
         audioProcessor.setSynthRelease(static_cast<float>(releaseSlider.getValue()));
     }
+    /*
     else if (slider == &pulseWidthSlider)
     {
         audioProcessor.setPulseWidth(static_cast<float>(pulseWidthSlider.getValue()));
     }
+    */
 }
 
 void SynthesizerComponent::buttonClicked(juce::Button* button)
