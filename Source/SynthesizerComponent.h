@@ -117,6 +117,11 @@ public:
     
     // Button listener
     void buttonClicked(juce::Button* button) override;
+    
+    // Mouse events for octave control
+    void mouseDown(const juce::MouseEvent& event) override;
+    void mouseDrag(const juce::MouseEvent& event) override;
+    void mouseUp(const juce::MouseEvent& event) override;
 
 private:
     SummonerXSerum2AudioProcessor& audioProcessor;
@@ -148,8 +153,8 @@ private:
     juce::Label pulseWidthLabel;
     
     // Octave control
-    juce::Slider octaveSlider;
     juce::Label octaveLabel;
+    juce::Label octaveValueLabel;
     
     // Oscillator type buttons
     juce::TextButton sineWaveButton;
@@ -158,6 +163,12 @@ private:
     juce::TextButton triangleWaveButton;
     juce::TextButton noiseWaveButton;
     juce::TextButton pinkNoiseButton;
+    
+    // Octave control state
+    int octaveValue = 0;
+    bool isDraggingOctave = false;
+    int dragStartY = 0;
+    int dragStartOctave = 0;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynthesizerComponent)
 };

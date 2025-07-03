@@ -122,22 +122,22 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     addAndMakeVisible(pulseWidthSlider);
     addAndMakeVisible(pulseWidthLabel);
     
-    // Octave slider
-    octaveSlider.setSliderStyle(juce::Slider::LinearVertical);
-    octaveSlider.setRange(-4, 4, 1);
-    octaveSlider.setValue(0);
+    // Octave control
     octaveLabel.setText("Octave", juce::dontSendNotification);
     octaveLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     octaveLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     octaveLabel.setJustificationType(juce::Justification::centred);
-    octaveSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
-    octaveSlider.setColour(juce::Slider::textBoxTextColourId, juce::Colours::white);
-    octaveSlider.setColour(juce::Slider::textBoxBackgroundColourId, juce::Colours::transparentBlack);
-    octaveSlider.setColour(juce::Slider::trackColourId, juce::Colours::grey);
-    octaveSlider.setColour(juce::Slider::thumbColourId, juce::Colours::white);
-    octaveSlider.addListener(this);
-    addAndMakeVisible(octaveSlider);
     addAndMakeVisible(octaveLabel);
+    
+    octaveValueLabel.setText("0", juce::dontSendNotification);
+    octaveValueLabel.setFont(juce::Font("Press Start 2P", 12.0f, juce::Font::plain));
+    octaveValueLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    octaveValueLabel.setColour(juce::Label::backgroundColourId, juce::Colours::transparentBlack);
+    octaveValueLabel.setColour(juce::Label::outlineColourId, juce::Colours::white);
+    octaveValueLabel.setJustificationType(juce::Justification::centred);
+    octaveValueLabel.setInterceptsMouseClicks(true, false);
+    octaveValueLabel.addMouseListener(this, false);
+    addAndMakeVisible(octaveValueLabel);
     
     // Oscillator type buttons - using simple text for now
     sineWaveButton.setButtonText("SIN");
@@ -322,10 +322,10 @@ void SynthesizerComponent::resized()
     
     bottomControlsRow.removeFromLeft(20); // spacing
     
-    // Octave control (vertical slider, next to pulse width)
+    // Octave control (draggable label)
     auto octaveArea = bottomControlsRow.removeFromLeft(60);
     octaveLabel.setBounds(octaveArea.removeFromTop(20));
-    octaveSlider.setBounds(octaveArea);
+    octaveValueLabel.setBounds(octaveArea.removeFromTop(30));
 }
 
 void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
@@ -353,10 +353,6 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     else if (slider == &pulseWidthSlider)
     {
         audioProcessor.setPulseWidth(static_cast<float>(pulseWidthSlider.getValue()));
-    }
-    else if (slider == &octaveSlider)
-    {
-        audioProcessor.setOctave(static_cast<int>(octaveSlider.getValue()));
     }
 }
 
@@ -458,4 +454,38 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             pinkNoiseButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
         }
     }
+}
+
+void SynthesizerComponent::mouseDown(const juce::MouseEvent& event)
+{
+    if (event.eventComponent == &octaveValueLabel)
+    {
+        isDraggingOctave = true;
+        dragStartY = event.getScreenPosition().y;
+        dragStartOctave = octaveValue;
+    }
+}
+
+void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
+{
+    if (isDraggingOctave)
+    {
+        int deltaY = dragStartY - event.getScreenPosition().y; // Inverted: up = positive
+        int newOctave = dragStartOctave + (deltaY / 10); // 10 pixels per octave
+        
+        // Clamp to valid range
+        newOctave = juce::jlimit(-4, 4, newOctave);
+        
+        if (newOctave != octaveValue)
+        {
+            octaveValue = newOctave;
+            octaveValueLabel.setText(juce::String(octaveValue), juce::dontSendNotification);
+            audioProcessor.setOctave(octaveValue);
+        }
+    }
+}
+
+void SynthesizerComponent::mouseUp(const juce::MouseEvent& event)
+{
+    isDraggingOctave = false;
 }
