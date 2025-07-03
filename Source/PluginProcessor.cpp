@@ -182,6 +182,17 @@ void SummonerXSerum2AudioProcessor::updateOctave()
     }
 }
 
+void SummonerXSerum2AudioProcessor::updateSemitone()
+{
+    for (int i = 0; i < synthesiser.getNumVoices(); ++i)
+    {
+        if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
+        {
+            voice->setSemitone(semitone);
+        }
+    }
+}
+
 bool SummonerXSerum2AudioProcessor::hasEditor() const
 {
     return true;

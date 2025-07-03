@@ -156,6 +156,10 @@ private:
     juce::Label octaveLabel;
     juce::Label octaveValueLabel;
     
+    // Semitone control
+    juce::Label semitoneLabel;
+    juce::Label semitoneValueLabel;
+    
     // Oscillator type buttons
     juce::TextButton sineWaveButton;
     juce::TextButton sawWaveButton;
@@ -169,6 +173,11 @@ private:
     bool isDraggingOctave = false;
     int dragStartY = 0;
     int dragStartOctave = 0;
+    
+    // Semitone control state
+    int semitoneValue = 0;
+    bool isDraggingSemitone = false;
+    int dragStartSemitone = 0;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynthesizerComponent)
 };

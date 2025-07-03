@@ -139,6 +139,23 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     octaveValueLabel.addMouseListener(this, false);
     addAndMakeVisible(octaveValueLabel);
     
+    // Semitone control
+    semitoneLabel.setText("Semi", juce::dontSendNotification);
+    semitoneLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
+    semitoneLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    semitoneLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(semitoneLabel);
+    
+    semitoneValueLabel.setText("0", juce::dontSendNotification);
+    semitoneValueLabel.setFont(juce::Font("Press Start 2P", 12.0f, juce::Font::plain));
+    semitoneValueLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    semitoneValueLabel.setColour(juce::Label::backgroundColourId, juce::Colours::transparentBlack);
+    semitoneValueLabel.setColour(juce::Label::outlineColourId, juce::Colours::white);
+    semitoneValueLabel.setJustificationType(juce::Justification::centred);
+    semitoneValueLabel.setInterceptsMouseClicks(true, false);
+    semitoneValueLabel.addMouseListener(this, false);
+    addAndMakeVisible(semitoneValueLabel);
+    
     // Oscillator type buttons - using simple text for now
     sineWaveButton.setButtonText("SIN");
     sineWaveButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff333333));
@@ -326,6 +343,13 @@ void SynthesizerComponent::resized()
     auto octaveArea = bottomControlsRow.removeFromLeft(60);
     octaveLabel.setBounds(octaveArea.removeFromTop(20));
     octaveValueLabel.setBounds(octaveArea.removeFromTop(30));
+    
+    bottomControlsRow.removeFromLeft(10); // spacing
+    
+    // Semitone control (draggable label)
+    auto semitoneArea = bottomControlsRow.removeFromLeft(60);
+    semitoneLabel.setBounds(semitoneArea.removeFromTop(20));
+    semitoneValueLabel.setBounds(semitoneArea.removeFromTop(30));
 }
 
 void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
@@ -464,6 +488,12 @@ void SynthesizerComponent::mouseDown(const juce::MouseEvent& event)
         dragStartY = event.getScreenPosition().y;
         dragStartOctave = octaveValue;
     }
+    else if (event.eventComponent == &semitoneValueLabel)
+    {
+        isDraggingSemitone = true;
+        dragStartY = event.getScreenPosition().y;
+        dragStartSemitone = semitoneValue;
+    }
 }
 
 void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
@@ -483,9 +513,25 @@ void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
             audioProcessor.setOctave(octaveValue);
         }
     }
+    else if (isDraggingSemitone)
+    {
+        int deltaY = dragStartY - event.getScreenPosition().y; // Inverted: up = positive
+        int newSemitone = dragStartSemitone + (deltaY / 5); // 5 pixels per semitone
+        
+        // Clamp to valid range (-12 to +12 semitones)
+        newSemitone = juce::jlimit(-12, 12, newSemitone);
+        
+        if (newSemitone != semitoneValue)
+        {
+            semitoneValue = newSemitone;
+            semitoneValueLabel.setText(juce::String(semitoneValue), juce::dontSendNotification);
+            audioProcessor.setSemitone(semitoneValue);
+        }
+    }
 }
 
 void SynthesizerComponent::mouseUp(const juce::MouseEvent& event)
 {
     isDraggingOctave = false;
+    isDraggingSemitone = false;
 }

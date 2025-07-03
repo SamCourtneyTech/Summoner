@@ -91,6 +91,12 @@ public:
         updateOctave();
     }
     int getOctave() const { return octave; }
+    
+    void setSemitone(int semi) { 
+        semitone = semi; 
+        updateSemitone();
+    }
+    int getSemitone() const { return semitone; }
 
 private:
     std::map<std::string, int> parameterMap;
@@ -102,6 +108,7 @@ private:
     void updateOscillatorType();
     void updatePulseWidth();
     void updateOctave();
+    void updateSemitone();
 
     SettingsComponent settingsComponent;
     std::vector<std::map<std::string, std::string>> responses;
@@ -117,6 +124,7 @@ private:
     float synthRelease = 0.3f;
     float pulseWidth = 0.5f;
     int octave = 0; // -4 to +4 octaves
+    int semitone = 0; // -12 to +12 semitones
     int oscillatorType = 0; // 0 = sine, 1 = saw
     
     struct SineWaveSound : public juce::SynthesiserSound
@@ -143,6 +151,8 @@ private:
             frequency = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
             // Apply octave shift: each octave doubles/halves the frequency
             frequency *= std::pow(2.0, octave);
+            // Apply semitone shift: each semitone is 2^(1/12) frequency ratio
+            frequency *= std::pow(2.0, semitone / 12.0);
             level = velocity * 0.15;
             angleDelta = frequency * 2.0 * juce::MathConstants<double>::pi / getSampleRate();
             currentAngle = 0.0;
@@ -274,12 +284,18 @@ private:
             octave = oct;
         }
         
+        void setSemitone(int semi)
+        {
+            semitone = semi;
+        }
+        
     private:
         double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
         int oscillatorType = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise, 5 = pink noise
         float pulseWidth = 0.5f;
         int octave = 0; // -4 to +4 octaves
+        int semitone = 0; // -12 to +12 semitones
         juce::ADSR envelope;
         juce::Random random;
         
