@@ -204,6 +204,17 @@ void SummonerXSerum2AudioProcessor::updateFineTune()
     }
 }
 
+void SummonerXSerum2AudioProcessor::updateRandomPhase()
+{
+    for (int i = 0; i < synthesiser.getNumVoices(); ++i)
+    {
+        if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
+        {
+            voice->setRandomPhase(randomPhase);
+        }
+    }
+}
+
 bool SummonerXSerum2AudioProcessor::hasEditor() const
 {
     return true;

@@ -234,6 +234,18 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     pinkNoiseButton.setClickingTogglesState(true);
     pinkNoiseButton.addListener(this);
     addAndMakeVisible(pinkNoiseButton);
+    
+    // Random phase button
+    randomPhaseButton.setButtonText("RND PHASE");
+    randomPhaseButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff333333));
+    randomPhaseButton.setColour(juce::TextButton::buttonOnColourId, juce::Colours::white);
+    randomPhaseButton.setColour(juce::TextButton::textColourOnId, juce::Colours::black);
+    randomPhaseButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+    randomPhaseButton.setLookAndFeel(&customWaveButtonLookAndFeel);
+    randomPhaseButton.setClickingTogglesState(true);
+    randomPhaseButton.setToggleState(true, juce::dontSendNotification); // Default to random phase ON
+    randomPhaseButton.addListener(this);
+    addAndMakeVisible(randomPhaseButton);
 }
 
 SynthesizerComponent::~SynthesizerComponent()
@@ -249,6 +261,7 @@ SynthesizerComponent::~SynthesizerComponent()
     triangleWaveButton.setLookAndFeel(nullptr);
     noiseWaveButton.setLookAndFeel(nullptr);
     pinkNoiseButton.setLookAndFeel(nullptr);
+    randomPhaseButton.setLookAndFeel(nullptr);
     pulseWidthSlider.setLookAndFeel(nullptr);
 }
 
@@ -313,6 +326,10 @@ void SynthesizerComponent::resized()
     triangleWaveButton.setBounds(startX + (buttonWidth + buttonSpacing) * 3, buttonRow.getY(), buttonWidth, buttonHeight);
     noiseWaveButton.setBounds(startX + (buttonWidth + buttonSpacing) * 4, buttonRow.getY(), buttonWidth, buttonHeight);
     pinkNoiseButton.setBounds(startX + (buttonWidth + buttonSpacing) * 5, buttonRow.getY(), buttonWidth, buttonHeight);
+    
+    // Random phase button (wider to fit text)
+    auto phaseButtonWidth = 80;
+    randomPhaseButton.setBounds(startX + (buttonWidth + buttonSpacing) * 6 + 10, buttonRow.getY(), phaseButtonWidth, buttonHeight);
     
     bounds.removeFromTop(20); // spacing between rows
     
@@ -501,6 +518,11 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
         {
             pinkNoiseButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
         }
+    }
+    else if (button == &randomPhaseButton)
+    {
+        // Random phase button is independent - doesn't affect other buttons
+        audioProcessor.setRandomPhase(randomPhaseButton.getToggleState());
     }
 }
 

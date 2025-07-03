@@ -172,6 +172,9 @@ private:
     juce::TextButton noiseWaveButton;
     juce::TextButton pinkNoiseButton;
     
+    // Random phase button
+    juce::TextButton randomPhaseButton;
+    
     // Octave control state
     int octaveValue = 0;
     bool isDraggingOctave = false;

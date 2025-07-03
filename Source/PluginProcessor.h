@@ -103,6 +103,12 @@ public:
         updateFineTune();
     }
     int getFineTune() const { return fineTune; }
+    
+    void setRandomPhase(bool random) { 
+        randomPhase = random; 
+        updateRandomPhase();
+    }
+    bool getRandomPhase() const { return randomPhase; }
 
 private:
     std::map<std::string, int> parameterMap;
@@ -116,6 +122,7 @@ private:
     void updateOctave();
     void updateSemitone();
     void updateFineTune();
+    void updateRandomPhase();
 
     SettingsComponent settingsComponent;
     std::vector<std::map<std::string, std::string>> responses;
@@ -133,6 +140,7 @@ private:
     int octave = 0; // -4 to +4 octaves
     int semitone = 0; // -12 to +12 semitones
     int fineTune = 0; // -100 to +100 cents
+    bool randomPhase = true; // true = random phase, false = consistent phase
     int oscillatorType = 0; // 0 = sine, 1 = saw
     
     struct SineWaveSound : public juce::SynthesiserSound
@@ -165,7 +173,16 @@ private:
             frequency *= std::pow(2.0, fineTune / 1200.0);
             level = velocity * 0.15;
             angleDelta = frequency * 2.0 * juce::MathConstants<double>::pi / getSampleRate();
-            currentAngle = 0.0;
+            
+            // Set initial phase based on randomPhase setting
+            if (randomPhase)
+            {
+                currentAngle = random.nextFloat() * 2.0 * juce::MathConstants<double>::pi; // Random phase 0-2π
+            }
+            else
+            {
+                currentAngle = 0.0; // Consistent phase (always start at 0)
+            }
             
             envelope.setSampleRate(getSampleRate());
             envelope.noteOn();
@@ -304,6 +321,11 @@ private:
             fineTune = fine;
         }
         
+        void setRandomPhase(bool random)
+        {
+            randomPhase = random;
+        }
+        
     private:
         double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
@@ -312,6 +334,7 @@ private:
         int octave = 0; // -4 to +4 octaves
         int semitone = 0; // -12 to +12 semitones
         int fineTune = 0; // -100 to +100 cents
+        bool randomPhase = true; // true = random phase, false = consistent phase
         juce::ADSR envelope;
         juce::Random random;
         
