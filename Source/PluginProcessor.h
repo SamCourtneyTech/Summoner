@@ -1,5 +1,6 @@
 #pragma once
 #include <JuceHeader.h>
+#include <array>
 #include "SettingsComponent.h"
 
 class SummonerXSerum2AudioProcessor : public juce::AudioProcessor
@@ -109,6 +110,12 @@ public:
         updateRandomPhase();
     }
     bool getRandomPhase() const { return randomPhase; }
+    
+    void setVoiceCount(int count) { 
+        voiceCount = count; 
+        updateVoiceCount();
+    }
+    int getVoiceCount() const { return voiceCount; }
 
 private:
     std::map<std::string, int> parameterMap;
@@ -123,6 +130,7 @@ private:
     void updateSemitone();
     void updateFineTune();
     void updateRandomPhase();
+    void updateVoiceCount();
 
     SettingsComponent settingsComponent;
     std::vector<std::map<std::string, std::string>> responses;
@@ -141,6 +149,7 @@ private:
     int semitone = 0; // -12 to +12 semitones
     int fineTune = 0; // -100 to +100 cents
     bool randomPhase = true; // true = random phase, false = consistent phase
+    int voiceCount = 1; // 1 to 16 unison voices
     int oscillatorType = 0; // 0 = sine, 1 = saw
     
     struct SineWaveSound : public juce::SynthesiserSound
@@ -172,17 +181,35 @@ private:
             // Apply fine tune shift: each cent is 2^(1/1200) frequency ratio
             frequency *= std::pow(2.0, fineTune / 1200.0);
             level = velocity * 0.15;
-            angleDelta = frequency * 2.0 * juce::MathConstants<double>::pi / getSampleRate();
             
-            // Set initial phase based on randomPhase setting
-            if (randomPhase)
+            // Initialize unison voices with detuning
+            for (int i = 0; i < maxUnisonVoices; ++i)
             {
-                currentAngle = random.nextFloat() * 2.0 * juce::MathConstants<double>::pi; // Random phase 0-2π
+                // Calculate detune amount: spread voices across +/- 25 cents
+                double detuneCents = 0.0;
+                if (unisonVoices > 1)
+                {
+                    detuneCents = (i - (unisonVoices - 1) / 2.0) * (50.0 / (unisonVoices - 1));
+                }
+                
+                // Apply detuning
+                unisonFrequencies[i] = frequency * std::pow(2.0, detuneCents / 1200.0);
+                unisonDeltas[i] = unisonFrequencies[i] * 2.0 * juce::MathConstants<double>::pi / getSampleRate();
+                
+                // Set initial phase
+                if (randomPhase)
+                {
+                    unisonAngles[i] = random.nextFloat() * 2.0 * juce::MathConstants<double>::pi;
+                }
+                else
+                {
+                    unisonAngles[i] = 0.0;
+                }
             }
-            else
-            {
-                currentAngle = 0.0; // Consistent phase (always start at 0)
-            }
+            
+            // Keep legacy variables for compatibility
+            angleDelta = frequency * 2.0 * juce::MathConstants<double>::pi / getSampleRate();
+            currentAngle = randomPhase ? random.nextFloat() * 2.0 * juce::MathConstants<double>::pi : 0.0;
             
             envelope.setSampleRate(getSampleRate());
             envelope.noteOn();
@@ -208,69 +235,84 @@ private:
             {
                 while (--numSamples >= 0)
                 {
-                    float currentSample;
+                    float currentSample = 0.0f;
                     
-                    // Generate waveform based on oscillator type
-                    if (oscillatorType == 0) // Sine wave
+                    // Sum all active unison voices
+                    for (int voice = 0; voice < unisonVoices; ++voice)
                     {
-                        currentSample = (float)(std::sin(currentAngle) * level);
-                    }
-                    else if (oscillatorType == 1) // Saw wave
-                    {
-                        // Sawtooth wave: variable ramp using pulse width (0.5 = normal saw, <0.5 = reverse bias, >0.5 = forward bias)
-                        auto normalizedAngle = std::fmod(currentAngle, 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
-                        if (pulseWidth < 0.5) {
-                            // More reverse saw character
-                            auto adjustedAngle = normalizedAngle * (1.0 - pulseWidth) + pulseWidth;
-                            currentSample = (float)((2.0 * (1.0 - adjustedAngle) - 1.0) * level);
-                        } else {
-                            // More forward saw character
-                            auto adjustedAngle = normalizedAngle * pulseWidth;
-                            currentSample = (float)((2.0 * adjustedAngle - 1.0) * level);
+                        float voiceSample;
+                        
+                        // Generate waveform based on oscillator type for this voice
+                        if (oscillatorType == 0) // Sine wave
+                        {
+                            voiceSample = (float)(std::sin(unisonAngles[voice]) * level);
                         }
-                    }
-                    else if (oscillatorType == 2) // Square wave
-                    {
-                        // Square wave: variable duty cycle using pulse width
-                        auto normalizedAngle = std::fmod(currentAngle, 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
-                        currentSample = (float)((normalizedAngle < pulseWidth ? 1.0 : -1.0) * level);
-                    }
-                    else if (oscillatorType == 3) // Triangle wave
-                    {
-                        // Triangle wave: variable peak position using pulse width
-                        auto normalizedAngle = std::fmod(currentAngle, 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
-                        if (normalizedAngle < pulseWidth)
-                            currentSample = (float)((normalizedAngle / pulseWidth * 2.0 - 1.0) * level); // Rising: -1 to 1
+                        else if (oscillatorType == 1) // Saw wave
+                        {
+                            // Sawtooth wave: variable ramp using pulse width
+                            auto normalizedAngle = std::fmod(unisonAngles[voice], 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
+                            if (pulseWidth < 0.5) {
+                                // More reverse saw character
+                                auto adjustedAngle = normalizedAngle * (1.0 - pulseWidth) + pulseWidth;
+                                voiceSample = (float)((2.0 * (1.0 - adjustedAngle) - 1.0) * level);
+                            } else {
+                                // More forward saw character
+                                auto adjustedAngle = normalizedAngle * pulseWidth;
+                                voiceSample = (float)((2.0 * adjustedAngle - 1.0) * level);
+                            }
+                        }
+                        else if (oscillatorType == 2) // Square wave
+                        {
+                            // Square wave: variable duty cycle using pulse width
+                            auto normalizedAngle = std::fmod(unisonAngles[voice], 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
+                            voiceSample = (float)((normalizedAngle < pulseWidth ? 1.0 : -1.0) * level);
+                        }
+                        else if (oscillatorType == 3) // Triangle wave
+                        {
+                            // Triangle wave: variable peak position using pulse width
+                            auto normalizedAngle = std::fmod(unisonAngles[voice], 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
+                            if (normalizedAngle < pulseWidth)
+                                voiceSample = (float)((normalizedAngle / pulseWidth * 2.0 - 1.0) * level); // Rising: -1 to 1
+                            else
+                                voiceSample = (float)((1.0 - (normalizedAngle - pulseWidth) / (1.0 - pulseWidth)) * 2.0 - 1.0) * level; // Falling: 1 to -1
+                        }
+                        else if (oscillatorType == 4) // White noise
+                        {
+                            // White noise: random values between -1 and 1 (same for all unison voices)
+                            voiceSample = (float)((random.nextFloat() * 2.0f - 1.0f) * level);
+                        }
+                        else if (oscillatorType == 5) // Pink noise
+                        {
+                            // Pink noise using Paul Kellett's method (same for all unison voices)
+                            float white = random.nextFloat() * 2.0f - 1.0f;
+                            
+                            pinkFilter[0] = 0.99886f * pinkFilter[0] + white * 0.0555179f;
+                            pinkFilter[1] = 0.99332f * pinkFilter[1] + white * 0.0750759f;
+                            pinkFilter[2] = 0.96900f * pinkFilter[2] + white * 0.1538520f;
+                            pinkFilter[3] = 0.86650f * pinkFilter[3] + white * 0.3104856f;
+                            pinkFilter[4] = 0.55000f * pinkFilter[4] + white * 0.5329522f;
+                            pinkFilter[5] = -0.7616f * pinkFilter[5] - white * 0.0168980f;
+                            
+                            float pink = pinkFilter[0] + pinkFilter[1] + pinkFilter[2] + pinkFilter[3] + pinkFilter[4] + pinkFilter[5] + pinkFilter[6] + white * 0.5362f;
+                            pinkFilter[6] = white * 0.115926f;
+                            
+                            voiceSample = (float)(pink * 0.11f * level); // Scale down to prevent clipping
+                        }
                         else
-                            currentSample = (float)((1.0 - (normalizedAngle - pulseWidth) / (1.0 - pulseWidth)) * 2.0 - 1.0) * level; // Falling: 1 to -1
-                    }
-                    else if (oscillatorType == 4) // White noise
-                    {
-                        // White noise: random values between -1 and 1
-                        currentSample = (float)((random.nextFloat() * 2.0f - 1.0f) * level);
-                    }
-                    else if (oscillatorType == 5) // Pink noise
-                    {
-                        // Pink noise using Paul Kellett's method
-                        float white = random.nextFloat() * 2.0f - 1.0f;
+                        {
+                            // Default to sine wave for unknown oscillator types
+                            voiceSample = (float)(std::sin(unisonAngles[voice]) * level);
+                        }
                         
-                        pinkFilter[0] = 0.99886f * pinkFilter[0] + white * 0.0555179f;
-                        pinkFilter[1] = 0.99332f * pinkFilter[1] + white * 0.0750759f;
-                        pinkFilter[2] = 0.96900f * pinkFilter[2] + white * 0.1538520f;
-                        pinkFilter[3] = 0.86650f * pinkFilter[3] + white * 0.3104856f;
-                        pinkFilter[4] = 0.55000f * pinkFilter[4] + white * 0.5329522f;
-                        pinkFilter[5] = -0.7616f * pinkFilter[5] - white * 0.0168980f;
+                        // Add this voice to the total sample
+                        currentSample += voiceSample;
                         
-                        float pink = pinkFilter[0] + pinkFilter[1] + pinkFilter[2] + pinkFilter[3] + pinkFilter[4] + pinkFilter[5] + pinkFilter[6] + white * 0.5362f;
-                        pinkFilter[6] = white * 0.115926f;
-                        
-                        currentSample = (float)(pink * 0.11f * level); // Scale down to prevent clipping
+                        // Update angle for this voice
+                        unisonAngles[voice] += unisonDeltas[voice];
                     }
-                    else
-                    {
-                        // Default to sine wave for unknown oscillator types
-                        currentSample = (float)(std::sin(currentAngle) * level);
-                    }
+                    
+                    // Apply level scaling to prevent clipping from multiple voices
+                    currentSample /= std::sqrt((float)unisonVoices);
                     
                     auto envelopeValue = envelope.getNextSample();
                     currentSample *= envelopeValue;
@@ -278,7 +320,6 @@ private:
                     for (auto i = outputBuffer.getNumChannels(); --i >= 0;)
                         outputBuffer.addSample(i, startSample, currentSample);
                     
-                    currentAngle += angleDelta;
                     ++startSample;
                     
                     if (!envelope.isActive())
@@ -326,15 +367,27 @@ private:
             randomPhase = random;
         }
         
+        void setUnisonVoices(int count)
+        {
+            unisonVoices = juce::jlimit(1, 16, count);
+        }
+        
     private:
         double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
+        
+        // Unison voice arrays (support up to 16 voices)
+        static constexpr int maxUnisonVoices = 16;
+        std::array<double, maxUnisonVoices> unisonAngles;
+        std::array<double, maxUnisonVoices> unisonDeltas;
+        std::array<double, maxUnisonVoices> unisonFrequencies;
         int oscillatorType = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise, 5 = pink noise
         float pulseWidth = 0.5f;
         int octave = 0; // -4 to +4 octaves
         int semitone = 0; // -12 to +12 semitones
         int fineTune = 0; // -100 to +100 cents
         bool randomPhase = true; // true = random phase, false = consistent phase
+        int unisonVoices = 1; // Number of unison voices (1-16)
         juce::ADSR envelope;
         juce::Random random;
         

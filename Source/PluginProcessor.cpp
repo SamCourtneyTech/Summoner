@@ -87,8 +87,8 @@ void SummonerXSerum2AudioProcessor::prepareToPlay(double sampleRate, int samples
     synthesiser.clearVoices();
     synthesiser.clearSounds();
     
-    // Add 4 voices for polyphony
-    for (int i = 0; i < 4; ++i)
+    // Add voices for polyphony (fixed at 8 for good polyphony)
+    for (int i = 0; i < 8; ++i)
         synthesiser.addVoice(new SineWaveVoice());
     
     // Add the sound
@@ -211,6 +211,18 @@ void SummonerXSerum2AudioProcessor::updateRandomPhase()
         if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
         {
             voice->setRandomPhase(randomPhase);
+        }
+    }
+}
+
+void SummonerXSerum2AudioProcessor::updateVoiceCount()
+{
+    // Update unison voice count for all existing voices
+    for (int i = 0; i < synthesiser.getNumVoices(); ++i)
+    {
+        if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
+        {
+            voice->setUnisonVoices(voiceCount);
         }
     }
 }

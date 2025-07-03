@@ -173,6 +173,23 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     fineTuneValueLabel.addMouseListener(this, false);
     addAndMakeVisible(fineTuneValueLabel);
     
+    // Voice count control
+    voiceCountLabel.setText("Voices", juce::dontSendNotification);
+    voiceCountLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
+    voiceCountLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    voiceCountLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(voiceCountLabel);
+    
+    voiceCountValueLabel.setText("1", juce::dontSendNotification);
+    voiceCountValueLabel.setFont(juce::Font("Press Start 2P", 12.0f, juce::Font::plain));
+    voiceCountValueLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    voiceCountValueLabel.setColour(juce::Label::backgroundColourId, juce::Colours::transparentBlack);
+    voiceCountValueLabel.setColour(juce::Label::outlineColourId, juce::Colours::white);
+    voiceCountValueLabel.setJustificationType(juce::Justification::centred);
+    voiceCountValueLabel.setInterceptsMouseClicks(true, false);
+    voiceCountValueLabel.addMouseListener(this, false);
+    addAndMakeVisible(voiceCountValueLabel);
+    
     // Oscillator type buttons - using simple text for now
     sineWaveButton.setButtonText("SIN");
     sineWaveButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff333333));
@@ -391,6 +408,13 @@ void SynthesizerComponent::resized()
     auto fineTuneArea = bottomControlsRow.removeFromLeft(60);
     fineTuneLabel.setBounds(fineTuneArea.removeFromTop(20));
     fineTuneValueLabel.setBounds(fineTuneArea.removeFromTop(30));
+    
+    bottomControlsRow.removeFromLeft(10); // spacing
+    
+    // Voice count control (draggable label)
+    auto voiceCountArea = bottomControlsRow.removeFromLeft(60);
+    voiceCountLabel.setBounds(voiceCountArea.removeFromTop(20));
+    voiceCountValueLabel.setBounds(voiceCountArea.removeFromTop(30));
 }
 
 void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
@@ -546,6 +570,12 @@ void SynthesizerComponent::mouseDown(const juce::MouseEvent& event)
         dragStartY = event.getScreenPosition().y;
         dragStartFineTune = fineTuneValue;
     }
+    else if (event.eventComponent == &voiceCountValueLabel)
+    {
+        isDraggingVoiceCount = true;
+        dragStartY = event.getScreenPosition().y;
+        dragStartVoiceCount = voiceCountValue;
+    }
 }
 
 void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
@@ -595,6 +625,21 @@ void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
             audioProcessor.setFineTune(fineTuneValue);
         }
     }
+    else if (isDraggingVoiceCount)
+    {
+        int deltaY = dragStartY - event.getScreenPosition().y; // Inverted: up = positive
+        int newVoiceCount = dragStartVoiceCount + (deltaY / 8); // 8 pixels per voice
+        
+        // Clamp to valid range (1 to 16 voices)
+        newVoiceCount = juce::jlimit(1, 16, newVoiceCount);
+        
+        if (newVoiceCount != voiceCountValue)
+        {
+            voiceCountValue = newVoiceCount;
+            voiceCountValueLabel.setText(juce::String(voiceCountValue), juce::dontSendNotification);
+            audioProcessor.setVoiceCount(voiceCountValue);
+        }
+    }
 }
 
 void SynthesizerComponent::mouseUp(const juce::MouseEvent& event)
@@ -602,4 +647,5 @@ void SynthesizerComponent::mouseUp(const juce::MouseEvent& event)
     isDraggingOctave = false;
     isDraggingSemitone = false;
     isDraggingFineTune = false;
+    isDraggingVoiceCount = false;
 }

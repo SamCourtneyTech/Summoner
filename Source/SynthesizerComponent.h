@@ -164,6 +164,10 @@ private:
     juce::Label fineTuneLabel;
     juce::Label fineTuneValueLabel;
     
+    // Voice count control
+    juce::Label voiceCountLabel;
+    juce::Label voiceCountValueLabel;
+    
     // Oscillator type buttons
     juce::TextButton sineWaveButton;
     juce::TextButton sawWaveButton;
@@ -190,6 +194,11 @@ private:
     int fineTuneValue = 0;
     bool isDraggingFineTune = false;
     int dragStartFineTune = 0;
+    
+    // Voice count control state
+    int voiceCountValue = 1;
+    bool isDraggingVoiceCount = false;
+    int dragStartVoiceCount = 0;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynthesizerComponent)
 };
