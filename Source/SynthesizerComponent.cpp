@@ -33,18 +33,20 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     volumeSlider.addListener(this);
     addAndMakeVisible(volumeSlider);
     
-    // Filter control  
-    filterLabel.setText("Filter", juce::dontSendNotification);
-    filterLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    filterLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    filterLabel.setJustificationType(juce::Justification::centred);
-    addAndMakeVisible(filterLabel);
-    
-    filterSlider.setSliderStyle(juce::Slider::LinearHorizontal);
-    filterSlider.setRange(0.0, 1.0, 0.01);
-    filterSlider.setValue(0.5);
-    filterSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    addAndMakeVisible(filterSlider);
+    // Detune control
+    detuneLabel.setText("Detune", juce::dontSendNotification);
+    detuneLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
+    detuneLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    detuneLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(detuneLabel);
+
+    detuneSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    detuneSlider.setRange(0.0, 1.0, 0.01);
+    detuneSlider.setValue(0.0);
+    detuneSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    detuneSlider.setLookAndFeel(&customKnobLookAndFeel);
+    detuneSlider.addListener(this);
+    addAndMakeVisible(detuneSlider);
     
     // Attack control
     attackLabel.setText("Attack", juce::dontSendNotification);
@@ -316,20 +318,7 @@ void SynthesizerComponent::resized()
     auto controlWidth = bounds.getWidth() / 2 - 10;
     auto knobWidth = bounds.getWidth() / 4 - 15;
     
-    // Top row - linear sliders
-    auto topRow = bounds.removeFromTop(controlHeight);
-    
-    auto volumeArea = topRow.removeFromLeft(controlWidth);
-    volumeLabel.setBounds(volumeArea.removeFromTop(20));
-    volumeSlider.setBounds(volumeArea);
-    
-    topRow.removeFromLeft(20); // spacing
-    
-    auto filterArea = topRow;
-    filterLabel.setBounds(filterArea.removeFromTop(20));
-    filterSlider.setBounds(filterArea);
-    
-    bounds.removeFromTop(20); // spacing between rows
+    bounds.removeFromTop(20); // spacing
     
     // Oscillator type buttons (left aligned)
     auto buttonHeight = 40;
@@ -353,11 +342,11 @@ void SynthesizerComponent::resized()
     
     bounds.removeFromTop(20); // spacing between rows
     
-    // Bottom row - ADSR knobs (left third of screen)
+    // Bottom row - ADSR knobs (left half of screen)
     auto adsrRow = bounds.removeFromTop(controlHeight);
-    auto adsrSection = adsrRow.removeFromLeft(bounds.getWidth() / 3);
+    auto adsrSection = adsrRow.removeFromLeft(bounds.getWidth() / 2);
     
-    // Calculate smaller knob width for 4 knobs in 1/3 of screen width
+    // Calculate smaller knob width for 4 knobs in 1/2 of screen width
     auto adsrKnobWidth = (adsrSection.getWidth() - 45) / 4; // 45 = 3 spacings of 15px each
     
     auto attackArea = adsrSection.removeFromLeft(adsrKnobWidth);
@@ -381,6 +370,20 @@ void SynthesizerComponent::resized()
     auto releaseArea = adsrSection;
     releaseLabel.setBounds(releaseArea.removeFromTop(20));
     releaseSlider.setBounds(releaseArea);
+    
+    // Volume and Detune knob section - add another row below ADSR
+    bounds.removeFromTop(20); // spacing
+    auto volumeRow = bounds.removeFromTop(controlHeight);
+    auto volumeSection = volumeRow.removeFromLeft(adsrKnobWidth);
+    
+    volumeLabel.setBounds(volumeSection.removeFromTop(20));
+    volumeSlider.setBounds(volumeSection);
+    
+    volumeRow.removeFromLeft(15); // spacing
+    
+    auto detuneSection = volumeRow.removeFromLeft(adsrKnobWidth);
+    detuneLabel.setBounds(detuneSection.removeFromTop(20));
+    detuneSlider.setBounds(detuneSection);
     
     // Bottom controls - Pulse width and Octave
     bounds.removeFromTop(20); // spacing
@@ -427,6 +430,10 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     if (slider == &volumeSlider)
     {
         audioProcessor.setSynthVolume(static_cast<float>(volumeSlider.getValue()));
+    }
+    else if (slider == &detuneSlider)
+    {
+        audioProcessor.setSynthDetune(static_cast<float>(detuneSlider.getValue()));
     }
     else if (slider == &attackSlider)
     {

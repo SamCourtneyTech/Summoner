@@ -137,8 +137,8 @@ private:
     juce::Label placeholderLabel;
     juce::Slider volumeSlider;
     juce::Label volumeLabel;
-    juce::Slider filterSlider;
-    juce::Label filterLabel;
+    juce::Slider detuneSlider;
+    juce::Label detuneLabel;
     juce::Slider attackSlider;
     juce::Label attackLabel;
     juce::Slider decaySlider;

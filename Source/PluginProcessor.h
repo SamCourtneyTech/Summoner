@@ -51,6 +51,12 @@ public:
     void setSynthVolume(float volume) { synthVolume = volume; }
     float getSynthVolume() const { return synthVolume; }
     
+    void setSynthDetune(float detune) { 
+        synthDetune = detune; 
+        updateDetune();
+    }
+    float getSynthDetune() const { return synthDetune; }
+    
     void setSynthAttack(float attack) { 
         synthAttack = attack; 
         updateEnvelopeParameters();
@@ -131,6 +137,7 @@ private:
     void updateFineTune();
     void updateRandomPhase();
     void updateVoiceCount();
+    void updateDetune();
 
     SettingsComponent settingsComponent;
     std::vector<std::map<std::string, std::string>> responses;
@@ -140,6 +147,7 @@ private:
     // Synthesizer components
     juce::Synthesiser synthesiser;
     float synthVolume = 0.5f;
+    float synthDetune = 0.0f;
     float synthAttack = 0.1f;
     float synthDecay = 0.2f;
     float synthSustain = 0.7f;
@@ -185,11 +193,13 @@ private:
             // Initialize unison voices with detuning
             for (int i = 0; i < maxUnisonVoices; ++i)
             {
-                // Calculate detune amount: spread voices across +/- 25 cents
+                // Calculate detune amount: spread voices based on detune parameter
                 double detuneCents = 0.0;
                 if (unisonVoices > 1)
                 {
-                    detuneCents = (i - (unisonVoices - 1) / 2.0) * (50.0 / (unisonVoices - 1));
+                    // Max detune of 50 cents * detune parameter (0.0 to 1.0)
+                    double maxDetune = 50.0 * detune;
+                    detuneCents = (i - (unisonVoices - 1) / 2.0) * (maxDetune * 2.0 / (unisonVoices - 1));
                 }
                 
                 // Apply detuning
@@ -372,6 +382,11 @@ private:
             unisonVoices = juce::jlimit(1, 16, count);
         }
         
+        void setDetune(float detuneAmount)
+        {
+            detune = detuneAmount;
+        }
+        
     private:
         double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
@@ -388,6 +403,7 @@ private:
         int fineTune = 0; // -100 to +100 cents
         bool randomPhase = true; // true = random phase, false = consistent phase
         int unisonVoices = 1; // Number of unison voices (1-16)
+        float detune = 0.0f; // Detune amount (0.0 = no detune, 1.0 = max detune)
         juce::ADSR envelope;
         juce::Random random;
         
