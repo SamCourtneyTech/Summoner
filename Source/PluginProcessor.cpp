@@ -193,6 +193,17 @@ void SummonerXSerum2AudioProcessor::updateSemitone()
     }
 }
 
+void SummonerXSerum2AudioProcessor::updateFineTune()
+{
+    for (int i = 0; i < synthesiser.getNumVoices(); ++i)
+    {
+        if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
+        {
+            voice->setFineTune(fineTune);
+        }
+    }
+}
+
 bool SummonerXSerum2AudioProcessor::hasEditor() const
 {
     return true;

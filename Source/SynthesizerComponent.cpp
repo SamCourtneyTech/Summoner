@@ -156,6 +156,23 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     semitoneValueLabel.addMouseListener(this, false);
     addAndMakeVisible(semitoneValueLabel);
     
+    // Fine tune control
+    fineTuneLabel.setText("Fine", juce::dontSendNotification);
+    fineTuneLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
+    fineTuneLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    fineTuneLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(fineTuneLabel);
+    
+    fineTuneValueLabel.setText("0", juce::dontSendNotification);
+    fineTuneValueLabel.setFont(juce::Font("Press Start 2P", 12.0f, juce::Font::plain));
+    fineTuneValueLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    fineTuneValueLabel.setColour(juce::Label::backgroundColourId, juce::Colours::transparentBlack);
+    fineTuneValueLabel.setColour(juce::Label::outlineColourId, juce::Colours::white);
+    fineTuneValueLabel.setJustificationType(juce::Justification::centred);
+    fineTuneValueLabel.setInterceptsMouseClicks(true, false);
+    fineTuneValueLabel.addMouseListener(this, false);
+    addAndMakeVisible(fineTuneValueLabel);
+    
     // Oscillator type buttons - using simple text for now
     sineWaveButton.setButtonText("SIN");
     sineWaveButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff333333));
@@ -350,6 +367,13 @@ void SynthesizerComponent::resized()
     auto semitoneArea = bottomControlsRow.removeFromLeft(60);
     semitoneLabel.setBounds(semitoneArea.removeFromTop(20));
     semitoneValueLabel.setBounds(semitoneArea.removeFromTop(30));
+    
+    bottomControlsRow.removeFromLeft(10); // spacing
+    
+    // Fine tune control (draggable label)
+    auto fineTuneArea = bottomControlsRow.removeFromLeft(60);
+    fineTuneLabel.setBounds(fineTuneArea.removeFromTop(20));
+    fineTuneValueLabel.setBounds(fineTuneArea.removeFromTop(30));
 }
 
 void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
@@ -494,6 +518,12 @@ void SynthesizerComponent::mouseDown(const juce::MouseEvent& event)
         dragStartY = event.getScreenPosition().y;
         dragStartSemitone = semitoneValue;
     }
+    else if (event.eventComponent == &fineTuneValueLabel)
+    {
+        isDraggingFineTune = true;
+        dragStartY = event.getScreenPosition().y;
+        dragStartFineTune = fineTuneValue;
+    }
 }
 
 void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
@@ -528,10 +558,26 @@ void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
             audioProcessor.setSemitone(semitoneValue);
         }
     }
+    else if (isDraggingFineTune)
+    {
+        int deltaY = dragStartY - event.getScreenPosition().y; // Inverted: up = positive
+        int newFineTune = dragStartFineTune + (deltaY / 2); // 2 pixels per cent
+        
+        // Clamp to valid range (-100 to +100 cents)
+        newFineTune = juce::jlimit(-100, 100, newFineTune);
+        
+        if (newFineTune != fineTuneValue)
+        {
+            fineTuneValue = newFineTune;
+            fineTuneValueLabel.setText(juce::String(fineTuneValue), juce::dontSendNotification);
+            audioProcessor.setFineTune(fineTuneValue);
+        }
+    }
 }
 
 void SynthesizerComponent::mouseUp(const juce::MouseEvent& event)
 {
     isDraggingOctave = false;
     isDraggingSemitone = false;
+    isDraggingFineTune = false;
 }

@@ -160,6 +160,10 @@ private:
     juce::Label semitoneLabel;
     juce::Label semitoneValueLabel;
     
+    // Fine tune control
+    juce::Label fineTuneLabel;
+    juce::Label fineTuneValueLabel;
+    
     // Oscillator type buttons
     juce::TextButton sineWaveButton;
     juce::TextButton sawWaveButton;
@@ -178,6 +182,11 @@ private:
     int semitoneValue = 0;
     bool isDraggingSemitone = false;
     int dragStartSemitone = 0;
+    
+    // Fine tune control state
+    int fineTuneValue = 0;
+    bool isDraggingFineTune = false;
+    int dragStartFineTune = 0;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynthesizerComponent)
 };

@@ -97,6 +97,12 @@ public:
         updateSemitone();
     }
     int getSemitone() const { return semitone; }
+    
+    void setFineTune(int fine) { 
+        fineTune = fine; 
+        updateFineTune();
+    }
+    int getFineTune() const { return fineTune; }
 
 private:
     std::map<std::string, int> parameterMap;
@@ -109,6 +115,7 @@ private:
     void updatePulseWidth();
     void updateOctave();
     void updateSemitone();
+    void updateFineTune();
 
     SettingsComponent settingsComponent;
     std::vector<std::map<std::string, std::string>> responses;
@@ -125,6 +132,7 @@ private:
     float pulseWidth = 0.5f;
     int octave = 0; // -4 to +4 octaves
     int semitone = 0; // -12 to +12 semitones
+    int fineTune = 0; // -100 to +100 cents
     int oscillatorType = 0; // 0 = sine, 1 = saw
     
     struct SineWaveSound : public juce::SynthesiserSound
@@ -153,6 +161,8 @@ private:
             frequency *= std::pow(2.0, octave);
             // Apply semitone shift: each semitone is 2^(1/12) frequency ratio
             frequency *= std::pow(2.0, semitone / 12.0);
+            // Apply fine tune shift: each cent is 2^(1/1200) frequency ratio
+            frequency *= std::pow(2.0, fineTune / 1200.0);
             level = velocity * 0.15;
             angleDelta = frequency * 2.0 * juce::MathConstants<double>::pi / getSampleRate();
             currentAngle = 0.0;
@@ -289,6 +299,11 @@ private:
             semitone = semi;
         }
         
+        void setFineTune(int fine)
+        {
+            fineTune = fine;
+        }
+        
     private:
         double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
@@ -296,6 +311,7 @@ private:
         float pulseWidth = 0.5f;
         int octave = 0; // -4 to +4 octaves
         int semitone = 0; // -12 to +12 semitones
+        int fineTune = 0; // -100 to +100 cents
         juce::ADSR envelope;
         juce::Random random;
         
