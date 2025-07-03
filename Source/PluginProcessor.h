@@ -69,6 +69,12 @@ public:
     }
     float getSynthPan() const { return synthPan; }
     
+    void setSynthPhase(float phase) { 
+        synthPhase = phase; 
+        updatePhase();
+    }
+    float getSynthPhase() const { return synthPhase; }
+    
     void setSynthAttack(float attack) { 
         synthAttack = attack; 
         updateEnvelopeParameters();
@@ -152,6 +158,7 @@ private:
     void updateDetune();
     void updateStereoWidth();
     void updatePan();
+    void updatePhase();
 
     SettingsComponent settingsComponent;
     std::vector<std::map<std::string, std::string>> responses;
@@ -164,6 +171,7 @@ private:
     float synthDetune = 0.0f;
     float synthStereoWidth = 0.5f;
     float synthPan = 0.0f;
+    float synthPhase = 0.0f;
     float synthAttack = 0.1f;
     float synthDecay = 0.2f;
     float synthSustain = 0.7f;
@@ -229,13 +237,14 @@ private:
                 }
                 else
                 {
-                    unisonAngles[i] = 0.0;
+                    // Convert fixed phase from degrees to radians
+                    unisonAngles[i] = fixedPhase * juce::MathConstants<double>::pi / 180.0;
                 }
             }
             
             // Keep legacy variables for compatibility
             angleDelta = frequency * 2.0 * juce::MathConstants<double>::pi / getSampleRate();
-            currentAngle = randomPhase ? random.nextFloat() * 2.0 * juce::MathConstants<double>::pi : 0.0;
+            currentAngle = randomPhase ? random.nextFloat() * 2.0 * juce::MathConstants<double>::pi : (fixedPhase * juce::MathConstants<double>::pi / 180.0);
             
             envelope.setSampleRate(getSampleRate());
             envelope.noteOn();
@@ -449,6 +458,11 @@ private:
             pan = panValue;
         }
         
+        void setPhase(float phaseValue)
+        {
+            fixedPhase = phaseValue;
+        }
+        
     private:
         double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
@@ -468,6 +482,7 @@ private:
         float detune = 0.0f; // Detune amount (0.0 = no detune, 1.0 = max detune)
         float stereoWidth = 0.5f; // Stereo width (0.0 = mono, 1.0 = full stereo)
         float pan = 0.0f; // Pan position (-50 = left, 0 = center, 50 = right)
+        float fixedPhase = 0.0f; // Fixed phase in degrees (0-360)
         juce::ADSR envelope;
         juce::Random random;
         

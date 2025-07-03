@@ -263,6 +263,18 @@ void SummonerXSerum2AudioProcessor::updatePan()
     }
 }
 
+void SummonerXSerum2AudioProcessor::updatePhase()
+{
+    // Update phase for all existing voices
+    for (int i = 0; i < synthesiser.getNumVoices(); ++i)
+    {
+        if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
+        {
+            voice->setPhase(synthPhase);
+        }
+    }
+}
+
 bool SummonerXSerum2AudioProcessor::hasEditor() const
 {
     return true;

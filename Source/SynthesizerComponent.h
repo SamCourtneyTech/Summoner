@@ -143,6 +143,8 @@ private:
     juce::Label stereoWidthLabel;
     juce::Slider panSlider;
     juce::Label panLabel;
+    juce::Slider phaseSlider;
+    juce::Label phaseLabel;
     juce::Slider attackSlider;
     juce::Label attackLabel;
     juce::Slider decaySlider;

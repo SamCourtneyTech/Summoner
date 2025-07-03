@@ -78,6 +78,21 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     panSlider.addListener(this);
     addAndMakeVisible(panSlider);
     
+    // Phase control
+    phaseLabel.setText("Phase", juce::dontSendNotification);
+    phaseLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
+    phaseLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    phaseLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(phaseLabel);
+
+    phaseSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    phaseSlider.setRange(0.0, 360.0, 1.0);
+    phaseSlider.setValue(0.0);
+    phaseSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    phaseSlider.setLookAndFeel(&customKnobLookAndFeel);
+    phaseSlider.addListener(this);
+    addAndMakeVisible(phaseSlider);
+    
     // Attack control
     attackLabel.setText("Attack", juce::dontSendNotification);
     attackLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
@@ -366,9 +381,6 @@ void SynthesizerComponent::resized()
     noiseWaveButton.setBounds(startX + (buttonWidth + buttonSpacing) * 4, buttonRow.getY(), buttonWidth, buttonHeight);
     pinkNoiseButton.setBounds(startX + (buttonWidth + buttonSpacing) * 5, buttonRow.getY(), buttonWidth, buttonHeight);
     
-    // Random phase button (wider to fit text)
-    auto phaseButtonWidth = 80;
-    randomPhaseButton.setBounds(startX + (buttonWidth + buttonSpacing) * 6 + 10, buttonRow.getY(), phaseButtonWidth, buttonHeight);
     
     bounds.removeFromTop(20); // spacing between rows
     
@@ -465,6 +477,22 @@ void SynthesizerComponent::resized()
     auto voiceCountArea = bottomControlsRow.removeFromLeft(60);
     voiceCountLabel.setBounds(voiceCountArea.removeFromTop(20));
     voiceCountValueLabel.setBounds(voiceCountArea.removeFromTop(30));
+    
+    // Phase controls - new row below everything
+    bounds.removeFromTop(20); // spacing
+    auto phaseRow = bounds.removeFromTop(80);
+    
+    // Random phase button
+    auto randomPhaseButtonWidth = 100;
+    auto randomPhaseArea = phaseRow.removeFromLeft(randomPhaseButtonWidth);
+    randomPhaseButton.setBounds(randomPhaseArea.removeFromTop(40));
+    
+    phaseRow.removeFromLeft(15); // spacing
+    
+    // Phase knob
+    auto phaseKnobArea = phaseRow.removeFromLeft(80);
+    phaseLabel.setBounds(phaseKnobArea.removeFromTop(20));
+    phaseSlider.setBounds(phaseKnobArea);
 }
 
 void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
@@ -484,6 +512,10 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     else if (slider == &panSlider)
     {
         audioProcessor.setSynthPan(static_cast<float>(panSlider.getValue()));
+    }
+    else if (slider == &phaseSlider)
+    {
+        audioProcessor.setSynthPhase(static_cast<float>(phaseSlider.getValue()));
     }
     else if (slider == &attackSlider)
     {
