@@ -57,6 +57,12 @@ public:
     }
     float getSynthDetune() const { return synthDetune; }
     
+    void setSynthStereoWidth(float width) { 
+        synthStereoWidth = width; 
+        updateStereoWidth();
+    }
+    float getSynthStereoWidth() const { return synthStereoWidth; }
+    
     void setSynthAttack(float attack) { 
         synthAttack = attack; 
         updateEnvelopeParameters();
@@ -138,6 +144,7 @@ private:
     void updateRandomPhase();
     void updateVoiceCount();
     void updateDetune();
+    void updateStereoWidth();
 
     SettingsComponent settingsComponent;
     std::vector<std::map<std::string, std::string>> responses;
@@ -148,6 +155,7 @@ private:
     juce::Synthesiser synthesiser;
     float synthVolume = 0.5f;
     float synthDetune = 0.0f;
+    float synthStereoWidth = 0.5f;
     float synthAttack = 0.1f;
     float synthDecay = 0.2f;
     float synthSustain = 0.7f;
@@ -245,9 +253,10 @@ private:
             {
                 while (--numSamples >= 0)
                 {
-                    float currentSample = 0.0f;
+                    float leftSample = 0.0f;
+                    float rightSample = 0.0f;
                     
-                    // Sum all active unison voices
+                    // Sum all active unison voices with stereo panning
                     for (int voice = 0; voice < unisonVoices; ++voice)
                     {
                         float voiceSample;
@@ -314,21 +323,45 @@ private:
                             voiceSample = (float)(std::sin(unisonAngles[voice]) * level);
                         }
                         
-                        // Add this voice to the total sample
-                        currentSample += voiceSample;
+                        // Calculate stereo panning for this voice
+                        float pan = 0.0f; // Center by default
+                        if (unisonVoices > 1)
+                        {
+                            // Spread voices across stereo field based on stereo width
+                            pan = (voice - (unisonVoices - 1) / 2.0f) / ((unisonVoices - 1) / 2.0f) * stereoWidth;
+                            pan = juce::jlimit(-1.0f, 1.0f, pan);
+                        }
+                        
+                        // Apply panning (equal power panning)
+                        float leftGain = std::cos((pan + 1.0f) * juce::MathConstants<float>::pi * 0.25f);
+                        float rightGain = std::sin((pan + 1.0f) * juce::MathConstants<float>::pi * 0.25f);
+                        
+                        leftSample += voiceSample * leftGain;
+                        rightSample += voiceSample * rightGain;
                         
                         // Update angle for this voice
                         unisonAngles[voice] += unisonDeltas[voice];
                     }
                     
                     // Apply level scaling to prevent clipping from multiple voices
-                    currentSample /= std::sqrt((float)unisonVoices);
+                    leftSample /= std::sqrt((float)unisonVoices);
+                    rightSample /= std::sqrt((float)unisonVoices);
                     
                     auto envelopeValue = envelope.getNextSample();
-                    currentSample *= envelopeValue;
+                    leftSample *= envelopeValue;
+                    rightSample *= envelopeValue;
                     
-                    for (auto i = outputBuffer.getNumChannels(); --i >= 0;)
-                        outputBuffer.addSample(i, startSample, currentSample);
+                    // Output to stereo channels
+                    if (outputBuffer.getNumChannels() >= 2)
+                    {
+                        outputBuffer.addSample(0, startSample, leftSample);
+                        outputBuffer.addSample(1, startSample, rightSample);
+                    }
+                    else if (outputBuffer.getNumChannels() == 1)
+                    {
+                        // Mono output - mix left and right
+                        outputBuffer.addSample(0, startSample, (leftSample + rightSample) * 0.5f);
+                    }
                     
                     ++startSample;
                     
@@ -387,6 +420,11 @@ private:
             detune = detuneAmount;
         }
         
+        void setStereoWidth(float width)
+        {
+            stereoWidth = width;
+        }
+        
     private:
         double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
@@ -404,6 +442,7 @@ private:
         bool randomPhase = true; // true = random phase, false = consistent phase
         int unisonVoices = 1; // Number of unison voices (1-16)
         float detune = 0.0f; // Detune amount (0.0 = no detune, 1.0 = max detune)
+        float stereoWidth = 0.5f; // Stereo width (0.0 = mono, 1.0 = full stereo)
         juce::ADSR envelope;
         juce::Random random;
         

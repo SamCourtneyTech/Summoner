@@ -139,6 +139,8 @@ private:
     juce::Label volumeLabel;
     juce::Slider detuneSlider;
     juce::Label detuneLabel;
+    juce::Slider stereoWidthSlider;
+    juce::Label stereoWidthLabel;
     juce::Slider attackSlider;
     juce::Label attackLabel;
     juce::Slider decaySlider;

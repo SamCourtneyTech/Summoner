@@ -48,6 +48,21 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     detuneSlider.addListener(this);
     addAndMakeVisible(detuneSlider);
     
+    // Stereo Width control
+    stereoWidthLabel.setText("Stereo", juce::dontSendNotification);
+    stereoWidthLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
+    stereoWidthLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    stereoWidthLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(stereoWidthLabel);
+
+    stereoWidthSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    stereoWidthSlider.setRange(0.0, 1.0, 0.01);
+    stereoWidthSlider.setValue(0.5);
+    stereoWidthSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    stereoWidthSlider.setLookAndFeel(&customKnobLookAndFeel);
+    stereoWidthSlider.addListener(this);
+    addAndMakeVisible(stereoWidthSlider);
+    
     // Attack control
     attackLabel.setText("Attack", juce::dontSendNotification);
     attackLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
@@ -385,6 +400,12 @@ void SynthesizerComponent::resized()
     detuneLabel.setBounds(detuneSection.removeFromTop(20));
     detuneSlider.setBounds(detuneSection);
     
+    volumeRow.removeFromLeft(15); // spacing
+    
+    auto stereoWidthSection = volumeRow.removeFromLeft(adsrKnobWidth);
+    stereoWidthLabel.setBounds(stereoWidthSection.removeFromTop(20));
+    stereoWidthSlider.setBounds(stereoWidthSection);
+    
     // Bottom controls - Pulse width and Octave
     bounds.removeFromTop(20); // spacing
     auto bottomControlsRow = bounds.removeFromTop(80);
@@ -434,6 +455,10 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     else if (slider == &detuneSlider)
     {
         audioProcessor.setSynthDetune(static_cast<float>(detuneSlider.getValue()));
+    }
+    else if (slider == &stereoWidthSlider)
+    {
+        audioProcessor.setSynthStereoWidth(static_cast<float>(stereoWidthSlider.getValue()));
     }
     else if (slider == &attackSlider)
     {

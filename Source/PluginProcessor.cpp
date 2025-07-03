@@ -239,6 +239,18 @@ void SummonerXSerum2AudioProcessor::updateDetune()
     }
 }
 
+void SummonerXSerum2AudioProcessor::updateStereoWidth()
+{
+    // Update stereo width for all existing voices
+    for (int i = 0; i < synthesiser.getNumVoices(); ++i)
+    {
+        if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
+        {
+            voice->setStereoWidth(synthStereoWidth);
+        }
+    }
+}
+
 bool SummonerXSerum2AudioProcessor::hasEditor() const
 {
     return true;
