@@ -63,6 +63,21 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     stereoWidthSlider.addListener(this);
     addAndMakeVisible(stereoWidthSlider);
     
+    // Pan control
+    panLabel.setText("Pan", juce::dontSendNotification);
+    panLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
+    panLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    panLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(panLabel);
+
+    panSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    panSlider.setRange(-50.0, 50.0, 1.0);
+    panSlider.setValue(0.0);
+    panSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    panSlider.setLookAndFeel(&customKnobLookAndFeel);
+    panSlider.addListener(this);
+    addAndMakeVisible(panSlider);
+    
     // Attack control
     attackLabel.setText("Attack", juce::dontSendNotification);
     attackLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
@@ -406,6 +421,12 @@ void SynthesizerComponent::resized()
     stereoWidthLabel.setBounds(stereoWidthSection.removeFromTop(20));
     stereoWidthSlider.setBounds(stereoWidthSection);
     
+    volumeRow.removeFromLeft(15); // spacing
+    
+    auto panSection = volumeRow.removeFromLeft(adsrKnobWidth);
+    panLabel.setBounds(panSection.removeFromTop(20));
+    panSlider.setBounds(panSection);
+    
     // Bottom controls - Pulse width and Octave
     bounds.removeFromTop(20); // spacing
     auto bottomControlsRow = bounds.removeFromTop(80);
@@ -459,6 +480,10 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     else if (slider == &stereoWidthSlider)
     {
         audioProcessor.setSynthStereoWidth(static_cast<float>(stereoWidthSlider.getValue()));
+    }
+    else if (slider == &panSlider)
+    {
+        audioProcessor.setSynthPan(static_cast<float>(panSlider.getValue()));
     }
     else if (slider == &attackSlider)
     {

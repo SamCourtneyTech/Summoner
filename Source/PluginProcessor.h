@@ -63,6 +63,12 @@ public:
     }
     float getSynthStereoWidth() const { return synthStereoWidth; }
     
+    void setSynthPan(float pan) { 
+        synthPan = pan; 
+        updatePan();
+    }
+    float getSynthPan() const { return synthPan; }
+    
     void setSynthAttack(float attack) { 
         synthAttack = attack; 
         updateEnvelopeParameters();
@@ -145,6 +151,7 @@ private:
     void updateVoiceCount();
     void updateDetune();
     void updateStereoWidth();
+    void updatePan();
 
     SettingsComponent settingsComponent;
     std::vector<std::map<std::string, std::string>> responses;
@@ -156,6 +163,7 @@ private:
     float synthVolume = 0.5f;
     float synthDetune = 0.0f;
     float synthStereoWidth = 0.5f;
+    float synthPan = 0.0f;
     float synthAttack = 0.1f;
     float synthDecay = 0.2f;
     float synthSustain = 0.7f;
@@ -324,17 +332,17 @@ private:
                         }
                         
                         // Calculate stereo panning for this voice
-                        float pan = 0.0f; // Center by default
+                        float voicePan = 0.0f; // Center by default
                         if (unisonVoices > 1)
                         {
                             // Spread voices across stereo field based on stereo width
-                            pan = (voice - (unisonVoices - 1) / 2.0f) / ((unisonVoices - 1) / 2.0f) * stereoWidth;
-                            pan = juce::jlimit(-1.0f, 1.0f, pan);
+                            voicePan = (voice - (unisonVoices - 1) / 2.0f) / ((unisonVoices - 1) / 2.0f) * stereoWidth;
+                            voicePan = juce::jlimit(-1.0f, 1.0f, voicePan);
                         }
                         
                         // Apply panning (equal power panning)
-                        float leftGain = std::cos((pan + 1.0f) * juce::MathConstants<float>::pi * 0.25f);
-                        float rightGain = std::sin((pan + 1.0f) * juce::MathConstants<float>::pi * 0.25f);
+                        float leftGain = std::cos((voicePan + 1.0f) * juce::MathConstants<float>::pi * 0.25f);
+                        float rightGain = std::sin((voicePan + 1.0f) * juce::MathConstants<float>::pi * 0.25f);
                         
                         leftSample += voiceSample * leftGain;
                         rightSample += voiceSample * rightGain;
@@ -350,6 +358,17 @@ private:
                     auto envelopeValue = envelope.getNextSample();
                     leftSample *= envelopeValue;
                     rightSample *= envelopeValue;
+                    
+                    // Apply overall pan (-50 to +50 range)
+                    float normalizedPan = pan / 50.0f; // Convert to -1.0 to +1.0 range
+                    normalizedPan = juce::jlimit(-1.0f, 1.0f, normalizedPan);
+                    
+                    // Apply overall pan using equal power panning
+                    float panLeftGain = std::cos((normalizedPan + 1.0f) * juce::MathConstants<float>::pi * 0.25f);
+                    float panRightGain = std::sin((normalizedPan + 1.0f) * juce::MathConstants<float>::pi * 0.25f);
+                    
+                    leftSample *= panLeftGain;
+                    rightSample *= panRightGain;
                     
                     // Output to stereo channels
                     if (outputBuffer.getNumChannels() >= 2)
@@ -425,6 +444,11 @@ private:
             stereoWidth = width;
         }
         
+        void setPan(float panValue)
+        {
+            pan = panValue;
+        }
+        
     private:
         double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
@@ -443,6 +467,7 @@ private:
         int unisonVoices = 1; // Number of unison voices (1-16)
         float detune = 0.0f; // Detune amount (0.0 = no detune, 1.0 = max detune)
         float stereoWidth = 0.5f; // Stereo width (0.0 = mono, 1.0 = full stereo)
+        float pan = 0.0f; // Pan position (-50 = left, 0 = center, 50 = right)
         juce::ADSR envelope;
         juce::Random random;
         
