@@ -340,7 +340,29 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     g.setGradientFill(gradient);
     g.fillAll();
     
-    // Border
+    // Oscillator section background
+    auto bounds = getLocalBounds();
+    bounds.reduce(20, 20);
+    
+    // Skip title area
+    bounds.removeFromTop(40);
+    bounds.removeFromTop(10);
+    bounds.removeFromTop(30);
+    bounds.removeFromTop(30);
+    bounds.removeFromTop(20);
+    
+    // Calculate oscillator section bounds (everything except the outer margins)
+    auto oscillatorBounds = bounds;
+    
+    // Draw oscillator section background
+    g.setColour(juce::Colour(0xff0f0f1f).withAlpha(0.8f));
+    g.fillRoundedRectangle(oscillatorBounds.toFloat(), 8.0f);
+    
+    // Draw oscillator section border
+    g.setColour(juce::Colour(0xff2a2a4e).withAlpha(0.6f));
+    g.drawRoundedRectangle(oscillatorBounds.toFloat(), 8.0f, 1.0f);
+    
+    // Main window border
     g.setColour(juce::Colour(0xff16213e));
     g.drawRect(getLocalBounds(), 2);
 }
@@ -384,11 +406,11 @@ void SynthesizerComponent::resized()
     
     bounds.removeFromTop(20); // spacing between rows
     
-    // Bottom row - ADSR knobs (left half of screen)
+    // Bottom row - ADSR knobs (left third of screen)
     auto adsrRow = bounds.removeFromTop(controlHeight);
-    auto adsrSection = adsrRow.removeFromLeft(bounds.getWidth() / 2);
+    auto adsrSection = adsrRow.removeFromLeft(bounds.getWidth() / 3);
     
-    // Calculate smaller knob width for 4 knobs in 1/2 of screen width
+    // Calculate smaller knob width for 4 knobs in 1/3 of screen width
     auto adsrKnobWidth = (adsrSection.getWidth() - 45) / 4; // 45 = 3 spacings of 15px each
     
     auto attackArea = adsrSection.removeFromLeft(adsrKnobWidth);
@@ -413,7 +435,7 @@ void SynthesizerComponent::resized()
     releaseLabel.setBounds(releaseArea.removeFromTop(20));
     releaseSlider.setBounds(releaseArea);
     
-    // Volume and Detune knob section - add another row below ADSR
+    // Volume, Detune, Stereo, Pan knob section - constrained to about 1/3 screen width
     bounds.removeFromTop(20); // spacing
     auto volumeRow = bounds.removeFromTop(controlHeight);
     auto volumeSection = volumeRow.removeFromLeft(adsrKnobWidth);
