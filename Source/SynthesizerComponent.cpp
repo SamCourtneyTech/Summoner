@@ -115,19 +115,6 @@ void ADSREnvelopeComponent::updateEnvelope(float attack, float decay, float sust
 SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& processor)
     : audioProcessor(processor)
 {
-    // Title
-    titleLabel.setText("Internal Synthesizer", juce::dontSendNotification);
-    titleLabel.setFont(juce::Font("Press Start 2P", 20.0f, juce::Font::plain));
-    titleLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    titleLabel.setJustificationType(juce::Justification::centred);
-    addAndMakeVisible(titleLabel);
-    
-    // Placeholder text
-    placeholderLabel.setText("Sine wave oscillator - play MIDI keys!", juce::dontSendNotification);
-    placeholderLabel.setFont(juce::Font("Press Start 2P", 12.0f, juce::Font::plain));
-    placeholderLabel.setColour(juce::Label::textColourId, juce::Colours::lightgrey);
-    placeholderLabel.setJustificationType(juce::Justification::centred);
-    addAndMakeVisible(placeholderLabel);
     
     // Volume control
     volumeLabel.setText("Volume", juce::dontSendNotification);
@@ -461,11 +448,6 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     auto bounds = getLocalBounds();
     bounds.reduce(20, 20);
     
-    // Skip title area
-    bounds.removeFromTop(40);
-    bounds.removeFromTop(10);
-    bounds.removeFromTop(30);
-    bounds.removeFromTop(30);
     bounds.removeFromTop(20);
     
     // Calculate oscillator section bounds (everything except the outer margins)
@@ -489,13 +471,6 @@ void SynthesizerComponent::resized()
     auto bounds = getLocalBounds();
     bounds.reduce(20, 20);
     
-    // Title at the top
-    titleLabel.setBounds(bounds.removeFromTop(40));
-    bounds.removeFromTop(10);
-    
-    // Placeholder text
-    placeholderLabel.setBounds(bounds.removeFromTop(30));
-    bounds.removeFromTop(30);
     
     // Controls in a 2x3 grid (2 linear sliders, 4 ADSR knobs)
     auto controlHeight = 100;
