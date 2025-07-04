@@ -504,21 +504,23 @@ void SynthesizerComponent::resized()
     
     bounds.removeFromTop(20); // spacing
     
-    // Oscillator type buttons (left aligned)
+    // Oscillator type buttons (spread across same width as ADSR section)
     auto buttonHeight = 40;
     auto buttonRow = bounds.removeFromTop(buttonHeight);
-    auto buttonWidth = 40;
-    auto buttonSpacing = 15;
+    auto buttonSection = buttonRow.removeFromLeft(bounds.getWidth() / 3); // Same width as ADSR
     
-    // Left align the 7 buttons
-    auto startX = 0;
+    // Calculate button width and spacing to fill the section
+    auto totalButtons = 6;
+    auto buttonSpacing = 10;
+    auto totalSpacing = (totalButtons - 1) * buttonSpacing;
+    auto buttonWidth = (buttonSection.getWidth() - totalSpacing) / totalButtons;
     
-    sineWaveButton.setBounds(startX, buttonRow.getY(), buttonWidth, buttonHeight);
-    sawWaveButton.setBounds(startX + (buttonWidth + buttonSpacing), buttonRow.getY(), buttonWidth, buttonHeight);
-    squareWaveButton.setBounds(startX + (buttonWidth + buttonSpacing) * 2, buttonRow.getY(), buttonWidth, buttonHeight);
-    triangleWaveButton.setBounds(startX + (buttonWidth + buttonSpacing) * 3, buttonRow.getY(), buttonWidth, buttonHeight);
-    noiseWaveButton.setBounds(startX + (buttonWidth + buttonSpacing) * 4, buttonRow.getY(), buttonWidth, buttonHeight);
-    pinkNoiseButton.setBounds(startX + (buttonWidth + buttonSpacing) * 5, buttonRow.getY(), buttonWidth, buttonHeight);
+    sineWaveButton.setBounds(buttonSection.getX(), buttonRow.getY(), buttonWidth, buttonHeight);
+    sawWaveButton.setBounds(buttonSection.getX() + (buttonWidth + buttonSpacing), buttonRow.getY(), buttonWidth, buttonHeight);
+    squareWaveButton.setBounds(buttonSection.getX() + (buttonWidth + buttonSpacing) * 2, buttonRow.getY(), buttonWidth, buttonHeight);
+    triangleWaveButton.setBounds(buttonSection.getX() + (buttonWidth + buttonSpacing) * 3, buttonRow.getY(), buttonWidth, buttonHeight);
+    noiseWaveButton.setBounds(buttonSection.getX() + (buttonWidth + buttonSpacing) * 4, buttonRow.getY(), buttonWidth, buttonHeight);
+    pinkNoiseButton.setBounds(buttonSection.getX() + (buttonWidth + buttonSpacing) * 5, buttonRow.getY(), buttonWidth, buttonHeight);
     
     
     bounds.removeFromTop(20); // spacing between rows
