@@ -60,10 +60,21 @@ public:
         auto font = juce::Font("Press Start 2P", 10.0f, juce::Font::plain);
         g.setFont(font);
         
-        // Use blue text when button is toggled (selected), otherwise use the default color
+        // Use different colors based on button text when toggled (selected)
         if (button.getToggleState())
         {
-            g.setColour(juce::Colours::blue);
+            if (button.getButtonText() == "WHT")
+            {
+                g.setColour(juce::Colours::grey);
+            }
+            else if (button.getButtonText() == "PNK")
+            {
+                g.setColour(juce::Colours::pink);
+            }
+            else
+            {
+                g.setColour(juce::Colours::blue);
+            }
         }
         else
         {
