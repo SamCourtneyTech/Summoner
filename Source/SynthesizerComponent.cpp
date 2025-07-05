@@ -988,6 +988,53 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     g.drawLine(tuningCorners.getRight() - 8, tuningCorners.getBottom(), tuningCorners.getRight(), tuningCorners.getBottom(), 2.0f);
     g.drawLine(tuningCorners.getRight(), tuningCorners.getBottom(), tuningCorners.getRight(), tuningCorners.getBottom() - 8, 2.0f);
     
+    // Individual background boxes for tuning controls - center them
+    auto tuningControlsRow = tuningSectionBounds.reduced(3, 3);
+    tuningControlsRow.removeFromLeft(2); // Shift right slightly by reducing bounds
+    tuningControlsRow.removeFromTop(-10); // Shift up by expanding bounds
+    
+    // Octave control box
+    auto octaveControlArea = tuningControlsRow.removeFromLeft(60);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(octaveControlArea.getCentreX() - 35, octaveControlArea.getCentreY() - 35, 70, 70, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(octaveControlArea.getCentreX() - 34, octaveControlArea.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(octaveControlArea.getCentreX() - 32, octaveControlArea.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
+    
+    tuningControlsRow.removeFromLeft(10); // spacing
+    
+    // Semitone control box
+    auto semitoneControlArea = tuningControlsRow.removeFromLeft(60);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(semitoneControlArea.getCentreX() - 35, semitoneControlArea.getCentreY() - 35, 70, 70, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(semitoneControlArea.getCentreX() - 34, semitoneControlArea.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(semitoneControlArea.getCentreX() - 32, semitoneControlArea.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
+    
+    tuningControlsRow.removeFromLeft(10); // spacing
+    
+    // Fine tune control box
+    auto fineTuneControlArea = tuningControlsRow.removeFromLeft(60);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(fineTuneControlArea.getCentreX() - 35, fineTuneControlArea.getCentreY() - 35, 70, 70, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(fineTuneControlArea.getCentreX() - 34, fineTuneControlArea.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(fineTuneControlArea.getCentreX() - 32, fineTuneControlArea.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
+    
+    tuningControlsRow.removeFromLeft(10); // spacing
+    
+    // Voice count control box
+    auto voiceCountControlArea = tuningControlsRow.removeFromLeft(60);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(voiceCountControlArea.getCentreX() - 35, voiceCountControlArea.getCentreY() - 35, 70, 70, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(voiceCountControlArea.getCentreX() - 34, voiceCountControlArea.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(voiceCountControlArea.getCentreX() - 32, voiceCountControlArea.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
+    
     sectionBounds.removeFromTop(20); // spacing
     
     // Phase section outline
