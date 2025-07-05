@@ -470,7 +470,44 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     g.setColour(juce::Colours::black);
     g.fillAll();
     
-    // Removed general wood background - now black page background
+    // Add hollow spruce wood border around whole page
+    auto pageBounds = getLocalBounds().toFloat();
+    auto borderThickness = 20.0f;
+    
+    // Outer spruce wood border
+    g.setColour(juce::Colour(0xff3d2914));
+    g.fillRoundedRectangle(pageBounds, 8.0f);
+    
+    // Cut out inner area to make it hollow
+    auto innerBounds = pageBounds.reduced(borderThickness);
+    g.setColour(juce::Colours::black);
+    g.fillRoundedRectangle(innerBounds, 4.0f);
+    
+    // Add spruce wood grain to border
+    juce::Random borderRandom(42);
+    for (int i = 0; i < 30; ++i)
+    {
+        // Top border grain
+        auto y = pageBounds.getY() + borderRandom.nextFloat() * borderThickness;
+        auto startX = pageBounds.getX();
+        auto endX = pageBounds.getRight();
+        g.setColour(juce::Colour(0xff1a0f08).withAlpha(0.2f + borderRandom.nextFloat() * 0.3f));
+        g.drawLine(startX, y, endX, y, 1.0f + borderRandom.nextFloat() * 1.0f);
+        
+        // Bottom border grain
+        y = pageBounds.getBottom() - borderThickness + borderRandom.nextFloat() * borderThickness;
+        g.drawLine(startX, y, endX, y, 1.0f + borderRandom.nextFloat() * 1.0f);
+        
+        // Left border grain
+        auto x = pageBounds.getX() + borderRandom.nextFloat() * borderThickness;
+        auto startY = pageBounds.getY();
+        auto endY = pageBounds.getBottom();
+        g.drawLine(x, startY, x, endY, 1.0f + borderRandom.nextFloat() * 1.0f);
+        
+        // Right border grain
+        x = pageBounds.getRight() - borderThickness + borderRandom.nextFloat() * borderThickness;
+        g.drawLine(x, startY, x, endY, 1.0f + borderRandom.nextFloat() * 1.0f);
+    }
     
     // Add futuristic outline around the actual controls bounds
     // Calculate the tight bounds that encompass all controls
@@ -501,80 +538,36 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     g.setColour(juce::Colour(0xff1a1a1a));
     g.fillRoundedRectangle(masterOutlineBounds, 10.0f);
     
-    // Main raised surface - wood texture to show it's raised
+    // Main raised surface - metallic modular synth module look
     auto raisedBounds = masterOutlineBounds.reduced(2.0f);
     
-    // Base spruce wood color for raised surface - darker and more realistic
-    g.setColour(juce::Colour(0xff3d2914));
+    // Dark metallic grey base
+    g.setColour(juce::Colour(0xff404040));
     g.fillRoundedRectangle(raisedBounds, 8.0f);
     
-    // Add detailed spruce wood grain gradient
-    juce::ColourGradient spruceGradient(juce::Colour(0xff4a3319), raisedBounds.getX(), raisedBounds.getY(),
-                                       juce::Colour(0xff2a1b0f), raisedBounds.getX(), raisedBounds.getBottom(), false);
-    g.setGradientFill(spruceGradient);
+    // Add metallic gradient for depth
+    juce::ColourGradient metallicGradient(juce::Colour(0xff505050), raisedBounds.getX(), raisedBounds.getY(),
+                                         juce::Colour(0xff303030), raisedBounds.getX(), raisedBounds.getBottom(), false);
+    g.setGradientFill(metallicGradient);
     g.fillRoundedRectangle(raisedBounds, 8.0f);
     
-    // Create detailed spruce wood grain patterns
-    juce::Random spruceRandom(42);
-    
-    // Major grain lines - pronounced spruce characteristics
-    for (int i = 0; i < 40; ++i)
+    // Add subtle metallic texture
+    juce::Random metallicRandom(42);
+    g.setColour(juce::Colour(0xff202020).withAlpha(0.3f));
+    for (int i = 0; i < 200; ++i)
     {
-        auto y = raisedBounds.getY() + spruceRandom.nextFloat() * raisedBounds.getHeight();
-        auto startX = raisedBounds.getX();
-        auto endX = raisedBounds.getRight();
-        auto grainOpacity = 0.15f + spruceRandom.nextFloat() * 0.4f;
-        
-        // Darker grain lines for spruce
-        if (spruceRandom.nextBool())
-            g.setColour(juce::Colour(0xff1a0f08).withAlpha(grainOpacity));
-        else
-            g.setColour(juce::Colour(0xff2d1b10).withAlpha(grainOpacity));
-        
-        // More pronounced wavy grain for spruce character
-        juce::Path grainPath;
-        grainPath.startNewSubPath(startX, y);
-        
-        for (float x = startX; x < endX; x += 15.0f)
-        {
-            auto waveY = y + sin((x - startX) * 0.015f) * (3.0f + spruceRandom.nextFloat() * 5.0f);
-            grainPath.lineTo(x, waveY);
-        }
-        grainPath.lineTo(endX, y);
-        
-        g.strokePath(grainPath, juce::PathStrokeType(0.8f + spruceRandom.nextFloat() * 2.0f));
+        auto x = raisedBounds.getX() + metallicRandom.nextFloat() * raisedBounds.getWidth();
+        auto y = raisedBounds.getY() + metallicRandom.nextFloat() * raisedBounds.getHeight();
+        g.fillRect(x, y, 1.0f, 1.0f);
     }
     
-    // Add annual rings for spruce realism
-    spruceRandom.setSeed(999);
-    for (int i = 0; i < 8; ++i)
+    // Add lighter metallic highlights
+    metallicRandom.setSeed(123);
+    g.setColour(juce::Colour(0xff606060).withAlpha(0.2f));
+    for (int i = 0; i < 150; ++i)
     {
-        auto centerX = raisedBounds.getCentreX() + spruceRandom.nextFloat() * 100 - 50;
-        auto centerY = raisedBounds.getCentreY() + spruceRandom.nextFloat() * 100 - 50;
-        auto radius = 30 + spruceRandom.nextFloat() * 80;
-        
-        g.setColour(juce::Colour(0xff1a0f08).withAlpha(0.1f + spruceRandom.nextFloat() * 0.15f));
-        g.drawEllipse(centerX - radius, centerY - radius, radius * 2, radius * 2, 
-                     0.5f + spruceRandom.nextFloat() * 1.0f);
-    }
-    
-    // Add fine spruce texture
-    spruceRandom.setSeed(789);
-    g.setColour(juce::Colour(0xff0f0906).withAlpha(0.08f));
-    for (int i = 0; i < 800; ++i)
-    {
-        auto x = raisedBounds.getX() + spruceRandom.nextFloat() * raisedBounds.getWidth();
-        auto y = raisedBounds.getY() + spruceRandom.nextFloat() * raisedBounds.getHeight();
-        g.fillRect(x, y, 1.0f + spruceRandom.nextFloat() * 1.0f, 1.0f);
-    }
-    
-    // Add subtle spruce highlights
-    spruceRandom.setSeed(101112);
-    g.setColour(juce::Colour(0xff6b4423).withAlpha(0.04f));
-    for (int i = 0; i < 300; ++i)
-    {
-        auto x = raisedBounds.getX() + spruceRandom.nextFloat() * raisedBounds.getWidth();
-        auto y = raisedBounds.getY() + spruceRandom.nextFloat() * raisedBounds.getHeight();
+        auto x = raisedBounds.getX() + metallicRandom.nextFloat() * raisedBounds.getWidth();
+        auto y = raisedBounds.getY() + metallicRandom.nextFloat() * raisedBounds.getHeight();
         g.fillRect(x, y, 1.0f, 1.0f);
     }
     
@@ -596,19 +589,63 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     g.drawLine(raisedBounds.getRight() - 1, raisedBounds.getY() + 8, 
                raisedBounds.getRight() - 1, raisedBounds.getBottom() - 8, 2.0f);
     
-    // Add "Oscillator 1" label to bottom right of wood component
+    // Add corner screws for modular synth module look
+    auto screwRadius = 6.0f;
+    auto screwInset = 12.0f;
+    
+    // Top-left screw
+    auto tlScrew = juce::Rectangle<float>(raisedBounds.getX() + screwInset, raisedBounds.getY() + screwInset, screwRadius * 2, screwRadius * 2);
+    g.setColour(juce::Colour(0xff303030));
+    g.fillEllipse(tlScrew);
+    g.setColour(juce::Colour(0xff606060));
+    g.drawEllipse(tlScrew, 1.0f);
+    // Screw slot
+    g.setColour(juce::Colour(0xff202020));
+    g.drawLine(tlScrew.getCentreX() - 3, tlScrew.getCentreY(), tlScrew.getCentreX() + 3, tlScrew.getCentreY(), 1.5f);
+    
+    // Top-right screw
+    auto trScrew = juce::Rectangle<float>(raisedBounds.getRight() - screwInset - screwRadius * 2, raisedBounds.getY() + screwInset, screwRadius * 2, screwRadius * 2);
+    g.setColour(juce::Colour(0xff303030));
+    g.fillEllipse(trScrew);
+    g.setColour(juce::Colour(0xff606060));
+    g.drawEllipse(trScrew, 1.0f);
+    // Screw slot
+    g.setColour(juce::Colour(0xff202020));
+    g.drawLine(trScrew.getCentreX() - 3, trScrew.getCentreY(), trScrew.getCentreX() + 3, trScrew.getCentreY(), 1.5f);
+    
+    // Bottom-left screw
+    auto blScrew = juce::Rectangle<float>(raisedBounds.getX() + screwInset, raisedBounds.getBottom() - screwInset - screwRadius * 2, screwRadius * 2, screwRadius * 2);
+    g.setColour(juce::Colour(0xff303030));
+    g.fillEllipse(blScrew);
+    g.setColour(juce::Colour(0xff606060));
+    g.drawEllipse(blScrew, 1.0f);
+    // Screw slot
+    g.setColour(juce::Colour(0xff202020));
+    g.drawLine(blScrew.getCentreX() - 3, blScrew.getCentreY(), blScrew.getCentreX() + 3, blScrew.getCentreY(), 1.5f);
+    
+    // Bottom-right screw
+    auto brScrew = juce::Rectangle<float>(raisedBounds.getRight() - screwInset - screwRadius * 2, raisedBounds.getBottom() - screwInset - screwRadius * 2, screwRadius * 2, screwRadius * 2);
+    g.setColour(juce::Colour(0xff303030));
+    g.fillEllipse(brScrew);
+    g.setColour(juce::Colour(0xff606060));
+    g.drawEllipse(brScrew, 1.0f);
+    // Screw slot
+    g.setColour(juce::Colour(0xff202020));
+    g.drawLine(brScrew.getCentreX() - 3, brScrew.getCentreY(), brScrew.getCentreX() + 3, brScrew.getCentreY(), 1.5f);
+    
+    // Add "Oscillator 1" label to bottom right of module component
     auto labelBounds = juce::Rectangle<float>(raisedBounds.getRight() - 120, raisedBounds.getBottom() - 35, 110, 25);
     
-    // Metallic grey background
-    g.setColour(juce::Colour(0xff606060));
+    // Slightly lighter metallic background for label
+    g.setColour(juce::Colour(0xff505050));
     g.fillRoundedRectangle(labelBounds, 4.0f);
     
     // Darker border for depth
-    g.setColour(juce::Colour(0xff404040));
+    g.setColour(juce::Colour(0xff303030));
     g.drawRoundedRectangle(labelBounds, 4.0f, 1.0f);
     
     // Light highlight on top for metallic effect
-    g.setColour(juce::Colour(0xff808080));
+    g.setColour(juce::Colour(0xff707070));
     g.drawLine(labelBounds.getX() + 4, labelBounds.getY() + 1, 
                labelBounds.getRight() - 4, labelBounds.getY() + 1, 1.0f);
     
@@ -617,15 +654,15 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     g.setFont(juce::Font("Arial", 13.0f, juce::Font::bold));
     
     // Dark shadow below and right for engraved effect
-    g.setColour(juce::Colour(0xff404040));
+    g.setColour(juce::Colour(0xff303030));
     g.drawText("OSCILLATOR 1", textBounds.translated(1, 1), juce::Justification::centred, true);
     
     // Light highlight above and left for engraved effect
-    g.setColour(juce::Colour(0xff909090));
+    g.setColour(juce::Colour(0xff808080));
     g.drawText("OSCILLATOR 1", textBounds.translated(-1, -1), juce::Justification::centred, true);
     
     // Main text
-    g.setColour(juce::Colour(0xff707070));
+    g.setColour(juce::Colour(0xff606060));
     g.drawText("OSCILLATOR 1", textBounds, juce::Justification::centred, true);
     
     // Futuristic outline with glow effect on the raised surface
