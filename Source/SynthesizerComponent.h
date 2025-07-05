@@ -84,17 +84,13 @@ public:
         {
             // Determine color based on button text when toggled (selected)
             juce::Colour ledColour;
-            if (button.getButtonText() == "WHT")
-            {
-                ledColour = juce::Colours::grey;
-            }
-            else if (button.getButtonText() == "PNK")
+            if (button.getButtonText() == "PNK")
             {
                 ledColour = juce::Colours::pink;
             }
             else
             {
-                ledColour = juce::Colours::cyan; // Changed from blue to cyan for better LED effect
+                ledColour = juce::Colours::white; // All buttons use white LED except pink
             }
             
             // Draw LED glow effect - multiple layers for realistic glow
