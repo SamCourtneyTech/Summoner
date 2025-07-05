@@ -22,9 +22,7 @@ public:
         // Draw the block arc based on slider position
         if (sliderPos > 0.0f)
         {
-            g.setColour(juce::Colours::white);
-            
-            // Create evenly spaced white blocks
+            // Create evenly spaced white blocks with LED glow
             auto arcRadius = radius - 1;
             auto blockSize = 0.08f; // Smaller blocks for rounder appearance
             auto gapSize = 0.02f; // Smaller gaps for smoother look
@@ -34,15 +32,35 @@ public:
             {
                 auto blockEndAngle = juce::jmin(currentAngle + blockSize, angle);
                 
-                // Draw white rectangular block
                 auto startX = centreX + arcRadius * std::cos(currentAngle - juce::MathConstants<float>::halfPi);
                 auto startY = centreY + arcRadius * std::sin(currentAngle - juce::MathConstants<float>::halfPi);
                 auto endX = centreX + arcRadius * std::cos(blockEndAngle - juce::MathConstants<float>::halfPi);
                 auto endY = centreY + arcRadius * std::sin(blockEndAngle - juce::MathConstants<float>::halfPi);
                 
-                // Draw thick line segment
+                // Create the block path
                 juce::Path blockPath;
                 blockPath.addLineSegment(juce::Line<float>(startX, startY, endX, endY), 5.0f);
+                
+                // Draw LED glow effect for each block
+                // Outer glow layers
+                for (float glowRadius = 3.0f; glowRadius >= 1.0f; glowRadius -= 0.5f)
+                {
+                    auto alpha = 0.02f + (0.06f * (3.5f - glowRadius) / 2.5f);
+                    g.setColour(juce::Colours::white.withAlpha(alpha));
+                    
+                    juce::Path glowPath;
+                    glowPath.addLineSegment(juce::Line<float>(startX, startY, endX, endY), 5.0f + glowRadius * 2);
+                    g.fillPath(glowPath);
+                }
+                
+                // Inner glow
+                g.setColour(juce::Colours::white.withAlpha(0.3f));
+                juce::Path innerGlowPath;
+                innerGlowPath.addLineSegment(juce::Line<float>(startX, startY, endX, endY), 6.0f);
+                g.fillPath(innerGlowPath);
+                
+                // Core bright white block
+                g.setColour(juce::Colours::white);
                 g.fillPath(blockPath);
                 
                 currentAngle += blockSize + gapSize;
