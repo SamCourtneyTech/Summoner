@@ -510,26 +510,62 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     
     auto masterOutlineBounds = juce::Rectangle<float>(masterLeft - 12, masterTop - 12, masterWidth + 24, masterHeight + 24);
     
-    // Draw main outline with subtle glow
-    g.setColour(juce::Colour(0xffffff00).withAlpha(0.4f)); // Yellow glow
-    g.drawRoundedRectangle(masterOutlineBounds, 10.0f, 2.0f);
-    g.setColour(juce::Colour(0xffffff00).withAlpha(0.15f));
-    g.drawRoundedRectangle(masterOutlineBounds.reduced(1.0f), 9.0f, 1.5f);
+    // Create 3D depth effect with multiple layers
     
-    // Add corner highlights for the master outline
-    g.setColour(juce::Colour(0xffffff00).withAlpha(0.7f));
+    // Shadow layer (bottom-right offset for depth)
+    auto shadowBounds = masterOutlineBounds.translated(3.0f, 3.0f);
+    g.setColour(juce::Colours::black.withAlpha(0.4f));
+    g.fillRoundedRectangle(shadowBounds, 10.0f);
+    
+    // Dark base layer (for depth)
+    g.setColour(juce::Colour(0xff1a1a1a));
+    g.fillRoundedRectangle(masterOutlineBounds, 10.0f);
+    
+    // Main raised surface - lighter grey to show it's raised
+    auto raisedBounds = masterOutlineBounds.reduced(2.0f);
+    juce::ColourGradient raisedGradient(juce::Colour(0xff505050), raisedBounds.getX(), raisedBounds.getY(),
+                                       juce::Colour(0xff404040), raisedBounds.getX(), raisedBounds.getBottom(), false);
+    g.setGradientFill(raisedGradient);
+    g.fillRoundedRectangle(raisedBounds, 8.0f);
+    
+    // Top and left highlights (simulating light from top-left)
+    g.setColour(juce::Colour(0xff707070).withAlpha(0.8f));
+    // Top highlight
+    g.drawLine(raisedBounds.getX() + 8, raisedBounds.getY() + 1, 
+               raisedBounds.getRight() - 8, raisedBounds.getY() + 1, 2.0f);
+    // Left highlight  
+    g.drawLine(raisedBounds.getX() + 1, raisedBounds.getY() + 8, 
+               raisedBounds.getX() + 1, raisedBounds.getBottom() - 8, 2.0f);
+    
+    // Bottom and right shadows (simulating shadow from top-left light)
+    g.setColour(juce::Colour(0xff202020).withAlpha(0.9f));
+    // Bottom shadow
+    g.drawLine(raisedBounds.getX() + 8, raisedBounds.getBottom() - 1, 
+               raisedBounds.getRight() - 8, raisedBounds.getBottom() - 1, 2.0f);
+    // Right shadow
+    g.drawLine(raisedBounds.getRight() - 1, raisedBounds.getY() + 8, 
+               raisedBounds.getRight() - 1, raisedBounds.getBottom() - 8, 2.0f);
+    
+    // Futuristic outline with glow effect on the raised surface
+    g.setColour(juce::Colours::white.withAlpha(0.6f)); // White glow
+    g.drawRoundedRectangle(raisedBounds, 8.0f, 2.0f);
+    g.setColour(juce::Colours::white.withAlpha(0.2f));
+    g.drawRoundedRectangle(raisedBounds.reduced(1.0f), 7.0f, 1.0f);
+    
+    // Add corner highlights for the futuristic look
+    g.setColour(juce::Colours::white.withAlpha(0.9f));
     // Top-left corner
-    g.drawLine(masterOutlineBounds.getX(), masterOutlineBounds.getY() + 12, masterOutlineBounds.getX(), masterOutlineBounds.getY(), 2.5f);
-    g.drawLine(masterOutlineBounds.getX(), masterOutlineBounds.getY(), masterOutlineBounds.getX() + 12, masterOutlineBounds.getY(), 2.5f);
+    g.drawLine(raisedBounds.getX(), raisedBounds.getY() + 10, raisedBounds.getX(), raisedBounds.getY(), 2.5f);
+    g.drawLine(raisedBounds.getX(), raisedBounds.getY(), raisedBounds.getX() + 10, raisedBounds.getY(), 2.5f);
     // Top-right corner
-    g.drawLine(masterOutlineBounds.getRight() - 12, masterOutlineBounds.getY(), masterOutlineBounds.getRight(), masterOutlineBounds.getY(), 2.5f);
-    g.drawLine(masterOutlineBounds.getRight(), masterOutlineBounds.getY(), masterOutlineBounds.getRight(), masterOutlineBounds.getY() + 12, 2.5f);
+    g.drawLine(raisedBounds.getRight() - 10, raisedBounds.getY(), raisedBounds.getRight(), raisedBounds.getY(), 2.5f);
+    g.drawLine(raisedBounds.getRight(), raisedBounds.getY(), raisedBounds.getRight(), raisedBounds.getY() + 10, 2.5f);
     // Bottom-left corner
-    g.drawLine(masterOutlineBounds.getX(), masterOutlineBounds.getBottom() - 12, masterOutlineBounds.getX(), masterOutlineBounds.getBottom(), 2.5f);
-    g.drawLine(masterOutlineBounds.getX(), masterOutlineBounds.getBottom(), masterOutlineBounds.getX() + 12, masterOutlineBounds.getBottom(), 2.5f);
+    g.drawLine(raisedBounds.getX(), raisedBounds.getBottom() - 10, raisedBounds.getX(), raisedBounds.getBottom(), 2.5f);
+    g.drawLine(raisedBounds.getX(), raisedBounds.getBottom(), raisedBounds.getX() + 10, raisedBounds.getBottom(), 2.5f);
     // Bottom-right corner
-    g.drawLine(masterOutlineBounds.getRight() - 12, masterOutlineBounds.getBottom(), masterOutlineBounds.getRight(), masterOutlineBounds.getBottom(), 2.5f);
-    g.drawLine(masterOutlineBounds.getRight(), masterOutlineBounds.getBottom(), masterOutlineBounds.getRight(), masterOutlineBounds.getBottom() - 12, 2.5f);
+    g.drawLine(raisedBounds.getRight() - 10, raisedBounds.getBottom(), raisedBounds.getRight(), raisedBounds.getBottom(), 2.5f);
+    g.drawLine(raisedBounds.getRight(), raisedBounds.getBottom(), raisedBounds.getRight(), raisedBounds.getBottom() - 10, 2.5f);
     
     // Draw futuristic section outlines for each row of controls
     auto sectionBounds = getLocalBounds();
@@ -542,14 +578,14 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     waveSectionBounds.reduce(-2, -2); // Expand the bounds slightly
     
     // Draw futuristic wave section outline
-    g.setColour(juce::Colour(0xffff0080).withAlpha(0.6f)); // Pink glow
+    g.setColour(juce::Colours::white.withAlpha(0.6f)); // White glow
     g.drawRoundedRectangle(waveSectionBounds.toFloat(), 4.0f, 1.5f);
-    g.setColour(juce::Colour(0xffff0080).withAlpha(0.2f));
+    g.setColour(juce::Colours::white.withAlpha(0.2f));
     g.drawRoundedRectangle(waveSectionBounds.toFloat().reduced(1.0f), 3.0f, 1.0f);
     
     // Add corner highlights
     auto waveCorners = waveSectionBounds.toFloat();
-    g.setColour(juce::Colour(0xffff0080).withAlpha(0.8f));
+    g.setColour(juce::Colours::white.withAlpha(0.8f));
     // Top-left corner
     g.drawLine(waveCorners.getX(), waveCorners.getY() + 8, waveCorners.getX(), waveCorners.getY(), 2.0f);
     g.drawLine(waveCorners.getX(), waveCorners.getY(), waveCorners.getX() + 8, waveCorners.getY(), 2.0f);
@@ -574,14 +610,14 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     adsrSectionBounds.reduce(-5, -5); // Expand the bounds
     
     // Draw futuristic ADSR outline
-    g.setColour(juce::Colour(0xff00ffff).withAlpha(0.6f)); // Cyan glow
+    g.setColour(juce::Colours::white.withAlpha(0.6f)); // White glow
     g.drawRoundedRectangle(adsrSectionBounds.toFloat(), 4.0f, 1.5f);
-    g.setColour(juce::Colour(0xff00ffff).withAlpha(0.2f));
+    g.setColour(juce::Colours::white.withAlpha(0.2f));
     g.drawRoundedRectangle(adsrSectionBounds.toFloat().reduced(1.0f), 3.0f, 1.0f);
     
     // Add corner highlights for futuristic look
     auto corners = adsrSectionBounds.toFloat();
-    g.setColour(juce::Colour(0xff00ffff).withAlpha(0.8f));
+    g.setColour(juce::Colours::white.withAlpha(0.8f));
     // Top-left corner
     g.drawLine(corners.getX(), corners.getY() + 8, corners.getX(), corners.getY(), 2.0f);
     g.drawLine(corners.getX(), corners.getY(), corners.getX() + 8, corners.getY(), 2.0f);
@@ -603,14 +639,14 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     volumeSectionBounds.reduce(-5, -5); // Expand the bounds
     
     // Draw futuristic volume section outline
-    g.setColour(juce::Colour(0xff00ff80).withAlpha(0.6f)); // Green glow
+    g.setColour(juce::Colours::white.withAlpha(0.6f)); // White glow
     g.drawRoundedRectangle(volumeSectionBounds.toFloat(), 4.0f, 1.5f);
-    g.setColour(juce::Colour(0xff00ff80).withAlpha(0.2f));
+    g.setColour(juce::Colours::white.withAlpha(0.2f));
     g.drawRoundedRectangle(volumeSectionBounds.toFloat().reduced(1.0f), 3.0f, 1.0f);
     
     // Add corner highlights
     auto volumeCorners = volumeSectionBounds.toFloat();
-    g.setColour(juce::Colour(0xff00ff80).withAlpha(0.8f));
+    g.setColour(juce::Colours::white.withAlpha(0.8f));
     // Top-left corner
     g.drawLine(volumeCorners.getX(), volumeCorners.getY() + 8, volumeCorners.getX(), volumeCorners.getY(), 2.0f);
     g.drawLine(volumeCorners.getX(), volumeCorners.getY(), volumeCorners.getX() + 8, volumeCorners.getY(), 2.0f);
@@ -632,14 +668,14 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     tuningSectionBounds.reduce(-5, -5); // Expand the bounds
     
     // Draw futuristic tuning section outline
-    g.setColour(juce::Colour(0xffff8000).withAlpha(0.6f)); // Orange glow
+    g.setColour(juce::Colours::white.withAlpha(0.6f)); // White glow
     g.drawRoundedRectangle(tuningSectionBounds.toFloat(), 4.0f, 1.5f);
-    g.setColour(juce::Colour(0xffff8000).withAlpha(0.2f));
+    g.setColour(juce::Colours::white.withAlpha(0.2f));
     g.drawRoundedRectangle(tuningSectionBounds.toFloat().reduced(1.0f), 3.0f, 1.0f);
     
     // Add corner highlights
     auto tuningCorners = tuningSectionBounds.toFloat();
-    g.setColour(juce::Colour(0xffff8000).withAlpha(0.8f));
+    g.setColour(juce::Colours::white.withAlpha(0.8f));
     // Top-left corner
     g.drawLine(tuningCorners.getX(), tuningCorners.getY() + 8, tuningCorners.getX(), tuningCorners.getY(), 2.0f);
     g.drawLine(tuningCorners.getX(), tuningCorners.getY(), tuningCorners.getX() + 8, tuningCorners.getY(), 2.0f);
@@ -661,14 +697,14 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     phaseSectionBounds.reduce(-5, -5); // Expand the bounds
     
     // Draw futuristic phase section outline
-    g.setColour(juce::Colour(0xffff00ff).withAlpha(0.6f)); // Magenta glow
+    g.setColour(juce::Colours::white.withAlpha(0.6f)); // White glow
     g.drawRoundedRectangle(phaseSectionBounds.toFloat(), 4.0f, 1.5f);
-    g.setColour(juce::Colour(0xffff00ff).withAlpha(0.2f));
+    g.setColour(juce::Colours::white.withAlpha(0.2f));
     g.drawRoundedRectangle(phaseSectionBounds.toFloat().reduced(1.0f), 3.0f, 1.0f);
     
     // Add corner highlights
     auto phaseCorners = phaseSectionBounds.toFloat();
-    g.setColour(juce::Colour(0xffff00ff).withAlpha(0.8f));
+    g.setColour(juce::Colours::white.withAlpha(0.8f));
     // Top-left corner
     g.drawLine(phaseCorners.getX(), phaseCorners.getY() + 8, phaseCorners.getX(), phaseCorners.getY(), 2.0f);
     g.drawLine(phaseCorners.getX(), phaseCorners.getY(), phaseCorners.getX() + 8, phaseCorners.getY(), 2.0f);
