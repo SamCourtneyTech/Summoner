@@ -696,11 +696,11 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     auto attackArea = adsrSection.removeFromLeft(adsrKnobWidth);
     attackArea.removeFromTop(15); // less label space to move higher
     g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(attackArea.getCentreX() - 35, attackArea.getCentreY() - 55, 70, 110, 4.0f);
+    g.fillRoundedRectangle(attackArea.getCentreX() - 40, attackArea.getCentreY() - 60, 80, 120, 4.0f);
     g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(attackArea.getCentreX() - 34, attackArea.getCentreY() - 54, 68, 108, 3.0f, 2.0f);
+    g.drawRoundedRectangle(attackArea.getCentreX() - 39, attackArea.getCentreY() - 59, 78, 118, 3.0f, 2.0f);
     g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(attackArea.getCentreX() - 32, attackArea.getCentreY() - 52, 64, 104, 2.0f, 1.0f);
+    g.drawRoundedRectangle(attackArea.getCentreX() - 37, attackArea.getCentreY() - 57, 74, 114, 2.0f, 1.0f);
     
     adsrSection.removeFromLeft(15); // spacing
     
@@ -708,11 +708,11 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     auto decayArea = adsrSection.removeFromLeft(adsrKnobWidth);
     decayArea.removeFromTop(15);
     g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(decayArea.getCentreX() - 35, decayArea.getCentreY() - 55, 70, 110, 4.0f);
+    g.fillRoundedRectangle(decayArea.getCentreX() - 40, decayArea.getCentreY() - 60, 80, 120, 4.0f);
     g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(decayArea.getCentreX() - 34, decayArea.getCentreY() - 54, 68, 108, 3.0f, 2.0f);
+    g.drawRoundedRectangle(decayArea.getCentreX() - 39, decayArea.getCentreY() - 59, 78, 118, 3.0f, 2.0f);
     g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(decayArea.getCentreX() - 32, decayArea.getCentreY() - 52, 64, 104, 2.0f, 1.0f);
+    g.drawRoundedRectangle(decayArea.getCentreX() - 37, decayArea.getCentreY() - 57, 74, 114, 2.0f, 1.0f);
     
     adsrSection.removeFromLeft(15); // spacing
     
@@ -720,11 +720,11 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     auto sustainArea = adsrSection.removeFromLeft(adsrKnobWidth);
     sustainArea.removeFromTop(15);
     g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(sustainArea.getCentreX() - 35, sustainArea.getCentreY() - 55, 70, 110, 4.0f);
+    g.fillRoundedRectangle(sustainArea.getCentreX() - 40, sustainArea.getCentreY() - 60, 80, 120, 4.0f);
     g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(sustainArea.getCentreX() - 34, sustainArea.getCentreY() - 54, 68, 108, 3.0f, 2.0f);
+    g.drawRoundedRectangle(sustainArea.getCentreX() - 39, sustainArea.getCentreY() - 59, 78, 118, 3.0f, 2.0f);
     g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(sustainArea.getCentreX() - 32, sustainArea.getCentreY() - 52, 64, 104, 2.0f, 1.0f);
+    g.drawRoundedRectangle(sustainArea.getCentreX() - 37, sustainArea.getCentreY() - 57, 74, 114, 2.0f, 1.0f);
     
     adsrSection.removeFromLeft(15); // spacing
     
@@ -732,11 +732,11 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     auto releaseArea = adsrSection;
     releaseArea.removeFromTop(15);
     g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(releaseArea.getCentreX() - 35, releaseArea.getCentreY() - 55, 70, 110, 4.0f);
+    g.fillRoundedRectangle(releaseArea.getCentreX() - 40, releaseArea.getCentreY() - 60, 80, 120, 4.0f);
     g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(releaseArea.getCentreX() - 34, releaseArea.getCentreY() - 54, 68, 108, 3.0f, 2.0f);
+    g.drawRoundedRectangle(releaseArea.getCentreX() - 39, releaseArea.getCentreY() - 59, 78, 118, 3.0f, 2.0f);
     g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(releaseArea.getCentreX() - 32, releaseArea.getCentreY() - 52, 64, 104, 2.0f, 1.0f);
+    g.drawRoundedRectangle(releaseArea.getCentreX() - 37, releaseArea.getCentreY() - 57, 74, 114, 2.0f, 1.0f);
     
     slotBounds.removeFromTop(20); // spacing
     
@@ -745,11 +745,11 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     auto volumeSection = volumeRow.removeFromLeft(adsrKnobWidth);
     volumeSection.removeFromTop(15); // less label space
     g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(volumeSection.getCentreX() - 35, volumeSection.getCentreY() - 55, 70, 110, 4.0f);
+    g.fillRoundedRectangle(volumeSection.getCentreX() - 40, volumeSection.getCentreY() - 60, 80, 120, 4.0f);
     g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(volumeSection.getCentreX() - 34, volumeSection.getCentreY() - 54, 68, 108, 3.0f, 2.0f);
+    g.drawRoundedRectangle(volumeSection.getCentreX() - 39, volumeSection.getCentreY() - 59, 78, 118, 3.0f, 2.0f);
     g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(volumeSection.getCentreX() - 32, volumeSection.getCentreY() - 52, 64, 104, 2.0f, 1.0f);
+    g.drawRoundedRectangle(volumeSection.getCentreX() - 37, volumeSection.getCentreY() - 57, 74, 114, 2.0f, 1.0f);
     
     volumeRow.removeFromLeft(15); // spacing
     
@@ -757,11 +757,11 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     auto detuneSection = volumeRow.removeFromLeft(adsrKnobWidth);
     detuneSection.removeFromTop(15);
     g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(detuneSection.getCentreX() - 35, detuneSection.getCentreY() - 55, 70, 110, 4.0f);
+    g.fillRoundedRectangle(detuneSection.getCentreX() - 40, detuneSection.getCentreY() - 60, 80, 120, 4.0f);
     g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(detuneSection.getCentreX() - 34, detuneSection.getCentreY() - 54, 68, 108, 3.0f, 2.0f);
+    g.drawRoundedRectangle(detuneSection.getCentreX() - 39, detuneSection.getCentreY() - 59, 78, 118, 3.0f, 2.0f);
     g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(detuneSection.getCentreX() - 32, detuneSection.getCentreY() - 52, 64, 104, 2.0f, 1.0f);
+    g.drawRoundedRectangle(detuneSection.getCentreX() - 37, detuneSection.getCentreY() - 57, 74, 114, 2.0f, 1.0f);
     
     volumeRow.removeFromLeft(15); // spacing
     
@@ -769,11 +769,11 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     auto stereoWidthSection = volumeRow.removeFromLeft(adsrKnobWidth);
     stereoWidthSection.removeFromTop(15);
     g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(stereoWidthSection.getCentreX() - 35, stereoWidthSection.getCentreY() - 55, 70, 110, 4.0f);
+    g.fillRoundedRectangle(stereoWidthSection.getCentreX() - 40, stereoWidthSection.getCentreY() - 60, 80, 120, 4.0f);
     g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(stereoWidthSection.getCentreX() - 34, stereoWidthSection.getCentreY() - 54, 68, 108, 3.0f, 2.0f);
+    g.drawRoundedRectangle(stereoWidthSection.getCentreX() - 39, stereoWidthSection.getCentreY() - 59, 78, 118, 3.0f, 2.0f);
     g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(stereoWidthSection.getCentreX() - 32, stereoWidthSection.getCentreY() - 52, 64, 104, 2.0f, 1.0f);
+    g.drawRoundedRectangle(stereoWidthSection.getCentreX() - 37, stereoWidthSection.getCentreY() - 57, 74, 114, 2.0f, 1.0f);
     
     volumeRow.removeFromLeft(15); // spacing
     
@@ -781,11 +781,11 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     auto panSection = volumeRow.removeFromLeft(adsrKnobWidth);
     panSection.removeFromTop(15);
     g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(panSection.getCentreX() - 35, panSection.getCentreY() - 55, 70, 110, 4.0f);
+    g.fillRoundedRectangle(panSection.getCentreX() - 40, panSection.getCentreY() - 60, 80, 120, 4.0f);
     g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(panSection.getCentreX() - 34, panSection.getCentreY() - 54, 68, 108, 3.0f, 2.0f);
+    g.drawRoundedRectangle(panSection.getCentreX() - 39, panSection.getCentreY() - 59, 78, 118, 3.0f, 2.0f);
     g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(panSection.getCentreX() - 32, panSection.getCentreY() - 52, 64, 104, 2.0f, 1.0f);
+    g.drawRoundedRectangle(panSection.getCentreX() - 37, panSection.getCentreY() - 57, 74, 114, 2.0f, 1.0f);
     
     // Skip to phase section
     slotBounds.removeFromTop(20); // spacing
@@ -799,11 +799,11 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     auto phaseKnobArea = phaseRow.removeFromLeft(80);
     phaseKnobArea.removeFromTop(15); // less label space
     g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(phaseKnobArea.getCentreX() - 35, phaseKnobArea.getCentreY() - 55, 70, 110, 4.0f);
+    g.fillRoundedRectangle(phaseKnobArea.getCentreX() - 40, phaseKnobArea.getCentreY() - 60, 80, 120, 4.0f);
     g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(phaseKnobArea.getCentreX() - 34, phaseKnobArea.getCentreY() - 54, 68, 108, 3.0f, 2.0f);
+    g.drawRoundedRectangle(phaseKnobArea.getCentreX() - 39, phaseKnobArea.getCentreY() - 59, 78, 118, 3.0f, 2.0f);
     g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(phaseKnobArea.getCentreX() - 32, phaseKnobArea.getCentreY() - 52, 64, 104, 2.0f, 1.0f);
+    g.drawRoundedRectangle(phaseKnobArea.getCentreX() - 37, phaseKnobArea.getCentreY() - 57, 74, 114, 2.0f, 1.0f);
     
     
     // Draw futuristic section outlines for each row of controls
