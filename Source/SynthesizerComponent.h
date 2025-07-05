@@ -77,25 +77,6 @@ public:
         
         g.setFont(font);
         
-        // Draw the outline with a glow effect
-        juce::Colour glowColour = juce::Colours::white;
-        
-        // Outer glow for the border
-        for (float i = 3.0f; i >= 1.0f; i -= 0.5f)
-        {
-            auto alpha = 0.05f + (0.1f * (3.5f - i) / 2.5f);
-            g.setColour(glowColour.withAlpha(alpha));
-            g.drawRoundedRectangle(bounds.expanded(i), 2.0f, 1.0f + i * 0.5f);
-        }
-        
-        // Inner glow for the border
-        g.setColour(glowColour.withAlpha(0.4f));
-        g.drawRoundedRectangle(bounds.expanded(1.0f), 2.0f, 2.0f);
-        
-        // Core bright border
-        g.setColour(glowColour);
-        g.drawRoundedRectangle(bounds, 2.0f, 1.0f);
-        
         // Text glow
         // Outer glow for text
         for (float i = 2.5f; i >= 1.0f; i -= 0.5f)
@@ -291,25 +272,6 @@ public:
         auto justification = label.getJustificationType();
         
         g.setFont(font);
-        
-        // Draw the outline with a glow effect
-        juce::Colour glowColour = juce::Colours::white;
-        
-        // Outer glow for the border
-        for (float i = 3.0f; i >= 1.0f; i -= 0.5f)
-        {
-            auto alpha = 0.05f + (0.1f * (3.5f - i) / 2.5f);
-            g.setColour(glowColour.withAlpha(alpha));
-            g.drawRoundedRectangle(bounds.expanded(i), 2.0f, 1.0f + i * 0.5f);
-        }
-        
-        // Inner glow for the border
-        g.setColour(glowColour.withAlpha(0.4f));
-        g.drawRoundedRectangle(bounds.expanded(1.0f), 2.0f, 2.0f);
-        
-        // Core bright border
-        g.setColour(glowColour);
-        g.drawRoundedRectangle(bounds, 2.0f, 1.0f);
         
         // Text glow
         // Outer glow for text
