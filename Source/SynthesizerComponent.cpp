@@ -444,22 +444,204 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     g.setGradientFill(gradient);
     g.fillAll();
     
-    // Oscillator section background
+    // Controls section background with gritty analog texture
     auto bounds = getLocalBounds();
     bounds.reduce(20, 20);
     
     bounds.removeFromTop(20);
     
-    // Calculate oscillator section bounds (everything except the outer margins)
-    auto oscillatorBounds = bounds;
+    // Calculate controls section bounds (everything except the outer margins)
+    auto controlsBounds = bounds;
     
-    // Draw oscillator section background
-    g.setColour(juce::Colour(0xff0f0f1f).withAlpha(0.8f));
-    g.fillRoundedRectangle(oscillatorBounds.toFloat(), 8.0f);
+    // Draw gritty analog synth background
+    // Base grey color
+    g.setColour(juce::Colour(0xff3a3a3a));
+    g.fillRoundedRectangle(controlsBounds.toFloat(), 8.0f);
     
-    // Draw oscillator section border
-    g.setColour(juce::Colour(0xff2a2a4e).withAlpha(0.6f));
-    g.drawRoundedRectangle(oscillatorBounds.toFloat(), 8.0f, 1.0f);
+    // Add subtle gradient for depth
+    juce::ColourGradient analogGradient(juce::Colour(0xff4a4a4a), 0.0f, controlsBounds.getY(),
+                                       juce::Colour(0xff2a2a2a), 0.0f, controlsBounds.getBottom(), false);
+    g.setGradientFill(analogGradient);
+    g.fillRoundedRectangle(controlsBounds.toFloat(), 8.0f);
+    
+    // Add noise texture for gritty analog feel
+    juce::Random random(42); // Fixed seed for consistent texture
+    g.setColour(juce::Colours::white.withAlpha(0.03f));
+    for (int i = 0; i < 2000; ++i)
+    {
+        auto x = controlsBounds.getX() + random.nextFloat() * controlsBounds.getWidth();
+        auto y = controlsBounds.getY() + random.nextFloat() * controlsBounds.getHeight();
+        g.fillRect(x, y, 1.0f, 1.0f);
+    }
+    
+    // Add some darker noise for more texture
+    random.setSeed(84);
+    g.setColour(juce::Colours::black.withAlpha(0.05f));
+    for (int i = 0; i < 1500; ++i)
+    {
+        auto x = controlsBounds.getX() + random.nextFloat() * controlsBounds.getWidth();
+        auto y = controlsBounds.getY() + random.nextFloat() * controlsBounds.getHeight();
+        g.fillRect(x, y, 1.0f, 1.0f);
+    }
+    
+    // Draw subtle border
+    g.setColour(juce::Colour(0xff1a1a1a));
+    g.drawRoundedRectangle(controlsBounds.toFloat(), 8.0f, 1.0f);
+    
+    // Add inner highlight for that analog hardware look
+    g.setColour(juce::Colour(0xff5a5a5a).withAlpha(0.3f));
+    g.drawRoundedRectangle(controlsBounds.toFloat().reduced(1.0f), 7.0f, 1.0f);
+    
+    // Draw futuristic section outlines for each row of controls
+    auto sectionBounds = getLocalBounds();
+    sectionBounds.reduce(20, 20);
+    sectionBounds.removeFromTop(20);
+    
+    // Wave type buttons section outline
+    auto waveSectionBounds = sectionBounds.removeFromTop(40);
+    waveSectionBounds = waveSectionBounds.removeFromLeft(sectionBounds.getWidth() / 3); // Same width as ADSR
+    waveSectionBounds.reduce(-2, -2); // Expand the bounds slightly
+    
+    // Draw futuristic wave section outline
+    g.setColour(juce::Colour(0xffff0080).withAlpha(0.6f)); // Pink glow
+    g.drawRoundedRectangle(waveSectionBounds.toFloat(), 4.0f, 1.5f);
+    g.setColour(juce::Colour(0xffff0080).withAlpha(0.2f));
+    g.drawRoundedRectangle(waveSectionBounds.toFloat().reduced(1.0f), 3.0f, 1.0f);
+    
+    // Add corner highlights
+    auto waveCorners = waveSectionBounds.toFloat();
+    g.setColour(juce::Colour(0xffff0080).withAlpha(0.8f));
+    // Top-left corner
+    g.drawLine(waveCorners.getX(), waveCorners.getY() + 8, waveCorners.getX(), waveCorners.getY(), 2.0f);
+    g.drawLine(waveCorners.getX(), waveCorners.getY(), waveCorners.getX() + 8, waveCorners.getY(), 2.0f);
+    // Top-right corner
+    g.drawLine(waveCorners.getRight() - 8, waveCorners.getY(), waveCorners.getRight(), waveCorners.getY(), 2.0f);
+    g.drawLine(waveCorners.getRight(), waveCorners.getY(), waveCorners.getRight(), waveCorners.getY() + 8, 2.0f);
+    // Bottom-left corner
+    g.drawLine(waveCorners.getX(), waveCorners.getBottom() - 8, waveCorners.getX(), waveCorners.getBottom(), 2.0f);
+    g.drawLine(waveCorners.getX(), waveCorners.getBottom(), waveCorners.getX() + 8, waveCorners.getBottom(), 2.0f);
+    // Bottom-right corner
+    g.drawLine(waveCorners.getRight() - 8, waveCorners.getBottom(), waveCorners.getRight(), waveCorners.getBottom(), 2.0f);
+    g.drawLine(waveCorners.getRight(), waveCorners.getBottom(), waveCorners.getRight(), waveCorners.getBottom() - 8, 2.0f);
+    
+    sectionBounds.removeFromTop(20); // spacing
+    
+    // Skip envelope visualization and spacing
+    sectionBounds.removeFromTop(60 + 10); // envelope height + spacing
+    
+    // ADSR section outline
+    auto adsrSectionBounds = sectionBounds.removeFromTop(100);
+    adsrSectionBounds = adsrSectionBounds.removeFromLeft(sectionBounds.getWidth() / 3);
+    adsrSectionBounds.reduce(-5, -5); // Expand the bounds
+    
+    // Draw futuristic ADSR outline
+    g.setColour(juce::Colour(0xff00ffff).withAlpha(0.6f)); // Cyan glow
+    g.drawRoundedRectangle(adsrSectionBounds.toFloat(), 4.0f, 1.5f);
+    g.setColour(juce::Colour(0xff00ffff).withAlpha(0.2f));
+    g.drawRoundedRectangle(adsrSectionBounds.toFloat().reduced(1.0f), 3.0f, 1.0f);
+    
+    // Add corner highlights for futuristic look
+    auto corners = adsrSectionBounds.toFloat();
+    g.setColour(juce::Colour(0xff00ffff).withAlpha(0.8f));
+    // Top-left corner
+    g.drawLine(corners.getX(), corners.getY() + 8, corners.getX(), corners.getY(), 2.0f);
+    g.drawLine(corners.getX(), corners.getY(), corners.getX() + 8, corners.getY(), 2.0f);
+    // Top-right corner
+    g.drawLine(corners.getRight() - 8, corners.getY(), corners.getRight(), corners.getY(), 2.0f);
+    g.drawLine(corners.getRight(), corners.getY(), corners.getRight(), corners.getY() + 8, 2.0f);
+    // Bottom-left corner
+    g.drawLine(corners.getX(), corners.getBottom() - 8, corners.getX(), corners.getBottom(), 2.0f);
+    g.drawLine(corners.getX(), corners.getBottom(), corners.getX() + 8, corners.getBottom(), 2.0f);
+    // Bottom-right corner
+    g.drawLine(corners.getRight() - 8, corners.getBottom(), corners.getRight(), corners.getBottom(), 2.0f);
+    g.drawLine(corners.getRight(), corners.getBottom(), corners.getRight(), corners.getBottom() - 8, 2.0f);
+    
+    sectionBounds.removeFromTop(20); // spacing
+    
+    // Volume/Detune/Stereo/Pan section outline
+    auto volumeSectionBounds = sectionBounds.removeFromTop(100);
+    volumeSectionBounds = volumeSectionBounds.removeFromLeft(volumeSectionBounds.getWidth() / 3);
+    volumeSectionBounds.reduce(-5, -5); // Expand the bounds
+    
+    // Draw futuristic volume section outline
+    g.setColour(juce::Colour(0xff00ff80).withAlpha(0.6f)); // Green glow
+    g.drawRoundedRectangle(volumeSectionBounds.toFloat(), 4.0f, 1.5f);
+    g.setColour(juce::Colour(0xff00ff80).withAlpha(0.2f));
+    g.drawRoundedRectangle(volumeSectionBounds.toFloat().reduced(1.0f), 3.0f, 1.0f);
+    
+    // Add corner highlights
+    auto volumeCorners = volumeSectionBounds.toFloat();
+    g.setColour(juce::Colour(0xff00ff80).withAlpha(0.8f));
+    // Top-left corner
+    g.drawLine(volumeCorners.getX(), volumeCorners.getY() + 8, volumeCorners.getX(), volumeCorners.getY(), 2.0f);
+    g.drawLine(volumeCorners.getX(), volumeCorners.getY(), volumeCorners.getX() + 8, volumeCorners.getY(), 2.0f);
+    // Top-right corner
+    g.drawLine(volumeCorners.getRight() - 8, volumeCorners.getY(), volumeCorners.getRight(), volumeCorners.getY(), 2.0f);
+    g.drawLine(volumeCorners.getRight(), volumeCorners.getY(), volumeCorners.getRight(), volumeCorners.getY() + 8, 2.0f);
+    // Bottom-left corner
+    g.drawLine(volumeCorners.getX(), volumeCorners.getBottom() - 8, volumeCorners.getX(), volumeCorners.getBottom(), 2.0f);
+    g.drawLine(volumeCorners.getX(), volumeCorners.getBottom(), volumeCorners.getX() + 8, volumeCorners.getBottom(), 2.0f);
+    // Bottom-right corner
+    g.drawLine(volumeCorners.getRight() - 8, volumeCorners.getBottom(), volumeCorners.getRight(), volumeCorners.getBottom(), 2.0f);
+    g.drawLine(volumeCorners.getRight(), volumeCorners.getBottom(), volumeCorners.getRight(), volumeCorners.getBottom() - 8, 2.0f);
+    
+    sectionBounds.removeFromTop(20); // spacing
+    
+    // Octave/Semitone/Fine/Voices section outline
+    auto tuningSectionBounds = sectionBounds.removeFromTop(80);
+    tuningSectionBounds = tuningSectionBounds.removeFromLeft(320); // Fixed width for tuning controls
+    tuningSectionBounds.reduce(-5, -5); // Expand the bounds
+    
+    // Draw futuristic tuning section outline
+    g.setColour(juce::Colour(0xffff8000).withAlpha(0.6f)); // Orange glow
+    g.drawRoundedRectangle(tuningSectionBounds.toFloat(), 4.0f, 1.5f);
+    g.setColour(juce::Colour(0xffff8000).withAlpha(0.2f));
+    g.drawRoundedRectangle(tuningSectionBounds.toFloat().reduced(1.0f), 3.0f, 1.0f);
+    
+    // Add corner highlights
+    auto tuningCorners = tuningSectionBounds.toFloat();
+    g.setColour(juce::Colour(0xffff8000).withAlpha(0.8f));
+    // Top-left corner
+    g.drawLine(tuningCorners.getX(), tuningCorners.getY() + 8, tuningCorners.getX(), tuningCorners.getY(), 2.0f);
+    g.drawLine(tuningCorners.getX(), tuningCorners.getY(), tuningCorners.getX() + 8, tuningCorners.getY(), 2.0f);
+    // Top-right corner
+    g.drawLine(tuningCorners.getRight() - 8, tuningCorners.getY(), tuningCorners.getRight(), tuningCorners.getY(), 2.0f);
+    g.drawLine(tuningCorners.getRight(), tuningCorners.getY(), tuningCorners.getRight(), tuningCorners.getY() + 8, 2.0f);
+    // Bottom-left corner
+    g.drawLine(tuningCorners.getX(), tuningCorners.getBottom() - 8, tuningCorners.getX(), tuningCorners.getBottom(), 2.0f);
+    g.drawLine(tuningCorners.getX(), tuningCorners.getBottom(), tuningCorners.getX() + 8, tuningCorners.getBottom(), 2.0f);
+    // Bottom-right corner
+    g.drawLine(tuningCorners.getRight() - 8, tuningCorners.getBottom(), tuningCorners.getRight(), tuningCorners.getBottom(), 2.0f);
+    g.drawLine(tuningCorners.getRight(), tuningCorners.getBottom(), tuningCorners.getRight(), tuningCorners.getBottom() - 8, 2.0f);
+    
+    sectionBounds.removeFromTop(20); // spacing
+    
+    // Phase section outline
+    auto phaseSectionBounds = sectionBounds.removeFromTop(80);
+    phaseSectionBounds = phaseSectionBounds.removeFromLeft(220); // Fixed width for phase controls
+    phaseSectionBounds.reduce(-5, -5); // Expand the bounds
+    
+    // Draw futuristic phase section outline
+    g.setColour(juce::Colour(0xffff00ff).withAlpha(0.6f)); // Magenta glow
+    g.drawRoundedRectangle(phaseSectionBounds.toFloat(), 4.0f, 1.5f);
+    g.setColour(juce::Colour(0xffff00ff).withAlpha(0.2f));
+    g.drawRoundedRectangle(phaseSectionBounds.toFloat().reduced(1.0f), 3.0f, 1.0f);
+    
+    // Add corner highlights
+    auto phaseCorners = phaseSectionBounds.toFloat();
+    g.setColour(juce::Colour(0xffff00ff).withAlpha(0.8f));
+    // Top-left corner
+    g.drawLine(phaseCorners.getX(), phaseCorners.getY() + 8, phaseCorners.getX(), phaseCorners.getY(), 2.0f);
+    g.drawLine(phaseCorners.getX(), phaseCorners.getY(), phaseCorners.getX() + 8, phaseCorners.getY(), 2.0f);
+    // Top-right corner
+    g.drawLine(phaseCorners.getRight() - 8, phaseCorners.getY(), phaseCorners.getRight(), phaseCorners.getY(), 2.0f);
+    g.drawLine(phaseCorners.getRight(), phaseCorners.getY(), phaseCorners.getRight(), phaseCorners.getY() + 8, 2.0f);
+    // Bottom-left corner
+    g.drawLine(phaseCorners.getX(), phaseCorners.getBottom() - 8, phaseCorners.getX(), phaseCorners.getBottom(), 2.0f);
+    g.drawLine(phaseCorners.getX(), phaseCorners.getBottom(), phaseCorners.getX() + 8, phaseCorners.getBottom(), 2.0f);
+    // Bottom-right corner
+    g.drawLine(phaseCorners.getRight() - 8, phaseCorners.getBottom(), phaseCorners.getRight(), phaseCorners.getBottom(), 2.0f);
+    g.drawLine(phaseCorners.getRight(), phaseCorners.getBottom(), phaseCorners.getRight(), phaseCorners.getBottom() - 8, 2.0f);
     
     // Main window border
     g.setColour(juce::Colour(0xff16213e));
