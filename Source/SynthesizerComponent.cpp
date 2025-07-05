@@ -788,16 +788,16 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     g.drawRoundedRectangle(panSection.getCentreX() - 37, panSection.getCentreY() - 63, 74, 108, 2.0f, 1.0f);
     
     // Skip to phase section
-    slotBounds.removeFromTop(20); // spacing
+    slotBounds.removeFromTop(40); // spacing - match resized() method spacing
     slotBounds.removeFromTop(80); // tuning controls
     slotBounds.removeFromTop(20); // spacing
     
-    // Phase knob metal slot - square metal
+    // Phase knob metal slot - match exact resized() positioning
     auto phaseRow = slotBounds.removeFromTop(80);
     phaseRow.removeFromLeft(100); // random phase button
     phaseRow.removeFromLeft(15); // spacing
     auto phaseKnobArea = phaseRow.removeFromLeft(80);
-    phaseKnobArea.removeFromTop(10); // reduced label space to move background down
+    phaseKnobArea.removeFromTop(-5); // negative value to move background up even more
     g.setColour(juce::Colour(0xff0f0f0f));
     g.fillRoundedRectangle(phaseKnobArea.getCentreX() - 40, phaseKnobArea.getCentreY() - 46, 80, 94, 4.0f);
     g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
