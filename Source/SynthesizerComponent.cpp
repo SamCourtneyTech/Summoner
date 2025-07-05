@@ -541,13 +541,13 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     // Main raised surface - metallic modular synth module look
     auto raisedBounds = masterOutlineBounds.reduced(2.0f);
     
-    // Dark metallic grey base
-    g.setColour(juce::Colour(0xff404040));
+    // Much darker metallic grey base
+    g.setColour(juce::Colour(0xff202020));
     g.fillRoundedRectangle(raisedBounds, 8.0f);
     
-    // Add metallic gradient for depth
-    juce::ColourGradient metallicGradient(juce::Colour(0xff505050), raisedBounds.getX(), raisedBounds.getY(),
-                                         juce::Colour(0xff303030), raisedBounds.getX(), raisedBounds.getBottom(), false);
+    // Add very dark metallic gradient for depth
+    juce::ColourGradient metallicGradient(juce::Colour(0xff2a2a2a), raisedBounds.getX(), raisedBounds.getY(),
+                                         juce::Colour(0xff151515), raisedBounds.getX(), raisedBounds.getBottom(), false);
     g.setGradientFill(metallicGradient);
     g.fillRoundedRectangle(raisedBounds, 8.0f);
     
@@ -591,46 +591,46 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     
     // Add corner screws for modular synth module look
     auto screwRadius = 6.0f;
-    auto screwInset = 12.0f;
+    auto screwInset = 15.0f; // Increased inset to ensure screws are visible
     
     // Top-left screw
     auto tlScrew = juce::Rectangle<float>(raisedBounds.getX() + screwInset, raisedBounds.getY() + screwInset, screwRadius * 2, screwRadius * 2);
-    g.setColour(juce::Colour(0xff303030));
+    g.setColour(juce::Colour(0xff404040));
     g.fillEllipse(tlScrew);
-    g.setColour(juce::Colour(0xff606060));
+    g.setColour(juce::Colour(0xff808080));
     g.drawEllipse(tlScrew, 1.0f);
     // Screw slot
-    g.setColour(juce::Colour(0xff202020));
+    g.setColour(juce::Colour(0xff101010));
     g.drawLine(tlScrew.getCentreX() - 3, tlScrew.getCentreY(), tlScrew.getCentreX() + 3, tlScrew.getCentreY(), 1.5f);
     
     // Top-right screw
     auto trScrew = juce::Rectangle<float>(raisedBounds.getRight() - screwInset - screwRadius * 2, raisedBounds.getY() + screwInset, screwRadius * 2, screwRadius * 2);
-    g.setColour(juce::Colour(0xff303030));
+    g.setColour(juce::Colour(0xff404040));
     g.fillEllipse(trScrew);
-    g.setColour(juce::Colour(0xff606060));
+    g.setColour(juce::Colour(0xff808080));
     g.drawEllipse(trScrew, 1.0f);
     // Screw slot
-    g.setColour(juce::Colour(0xff202020));
+    g.setColour(juce::Colour(0xff101010));
     g.drawLine(trScrew.getCentreX() - 3, trScrew.getCentreY(), trScrew.getCentreX() + 3, trScrew.getCentreY(), 1.5f);
     
     // Bottom-left screw
     auto blScrew = juce::Rectangle<float>(raisedBounds.getX() + screwInset, raisedBounds.getBottom() - screwInset - screwRadius * 2, screwRadius * 2, screwRadius * 2);
-    g.setColour(juce::Colour(0xff303030));
+    g.setColour(juce::Colour(0xff404040));
     g.fillEllipse(blScrew);
-    g.setColour(juce::Colour(0xff606060));
+    g.setColour(juce::Colour(0xff808080));
     g.drawEllipse(blScrew, 1.0f);
     // Screw slot
-    g.setColour(juce::Colour(0xff202020));
+    g.setColour(juce::Colour(0xff101010));
     g.drawLine(blScrew.getCentreX() - 3, blScrew.getCentreY(), blScrew.getCentreX() + 3, blScrew.getCentreY(), 1.5f);
     
     // Bottom-right screw
     auto brScrew = juce::Rectangle<float>(raisedBounds.getRight() - screwInset - screwRadius * 2, raisedBounds.getBottom() - screwInset - screwRadius * 2, screwRadius * 2, screwRadius * 2);
-    g.setColour(juce::Colour(0xff303030));
+    g.setColour(juce::Colour(0xff404040));
     g.fillEllipse(brScrew);
-    g.setColour(juce::Colour(0xff606060));
+    g.setColour(juce::Colour(0xff808080));
     g.drawEllipse(brScrew, 1.0f);
     // Screw slot
-    g.setColour(juce::Colour(0xff202020));
+    g.setColour(juce::Colour(0xff101010));
     g.drawLine(brScrew.getCentreX() - 3, brScrew.getCentreY(), brScrew.getCentreX() + 3, brScrew.getCentreY(), 1.5f);
     
     // Add "Oscillator 1" label to bottom right of module component
