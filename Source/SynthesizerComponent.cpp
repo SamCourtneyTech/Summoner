@@ -908,152 +908,15 @@ void SynthesizerComponent::resized()
 {
     auto bounds = getLocalBounds();
     bounds.reduce(20, 20);
-    
-    
-    // Controls in a 2x3 grid (2 linear sliders, 4 ADSR knobs)
-    auto controlHeight = 100;
-    auto controlWidth = bounds.getWidth() / 2 - 10;
-    auto knobWidth = bounds.getWidth() / 4 - 15;
-    
     bounds.removeFromTop(20); // spacing
     
-    // Oscillator type buttons (spread across same width as ADSR section)
-    auto buttonHeight = 40;
-    auto buttonRow = bounds.removeFromTop(buttonHeight);
-    auto buttonSection = buttonRow.removeFromLeft(bounds.getWidth() / 3); // Same width as ADSR
-    
-    // Calculate button width and spacing to fill the section
-    auto totalButtons = 6;
-    auto buttonSpacing = 10;
-    auto totalSpacing = (totalButtons - 1) * buttonSpacing;
-    auto buttonWidth = (buttonSection.getWidth() - totalSpacing) / totalButtons;
-    
-    sineWaveButton.setBounds(buttonSection.getX(), buttonRow.getY(), buttonWidth, buttonHeight);
-    sawWaveButton.setBounds(buttonSection.getX() + (buttonWidth + buttonSpacing), buttonRow.getY(), buttonWidth, buttonHeight);
-    squareWaveButton.setBounds(buttonSection.getX() + (buttonWidth + buttonSpacing) * 2, buttonRow.getY(), buttonWidth, buttonHeight);
-    triangleWaveButton.setBounds(buttonSection.getX() + (buttonWidth + buttonSpacing) * 3, buttonRow.getY(), buttonWidth, buttonHeight);
-    noiseWaveButton.setBounds(buttonSection.getX() + (buttonWidth + buttonSpacing) * 4, buttonRow.getY(), buttonWidth, buttonHeight);
-    pinkNoiseButton.setBounds(buttonSection.getX() + (buttonWidth + buttonSpacing) * 5, buttonRow.getY(), buttonWidth, buttonHeight);
-    
-    
-    bounds.removeFromTop(7); // further reduced spacing to shift envelope up more
-    
-    // ADSR envelope visualization - moved to between wavetype buttons and ADSR knobs
-    auto envelopeSection = bounds.removeFromTop(60);
-    auto envelopeArea = envelopeSection.removeFromLeft(bounds.getWidth() / 3);
-    envelopeComponent.setBounds(envelopeArea);
-    
-    bounds.removeFromTop(15); // slightly increased spacing between envelope and knobs
-    
-    // Bottom row - ADSR knobs (left third of screen)
-    auto adsrRow = bounds.removeFromTop(controlHeight);
-    auto adsrSection = adsrRow.removeFromLeft(bounds.getWidth() / 3);
-    
-    // Calculate smaller knob width for 4 knobs in 1/3 of screen width
-    auto adsrKnobWidth = (adsrSection.getWidth() - 45) / 4; // 45 = 3 spacings of 15px each
-    
-    auto attackArea = adsrSection.removeFromLeft(adsrKnobWidth);
-    attackLabel.setBounds(attackArea.removeFromTop(20));
-    attackSlider.setBounds(attackArea);
-    
-    adsrSection.removeFromLeft(15); // spacing
-    
-    auto decayArea = adsrSection.removeFromLeft(adsrKnobWidth);
-    decayLabel.setBounds(decayArea.removeFromTop(20));
-    decaySlider.setBounds(decayArea);
-    
-    adsrSection.removeFromLeft(15); // spacing
-    
-    auto sustainArea = adsrSection.removeFromLeft(adsrKnobWidth);
-    sustainLabel.setBounds(sustainArea.removeFromTop(20));
-    sustainSlider.setBounds(sustainArea);
-    
-    adsrSection.removeFromLeft(15); // spacing
-    
-    auto releaseArea = adsrSection;
-    releaseLabel.setBounds(releaseArea.removeFromTop(20));
-    releaseSlider.setBounds(releaseArea);
-    
-    // Volume, Detune, Stereo, Pan knob section - constrained to about 1/3 screen width
-    bounds.removeFromTop(20); // spacing
-    auto volumeRow = bounds.removeFromTop(controlHeight);
-    auto volumeSection = volumeRow.removeFromLeft(adsrKnobWidth);
-    
-    volumeLabel.setBounds(volumeSection.removeFromTop(20));
-    volumeSlider.setBounds(volumeSection);
-    
-    volumeRow.removeFromLeft(15); // spacing
-    
-    auto detuneSection = volumeRow.removeFromLeft(adsrKnobWidth);
-    detuneLabel.setBounds(detuneSection.removeFromTop(20));
-    detuneSlider.setBounds(detuneSection);
-    
-    volumeRow.removeFromLeft(15); // spacing
-    
-    auto stereoWidthSection = volumeRow.removeFromLeft(adsrKnobWidth);
-    stereoWidthLabel.setBounds(stereoWidthSection.removeFromTop(20));
-    stereoWidthSlider.setBounds(stereoWidthSection);
-    
-    volumeRow.removeFromLeft(15); // spacing
-    
-    auto panSection = volumeRow.removeFromLeft(adsrKnobWidth);
-    panLabel.setBounds(panSection.removeFromTop(20));
-    panSlider.setBounds(panSection);
-    
-    // Octave controls - moved to between stereo knob row and phase row
-    bounds.removeFromTop(40); // increased spacing even more to push octave controls down further
-    auto bottomControlsRow = bounds.removeFromTop(80);
-    
-    // Pulse width control (commented out for now)
-    /*
-    auto pulseWidthArea = bottomControlsRow.removeFromLeft(200);
-    pulseWidthLabel.setBounds(pulseWidthArea.removeFromTop(20));
-    pulseWidthSlider.setBounds(pulseWidthArea);
-    
-    bottomControlsRow.removeFromLeft(20); // spacing
-    */
-    
-    // Octave control (draggable label)
-    auto octaveArea = bottomControlsRow.removeFromLeft(60);
-    octaveLabel.setBounds(octaveArea.removeFromTop(20));
-    octaveValueLabel.setBounds(octaveArea.removeFromTop(30));
-    
-    bottomControlsRow.removeFromLeft(10); // spacing
-    
-    // Semitone control (draggable label)
-    auto semitoneArea = bottomControlsRow.removeFromLeft(60);
-    semitoneLabel.setBounds(semitoneArea.removeFromTop(20));
-    semitoneValueLabel.setBounds(semitoneArea.removeFromTop(30));
-    
-    bottomControlsRow.removeFromLeft(10); // spacing
-    
-    // Fine tune control (draggable label)
-    auto fineTuneArea = bottomControlsRow.removeFromLeft(60);
-    fineTuneLabel.setBounds(fineTuneArea.removeFromTop(20));
-    fineTuneValueLabel.setBounds(fineTuneArea.removeFromTop(30));
-    
-    bottomControlsRow.removeFromLeft(10); // spacing
-    
-    // Voice count control (draggable label)
-    auto voiceCountArea = bottomControlsRow.removeFromLeft(60);
-    voiceCountLabel.setBounds(voiceCountArea.removeFromTop(20));
-    voiceCountValueLabel.setBounds(voiceCountArea.removeFromTop(30));
-    
-    // Phase controls - new row below everything
-    bounds.removeFromTop(20); // spacing
-    auto phaseRow = bounds.removeFromTop(80);
-    
-    // Random phase button
-    auto randomPhaseButtonWidth = 100;
-    auto randomPhaseArea = phaseRow.removeFromLeft(randomPhaseButtonWidth);
-    randomPhaseButton.setBounds(randomPhaseArea.removeFromTop(40));
-    
-    phaseRow.removeFromLeft(15); // spacing
-    
-    // Phase knob
-    auto phaseKnobArea = phaseRow.removeFromLeft(80);
-    phaseLabel.setBounds(phaseKnobArea.removeFromTop(20));
-    phaseSlider.setBounds(phaseKnobArea);
+    // Use grouped layout methods
+    layoutWaveTypeButtons(bounds);
+    layoutADSREnvelope(bounds);
+    layoutADSRKnobs(bounds);
+    layoutVolumeKnobs(bounds);
+    layoutOctaveControls(bounds);
+    layoutPhaseControls(bounds);
 }
 
 void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
@@ -1319,4 +1182,368 @@ void SynthesizerComponent::updateEnvelopeDisplay()
         static_cast<float>(sustainSlider.getValue()),
         static_cast<float>(releaseSlider.getValue())
     );
+}
+
+// ============================================================================
+// Grouped Layout and Background Methods
+// ============================================================================
+
+void SynthesizerComponent::layoutWaveTypeButtons(juce::Rectangle<int>& bounds)
+{
+    auto buttonHeight = 40;
+    auto buttonRow = bounds.removeFromTop(buttonHeight);
+    auto buttonSection = buttonRow.removeFromLeft(bounds.getWidth() / 3); // Same width as ADSR
+    
+    // Store bounds for background drawing
+    waveButtonsBounds = buttonSection;
+    
+    // Calculate button width and spacing to fill the section
+    auto totalButtons = 6;
+    auto buttonSpacing = 10;
+    auto totalSpacing = (totalButtons - 1) * buttonSpacing;
+    auto buttonWidth = (buttonSection.getWidth() - totalSpacing) / totalButtons;
+    
+    sineWaveButton.setBounds(buttonSection.getX(), buttonRow.getY(), buttonWidth, buttonHeight);
+    sawWaveButton.setBounds(buttonSection.getX() + (buttonWidth + buttonSpacing), buttonRow.getY(), buttonWidth, buttonHeight);
+    squareWaveButton.setBounds(buttonSection.getX() + (buttonWidth + buttonSpacing) * 2, buttonRow.getY(), buttonWidth, buttonHeight);
+    triangleWaveButton.setBounds(buttonSection.getX() + (buttonWidth + buttonSpacing) * 3, buttonRow.getY(), buttonWidth, buttonHeight);
+    noiseWaveButton.setBounds(buttonSection.getX() + (buttonWidth + buttonSpacing) * 4, buttonRow.getY(), buttonWidth, buttonHeight);
+    pinkNoiseButton.setBounds(buttonSection.getX() + (buttonWidth + buttonSpacing) * 5, buttonRow.getY(), buttonWidth, buttonHeight);
+}
+
+void SynthesizerComponent::layoutADSREnvelope(juce::Rectangle<int>& bounds)
+{
+    bounds.removeFromTop(7); // spacing
+    
+    auto envelopeSection = bounds.removeFromTop(60);
+    auto envelopeArea = envelopeSection.removeFromLeft(bounds.getWidth() / 3);
+    
+    // Store bounds for background drawing
+    adsrEnvelopeBounds = envelopeArea;
+    
+    envelopeComponent.setBounds(envelopeArea);
+    
+    bounds.removeFromTop(15); // spacing
+}
+
+void SynthesizerComponent::layoutADSRKnobs(juce::Rectangle<int>& bounds)
+{
+    auto controlHeight = 100;
+    auto adsrRow = bounds.removeFromTop(controlHeight);
+    auto adsrSection = adsrRow.removeFromLeft(bounds.getWidth() / 3);
+    
+    // Store bounds for background drawing
+    adsrKnobsBounds = adsrSection;
+    
+    // Calculate smaller knob width for 4 knobs in 1/3 of screen width
+    auto adsrKnobWidth = (adsrSection.getWidth() - 45) / 4; // 45 = 3 spacings of 15px each
+    
+    auto attackArea = adsrSection.removeFromLeft(adsrKnobWidth);
+    attackLabel.setBounds(attackArea.removeFromTop(20));
+    attackSlider.setBounds(attackArea);
+    
+    adsrSection.removeFromLeft(15); // spacing
+    
+    auto decayArea = adsrSection.removeFromLeft(adsrKnobWidth);
+    decayLabel.setBounds(decayArea.removeFromTop(20));
+    decaySlider.setBounds(decayArea);
+    
+    adsrSection.removeFromLeft(15); // spacing
+    
+    auto sustainArea = adsrSection.removeFromLeft(adsrKnobWidth);
+    sustainLabel.setBounds(sustainArea.removeFromTop(20));
+    sustainSlider.setBounds(sustainArea);
+    
+    adsrSection.removeFromLeft(15); // spacing
+    
+    auto releaseArea = adsrSection;
+    releaseLabel.setBounds(releaseArea.removeFromTop(20));
+    releaseSlider.setBounds(releaseArea);
+}
+
+void SynthesizerComponent::layoutVolumeKnobs(juce::Rectangle<int>& bounds)
+{
+    auto controlHeight = 100;
+    bounds.removeFromTop(20); // spacing
+    auto volumeRow = bounds.removeFromTop(controlHeight);
+    
+    // Store bounds for background drawing
+    volumeKnobsBounds = volumeRow.removeFromLeft(volumeRow.getWidth() / 3);
+    
+    auto adsrKnobWidth = (volumeKnobsBounds.getWidth() - 45) / 4;
+    auto workingRow = volumeKnobsBounds;
+    
+    auto volumeSection = workingRow.removeFromLeft(adsrKnobWidth);
+    volumeLabel.setBounds(volumeSection.removeFromTop(20));
+    volumeSlider.setBounds(volumeSection);
+    
+    workingRow.removeFromLeft(15); // spacing
+    
+    auto detuneSection = workingRow.removeFromLeft(adsrKnobWidth);
+    detuneLabel.setBounds(detuneSection.removeFromTop(20));
+    detuneSlider.setBounds(detuneSection);
+    
+    workingRow.removeFromLeft(15); // spacing
+    
+    auto stereoWidthSection = workingRow.removeFromLeft(adsrKnobWidth);
+    stereoWidthLabel.setBounds(stereoWidthSection.removeFromTop(20));
+    stereoWidthSlider.setBounds(stereoWidthSection);
+    
+    workingRow.removeFromLeft(15); // spacing
+    
+    auto panSection = workingRow;
+    panLabel.setBounds(panSection.removeFromTop(20));
+    panSlider.setBounds(panSection);
+}
+
+void SynthesizerComponent::layoutOctaveControls(juce::Rectangle<int>& bounds)
+{
+    bounds.removeFromTop(40); // spacing
+    auto bottomControlsRow = bounds.removeFromTop(80);
+    
+    // Store bounds for background drawing
+    octaveControlsBounds = bottomControlsRow.removeFromLeft(320); // Fixed width for tuning controls
+    
+    auto workingRow = octaveControlsBounds;
+    
+    // Octave control (draggable label)
+    auto octaveArea = workingRow.removeFromLeft(60);
+    octaveLabel.setBounds(octaveArea.removeFromTop(20));
+    octaveValueLabel.setBounds(octaveArea.removeFromTop(30));
+    
+    workingRow.removeFromLeft(10); // spacing
+    
+    // Semitone control (draggable label)
+    auto semitoneArea = workingRow.removeFromLeft(60);
+    semitoneLabel.setBounds(semitoneArea.removeFromTop(20));
+    semitoneValueLabel.setBounds(semitoneArea.removeFromTop(30));
+    
+    workingRow.removeFromLeft(10); // spacing
+    
+    // Fine tune control (draggable label)
+    auto fineTuneArea = workingRow.removeFromLeft(60);
+    fineTuneLabel.setBounds(fineTuneArea.removeFromTop(20));
+    fineTuneValueLabel.setBounds(fineTuneArea.removeFromTop(30));
+    
+    workingRow.removeFromLeft(10); // spacing
+    
+    // Voice count control (draggable label)
+    auto voiceCountArea = workingRow.removeFromLeft(60);
+    voiceCountLabel.setBounds(voiceCountArea.removeFromTop(20));
+    voiceCountValueLabel.setBounds(voiceCountArea.removeFromTop(30));
+}
+
+void SynthesizerComponent::layoutPhaseControls(juce::Rectangle<int>& bounds)
+{
+    bounds.removeFromTop(20); // spacing
+    auto phaseRow = bounds.removeFromTop(80);
+    
+    // Store bounds for background drawing
+    phaseControlsBounds = phaseRow.removeFromLeft(220); // Fixed width for phase controls
+    
+    auto workingRow = phaseControlsBounds;
+    
+    // Random phase button
+    auto randomPhaseButtonWidth = 100;
+    auto randomPhaseArea = workingRow.removeFromLeft(randomPhaseButtonWidth);
+    randomPhaseButton.setBounds(randomPhaseArea.removeFromTop(40));
+    
+    workingRow.removeFromLeft(15); // spacing
+    
+    // Phase knob
+    auto phaseKnobArea = workingRow.removeFromLeft(80);
+    phaseLabel.setBounds(phaseKnobArea.removeFromTop(20));
+    phaseSlider.setBounds(phaseKnobArea);
+}
+
+// ============================================================================
+// Grouped Background Drawing Methods
+// ============================================================================
+
+void SynthesizerComponent::drawWaveTypeButtonsBackground(juce::Graphics& g, juce::Rectangle<int> bounds)
+{
+    // Wave type buttons don't have additional backgrounds beyond the button styling
+    // This method is here for consistency and future expansion
+}
+
+void SynthesizerComponent::drawADSREnvelopeBackground(juce::Graphics& g, juce::Rectangle<int> bounds)
+{
+    // ADSR envelope visualization doesn't have additional background
+    // This method is here for consistency and future expansion
+}
+
+void SynthesizerComponent::drawADSRKnobsBackground(juce::Graphics& g, juce::Rectangle<int> bounds)
+{
+    // Calculate knob positions to match layout exactly
+    auto adsrKnobWidth = (bounds.getWidth() - 45) / 4; // Same calculation as layout
+    auto workingBounds = bounds;
+    
+    // Attack knob slot
+    auto attackArea = workingBounds.removeFromLeft(adsrKnobWidth);
+    attackArea.removeFromTop(15); // less label space to move higher
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(attackArea.getCentreX() - 40, attackArea.getCentreY() - 66, 80, 114, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(attackArea.getCentreX() - 39, attackArea.getCentreY() - 65, 78, 112, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(attackArea.getCentreX() - 37, attackArea.getCentreY() - 63, 74, 108, 2.0f, 1.0f);
+    
+    workingBounds.removeFromLeft(15); // spacing
+    
+    // Decay knob slot
+    auto decayArea = workingBounds.removeFromLeft(adsrKnobWidth);
+    decayArea.removeFromTop(15);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(decayArea.getCentreX() - 40, decayArea.getCentreY() - 66, 80, 114, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(decayArea.getCentreX() - 39, decayArea.getCentreY() - 65, 78, 112, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(decayArea.getCentreX() - 37, decayArea.getCentreY() - 63, 74, 108, 2.0f, 1.0f);
+    
+    workingBounds.removeFromLeft(15); // spacing
+    
+    // Sustain knob slot
+    auto sustainArea = workingBounds.removeFromLeft(adsrKnobWidth);
+    sustainArea.removeFromTop(15);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(sustainArea.getCentreX() - 40, sustainArea.getCentreY() - 66, 80, 114, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(sustainArea.getCentreX() - 39, sustainArea.getCentreY() - 65, 78, 112, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(sustainArea.getCentreX() - 37, sustainArea.getCentreY() - 63, 74, 108, 2.0f, 1.0f);
+    
+    workingBounds.removeFromLeft(15); // spacing
+    
+    // Release knob slot
+    auto releaseArea = workingBounds;
+    releaseArea.removeFromTop(15);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(releaseArea.getCentreX() - 40, releaseArea.getCentreY() - 66, 80, 114, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(releaseArea.getCentreX() - 39, releaseArea.getCentreY() - 65, 78, 112, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(releaseArea.getCentreX() - 37, releaseArea.getCentreY() - 63, 74, 108, 2.0f, 1.0f);
+}
+
+void SynthesizerComponent::drawVolumeKnobsBackground(juce::Graphics& g, juce::Rectangle<int> bounds)
+{
+    // Calculate knob positions to match layout exactly
+    auto adsrKnobWidth = (bounds.getWidth() - 45) / 4; // Same calculation as layout
+    auto workingBounds = bounds;
+    
+    // Volume knob slot
+    auto volumeSection = workingBounds.removeFromLeft(adsrKnobWidth);
+    volumeSection.removeFromTop(15); // less label space
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(volumeSection.getCentreX() - 40, volumeSection.getCentreY() - 66, 80, 114, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(volumeSection.getCentreX() - 39, volumeSection.getCentreY() - 65, 78, 112, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(volumeSection.getCentreX() - 37, volumeSection.getCentreY() - 63, 74, 108, 2.0f, 1.0f);
+    
+    workingBounds.removeFromLeft(15); // spacing
+    
+    // Detune knob slot
+    auto detuneSection = workingBounds.removeFromLeft(adsrKnobWidth);
+    detuneSection.removeFromTop(15);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(detuneSection.getCentreX() - 40, detuneSection.getCentreY() - 66, 80, 114, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(detuneSection.getCentreX() - 39, detuneSection.getCentreY() - 65, 78, 112, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(detuneSection.getCentreX() - 37, detuneSection.getCentreY() - 63, 74, 108, 2.0f, 1.0f);
+    
+    workingBounds.removeFromLeft(15); // spacing
+    
+    // Stereo width knob slot
+    auto stereoWidthSection = workingBounds.removeFromLeft(adsrKnobWidth);
+    stereoWidthSection.removeFromTop(15);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(stereoWidthSection.getCentreX() - 40, stereoWidthSection.getCentreY() - 66, 80, 114, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(stereoWidthSection.getCentreX() - 39, stereoWidthSection.getCentreY() - 65, 78, 112, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(stereoWidthSection.getCentreX() - 37, stereoWidthSection.getCentreY() - 63, 74, 108, 2.0f, 1.0f);
+    
+    workingBounds.removeFromLeft(15); // spacing
+    
+    // Pan knob slot
+    auto panSection = workingBounds;
+    panSection.removeFromTop(15);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(panSection.getCentreX() - 40, panSection.getCentreY() - 66, 80, 114, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(panSection.getCentreX() - 39, panSection.getCentreY() - 65, 78, 112, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(panSection.getCentreX() - 37, panSection.getCentreY() - 63, 74, 108, 2.0f, 1.0f);
+}
+
+void SynthesizerComponent::drawOctaveControlsBackground(juce::Graphics& g, juce::Rectangle<int> bounds)
+{
+    // Individual background boxes for tuning controls
+    auto tuningControlsRow = bounds.reduced(3, 3);
+    tuningControlsRow.removeFromLeft(2); // Shift right slightly
+    tuningControlsRow.removeFromTop(-10); // Shift up by expanding bounds
+    
+    // Octave control box
+    auto octaveControlArea = tuningControlsRow.removeFromLeft(60);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(octaveControlArea.getCentreX() - 35, octaveControlArea.getCentreY() - 48, 70, 72, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(octaveControlArea.getCentreX() - 34, octaveControlArea.getCentreY() - 47, 68, 70, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(octaveControlArea.getCentreX() - 32, octaveControlArea.getCentreY() - 45, 64, 66, 2.0f, 1.0f);
+    
+    tuningControlsRow.removeFromLeft(10); // spacing
+    
+    // Semitone control box
+    auto semitoneControlArea = tuningControlsRow.removeFromLeft(60);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(semitoneControlArea.getCentreX() - 35, semitoneControlArea.getCentreY() - 48, 70, 72, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(semitoneControlArea.getCentreX() - 34, semitoneControlArea.getCentreY() - 47, 68, 70, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(semitoneControlArea.getCentreX() - 32, semitoneControlArea.getCentreY() - 45, 64, 66, 2.0f, 1.0f);
+    
+    tuningControlsRow.removeFromLeft(10); // spacing
+    
+    // Fine tune control box
+    auto fineTuneControlArea = tuningControlsRow.removeFromLeft(60);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(fineTuneControlArea.getCentreX() - 35, fineTuneControlArea.getCentreY() - 48, 70, 72, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(fineTuneControlArea.getCentreX() - 34, fineTuneControlArea.getCentreY() - 47, 68, 70, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(fineTuneControlArea.getCentreX() - 32, fineTuneControlArea.getCentreY() - 45, 64, 66, 2.0f, 1.0f);
+    
+    tuningControlsRow.removeFromLeft(10); // spacing
+    
+    // Voice count control box
+    auto voiceCountControlArea = tuningControlsRow.removeFromLeft(60);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(voiceCountControlArea.getCentreX() - 35, voiceCountControlArea.getCentreY() - 48, 70, 72, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(voiceCountControlArea.getCentreX() - 34, voiceCountControlArea.getCentreY() - 47, 68, 70, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(voiceCountControlArea.getCentreX() - 32, voiceCountControlArea.getCentreY() - 45, 64, 66, 2.0f, 1.0f);
+}
+
+void SynthesizerComponent::drawPhaseControlsBackground(juce::Graphics& g, juce::Rectangle<int> bounds)
+{
+    // Phase knob background - matching the phase knob position exactly
+    auto workingBounds = bounds;
+    
+    // Skip random phase button area
+    workingBounds.removeFromLeft(100); // random phase button
+    workingBounds.removeFromLeft(15); // spacing
+    
+    // Phase knob background
+    auto phaseKnobArea = workingBounds.removeFromLeft(80);
+    phaseKnobArea.removeFromTop(-5); // negative value to move background up to match current positioning
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(phaseKnobArea.getCentreX() - 40, phaseKnobArea.getCentreY() - 46, 80, 94, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(phaseKnobArea.getCentreX() - 39, phaseKnobArea.getCentreY() - 45, 78, 92, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(phaseKnobArea.getCentreX() - 37, phaseKnobArea.getCentreY() - 43, 74, 88, 2.0f, 1.0f);
 }

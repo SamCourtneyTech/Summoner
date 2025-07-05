@@ -339,6 +339,21 @@ public:
     
     // Helper method to update envelope display
     void updateEnvelopeDisplay();
+    
+    // Helper methods for grouped component positioning and background drawing
+    void layoutWaveTypeButtons(juce::Rectangle<int>& bounds);
+    void layoutADSREnvelope(juce::Rectangle<int>& bounds);
+    void layoutADSRKnobs(juce::Rectangle<int>& bounds);
+    void layoutVolumeKnobs(juce::Rectangle<int>& bounds);
+    void layoutOctaveControls(juce::Rectangle<int>& bounds);
+    void layoutPhaseControls(juce::Rectangle<int>& bounds);
+    
+    void drawWaveTypeButtonsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
+    void drawADSREnvelopeBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
+    void drawADSRKnobsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
+    void drawVolumeKnobsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
+    void drawOctaveControlsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
+    void drawPhaseControlsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
 
 private:
     SummonerXSerum2AudioProcessor& audioProcessor;
@@ -429,6 +444,14 @@ private:
     int voiceCountValue = 1;
     bool isDraggingVoiceCount = false;
     int dragStartVoiceCount = 0;
+    
+    // Cached bounds for each section to share between resized() and paint()
+    juce::Rectangle<int> waveButtonsBounds;
+    juce::Rectangle<int> adsrEnvelopeBounds;
+    juce::Rectangle<int> adsrKnobsBounds;
+    juce::Rectangle<int> volumeKnobsBounds;
+    juce::Rectangle<int> octaveControlsBounds;
+    juce::Rectangle<int> phaseControlsBounds;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynthesizerComponent)
 };
