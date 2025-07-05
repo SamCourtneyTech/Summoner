@@ -452,6 +452,10 @@ private:
     juce::Rectangle<int> volumeKnobsBounds;
     juce::Rectangle<int> octaveControlsBounds;
     juce::Rectangle<int> phaseControlsBounds;
+    
+    // Oscillator 1 section offset controls (defaults to 0,0 for no change)
+    float oscillatorOffsetX = 10.0f;    // X offset for moving entire oscillator section - align with wood border
+    float oscillatorOffsetY = -10.0f;    // Y offset for moving entire oscillator section - align with wood border
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynthesizerComponent)
 };

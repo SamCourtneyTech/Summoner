@@ -525,7 +525,8 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     // Height should go from wave buttons to bottom of phase section
     auto masterHeight = 40 + 7 + 60 + 15 + 100 + 20 + 100 + 40 + 80 + 20 + 80 + 20; // all sections + spacing + extra
     
-    auto masterOutlineBounds = juce::Rectangle<float>(masterLeft - 12, masterTop - 12, masterWidth + 24, masterHeight + 24);
+    // Apply oscillator offset for easy group movement (defaults to 0,0 for no change)
+    auto masterOutlineBounds = juce::Rectangle<float>(masterLeft - 12 + oscillatorOffsetX, masterTop - 12 + oscillatorOffsetY, masterWidth + 24, masterHeight + 24);
     
     // Create 3D depth effect with multiple layers
     
@@ -670,6 +671,8 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     // Add metal slots for knobs - match exact positions from resized()
     auto slotBounds = getLocalBounds();
     slotBounds.reduce(20, 20);
+    // Apply oscillator offset to match the UI components movement
+    slotBounds = slotBounds.translated(static_cast<int>(oscillatorOffsetX), static_cast<int>(oscillatorOffsetY));
     
     // Skip to ADSR section (match resized() layout exactly)
     slotBounds.removeFromTop(20); // spacing
@@ -800,6 +803,8 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     // Draw futuristic section outlines for each row of controls
     auto sectionBounds = getLocalBounds();
     sectionBounds.reduce(20, 20);
+    // Apply oscillator offset to match the UI components movement
+    sectionBounds = sectionBounds.translated(static_cast<int>(oscillatorOffsetX), static_cast<int>(oscillatorOffsetY));
     sectionBounds.removeFromTop(20);
     
     // Wave type buttons section outline
@@ -900,6 +905,9 @@ void SynthesizerComponent::resized()
     auto bounds = getLocalBounds();
     bounds.reduce(20, 20);
     bounds.removeFromTop(20); // spacing
+    
+    // Apply oscillator offset to move all UI components together
+    bounds = bounds.translated(static_cast<int>(oscillatorOffsetX), static_cast<int>(oscillatorOffsetY));
     
     // Use grouped layout methods
     layoutWaveTypeButtons(bounds);
@@ -1538,3 +1546,4 @@ void SynthesizerComponent::drawPhaseControlsBackground(juce::Graphics& g, juce::
     g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
     g.drawRoundedRectangle(phaseKnobArea.getCentreX() - 37, phaseKnobArea.getCentreY() - 43, 74, 88, 2.0f, 1.0f);
 }
+
