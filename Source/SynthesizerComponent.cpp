@@ -597,25 +597,36 @@ void SynthesizerComponent::paint(juce::Graphics& g)
                raisedBounds.getRight() - 1, raisedBounds.getBottom() - 8, 2.0f);
     
     // Add "Oscillator 1" label to bottom right of wood component
-    auto labelBounds = juce::Rectangle<float>(raisedBounds.getRight() - 100, raisedBounds.getBottom() - 30, 90, 20);
+    auto labelBounds = juce::Rectangle<float>(raisedBounds.getRight() - 120, raisedBounds.getBottom() - 35, 110, 25);
     
     // Metallic grey background
     g.setColour(juce::Colour(0xff606060));
-    g.fillRoundedRectangle(labelBounds, 3.0f);
+    g.fillRoundedRectangle(labelBounds, 4.0f);
     
     // Darker border for depth
     g.setColour(juce::Colour(0xff404040));
-    g.drawRoundedRectangle(labelBounds, 3.0f, 1.0f);
+    g.drawRoundedRectangle(labelBounds, 4.0f, 1.0f);
     
     // Light highlight on top for metallic effect
     g.setColour(juce::Colour(0xff808080));
-    g.drawLine(labelBounds.getX() + 3, labelBounds.getY() + 1, 
-               labelBounds.getRight() - 3, labelBounds.getY() + 1, 1.0f);
+    g.drawLine(labelBounds.getX() + 4, labelBounds.getY() + 1, 
+               labelBounds.getRight() - 4, labelBounds.getY() + 1, 1.0f);
     
-    // Lighter grey text
-    g.setColour(juce::Colour(0xffc0c0c0));
-    g.setFont(juce::Font("Arial", 11.0f, juce::Font::plain));
-    g.drawText("oscillator 1", labelBounds.toNearestInt(), juce::Justification::centred, true);
+    // Engraved 3D text effect
+    auto textBounds = labelBounds.toNearestInt();
+    g.setFont(juce::Font("Arial", 13.0f, juce::Font::bold));
+    
+    // Dark shadow below and right for engraved effect
+    g.setColour(juce::Colour(0xff404040));
+    g.drawText("OSCILLATOR 1", textBounds.translated(1, 1), juce::Justification::centred, true);
+    
+    // Light highlight above and left for engraved effect
+    g.setColour(juce::Colour(0xff909090));
+    g.drawText("OSCILLATOR 1", textBounds.translated(-1, -1), juce::Justification::centred, true);
+    
+    // Main text
+    g.setColour(juce::Colour(0xff707070));
+    g.drawText("OSCILLATOR 1", textBounds, juce::Justification::centred, true);
     
     // Futuristic outline with glow effect on the raised surface
     
