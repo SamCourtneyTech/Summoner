@@ -128,7 +128,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
 {
     
     // Volume control
-    volumeLabel.setText("Volume", juce::dontSendNotification);
+    volumeLabel.setText("VOLUME", juce::dontSendNotification);
     volumeLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     volumeLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     volumeLabel.setJustificationType(juce::Justification::centred);
@@ -144,7 +144,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     addAndMakeVisible(volumeSlider);
     
     // Detune control
-    detuneLabel.setText("Detune", juce::dontSendNotification);
+    detuneLabel.setText("DETUNE", juce::dontSendNotification);
     detuneLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     detuneLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     detuneLabel.setJustificationType(juce::Justification::centred);
@@ -160,7 +160,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     addAndMakeVisible(detuneSlider);
     
     // Stereo Width control
-    stereoWidthLabel.setText("Stereo", juce::dontSendNotification);
+    stereoWidthLabel.setText("STEREO", juce::dontSendNotification);
     stereoWidthLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     stereoWidthLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     stereoWidthLabel.setJustificationType(juce::Justification::centred);
@@ -176,7 +176,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     addAndMakeVisible(stereoWidthSlider);
     
     // Pan control
-    panLabel.setText("Pan", juce::dontSendNotification);
+    panLabel.setText("PAN", juce::dontSendNotification);
     panLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     panLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     panLabel.setJustificationType(juce::Justification::centred);
@@ -192,7 +192,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     addAndMakeVisible(panSlider);
     
     // Phase control
-    phaseLabel.setText("Phase", juce::dontSendNotification);
+    phaseLabel.setText("PHASE", juce::dontSendNotification);
     phaseLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     phaseLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     phaseLabel.setJustificationType(juce::Justification::centred);
@@ -208,7 +208,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     addAndMakeVisible(phaseSlider);
     
     // Attack control
-    attackLabel.setText("Attack", juce::dontSendNotification);
+    attackLabel.setText("ATTACK", juce::dontSendNotification);
     attackLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     attackLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     attackLabel.setJustificationType(juce::Justification::centred);
@@ -224,7 +224,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     addAndMakeVisible(attackSlider);
     
     // Decay control
-    decayLabel.setText("Decay", juce::dontSendNotification);
+    decayLabel.setText("DECAY", juce::dontSendNotification);
     decayLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     decayLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     decayLabel.setJustificationType(juce::Justification::centred);
@@ -240,7 +240,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     addAndMakeVisible(decaySlider);
     
     // Sustain control
-    sustainLabel.setText("Sustain", juce::dontSendNotification);
+    sustainLabel.setText("SUSTAIN", juce::dontSendNotification);
     sustainLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     sustainLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     sustainLabel.setJustificationType(juce::Justification::centred);
@@ -256,7 +256,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     addAndMakeVisible(sustainSlider);
     
     // Release control
-    releaseLabel.setText("Release", juce::dontSendNotification);
+    releaseLabel.setText("RELEASE", juce::dontSendNotification);
     releaseLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     releaseLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     releaseLabel.setJustificationType(juce::Justification::centred);
@@ -291,7 +291,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     */
     
     // Octave control
-    octaveLabel.setText("Octave", juce::dontSendNotification);
+    octaveLabel.setText("OCTAVE", juce::dontSendNotification);
     octaveLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     octaveLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     octaveLabel.setJustificationType(juce::Justification::centred);
@@ -310,7 +310,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     addAndMakeVisible(octaveValueLabel);
     
     // Semitone control
-    semitoneLabel.setText("Semi", juce::dontSendNotification);
+    semitoneLabel.setText("SEMI", juce::dontSendNotification);
     semitoneLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     semitoneLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     semitoneLabel.setJustificationType(juce::Justification::centred);
@@ -329,7 +329,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     addAndMakeVisible(semitoneValueLabel);
     
     // Fine tune control
-    fineTuneLabel.setText("Fine", juce::dontSendNotification);
+    fineTuneLabel.setText("FINE", juce::dontSendNotification);
     fineTuneLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     fineTuneLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     fineTuneLabel.setJustificationType(juce::Justification::centred);
@@ -348,7 +348,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     addAndMakeVisible(fineTuneValueLabel);
     
     // Voice count control
-    voiceCountLabel.setText("Voices", juce::dontSendNotification);
+    voiceCountLabel.setText("VOICES", juce::dontSendNotification);
     voiceCountLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     voiceCountLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     voiceCountLabel.setJustificationType(juce::Justification::centred);

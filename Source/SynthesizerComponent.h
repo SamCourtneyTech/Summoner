@@ -93,20 +93,32 @@ public:
                 ledColour = juce::Colours::white; // All buttons use white LED except pink
             }
             
-            // Draw LED glow effect - multiple layers for realistic glow
-            for (int i = 4; i >= 1; --i)
+            // Draw LED glow effect - multiple layers for intense glow
+            for (int i = 6; i >= 1; --i)
             {
-                g.setColour(ledColour.withAlpha(0.1f * i));
+                g.setColour(ledColour.withAlpha(0.15f * i));
+                g.drawFittedText(button.getButtonText(), 
+                    bounds.expanded(i), juce::Justification::centred, 1);
+            }
+            
+            // Secondary glow layer for more intensity
+            for (int i = 3; i >= 1; --i)
+            {
+                g.setColour(ledColour.withAlpha(0.25f * i));
                 g.drawFittedText(button.getButtonText(), 
                     bounds.expanded(i), juce::Justification::centred, 1);
             }
             
             // Main bright text
-            g.setColour(ledColour.brighter(0.3f));
+            g.setColour(ledColour.brighter(0.4f));
             g.drawFittedText(button.getButtonText(), bounds, juce::Justification::centred, 1);
             
             // Core bright highlight
-            g.setColour(ledColour.brighter(0.6f).withAlpha(0.8f));
+            g.setColour(ledColour.brighter(0.8f).withAlpha(0.9f));
+            g.drawFittedText(button.getButtonText(), bounds, juce::Justification::centred, 1);
+            
+            // Ultra-bright core for maximum glow
+            g.setColour(ledColour.brighter(1.2f).withAlpha(0.7f));
             g.drawFittedText(button.getButtonText(), bounds, juce::Justification::centred, 1);
         }
         else
