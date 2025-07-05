@@ -240,31 +240,45 @@ public:
         
         g.setFont(font);
         
-        // Draw the outline first (restore the border)
-        g.setColour(juce::Colours::white.withAlpha(0.8f));
-        g.drawRect(bounds, 1.0f);
+        // Draw the outline with a glow effect
+        juce::Colour glowColour = juce::Colours::white;
         
-        // Subtle outer glow - much more restrained for numbers
-        for (float i = 2.0f; i >= 1.0f; i -= 0.5f)
+        // Outer glow for the border
+        for (float i = 3.0f; i >= 1.0f; i -= 0.5f)
         {
-            auto alpha = 0.04f + (0.06f * (2.5f - i) / 1.5f); // Very low alpha
+            auto alpha = 0.05f + (0.1f * (3.5f - i) / 2.5f);
+            g.setColour(glowColour.withAlpha(alpha));
+            g.drawRoundedRectangle(bounds.expanded(i), 2.0f, 1.0f + i * 0.5f);
+        }
+        
+        // Inner glow for the border
+        g.setColour(glowColour.withAlpha(0.4f));
+        g.drawRoundedRectangle(bounds.expanded(1.0f), 2.0f, 2.0f);
+        
+        // Core bright border
+        g.setColour(glowColour);
+        g.drawRoundedRectangle(bounds, 2.0f, 1.0f);
+        
+        // Text glow
+        // Outer glow for text
+        for (float i = 2.5f; i >= 1.0f; i -= 0.5f)
+        {
+            auto alpha = 0.04f + (0.08f * (3.0f - i) / 2.0f);
             g.setColour(juce::Colours::white.withAlpha(alpha));
-            
-            // Only 4 directions for cleaner look
             g.drawText(text, bounds.translated(-i, 0), justification, true);
             g.drawText(text, bounds.translated(i, 0), justification, true);
             g.drawText(text, bounds.translated(0, -i), justification, true);
             g.drawText(text, bounds.translated(0, i), justification, true);
         }
         
-        // Very subtle inner glow
-        g.setColour(juce::Colours::white.withAlpha(0.2f));
+        // Inner glow for text
+        g.setColour(juce::Colours::white.withAlpha(0.3f));
         g.drawText(text, bounds.translated(-1, 0), justification, true);
         g.drawText(text, bounds.translated(1, 0), justification, true);
         g.drawText(text, bounds.translated(0, -1), justification, true);
         g.drawText(text, bounds.translated(0, 1), justification, true);
         
-        // Core bright white text - the main readable text
+        // Core bright white text
         g.setColour(juce::Colours::white);
         g.drawText(text, bounds, justification, true);
     }
