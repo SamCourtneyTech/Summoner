@@ -503,7 +503,7 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     auto masterLeft = masterBounds.getX();
     
     // Width should encompass the tuning section (which is the widest at 320px)
-    auto masterWidth = 320 + 60; // tuning width + a bit more padding
+    auto masterWidth = 320 + 63; // tuning width + a bit more padding
     
     // Height should go from wave buttons to bottom of phase section
     auto masterHeight = 40 + 20 + 60 + 10 + 100 + 20 + 100 + 20 + 80 + 20 + 80 + 20; // all sections + spacing + extra
