@@ -368,10 +368,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     // Oscillator type buttons - using simple text for now
     sineWaveButton.setButtonText("SIN");
-    sineWaveButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff333333));
-    sineWaveButton.setColour(juce::TextButton::buttonOnColourId, juce::Colours::white);
-    sineWaveButton.setColour(juce::TextButton::textColourOnId, juce::Colours::black);
-    sineWaveButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+    // Custom look and feel handles all colors
     sineWaveButton.setLookAndFeel(&customWaveButtonLookAndFeel);
     sineWaveButton.setClickingTogglesState(true);
     sineWaveButton.setToggleState(true, juce::dontSendNotification); // Start with sine selected
@@ -379,50 +376,35 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     addAndMakeVisible(sineWaveButton);
     
     sawWaveButton.setButtonText("SAW");
-    sawWaveButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff333333));
-    sawWaveButton.setColour(juce::TextButton::buttonOnColourId, juce::Colours::white);
-    sawWaveButton.setColour(juce::TextButton::textColourOnId, juce::Colours::black);
-    sawWaveButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+    // Custom look and feel handles all colors
     sawWaveButton.setLookAndFeel(&customWaveButtonLookAndFeel);
     sawWaveButton.setClickingTogglesState(true);
     sawWaveButton.addListener(this);
     addAndMakeVisible(sawWaveButton);
     
     squareWaveButton.setButtonText("SQR");
-    squareWaveButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff333333));
-    squareWaveButton.setColour(juce::TextButton::buttonOnColourId, juce::Colours::white);
-    squareWaveButton.setColour(juce::TextButton::textColourOnId, juce::Colours::black);
-    squareWaveButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+    // Custom look and feel handles all colors
     squareWaveButton.setLookAndFeel(&customWaveButtonLookAndFeel);
     squareWaveButton.setClickingTogglesState(true);
     squareWaveButton.addListener(this);
     addAndMakeVisible(squareWaveButton);
     
     triangleWaveButton.setButtonText("TRI");
-    triangleWaveButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff333333));
-    triangleWaveButton.setColour(juce::TextButton::buttonOnColourId, juce::Colours::white);
-    triangleWaveButton.setColour(juce::TextButton::textColourOnId, juce::Colours::black);
-    triangleWaveButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+    // Custom look and feel handles all colors
     triangleWaveButton.setLookAndFeel(&customWaveButtonLookAndFeel);
     triangleWaveButton.setClickingTogglesState(true);
     triangleWaveButton.addListener(this);
     addAndMakeVisible(triangleWaveButton);
     
     noiseWaveButton.setButtonText("WHT");
-    noiseWaveButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff333333));
-    noiseWaveButton.setColour(juce::TextButton::buttonOnColourId, juce::Colours::white);
-    noiseWaveButton.setColour(juce::TextButton::textColourOnId, juce::Colours::black);
-    noiseWaveButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+    // Custom look and feel handles all colors
     noiseWaveButton.setLookAndFeel(&customWaveButtonLookAndFeel);
     noiseWaveButton.setClickingTogglesState(true);
     noiseWaveButton.addListener(this);
     addAndMakeVisible(noiseWaveButton);
     
     pinkNoiseButton.setButtonText("PNK");
-    pinkNoiseButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff333333));
-    pinkNoiseButton.setColour(juce::TextButton::buttonOnColourId, juce::Colours::white);
-    pinkNoiseButton.setColour(juce::TextButton::textColourOnId, juce::Colours::black);
-    pinkNoiseButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+    // Custom look and feel handles all colors
     pinkNoiseButton.setLookAndFeel(&customWaveButtonLookAndFeel);
     pinkNoiseButton.setClickingTogglesState(true);
     pinkNoiseButton.addListener(this);
@@ -430,10 +412,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     // Random phase button
     randomPhaseButton.setButtonText("RND PHASE");
-    randomPhaseButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff333333));
-    randomPhaseButton.setColour(juce::TextButton::buttonOnColourId, juce::Colours::white);
-    randomPhaseButton.setColour(juce::TextButton::textColourOnId, juce::Colours::black);
-    randomPhaseButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+    // Custom look and feel handles all colors
     randomPhaseButton.setLookAndFeel(&customWaveButtonLookAndFeel);
     randomPhaseButton.setClickingTogglesState(true);
     randomPhaseButton.setToggleState(true, juce::dontSendNotification); // Default to random phase ON

@@ -73,18 +73,19 @@ class WaveButtonLookAndFeel : public juce::LookAndFeel_V4
 {
 public:
     void drawButtonText(juce::Graphics& g, juce::TextButton& button,
-        bool /*isMouseOverButton*/, bool /*isButtonDown*/) override
+        bool isMouseOverButton, bool isButtonDown) override
     {
         auto font = juce::Font("Press Start 2P", 10.0f, juce::Font::plain);
         g.setFont(font);
         auto bounds = button.getLocalBounds();
+        auto text = button.getButtonText();
         
-        // LED glow effect for button text
+        // LED glow effect using the same technique as knob labels
         if (button.getToggleState())
         {
             // Determine color based on button text when toggled (selected)
             juce::Colour ledColour;
-            if (button.getButtonText() == "PNK")
+            if (text == "PNK")
             {
                 ledColour = juce::Colours::pink;
             }
@@ -93,39 +94,41 @@ public:
                 ledColour = juce::Colours::white; // All buttons use white LED except pink
             }
             
-            // Draw LED glow effect - multiple layers for intense glow
-            for (int i = 6; i >= 1; --i)
+            // Outer glow - multiple layers using 4-directional technique like knob labels
+            for (float i = 2.5f; i >= 1.0f; i -= 0.5f)
             {
-                g.setColour(ledColour.withAlpha(0.15f * i));
-                g.drawFittedText(button.getButtonText(), 
-                    bounds.expanded(i), juce::Justification::centred, 1);
+                auto alpha = 0.03f + (0.05f * (3.0f - i) / 2.0f);
+                g.setColour(ledColour.withAlpha(alpha));
+                
+                // Draw in 4 directions for each glow layer
+                g.drawText(text, bounds.translated(-i, 0), juce::Justification::centred, true);
+                g.drawText(text, bounds.translated(i, 0), juce::Justification::centred, true);
+                g.drawText(text, bounds.translated(0, -i), juce::Justification::centred, true);
+                g.drawText(text, bounds.translated(0, i), juce::Justification::centred, true);
             }
             
-            // Secondary glow layer for more intensity
-            for (int i = 3; i >= 1; --i)
-            {
-                g.setColour(ledColour.withAlpha(0.25f * i));
-                g.drawFittedText(button.getButtonText(), 
-                    bounds.expanded(i), juce::Justification::centred, 1);
-            }
+            // Inner glow - more intense
+            g.setColour(ledColour.withAlpha(0.15f));
+            g.drawText(text, bounds.translated(-1, 0), juce::Justification::centred, true);
+            g.drawText(text, bounds.translated(1, 0), juce::Justification::centred, true);
+            g.drawText(text, bounds.translated(0, -1), juce::Justification::centred, true);
+            g.drawText(text, bounds.translated(0, 1), juce::Justification::centred, true);
             
-            // Main bright text
-            g.setColour(ledColour.brighter(0.4f));
-            g.drawFittedText(button.getButtonText(), bounds, juce::Justification::centred, 1);
-            
-            // Core bright highlight
-            g.setColour(ledColour.brighter(0.8f).withAlpha(0.9f));
-            g.drawFittedText(button.getButtonText(), bounds, juce::Justification::centred, 1);
-            
-            // Ultra-bright core for maximum glow
-            g.setColour(ledColour.brighter(1.2f).withAlpha(0.7f));
-            g.drawFittedText(button.getButtonText(), bounds, juce::Justification::centred, 1);
+            // Core bright text
+            g.setColour(ledColour);
+            g.drawText(text, bounds, juce::Justification::centred, true);
         }
         else
         {
             // Normal state - dim LED effect
-            g.setColour(juce::Colour(0xff404040)); // Dark grey for off state
-            g.drawFittedText(button.getButtonText(), bounds, juce::Justification::centred, 1);
+            juce::Colour dimColour = juce::Colour(0xff404040);
+            if (isMouseOverButton)
+                dimColour = dimColour.brighter(0.1f);
+            if (isButtonDown)
+                dimColour = dimColour.darker(0.1f);
+                
+            g.setColour(dimColour);
+            g.drawText(text, bounds, juce::Justification::centred, true);
         }
     }
     
