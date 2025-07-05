@@ -564,7 +564,7 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     auto masterWidth = 320 + 63; // tuning width + a bit more padding
     
     // Height should go from wave buttons to bottom of phase section
-    auto masterHeight = 40 + 20 + 60 + 10 + 100 + 20 + 100 + 20 + 80 + 20 + 80 + 20; // all sections + spacing + extra
+    auto masterHeight = 40 + 7 + 60 + 15 + 100 + 20 + 100 + 30 + 80 + 20 + 80 + 20; // all sections + spacing + extra
     
     auto masterOutlineBounds = juce::Rectangle<float>(masterLeft - 12, masterTop - 12, masterWidth + 24, masterHeight + 24);
     
@@ -683,9 +683,9 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     // Skip to ADSR section (match resized() layout exactly)
     slotBounds.removeFromTop(20); // spacing
     slotBounds.removeFromTop(40); // wave buttons
-    slotBounds.removeFromTop(20); // spacing
+    slotBounds.removeFromTop(7); // further reduced spacing to match envelope shift up more
     slotBounds.removeFromTop(60); // envelope visualization 
-    slotBounds.removeFromTop(10); // spacing
+    slotBounds.removeFromTop(15); // increased spacing between envelope and knobs
     
     // ADSR knobs metal slots - match exact layout from resized()
     auto adsrRow = slotBounds.removeFromTop(100);
@@ -817,10 +817,10 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     waveSectionBounds.reduce(-2, -2); // Expand the bounds slightly
     
     
-    sectionBounds.removeFromTop(20); // spacing
+    sectionBounds.removeFromTop(7); // further reduced spacing to match envelope shift up more
     
     // Skip envelope visualization and spacing
-    sectionBounds.removeFromTop(60 + 10); // envelope height + spacing
+    sectionBounds.removeFromTop(60 + 15); // envelope height + increased spacing
     
     // ADSR section outline
     auto adsrSectionBounds = sectionBounds.removeFromTop(100);
@@ -836,7 +836,7 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     volumeSectionBounds.reduce(-5, -5); // Expand the bounds
     
     
-    sectionBounds.removeFromTop(20); // spacing
+    sectionBounds.removeFromTop(30); // further increased spacing to match octave controls pushed down more
     
     // Octave/Semitone/Fine/Voices section outline
     auto tuningSectionBounds = sectionBounds.removeFromTop(80);
@@ -936,14 +936,14 @@ void SynthesizerComponent::resized()
     pinkNoiseButton.setBounds(buttonSection.getX() + (buttonWidth + buttonSpacing) * 5, buttonRow.getY(), buttonWidth, buttonHeight);
     
     
-    bounds.removeFromTop(20); // spacing between rows
+    bounds.removeFromTop(7); // further reduced spacing to shift envelope up more
     
-    // ADSR envelope visualization above knobs
+    // ADSR envelope visualization - moved to between wavetype buttons and ADSR knobs
     auto envelopeSection = bounds.removeFromTop(60);
     auto envelopeArea = envelopeSection.removeFromLeft(bounds.getWidth() / 3);
     envelopeComponent.setBounds(envelopeArea);
     
-    bounds.removeFromTop(10); // spacing between envelope and knobs
+    bounds.removeFromTop(15); // slightly increased spacing between envelope and knobs
     
     // Bottom row - ADSR knobs (left third of screen)
     auto adsrRow = bounds.removeFromTop(controlHeight);
@@ -1000,8 +1000,8 @@ void SynthesizerComponent::resized()
     panLabel.setBounds(panSection.removeFromTop(20));
     panSlider.setBounds(panSection);
     
-    // Bottom controls - Pulse width and Octave
-    bounds.removeFromTop(20); // spacing
+    // Octave controls - moved to between stereo knob row and phase row
+    bounds.removeFromTop(30); // further increased spacing to push octave controls down more
     auto bottomControlsRow = bounds.removeFromTop(80);
     
     // Pulse width control (commented out for now)
