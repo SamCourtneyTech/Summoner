@@ -564,7 +564,7 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     auto masterWidth = 320 + 63; // tuning width + a bit more padding
     
     // Height should go from wave buttons to bottom of phase section
-    auto masterHeight = 40 + 7 + 60 + 15 + 100 + 20 + 100 + 30 + 80 + 20 + 80 + 20; // all sections + spacing + extra
+    auto masterHeight = 40 + 7 + 60 + 15 + 100 + 20 + 100 + 40 + 80 + 20 + 80 + 20; // all sections + spacing + extra
     
     auto masterOutlineBounds = juce::Rectangle<float>(masterLeft - 12, masterTop - 12, masterWidth + 24, masterHeight + 24);
     
@@ -797,13 +797,13 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     phaseRow.removeFromLeft(100); // random phase button
     phaseRow.removeFromLeft(15); // spacing
     auto phaseKnobArea = phaseRow.removeFromLeft(80);
-    phaseKnobArea.removeFromTop(15); // less label space
+    phaseKnobArea.removeFromTop(10); // reduced label space to move background down
     g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(phaseKnobArea.getCentreX() - 40, phaseKnobArea.getCentreY() - 66, 80, 114, 4.0f);
+    g.fillRoundedRectangle(phaseKnobArea.getCentreX() - 40, phaseKnobArea.getCentreY() - 46, 80, 94, 4.0f);
     g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(phaseKnobArea.getCentreX() - 39, phaseKnobArea.getCentreY() - 65, 78, 112, 3.0f, 2.0f);
+    g.drawRoundedRectangle(phaseKnobArea.getCentreX() - 39, phaseKnobArea.getCentreY() - 45, 78, 92, 3.0f, 2.0f);
     g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(phaseKnobArea.getCentreX() - 37, phaseKnobArea.getCentreY() - 63, 74, 108, 2.0f, 1.0f);
+    g.drawRoundedRectangle(phaseKnobArea.getCentreX() - 37, phaseKnobArea.getCentreY() - 43, 74, 88, 2.0f, 1.0f);
     
     
     // Draw futuristic section outlines for each row of controls
@@ -836,7 +836,7 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     volumeSectionBounds.reduce(-5, -5); // Expand the bounds
     
     
-    sectionBounds.removeFromTop(30); // further increased spacing to match octave controls pushed down more
+    sectionBounds.removeFromTop(40); // increased spacing even more to match octave controls pushed down further
     
     // Octave/Semitone/Fine/Voices section outline
     auto tuningSectionBounds = sectionBounds.removeFromTop(80);
@@ -1001,7 +1001,7 @@ void SynthesizerComponent::resized()
     panSlider.setBounds(panSection);
     
     // Octave controls - moved to between stereo knob row and phase row
-    bounds.removeFromTop(30); // further increased spacing to push octave controls down more
+    bounds.removeFromTop(40); // increased spacing even more to push octave controls down further
     auto bottomControlsRow = bounds.removeFromTop(80);
     
     // Pulse width control (commented out for now)
