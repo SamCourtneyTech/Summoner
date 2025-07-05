@@ -113,22 +113,51 @@ public:
         auto* textButton = dynamic_cast<juce::TextButton*>(&button);
         bool isToggled = textButton && textButton->getToggleState();
         
-        juce::Colour fillColour;
+        // 3D metallic button styling similar to knob backgrounds
+        float cornerRadius = 3.0f;
+        
         if (isToggled)
         {
-            // When selected, don't change background on hover/click
-            fillColour = backgroundColour;
+            // Pressed/selected state - darker and inset look
+            g.setColour(juce::Colour(0xff0a0a0a)); // Very dark base
+            g.fillRoundedRectangle(bounds, cornerRadius);
+            
+            // Dark border for inset effect
+            g.setColour(juce::Colour(0xff000000).withAlpha(0.9f));
+            g.drawRoundedRectangle(bounds, cornerRadius, 2.0f);
+            
+            // Inner highlight for metallic effect
+            g.setColour(juce::Colour(0xff2a2a2a).withAlpha(0.6f));
+            g.drawRoundedRectangle(bounds.reduced(1.5f), cornerRadius - 1.0f, 1.0f);
         }
         else
         {
-            // When not selected, apply hover/click effects
-            fillColour = isButtonDown ? juce::Colours::lightgrey
-                : isMouseOverButton ? juce::Colours::grey
-                : backgroundColour;
+            // Normal state - raised 3D button look
+            juce::Colour baseColour = isButtonDown ? juce::Colour(0xff0d0d0d) 
+                : isMouseOverButton ? juce::Colour(0xff181818)
+                : juce::Colour(0xff0f0f0f); // Same as knob backgrounds
+            
+            // Base fill
+            g.setColour(baseColour);
+            g.fillRoundedRectangle(bounds, cornerRadius);
+            
+            // Outer border for depth
+            g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+            g.drawRoundedRectangle(bounds, cornerRadius, 2.0f);
+            
+            // Inner metallic highlight
+            g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+            g.drawRoundedRectangle(bounds.reduced(1.0f), cornerRadius - 0.5f, 1.0f);
+            
+            // Top highlight for 3D raised effect
+            if (!isButtonDown)
+            {
+                g.setColour(juce::Colour(0xff606060).withAlpha(0.3f));
+                auto topHighlight = bounds.reduced(2.0f);
+                topHighlight.setHeight(topHighlight.getHeight() * 0.3f);
+                g.fillRoundedRectangle(topHighlight, cornerRadius - 1.0f);
+            }
         }
-        
-        g.setColour(fillColour);
-        g.fillRect(bounds);
     }
 };
 
