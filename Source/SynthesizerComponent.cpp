@@ -596,6 +596,27 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     g.drawLine(raisedBounds.getRight() - 1, raisedBounds.getY() + 8, 
                raisedBounds.getRight() - 1, raisedBounds.getBottom() - 8, 2.0f);
     
+    // Add "Oscillator 1" label to bottom right of wood component
+    auto labelBounds = juce::Rectangle<float>(raisedBounds.getRight() - 100, raisedBounds.getBottom() - 30, 90, 20);
+    
+    // Metallic grey background
+    g.setColour(juce::Colour(0xff606060));
+    g.fillRoundedRectangle(labelBounds, 3.0f);
+    
+    // Darker border for depth
+    g.setColour(juce::Colour(0xff404040));
+    g.drawRoundedRectangle(labelBounds, 3.0f, 1.0f);
+    
+    // Light highlight on top for metallic effect
+    g.setColour(juce::Colour(0xff808080));
+    g.drawLine(labelBounds.getX() + 3, labelBounds.getY() + 1, 
+               labelBounds.getRight() - 3, labelBounds.getY() + 1, 1.0f);
+    
+    // Lighter grey text
+    g.setColour(juce::Colour(0xffc0c0c0));
+    g.setFont(juce::Font("Arial", 11.0f, juce::Font::plain));
+    g.drawText("oscillator 1", labelBounds.toNearestInt(), juce::Justification::centred, true);
+    
     // Futuristic outline with glow effect on the raised surface
     
     // Add metal slots for knobs - match exact positions from resized()
