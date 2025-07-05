@@ -77,30 +77,48 @@ public:
     {
         auto font = juce::Font("Press Start 2P", 10.0f, juce::Font::plain);
         g.setFont(font);
+        auto bounds = button.getLocalBounds();
         
-        // Use different colors based on button text when toggled (selected)
+        // LED glow effect for button text
         if (button.getToggleState())
         {
+            // Determine color based on button text when toggled (selected)
+            juce::Colour ledColour;
             if (button.getButtonText() == "WHT")
             {
-                g.setColour(juce::Colours::grey);
+                ledColour = juce::Colours::grey;
             }
             else if (button.getButtonText() == "PNK")
             {
-                g.setColour(juce::Colours::pink);
+                ledColour = juce::Colours::pink;
             }
             else
             {
-                g.setColour(juce::Colours::blue);
+                ledColour = juce::Colours::cyan; // Changed from blue to cyan for better LED effect
             }
+            
+            // Draw LED glow effect - multiple layers for realistic glow
+            for (int i = 4; i >= 1; --i)
+            {
+                g.setColour(ledColour.withAlpha(0.1f * i));
+                g.drawFittedText(button.getButtonText(), 
+                    bounds.expanded(i), juce::Justification::centred, 1);
+            }
+            
+            // Main bright text
+            g.setColour(ledColour.brighter(0.3f));
+            g.drawFittedText(button.getButtonText(), bounds, juce::Justification::centred, 1);
+            
+            // Core bright highlight
+            g.setColour(ledColour.brighter(0.6f).withAlpha(0.8f));
+            g.drawFittedText(button.getButtonText(), bounds, juce::Justification::centred, 1);
         }
         else
         {
-            g.setColour(button.findColour(juce::TextButton::textColourOffId));
+            // Normal state - dim LED effect
+            g.setColour(juce::Colour(0xff404040)); // Dark grey for off state
+            g.drawFittedText(button.getButtonText(), bounds, juce::Justification::centred, 1);
         }
-        
-        g.drawFittedText(button.getButtonText(), button.getLocalBounds(),
-            juce::Justification::centred, 1);
     }
     
     void drawButtonBackground(juce::Graphics& g, juce::Button& button,
