@@ -466,89 +466,11 @@ SynthesizerComponent::~SynthesizerComponent()
 
 void SynthesizerComponent::paint(juce::Graphics& g)
 {
-    // Dark background with blue gradient
-    juce::ColourGradient gradient(juce::Colour(0xff0a0a0a), 0.0f, 0.0f,
-                                 juce::Colour(0xff1a1a2e), 0.0f, getHeight(), false);
-    g.setGradientFill(gradient);
+    // Black background
+    g.setColour(juce::Colours::black);
     g.fillAll();
     
-    // Controls section background with gritty analog texture
-    auto bounds = getLocalBounds();
-    bounds.reduce(20, 20);
-    
-    bounds.removeFromTop(20);
-    
-    // Calculate controls section bounds (everything except the outer margins)
-    auto controlsBounds = bounds;
-    
-    // Draw wood texture background
-    // Base wood color - warm brown
-    g.setColour(juce::Colour(0xff8b4513));
-    g.fillRoundedRectangle(controlsBounds.toFloat(), 8.0f);
-    
-    // Add wood grain gradient for depth
-    juce::ColourGradient woodGradient(juce::Colour(0xffa0522d), 0.0f, controlsBounds.getY(),
-                                     juce::Colour(0xff654321), 0.0f, controlsBounds.getBottom(), false);
-    g.setGradientFill(woodGradient);
-    g.fillRoundedRectangle(controlsBounds.toFloat(), 8.0f);
-    
-    // Create wood grain lines (horizontal)
-    juce::Random random(42); // Fixed seed for consistent grain
-    for (int i = 0; i < 50; ++i)
-    {
-        auto y = controlsBounds.getY() + random.nextFloat() * controlsBounds.getHeight();
-        auto startX = controlsBounds.getX();
-        auto endX = controlsBounds.getRight();
-        auto grainOpacity = 0.1f + random.nextFloat() * 0.3f;
-        
-        // Vary the grain color
-        if (random.nextBool())
-            g.setColour(juce::Colour(0xff5d4037).withAlpha(grainOpacity));
-        else
-            g.setColour(juce::Colour(0xffbcaaa4).withAlpha(grainOpacity));
-        
-        // Draw wavy grain lines
-        juce::Path grainPath;
-        grainPath.startNewSubPath(startX, y);
-        
-        for (float x = startX; x < endX; x += 20.0f)
-        {
-            auto waveY = y + sin((x - startX) * 0.02f) * (2.0f + random.nextFloat() * 3.0f);
-            grainPath.lineTo(x, waveY);
-        }
-        grainPath.lineTo(endX, y);
-        
-        g.strokePath(grainPath, juce::PathStrokeType(0.5f + random.nextFloat() * 1.5f));
-    }
-    
-    // Add subtle wood texture noise
-    random.setSeed(123);
-    g.setColour(juce::Colour(0xff4a2c2a).withAlpha(0.04f));
-    for (int i = 0; i < 1000; ++i)
-    {
-        auto x = controlsBounds.getX() + random.nextFloat() * controlsBounds.getWidth();
-        auto y = controlsBounds.getY() + random.nextFloat() * controlsBounds.getHeight();
-        g.fillRect(x, y, 1.0f, 1.0f);
-    }
-    
-    // Add lighter wood highlights
-    random.setSeed(456);
-    g.setColour(juce::Colour(0xffd2b48c).withAlpha(0.06f));
-    for (int i = 0; i < 800; ++i)
-    {
-        auto x = controlsBounds.getX() + random.nextFloat() * controlsBounds.getWidth();
-        auto y = controlsBounds.getY() + random.nextFloat() * controlsBounds.getHeight();
-        g.fillRect(x, y, 1.0f, 1.0f);
-    }
-    
-    
-    // Draw subtle border
-    g.setColour(juce::Colour(0xff1a1a1a));
-    g.drawRoundedRectangle(controlsBounds.toFloat(), 8.0f, 1.0f);
-    
-    // Add inner highlight for that analog hardware look
-    g.setColour(juce::Colour(0xff5a5a5a).withAlpha(0.3f));
-    g.drawRoundedRectangle(controlsBounds.toFloat().reduced(1.0f), 7.0f, 1.0f);
+    // Removed general wood background - now black page background
     
     // Add futuristic outline around the actual controls bounds
     // Calculate the tight bounds that encompass all controls
