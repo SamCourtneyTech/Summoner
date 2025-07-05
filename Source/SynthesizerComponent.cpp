@@ -121,6 +121,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     volumeLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     volumeLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     volumeLabel.setJustificationType(juce::Justification::centred);
+    volumeLabel.setLookAndFeel(&ledLabelLookAndFeel);
     addAndMakeVisible(volumeLabel);
     
     volumeSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -136,6 +137,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     detuneLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     detuneLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     detuneLabel.setJustificationType(juce::Justification::centred);
+    detuneLabel.setLookAndFeel(&ledLabelLookAndFeel);
     addAndMakeVisible(detuneLabel);
 
     detuneSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -151,6 +153,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     stereoWidthLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     stereoWidthLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     stereoWidthLabel.setJustificationType(juce::Justification::centred);
+    stereoWidthLabel.setLookAndFeel(&ledLabelLookAndFeel);
     addAndMakeVisible(stereoWidthLabel);
 
     stereoWidthSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -166,6 +169,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     panLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     panLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     panLabel.setJustificationType(juce::Justification::centred);
+    panLabel.setLookAndFeel(&ledLabelLookAndFeel);
     addAndMakeVisible(panLabel);
 
     panSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -181,6 +185,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     phaseLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     phaseLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     phaseLabel.setJustificationType(juce::Justification::centred);
+    phaseLabel.setLookAndFeel(&ledLabelLookAndFeel);
     addAndMakeVisible(phaseLabel);
 
     phaseSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -196,6 +201,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     attackLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     attackLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     attackLabel.setJustificationType(juce::Justification::centred);
+    attackLabel.setLookAndFeel(&ledLabelLookAndFeel);
     addAndMakeVisible(attackLabel);
     
     attackSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -211,6 +217,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     decayLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     decayLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     decayLabel.setJustificationType(juce::Justification::centred);
+    decayLabel.setLookAndFeel(&ledLabelLookAndFeel);
     addAndMakeVisible(decayLabel);
     
     decaySlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -226,6 +233,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     sustainLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     sustainLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     sustainLabel.setJustificationType(juce::Justification::centred);
+    sustainLabel.setLookAndFeel(&ledLabelLookAndFeel);
     addAndMakeVisible(sustainLabel);
     
     sustainSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -241,6 +249,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     releaseLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     releaseLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     releaseLabel.setJustificationType(juce::Justification::centred);
+    releaseLabel.setLookAndFeel(&ledLabelLookAndFeel);
     addAndMakeVisible(releaseLabel);
     
     releaseSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -275,6 +284,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     octaveLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     octaveLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     octaveLabel.setJustificationType(juce::Justification::centred);
+    octaveLabel.setLookAndFeel(&ledLabelLookAndFeel);
     addAndMakeVisible(octaveLabel);
     
     octaveValueLabel.setText("0", juce::dontSendNotification);
@@ -283,6 +293,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     octaveValueLabel.setColour(juce::Label::backgroundColourId, juce::Colours::transparentBlack);
     octaveValueLabel.setColour(juce::Label::outlineColourId, juce::Colours::white);
     octaveValueLabel.setJustificationType(juce::Justification::centred);
+    octaveValueLabel.setLookAndFeel(&ledNumberLookAndFeel);
     octaveValueLabel.setInterceptsMouseClicks(true, false);
     octaveValueLabel.addMouseListener(this, false);
     addAndMakeVisible(octaveValueLabel);
@@ -292,6 +303,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     semitoneLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     semitoneLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     semitoneLabel.setJustificationType(juce::Justification::centred);
+    semitoneLabel.setLookAndFeel(&ledLabelLookAndFeel);
     addAndMakeVisible(semitoneLabel);
     
     semitoneValueLabel.setText("0", juce::dontSendNotification);
@@ -300,6 +312,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     semitoneValueLabel.setColour(juce::Label::backgroundColourId, juce::Colours::transparentBlack);
     semitoneValueLabel.setColour(juce::Label::outlineColourId, juce::Colours::white);
     semitoneValueLabel.setJustificationType(juce::Justification::centred);
+    semitoneValueLabel.setLookAndFeel(&ledNumberLookAndFeel);
     semitoneValueLabel.setInterceptsMouseClicks(true, false);
     semitoneValueLabel.addMouseListener(this, false);
     addAndMakeVisible(semitoneValueLabel);
@@ -309,6 +322,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     fineTuneLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     fineTuneLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     fineTuneLabel.setJustificationType(juce::Justification::centred);
+    fineTuneLabel.setLookAndFeel(&ledLabelLookAndFeel);
     addAndMakeVisible(fineTuneLabel);
     
     fineTuneValueLabel.setText("0", juce::dontSendNotification);
@@ -317,6 +331,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     fineTuneValueLabel.setColour(juce::Label::backgroundColourId, juce::Colours::transparentBlack);
     fineTuneValueLabel.setColour(juce::Label::outlineColourId, juce::Colours::white);
     fineTuneValueLabel.setJustificationType(juce::Justification::centred);
+    fineTuneValueLabel.setLookAndFeel(&ledNumberLookAndFeel);
     fineTuneValueLabel.setInterceptsMouseClicks(true, false);
     fineTuneValueLabel.addMouseListener(this, false);
     addAndMakeVisible(fineTuneValueLabel);
@@ -326,6 +341,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     voiceCountLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
     voiceCountLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     voiceCountLabel.setJustificationType(juce::Justification::centred);
+    voiceCountLabel.setLookAndFeel(&ledLabelLookAndFeel);
     addAndMakeVisible(voiceCountLabel);
     
     voiceCountValueLabel.setText("1", juce::dontSendNotification);
@@ -334,6 +350,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     voiceCountValueLabel.setColour(juce::Label::backgroundColourId, juce::Colours::transparentBlack);
     voiceCountValueLabel.setColour(juce::Label::outlineColourId, juce::Colours::white);
     voiceCountValueLabel.setJustificationType(juce::Justification::centred);
+    voiceCountValueLabel.setLookAndFeel(&ledNumberLookAndFeel);
     voiceCountValueLabel.setInterceptsMouseClicks(true, false);
     voiceCountValueLabel.addMouseListener(this, false);
     addAndMakeVisible(voiceCountValueLabel);
@@ -433,6 +450,27 @@ SynthesizerComponent::~SynthesizerComponent()
     noiseWaveButton.setLookAndFeel(nullptr);
     pinkNoiseButton.setLookAndFeel(nullptr);
     randomPhaseButton.setLookAndFeel(nullptr);
+    
+    // Reset LED label look and feel
+    volumeLabel.setLookAndFeel(nullptr);
+    detuneLabel.setLookAndFeel(nullptr);
+    stereoWidthLabel.setLookAndFeel(nullptr);
+    panLabel.setLookAndFeel(nullptr);
+    phaseLabel.setLookAndFeel(nullptr);
+    attackLabel.setLookAndFeel(nullptr);
+    decayLabel.setLookAndFeel(nullptr);
+    sustainLabel.setLookAndFeel(nullptr);
+    releaseLabel.setLookAndFeel(nullptr);
+    octaveLabel.setLookAndFeel(nullptr);
+    semitoneLabel.setLookAndFeel(nullptr);
+    fineTuneLabel.setLookAndFeel(nullptr);
+    voiceCountLabel.setLookAndFeel(nullptr);
+    
+    // Reset LED number look and feel
+    octaveValueLabel.setLookAndFeel(nullptr);
+    semitoneValueLabel.setLookAndFeel(nullptr);
+    fineTuneValueLabel.setLookAndFeel(nullptr);
+    voiceCountValueLabel.setLookAndFeel(nullptr);
     // pulseWidthSlider.setLookAndFeel(nullptr); // commented out
 }
 
@@ -453,36 +491,66 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     // Calculate controls section bounds (everything except the outer margins)
     auto controlsBounds = bounds;
     
-    // Draw gritty analog synth background
-    // Base grey color
-    g.setColour(juce::Colour(0xff3a3a3a));
+    // Draw wood texture background
+    // Base wood color - warm brown
+    g.setColour(juce::Colour(0xff8b4513));
     g.fillRoundedRectangle(controlsBounds.toFloat(), 8.0f);
     
-    // Add subtle gradient for depth
-    juce::ColourGradient analogGradient(juce::Colour(0xff4a4a4a), 0.0f, controlsBounds.getY(),
-                                       juce::Colour(0xff2a2a2a), 0.0f, controlsBounds.getBottom(), false);
-    g.setGradientFill(analogGradient);
+    // Add wood grain gradient for depth
+    juce::ColourGradient woodGradient(juce::Colour(0xffa0522d), 0.0f, controlsBounds.getY(),
+                                     juce::Colour(0xff654321), 0.0f, controlsBounds.getBottom(), false);
+    g.setGradientFill(woodGradient);
     g.fillRoundedRectangle(controlsBounds.toFloat(), 8.0f);
     
-    // Add noise texture for gritty analog feel
-    juce::Random random(42); // Fixed seed for consistent texture
-    g.setColour(juce::Colours::white.withAlpha(0.03f));
-    for (int i = 0; i < 2000; ++i)
+    // Create wood grain lines (horizontal)
+    juce::Random random(42); // Fixed seed for consistent grain
+    for (int i = 0; i < 50; ++i)
+    {
+        auto y = controlsBounds.getY() + random.nextFloat() * controlsBounds.getHeight();
+        auto startX = controlsBounds.getX();
+        auto endX = controlsBounds.getRight();
+        auto grainOpacity = 0.1f + random.nextFloat() * 0.3f;
+        
+        // Vary the grain color
+        if (random.nextBool())
+            g.setColour(juce::Colour(0xff5d4037).withAlpha(grainOpacity));
+        else
+            g.setColour(juce::Colour(0xffbcaaa4).withAlpha(grainOpacity));
+        
+        // Draw wavy grain lines
+        juce::Path grainPath;
+        grainPath.startNewSubPath(startX, y);
+        
+        for (float x = startX; x < endX; x += 20.0f)
+        {
+            auto waveY = y + sin((x - startX) * 0.02f) * (2.0f + random.nextFloat() * 3.0f);
+            grainPath.lineTo(x, waveY);
+        }
+        grainPath.lineTo(endX, y);
+        
+        g.strokePath(grainPath, juce::PathStrokeType(0.5f + random.nextFloat() * 1.5f));
+    }
+    
+    // Add subtle wood texture noise
+    random.setSeed(123);
+    g.setColour(juce::Colour(0xff4a2c2a).withAlpha(0.04f));
+    for (int i = 0; i < 1000; ++i)
     {
         auto x = controlsBounds.getX() + random.nextFloat() * controlsBounds.getWidth();
         auto y = controlsBounds.getY() + random.nextFloat() * controlsBounds.getHeight();
         g.fillRect(x, y, 1.0f, 1.0f);
     }
     
-    // Add some darker noise for more texture
-    random.setSeed(84);
-    g.setColour(juce::Colours::black.withAlpha(0.05f));
-    for (int i = 0; i < 1500; ++i)
+    // Add lighter wood highlights
+    random.setSeed(456);
+    g.setColour(juce::Colour(0xffd2b48c).withAlpha(0.06f));
+    for (int i = 0; i < 800; ++i)
     {
         auto x = controlsBounds.getX() + random.nextFloat() * controlsBounds.getWidth();
         auto y = controlsBounds.getY() + random.nextFloat() * controlsBounds.getHeight();
         g.fillRect(x, y, 1.0f, 1.0f);
     }
+    
     
     // Draw subtle border
     g.setColour(juce::Colour(0xff1a1a1a));
@@ -521,12 +589,82 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     g.setColour(juce::Colour(0xff1a1a1a));
     g.fillRoundedRectangle(masterOutlineBounds, 10.0f);
     
-    // Main raised surface - lighter grey to show it's raised
+    // Main raised surface - wood texture to show it's raised
     auto raisedBounds = masterOutlineBounds.reduced(2.0f);
-    juce::ColourGradient raisedGradient(juce::Colour(0xff505050), raisedBounds.getX(), raisedBounds.getY(),
-                                       juce::Colour(0xff404040), raisedBounds.getX(), raisedBounds.getBottom(), false);
-    g.setGradientFill(raisedGradient);
+    
+    // Base spruce wood color for raised surface - darker and more realistic
+    g.setColour(juce::Colour(0xff3d2914));
     g.fillRoundedRectangle(raisedBounds, 8.0f);
+    
+    // Add detailed spruce wood grain gradient
+    juce::ColourGradient spruceGradient(juce::Colour(0xff4a3319), raisedBounds.getX(), raisedBounds.getY(),
+                                       juce::Colour(0xff2a1b0f), raisedBounds.getX(), raisedBounds.getBottom(), false);
+    g.setGradientFill(spruceGradient);
+    g.fillRoundedRectangle(raisedBounds, 8.0f);
+    
+    // Create detailed spruce wood grain patterns
+    juce::Random spruceRandom(42);
+    
+    // Major grain lines - pronounced spruce characteristics
+    for (int i = 0; i < 40; ++i)
+    {
+        auto y = raisedBounds.getY() + spruceRandom.nextFloat() * raisedBounds.getHeight();
+        auto startX = raisedBounds.getX();
+        auto endX = raisedBounds.getRight();
+        auto grainOpacity = 0.15f + spruceRandom.nextFloat() * 0.4f;
+        
+        // Darker grain lines for spruce
+        if (spruceRandom.nextBool())
+            g.setColour(juce::Colour(0xff1a0f08).withAlpha(grainOpacity));
+        else
+            g.setColour(juce::Colour(0xff2d1b10).withAlpha(grainOpacity));
+        
+        // More pronounced wavy grain for spruce character
+        juce::Path grainPath;
+        grainPath.startNewSubPath(startX, y);
+        
+        for (float x = startX; x < endX; x += 15.0f)
+        {
+            auto waveY = y + sin((x - startX) * 0.015f) * (3.0f + spruceRandom.nextFloat() * 5.0f);
+            grainPath.lineTo(x, waveY);
+        }
+        grainPath.lineTo(endX, y);
+        
+        g.strokePath(grainPath, juce::PathStrokeType(0.8f + spruceRandom.nextFloat() * 2.0f));
+    }
+    
+    // Add annual rings for spruce realism
+    spruceRandom.setSeed(999);
+    for (int i = 0; i < 8; ++i)
+    {
+        auto centerX = raisedBounds.getCentreX() + spruceRandom.nextFloat() * 100 - 50;
+        auto centerY = raisedBounds.getCentreY() + spruceRandom.nextFloat() * 100 - 50;
+        auto radius = 30 + spruceRandom.nextFloat() * 80;
+        
+        g.setColour(juce::Colour(0xff1a0f08).withAlpha(0.1f + spruceRandom.nextFloat() * 0.15f));
+        g.drawEllipse(centerX - radius, centerY - radius, radius * 2, radius * 2, 
+                     0.5f + spruceRandom.nextFloat() * 1.0f);
+    }
+    
+    // Add fine spruce texture
+    spruceRandom.setSeed(789);
+    g.setColour(juce::Colour(0xff0f0906).withAlpha(0.08f));
+    for (int i = 0; i < 800; ++i)
+    {
+        auto x = raisedBounds.getX() + spruceRandom.nextFloat() * raisedBounds.getWidth();
+        auto y = raisedBounds.getY() + spruceRandom.nextFloat() * raisedBounds.getHeight();
+        g.fillRect(x, y, 1.0f + spruceRandom.nextFloat() * 1.0f, 1.0f);
+    }
+    
+    // Add subtle spruce highlights
+    spruceRandom.setSeed(101112);
+    g.setColour(juce::Colour(0xff6b4423).withAlpha(0.04f));
+    for (int i = 0; i < 300; ++i)
+    {
+        auto x = raisedBounds.getX() + spruceRandom.nextFloat() * raisedBounds.getWidth();
+        auto y = raisedBounds.getY() + spruceRandom.nextFloat() * raisedBounds.getHeight();
+        g.fillRect(x, y, 1.0f, 1.0f);
+    }
     
     // Top and left highlights (simulating light from top-left)
     g.setColour(juce::Colour(0xff707070).withAlpha(0.8f));
@@ -551,6 +689,135 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     g.drawRoundedRectangle(raisedBounds, 8.0f, 2.0f);
     g.setColour(juce::Colours::white.withAlpha(0.2f));
     g.drawRoundedRectangle(raisedBounds.reduced(1.0f), 7.0f, 1.0f);
+    
+    // Add metal slots for knobs - match exact positions from resized()
+    auto slotBounds = getLocalBounds();
+    slotBounds.reduce(20, 20);
+    
+    // Skip to ADSR section (match resized() layout exactly)
+    slotBounds.removeFromTop(20); // spacing
+    slotBounds.removeFromTop(40); // wave buttons
+    slotBounds.removeFromTop(20); // spacing
+    slotBounds.removeFromTop(60); // envelope visualization 
+    slotBounds.removeFromTop(10); // spacing
+    
+    // ADSR knobs metal slots - match exact layout from resized()
+    auto adsrRow = slotBounds.removeFromTop(100);
+    auto adsrSection = adsrRow.removeFromLeft(slotBounds.getWidth() / 3);
+    auto adsrKnobWidth = (adsrSection.getWidth() - 45) / 4; // Same calculation as resized()
+    
+    // Attack knob slot - square metal
+    auto attackArea = adsrSection.removeFromLeft(adsrKnobWidth);
+    attackArea.removeFromTop(15); // less label space to move higher
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(attackArea.getCentreX() - 35, attackArea.getCentreY() - 35, 70, 70, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(attackArea.getCentreX() - 34, attackArea.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(attackArea.getCentreX() - 32, attackArea.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
+    
+    adsrSection.removeFromLeft(15); // spacing
+    
+    // Decay knob slot - square metal
+    auto decayArea = adsrSection.removeFromLeft(adsrKnobWidth);
+    decayArea.removeFromTop(15);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(decayArea.getCentreX() - 35, decayArea.getCentreY() - 35, 70, 70, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(decayArea.getCentreX() - 34, decayArea.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(decayArea.getCentreX() - 32, decayArea.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
+    
+    adsrSection.removeFromLeft(15); // spacing
+    
+    // Sustain knob slot - square metal
+    auto sustainArea = adsrSection.removeFromLeft(adsrKnobWidth);
+    sustainArea.removeFromTop(15);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(sustainArea.getCentreX() - 35, sustainArea.getCentreY() - 35, 70, 70, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(sustainArea.getCentreX() - 34, sustainArea.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(sustainArea.getCentreX() - 32, sustainArea.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
+    
+    adsrSection.removeFromLeft(15); // spacing
+    
+    // Release knob slot - square metal
+    auto releaseArea = adsrSection;
+    releaseArea.removeFromTop(15);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(releaseArea.getCentreX() - 35, releaseArea.getCentreY() - 35, 70, 70, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(releaseArea.getCentreX() - 34, releaseArea.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(releaseArea.getCentreX() - 32, releaseArea.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
+    
+    slotBounds.removeFromTop(20); // spacing
+    
+    // Volume section knobs metal slots - square metal
+    auto volumeRow = slotBounds.removeFromTop(100);
+    auto volumeSection = volumeRow.removeFromLeft(adsrKnobWidth);
+    volumeSection.removeFromTop(15); // less label space
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(volumeSection.getCentreX() - 35, volumeSection.getCentreY() - 35, 70, 70, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(volumeSection.getCentreX() - 34, volumeSection.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(volumeSection.getCentreX() - 32, volumeSection.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
+    
+    volumeRow.removeFromLeft(15); // spacing
+    
+    // Detune knob slot - square metal
+    auto detuneSection = volumeRow.removeFromLeft(adsrKnobWidth);
+    detuneSection.removeFromTop(15);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(detuneSection.getCentreX() - 35, detuneSection.getCentreY() - 35, 70, 70, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(detuneSection.getCentreX() - 34, detuneSection.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(detuneSection.getCentreX() - 32, detuneSection.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
+    
+    volumeRow.removeFromLeft(15); // spacing
+    
+    // Stereo Width knob slot - square metal
+    auto stereoWidthSection = volumeRow.removeFromLeft(adsrKnobWidth);
+    stereoWidthSection.removeFromTop(15);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(stereoWidthSection.getCentreX() - 35, stereoWidthSection.getCentreY() - 35, 70, 70, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(stereoWidthSection.getCentreX() - 34, stereoWidthSection.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(stereoWidthSection.getCentreX() - 32, stereoWidthSection.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
+    
+    volumeRow.removeFromLeft(15); // spacing
+    
+    // Pan knob slot - square metal
+    auto panSection = volumeRow.removeFromLeft(adsrKnobWidth);
+    panSection.removeFromTop(15);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(panSection.getCentreX() - 35, panSection.getCentreY() - 35, 70, 70, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(panSection.getCentreX() - 34, panSection.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(panSection.getCentreX() - 32, panSection.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
+    
+    // Skip to phase section
+    slotBounds.removeFromTop(20); // spacing
+    slotBounds.removeFromTop(80); // tuning controls
+    slotBounds.removeFromTop(20); // spacing
+    
+    // Phase knob metal slot - square metal
+    auto phaseRow = slotBounds.removeFromTop(80);
+    phaseRow.removeFromLeft(100); // random phase button
+    phaseRow.removeFromLeft(15); // spacing
+    auto phaseKnobArea = phaseRow.removeFromLeft(80);
+    phaseKnobArea.removeFromTop(15); // less label space
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(phaseKnobArea.getCentreX() - 35, phaseKnobArea.getCentreY() - 35, 70, 70, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(phaseKnobArea.getCentreX() - 34, phaseKnobArea.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(phaseKnobArea.getCentreX() - 32, phaseKnobArea.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
     
     // Add corner highlights for the futuristic look
     g.setColour(juce::Colours::white.withAlpha(0.9f));

@@ -114,6 +114,86 @@ public:
     }
 };
 
+class LEDLabelLookAndFeel : public juce::LookAndFeel_V4
+{
+public:
+    void drawLabel(juce::Graphics& g, juce::Label& label) override
+    {
+        auto bounds = label.getLocalBounds().toFloat();
+        auto text = label.getText();
+        auto font = label.getFont();
+        auto justification = label.getJustificationType();
+        
+        g.setFont(font);
+        
+        // Subtle outer glow - much more restrained
+        for (float i = 2.5f; i >= 1.0f; i -= 0.5f)
+        {
+            auto alpha = 0.03f + (0.05f * (3.0f - i) / 2.0f); // Very low alpha
+            g.setColour(juce::Colours::white.withAlpha(alpha));
+            
+            // Only 4 directions for cleaner look
+            g.drawText(text, bounds.translated(-i, 0), justification, true);
+            g.drawText(text, bounds.translated(i, 0), justification, true);
+            g.drawText(text, bounds.translated(0, -i), justification, true);
+            g.drawText(text, bounds.translated(0, i), justification, true);
+        }
+        
+        // Very subtle inner glow
+        g.setColour(juce::Colours::white.withAlpha(0.15f));
+        g.drawText(text, bounds.translated(-1, 0), justification, true);
+        g.drawText(text, bounds.translated(1, 0), justification, true);
+        g.drawText(text, bounds.translated(0, -1), justification, true);
+        g.drawText(text, bounds.translated(0, 1), justification, true);
+        
+        // Core bright white text - the main readable text
+        g.setColour(juce::Colours::white);
+        g.drawText(text, bounds, justification, true);
+    }
+};
+
+class LEDNumberLookAndFeel : public juce::LookAndFeel_V4
+{
+public:
+    void drawLabel(juce::Graphics& g, juce::Label& label) override
+    {
+        auto bounds = label.getLocalBounds().toFloat();
+        auto text = label.getText();
+        auto font = label.getFont();
+        auto justification = label.getJustificationType();
+        
+        g.setFont(font);
+        
+        // Draw the outline first (restore the border)
+        g.setColour(juce::Colours::white.withAlpha(0.8f));
+        g.drawRect(bounds, 1.0f);
+        
+        // Subtle outer glow - much more restrained for numbers
+        for (float i = 2.0f; i >= 1.0f; i -= 0.5f)
+        {
+            auto alpha = 0.04f + (0.06f * (2.5f - i) / 1.5f); // Very low alpha
+            g.setColour(juce::Colours::white.withAlpha(alpha));
+            
+            // Only 4 directions for cleaner look
+            g.drawText(text, bounds.translated(-i, 0), justification, true);
+            g.drawText(text, bounds.translated(i, 0), justification, true);
+            g.drawText(text, bounds.translated(0, -i), justification, true);
+            g.drawText(text, bounds.translated(0, i), justification, true);
+        }
+        
+        // Very subtle inner glow
+        g.setColour(juce::Colours::white.withAlpha(0.2f));
+        g.drawText(text, bounds.translated(-1, 0), justification, true);
+        g.drawText(text, bounds.translated(1, 0), justification, true);
+        g.drawText(text, bounds.translated(0, -1), justification, true);
+        g.drawText(text, bounds.translated(0, 1), justification, true);
+        
+        // Core bright white text - the main readable text
+        g.setColour(juce::Colours::white);
+        g.drawText(text, bounds, justification, true);
+    }
+};
+
 class ADSREnvelopeComponent : public juce::Component
 {
 public:
@@ -164,6 +244,10 @@ private:
     
     // Custom look and feel for wave buttons
     WaveButtonLookAndFeel customWaveButtonLookAndFeel;
+    
+    // Custom look and feel for LED labels
+    LEDLabelLookAndFeel ledLabelLookAndFeel;
+    LEDNumberLookAndFeel ledNumberLookAndFeel;
     
     // ADSR envelope visualization
     ADSREnvelopeComponent envelopeComponent;
