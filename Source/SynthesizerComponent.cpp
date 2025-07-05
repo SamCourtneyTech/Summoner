@@ -492,6 +492,45 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     g.setColour(juce::Colour(0xff5a5a5a).withAlpha(0.3f));
     g.drawRoundedRectangle(controlsBounds.toFloat().reduced(1.0f), 7.0f, 1.0f);
     
+    // Add futuristic outline around the actual controls bounds
+    // Calculate the tight bounds that encompass all controls
+    auto masterBounds = getLocalBounds();
+    masterBounds.reduce(20, 20);
+    masterBounds.removeFromTop(20);
+    
+    // Start from wave buttons and go to the bottom of phase section
+    auto masterTop = masterBounds.getY();
+    auto masterLeft = masterBounds.getX();
+    
+    // Width should encompass the tuning section (which is the widest at 320px)
+    auto masterWidth = 320 + 60; // tuning width + a bit more padding
+    
+    // Height should go from wave buttons to bottom of phase section
+    auto masterHeight = 40 + 20 + 60 + 10 + 100 + 20 + 100 + 20 + 80 + 20 + 80 + 20; // all sections + spacing + extra
+    
+    auto masterOutlineBounds = juce::Rectangle<float>(masterLeft - 12, masterTop - 12, masterWidth + 24, masterHeight + 24);
+    
+    // Draw main outline with subtle glow
+    g.setColour(juce::Colour(0xffffff00).withAlpha(0.4f)); // Yellow glow
+    g.drawRoundedRectangle(masterOutlineBounds, 10.0f, 2.0f);
+    g.setColour(juce::Colour(0xffffff00).withAlpha(0.15f));
+    g.drawRoundedRectangle(masterOutlineBounds.reduced(1.0f), 9.0f, 1.5f);
+    
+    // Add corner highlights for the master outline
+    g.setColour(juce::Colour(0xffffff00).withAlpha(0.7f));
+    // Top-left corner
+    g.drawLine(masterOutlineBounds.getX(), masterOutlineBounds.getY() + 12, masterOutlineBounds.getX(), masterOutlineBounds.getY(), 2.5f);
+    g.drawLine(masterOutlineBounds.getX(), masterOutlineBounds.getY(), masterOutlineBounds.getX() + 12, masterOutlineBounds.getY(), 2.5f);
+    // Top-right corner
+    g.drawLine(masterOutlineBounds.getRight() - 12, masterOutlineBounds.getY(), masterOutlineBounds.getRight(), masterOutlineBounds.getY(), 2.5f);
+    g.drawLine(masterOutlineBounds.getRight(), masterOutlineBounds.getY(), masterOutlineBounds.getRight(), masterOutlineBounds.getY() + 12, 2.5f);
+    // Bottom-left corner
+    g.drawLine(masterOutlineBounds.getX(), masterOutlineBounds.getBottom() - 12, masterOutlineBounds.getX(), masterOutlineBounds.getBottom(), 2.5f);
+    g.drawLine(masterOutlineBounds.getX(), masterOutlineBounds.getBottom(), masterOutlineBounds.getX() + 12, masterOutlineBounds.getBottom(), 2.5f);
+    // Bottom-right corner
+    g.drawLine(masterOutlineBounds.getRight() - 12, masterOutlineBounds.getBottom(), masterOutlineBounds.getRight(), masterOutlineBounds.getBottom(), 2.5f);
+    g.drawLine(masterOutlineBounds.getRight(), masterOutlineBounds.getBottom(), masterOutlineBounds.getRight(), masterOutlineBounds.getBottom() - 12, 2.5f);
+    
     // Draw futuristic section outlines for each row of controls
     auto sectionBounds = getLocalBounds();
     sectionBounds.reduce(20, 20);
