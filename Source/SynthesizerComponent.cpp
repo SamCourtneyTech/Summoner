@@ -624,8 +624,8 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     g.setColour(juce::Colour(0xff101010));
     g.drawLine(brScrew.getCentreX() - 3, brScrew.getCentreY(), brScrew.getCentreX() + 3, brScrew.getCentreY(), 1.5f);
     
-    // Add "Oscillator 1" label to bottom right of module component
-    auto labelBounds = juce::Rectangle<float>(raisedBounds.getRight() - 160, raisedBounds.getBottom() - 65, 110, 25);
+    // Add "Oscillator 1" label to top center of module component
+    auto labelBounds = juce::Rectangle<float>(raisedBounds.getCentreX() - 55, raisedBounds.getY() + 5, 110, 25);
     
     // Slightly lighter metallic background for label
     g.setColour(juce::Colour(0xff505050));
