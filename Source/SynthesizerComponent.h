@@ -368,61 +368,56 @@ private:
     LEDLabelLookAndFeel ledLabelLookAndFeel;
     LEDNumberLookAndFeel ledNumberLookAndFeel;
     
-    // ADSR envelope visualization
-    ADSREnvelopeComponent envelopeComponent;
+    // ADSR ENVELOPE VISUALIZER GROUP - Row 2 (MOVEABLE)
+    ADSREnvelopeComponent adsrEnvelopeVisualizer;
     
     // Placeholder UI elements for the synthesizer
     juce::Label titleLabel;
     juce::Label placeholderLabel;
-    juce::Slider volumeSlider;
-    juce::Label volumeLabel;
-    juce::Slider detuneSlider;
-    juce::Label detuneLabel;
-    juce::Slider stereoWidthSlider;
-    juce::Label stereoWidthLabel;
-    juce::Slider panSlider;
-    juce::Label panLabel;
-    juce::Slider phaseSlider;
-    juce::Label phaseLabel;
-    juce::Slider attackSlider;
-    juce::Label attackLabel;
-    juce::Slider decaySlider;
-    juce::Label decayLabel;
-    juce::Slider sustainSlider;
-    juce::Label sustainLabel;
-    juce::Slider releaseSlider;
-    juce::Label releaseLabel;
+    // VOLUME CONTROLS GROUP - Row 4 (MOVEABLE)
+    juce::Slider volumeControlsVolumeKnob;
+    juce::Label volumeControlsVolumeLabel;
+    juce::Slider volumeControlsDetuneKnob;
+    juce::Label volumeControlsDetuneLabel;
+    juce::Slider volumeControlsStereoWidthKnob;
+    juce::Label volumeControlsStereoWidthLabel;
+    juce::Slider volumeControlsPanKnob;
+    juce::Label volumeControlsPanLabel;
+    // PHASE CONTROLS GROUP - (STATIONARY)
+    juce::Slider phaseControlsPhaseKnob;
+    juce::Label phaseControlsPhaseLabel;
+    // ADSR KNOBS GROUP - Row 3 (MOVEABLE)
+    juce::Slider adsrAttackKnob;
+    juce::Label adsrAttackLabel;
+    juce::Slider adsrDecayKnob;
+    juce::Label adsrDecayLabel;
+    juce::Slider adsrSustainKnob;
+    juce::Label adsrSustainLabel;
+    juce::Slider adsrReleaseKnob;
+    juce::Label adsrReleaseLabel;
     
     // Pulse width control
     juce::Slider pulseWidthSlider;
     juce::Label pulseWidthLabel;
     
-    // Octave control
-    juce::Label octaveLabel;
-    juce::Label octaveValueLabel;
+    // PITCH CONTROLS GROUP - Row 5 (MOVEABLE)
+    juce::Label pitchControlsOctaveLabel;
+    juce::Label pitchControlsOctaveValueLabel;
+    juce::Label pitchControlsSemitoneLabel;
+    juce::Label pitchControlsSemitoneValueLabel;
+    juce::Label pitchControlsFineTuneLabel;
+    juce::Label pitchControlsFineTuneValueLabel;
+    juce::Label pitchControlsVoiceCountLabel;
+    juce::Label pitchControlsVoiceCountValueLabel;
     
-    // Semitone control
-    juce::Label semitoneLabel;
-    juce::Label semitoneValueLabel;
-    
-    // Fine tune control
-    juce::Label fineTuneLabel;
-    juce::Label fineTuneValueLabel;
-    
-    // Voice count control
-    juce::Label voiceCountLabel;
-    juce::Label voiceCountValueLabel;
-    
-    // Oscillator type buttons
-    juce::TextButton sineWaveButton;
-    juce::TextButton sawWaveButton;
-    juce::TextButton squareWaveButton;
-    juce::TextButton triangleWaveButton;
-    juce::TextButton noiseWaveButton;
-    juce::TextButton pinkNoiseButton;
-    
-    // Random phase button
-    juce::TextButton randomPhaseButton;
+    // WAVE TYPE BUTTONS GROUP - Row 1 (MOVEABLE)
+    juce::TextButton waveTypeSineButton;
+    juce::TextButton waveTypeSawButton;
+    juce::TextButton waveTypeSquareButton;
+    juce::TextButton waveTypeTriangleButton;
+    juce::TextButton waveTypeWhiteNoiseButton;
+    juce::TextButton waveTypePinkNoiseButton;
+    juce::TextButton waveTypeRandomPhaseButton;
     
     // Octave control state
     int octaveValue = 0;
@@ -453,9 +448,35 @@ private:
     juce::Rectangle<int> octaveControlsBounds;
     juce::Rectangle<int> phaseControlsBounds;
     
-    // Oscillator 1 section offset controls (defaults to 0,0 for no change)
-    float oscillatorOffsetX = 10.0f;    // X offset for moving entire oscillator section - align with wood border
-    float oscillatorOffsetY = -10.0f;    // Y offset for moving entire oscillator section - align with wood border
+    // MOVEABLE COMPONENT GROUPS - Offset controls for easy repositioning
+    // Wave Type Buttons Group (Row 1 - Top row with SIN, SAW, SQR, TRI, WHT, PNK, RND PHASE)
+    float waveTypeButtonsGroupOffsetX = 0.0f;
+    float waveTypeButtonsGroupOffsetY = 25.0f;    // MOVED DOWN 25 pixels (reduced from 40)
+    
+    // ADSR Envelope Visualizer Group (Row 2 - Visual envelope display)
+    float adsrEnvelopeGroupOffsetX = 0.0f;
+    float adsrEnvelopeGroupOffsetY = 25.0f;       // MOVED DOWN 25 pixels (reduced from 40)
+    
+    // ADSR Knobs Group (Row 3 - Attack, Decay, Sustain, Release knobs)
+    float adsrKnobsGroupOffsetX = 0.0f;
+    float adsrKnobsGroupOffsetY = 25.0f;          // MOVED DOWN 25 pixels (reduced from 40)
+    
+    // Volume Controls Group (Row 4 - Volume, Detune, Stereo Width, Pan knobs)
+    float volumeControlsGroupOffsetX = 0.0f;
+    float volumeControlsGroupOffsetY = 25.0f;     // MOVED DOWN 25 pixels (reduced from 40)
+    
+    // Pitch Controls Group (Row 5 - Octave, Semitone, Fine Tune, Voice Count sliders)
+    float pitchControlsGroupOffsetX = 0.0f;
+    float pitchControlsGroupOffsetY = 25.0f;      // MOVED DOWN 25 pixels (reduced from 40)
+    
+    // STATIONARY COMPONENTS - These remain in place
+    // Phase Controls Group (Phase knob + button - stays put)
+    float phaseControlsGroupOffsetX = 0.0f;
+    float phaseControlsGroupOffsetY = 0.0f;
+    
+    // Oscillator background paint (main background - stays put)
+    float oscillatorBackgroundOffsetX = 10.0f;    // X offset for background alignment with wood border
+    float oscillatorBackgroundOffsetY = -10.0f;   // Y offset for background alignment with wood border
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynthesizerComponent)
 };
