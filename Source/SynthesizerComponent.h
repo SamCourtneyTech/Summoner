@@ -467,7 +467,7 @@ private:
     
     // Pitch Controls Group (Row 5 - Octave, Semitone, Fine Tune, Voice Count sliders)
     float pitchControlsGroupOffsetX = 0.0f;
-    float pitchControlsGroupOffsetY = 25.0f;      // MOVED DOWN 25 pixels (reduced from 40)
+    float pitchControlsGroupOffsetY = 18.0f;      // MOVED DOWN 18 pixels (tiny adjustment)
     
     // STATIONARY COMPONENTS - These remain in place
     // Phase Controls Group (Phase knob + button - stays put)
