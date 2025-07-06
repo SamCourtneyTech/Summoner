@@ -19,7 +19,96 @@ public:
         auto rw = radius * 2.0f;
         auto angle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
         
-        // Draw the block arc based on slider position
+        // Draw ultra-HD 3D knob center circle (always visible, doesn't indicate position)
+        auto knobRadius = radius * 0.55f; // Smaller for better proportions
+        auto knobBounds = juce::Rectangle<float>(centreX - knobRadius, centreY - knobRadius, 
+                                                knobRadius * 2.0f, knobRadius * 2.0f);
+        
+        // Multi-layer drop shadow for realistic depth
+        for (int i = 4; i >= 1; --i)
+        {
+            auto shadowAlpha = 0.15f - (i * 0.03f);
+            g.setColour(juce::Colour(0xff000000).withAlpha(shadowAlpha));
+            g.fillEllipse(knobBounds.translated(i * 0.8f, i * 0.8f));
+        }
+        
+        // Create radial gradient for main knob body (darker colors)
+        juce::ColourGradient knobGradient(
+            juce::Colour(0xff1a1a1a),    // Darker top
+            centreX - knobRadius * 0.4f, centreY - knobRadius * 0.4f,
+            juce::Colour(0xff080808),    // Much darker bottom
+            centreX + knobRadius * 0.3f, centreY + knobRadius * 0.3f,
+            true
+        );
+        knobGradient.addColour(0.3, juce::Colour(0xff141414));
+        knobGradient.addColour(0.7, juce::Colour(0xff0a0a0a));
+        g.setGradientFill(knobGradient);
+        g.fillEllipse(knobBounds);
+        
+        // Outer metallic rim with gradient (darker)
+        juce::ColourGradient rimGradient(
+            juce::Colour(0xff303030),    // Darker top rim
+            centreX, centreY - knobRadius,
+            juce::Colour(0xff050505),    // Much darker bottom rim
+            centreX, centreY + knobRadius,
+            false
+        );
+        g.setGradientFill(rimGradient);
+        g.drawEllipse(knobBounds, 2.0f);
+        
+        // Inner rim for more definition
+        g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+        g.drawEllipse(knobBounds.reduced(1.5f), 1.0f);
+        
+        // Primary highlight - large soft glow from top-left (darker)
+        auto primaryHighlight = knobBounds.reduced(knobRadius * 0.15f);
+        primaryHighlight.translate(-knobRadius * 0.12f, -knobRadius * 0.18f);
+        juce::ColourGradient primaryGradient(
+            juce::Colour(0xff505050).withAlpha(0.7f),    // Dimmer center
+            primaryHighlight.getCentreX(), primaryHighlight.getCentreY(),
+            juce::Colour(0xff303030).withAlpha(0.0f),    // Fade to transparent
+            primaryHighlight.getCentreX() + primaryHighlight.getWidth() * 0.4f,
+            primaryHighlight.getCentreY() + primaryHighlight.getHeight() * 0.4f,
+            true
+        );
+        g.setGradientFill(primaryGradient);
+        g.fillEllipse(primaryHighlight);
+        
+        // Secondary highlight - smaller, more intense (darker)
+        auto secondaryHighlight = knobBounds.reduced(knobRadius * 0.3f);
+        secondaryHighlight.translate(-knobRadius * 0.08f, -knobRadius * 0.12f);
+        juce::ColourGradient secondaryGradient(
+            juce::Colour(0xff606060).withAlpha(0.6f),
+            secondaryHighlight.getCentreX(), secondaryHighlight.getCentreY(),
+            juce::Colour(0xff404040).withAlpha(0.0f),
+            secondaryHighlight.getRight(), secondaryHighlight.getBottom(),
+            true
+        );
+        g.setGradientFill(secondaryGradient);
+        g.fillEllipse(secondaryHighlight);
+        
+        // Subtle bottom shadow inside knob
+        auto bottomShadow = knobBounds.reduced(knobRadius * 0.1f);
+        bottomShadow.translate(knobRadius * 0.05f, knobRadius * 0.08f);
+        bottomShadow.setHeight(bottomShadow.getHeight() * 0.6f);
+        bottomShadow.setY(bottomShadow.getY() + bottomShadow.getHeight() * 0.4f);
+        juce::ColourGradient shadowGradient(
+            juce::Colour(0xff000000).withAlpha(0.0f),
+            bottomShadow.getCentreX(), bottomShadow.getY(),
+            juce::Colour(0xff000000).withAlpha(0.4f),
+            bottomShadow.getCentreX(), bottomShadow.getBottom(),
+            false
+        );
+        g.setGradientFill(shadowGradient);
+        g.fillEllipse(bottomShadow);
+        
+        
+        // Subtle reflective ring around the knob (darker)
+        auto reflectiveRing = knobBounds.reduced(knobRadius * 0.05f);
+        g.setColour(juce::Colour(0xff404040).withAlpha(0.1f));
+        g.drawEllipse(reflectiveRing, 0.5f);
+        
+        // Draw the block arc based on slider position (around the outer edge)
         if (sliderPos > 0.0f)
         {
             // Create evenly spaced white blocks with LED glow

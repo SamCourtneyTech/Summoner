@@ -9,7 +9,10 @@
       "Bash(mv:*)",
       "Bash(sed:*)",
       "Bash(awk:*)",
-      "Bash(xcodebuild:*)"
+      "Bash(xcodebuild:*)",
+      "Bash(ls:*)",
+      "Bash(chmod:*)",
+      "Bash(scripts/local-build.sh:*)"
     ],
     "deny": []
   }
