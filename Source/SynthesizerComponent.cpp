@@ -625,7 +625,7 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     g.drawLine(brScrew.getCentreX() - 3, brScrew.getCentreY(), brScrew.getCentreX() + 3, brScrew.getCentreY(), 1.5f);
     
     // Add "Oscillator 1" label to top center of module component
-    auto labelBounds = juce::Rectangle<float>(raisedBounds.getCentreX() - 55, raisedBounds.getY() + 5, 110, 25);
+    auto labelBounds = juce::Rectangle<float>(raisedBounds.getCentreX() - 45, raisedBounds.getY() + 5, 90, 20);
     
     // Slightly lighter metallic background for label
     g.setColour(juce::Colour(0xff505050));
@@ -642,7 +642,7 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     
     // Engraved 3D text effect
     auto textBounds = labelBounds.toNearestInt();
-    g.setFont(juce::Font("Arial", 13.0f, juce::Font::bold));
+    g.setFont(juce::Font("Arial", 11.0f, juce::Font::bold));
     
     // Dark shadow below and right for engraved effect
     g.setColour(juce::Colour(0xff303030));
