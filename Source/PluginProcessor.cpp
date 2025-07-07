@@ -149,80 +149,80 @@ void SummonerXSerum2AudioProcessor::updateEnvelopeParameters()
     }
 }
 
-void SummonerXSerum2AudioProcessor::updateOscillatorType()
+void SummonerXSerum2AudioProcessor::updateOsc1Type()
 {
     for (int i = 0; i < synthesiser.getNumVoices(); ++i)
     {
         if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
         {
-            voice->setOscillatorType(oscillatorType);
+            voice->setOsc1Type(osc1Type);
         }
     }
 }
 
-void SummonerXSerum2AudioProcessor::updatePulseWidth()
+void SummonerXSerum2AudioProcessor::updateOsc1PulseWidth()
 {
     for (int i = 0; i < synthesiser.getNumVoices(); ++i)
     {
         if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
         {
-            voice->setPulseWidth(pulseWidth);
+            voice->setOsc1PulseWidth(osc1PulseWidth);
         }
     }
 }
 
-void SummonerXSerum2AudioProcessor::updateOctave()
+void SummonerXSerum2AudioProcessor::updateOsc1Octave()
 {
     for (int i = 0; i < synthesiser.getNumVoices(); ++i)
     {
         if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
         {
-            voice->setOctave(octave);
+            voice->setOsc1Octave(osc1Octave);
         }
     }
 }
 
-void SummonerXSerum2AudioProcessor::updateSemitone()
+void SummonerXSerum2AudioProcessor::updateOsc1Semitone()
 {
     for (int i = 0; i < synthesiser.getNumVoices(); ++i)
     {
         if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
         {
-            voice->setSemitone(semitone);
+            voice->setOsc1Semitone(osc1Semitone);
         }
     }
 }
 
-void SummonerXSerum2AudioProcessor::updateFineTune()
+void SummonerXSerum2AudioProcessor::updateOsc1FineTune()
 {
     for (int i = 0; i < synthesiser.getNumVoices(); ++i)
     {
         if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
         {
-            voice->setFineTune(fineTune);
+            voice->setOsc1FineTune(osc1FineTune);
         }
     }
 }
 
-void SummonerXSerum2AudioProcessor::updateRandomPhase()
+void SummonerXSerum2AudioProcessor::updateOsc1RandomPhase()
 {
     for (int i = 0; i < synthesiser.getNumVoices(); ++i)
     {
         if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
         {
-            voice->setRandomPhase(randomPhase);
+            voice->setOsc1RandomPhase(osc1RandomPhase);
         }
     }
 }
 
-void SummonerXSerum2AudioProcessor::updateVoiceCount()
+void SummonerXSerum2AudioProcessor::updateOsc1VoiceCount()
 {
-    // Update unison voice count for all existing voices
+    // Update oscillator 1 unison voice count for all existing voices
     for (int i = 0; i < synthesiser.getNumVoices(); ++i)
     {
         if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
         {
-            voice->setUnisonVoices(voiceCount);
+            voice->setOsc1VoiceCount(osc1VoiceCount);
         }
     }
 }
@@ -271,6 +271,19 @@ void SummonerXSerum2AudioProcessor::updatePhase()
         if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
         {
             voice->setPhase(synthPhase);
+        }
+    }
+}
+
+void SummonerXSerum2AudioProcessor::updateOsc2Parameters()
+{
+    // Update oscillator 2 parameters for all existing voices
+    for (int i = 0; i < synthesiser.getNumVoices(); ++i)
+    {
+        if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
+        {
+            voice->setOsc2Volume(osc2Volume);
+            voice->setOsc2Enabled(osc2Enabled);
         }
     }
 }

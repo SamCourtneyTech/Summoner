@@ -12,7 +12,10 @@
       "Bash(xcodebuild:*)",
       "Bash(ls:*)",
       "Bash(chmod:*)",
-      "Bash(scripts/local-build.sh:*)"
+      "Bash(scripts/local-build.sh:*)",
+      "Bash(./scripts/local-build.sh:*)",
+      "Bash(bash:*)",
+      "Bash(clang++:*)"
     ],
     "deny": []
   }

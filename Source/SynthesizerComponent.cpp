@@ -409,6 +409,36 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     waveTypeRandomPhaseButton.addListener(this);
     addAndMakeVisible(waveTypeRandomPhaseButton);
     
+    // SECOND OSCILLATOR CONTROLS - Row 6 (MOVEABLE)
+    osc2TitleLabel.setText("OSCILLATOR 2", juce::dontSendNotification);
+    osc2TitleLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
+    osc2TitleLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    osc2TitleLabel.setJustificationType(juce::Justification::centred);
+    osc2TitleLabel.setLookAndFeel(&ledLabelLookAndFeel);
+    addAndMakeVisible(osc2TitleLabel);
+    
+    osc2SineButton.setButtonText("SIN");
+    osc2SineButton.setLookAndFeel(&customWaveButtonLookAndFeel);
+    osc2SineButton.setClickingTogglesState(true);
+    osc2SineButton.setToggleState(false, juce::dontSendNotification); // Start unselected
+    osc2SineButton.addListener(this);
+    addAndMakeVisible(osc2SineButton);
+    
+    osc2VolumeKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    osc2VolumeKnob.setRange(0.0, 1.0, 0.01);
+    osc2VolumeKnob.setValue(0.0); // Start at 0 volume
+    osc2VolumeKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    osc2VolumeKnob.setLookAndFeel(&customKnobLookAndFeel);
+    osc2VolumeKnob.addListener(this);
+    addAndMakeVisible(osc2VolumeKnob);
+    
+    osc2VolumeLabel.setText("VOLUME", juce::dontSendNotification);
+    osc2VolumeLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
+    osc2VolumeLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    osc2VolumeLabel.setJustificationType(juce::Justification::centred);
+    osc2VolumeLabel.setLookAndFeel(&ledLabelLookAndFeel);
+    addAndMakeVisible(osc2VolumeLabel);
+    
     // ADSR ENVELOPE VISUALIZER GROUP - Row 2 (MOVEABLE)
     addAndMakeVisible(adsrEnvelopeVisualizer);
     
@@ -921,6 +951,15 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     phaseSectionBounds = phaseSectionBounds.removeFromLeft(220); // Fixed width for phase controls
     phaseSectionBounds.reduce(-5, -5); // Expand the bounds
     
+    // Second oscillator section
+    sectionBounds.removeFromTop(20); // spacing
+    auto secondOscSectionBounds = sectionBounds.removeFromTop(100);
+    secondOscSectionBounds = secondOscSectionBounds.removeFromLeft(secondOscSectionBounds.getWidth() / 3);
+    secondOscSectionBounds = secondOscSectionBounds.translated(
+        static_cast<int>(secondOscillatorGroupOffsetX), 
+        static_cast<int>(secondOscillatorGroupOffsetY)
+    );
+    drawSecondOscillatorBackground(g, secondOscSectionBounds);
     
     // Main window border
     g.setColour(juce::Colour(0xff16213e));
@@ -943,6 +982,7 @@ void SynthesizerComponent::resized()
     layoutVolumeKnobs(bounds);
     layoutOctaveControls(bounds);
     layoutPhaseControls(bounds);
+    layoutSecondOscillator(bounds);
 }
 
 void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
@@ -987,10 +1027,14 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
         audioProcessor.setSynthRelease(static_cast<float>(adsrReleaseKnob.getValue()));
         updateEnvelopeDisplay();
     }
+    else if (slider == &osc2VolumeKnob)
+    {
+        audioProcessor.setOsc2Volume(static_cast<float>(osc2VolumeKnob.getValue()));
+    }
     /*
     else if (slider == &pulseWidthSlider)
     {
-        audioProcessor.setPulseWidth(static_cast<float>(pulseWidthSlider.getValue()));
+        audioProcessor.setOsc1PulseWidth(static_cast<float>(pulseWidthSlider.getValue()));
     }
     */
 }
@@ -1006,7 +1050,7 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             waveTypeTriangleButton.setToggleState(false, juce::dontSendNotification);
             waveTypeWhiteNoiseButton.setToggleState(false, juce::dontSendNotification);
             waveTypePinkNoiseButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setOscillatorType(0); // 0 = sine wave
+            audioProcessor.setOsc1Type(0); // 0 = sine wave
         }
         else
         {
@@ -1022,7 +1066,7 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             waveTypeTriangleButton.setToggleState(false, juce::dontSendNotification);
             waveTypeWhiteNoiseButton.setToggleState(false, juce::dontSendNotification);
             waveTypePinkNoiseButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setOscillatorType(1); // 1 = saw wave
+            audioProcessor.setOsc1Type(1); // 1 = saw wave
         }
         else
         {
@@ -1038,7 +1082,7 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             waveTypeTriangleButton.setToggleState(false, juce::dontSendNotification);
             waveTypeWhiteNoiseButton.setToggleState(false, juce::dontSendNotification);
             waveTypePinkNoiseButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setOscillatorType(2); // 2 = square wave
+            audioProcessor.setOsc1Type(2); // 2 = square wave
         }
         else
         {
@@ -1054,7 +1098,7 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             waveTypeSquareButton.setToggleState(false, juce::dontSendNotification);
             waveTypeWhiteNoiseButton.setToggleState(false, juce::dontSendNotification);
             waveTypePinkNoiseButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setOscillatorType(3); // 3 = triangle wave
+            audioProcessor.setOsc1Type(3); // 3 = triangle wave
         }
         else
         {
@@ -1070,7 +1114,7 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             waveTypeSquareButton.setToggleState(false, juce::dontSendNotification);
             waveTypeTriangleButton.setToggleState(false, juce::dontSendNotification);
             waveTypePinkNoiseButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setOscillatorType(4); // 4 = white noise
+            audioProcessor.setOsc1Type(4); // 4 = white noise
         }
         else
         {
@@ -1086,7 +1130,7 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             waveTypeSquareButton.setToggleState(false, juce::dontSendNotification);
             waveTypeTriangleButton.setToggleState(false, juce::dontSendNotification);
             waveTypeWhiteNoiseButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setOscillatorType(5); // 5 = pink noise
+            audioProcessor.setOsc1Type(5); // 5 = pink noise
         }
         else
         {
@@ -1096,7 +1140,12 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
     else if (button == &waveTypeRandomPhaseButton)
     {
         // Random phase button is independent - doesn't affect other buttons
-        audioProcessor.setRandomPhase(waveTypeRandomPhaseButton.getToggleState());
+        audioProcessor.setOsc1RandomPhase(waveTypeRandomPhaseButton.getToggleState());
+    }
+    else if (button == &osc2SineButton)
+    {
+        // Toggle oscillator 2 on/off
+        audioProcessor.setOsc2Enabled(osc2SineButton.getToggleState());
     }
 }
 
@@ -1142,7 +1191,7 @@ void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
         {
             octaveValue = newOctave;
             pitchControlsOctaveValueLabel.setText(juce::String(octaveValue), juce::dontSendNotification);
-            audioProcessor.setOctave(octaveValue);
+            audioProcessor.setOsc1Octave(octaveValue);
         }
     }
     else if (isDraggingSemitone)
@@ -1157,7 +1206,7 @@ void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
         {
             semitoneValue = newSemitone;
             pitchControlsSemitoneValueLabel.setText(juce::String(semitoneValue), juce::dontSendNotification);
-            audioProcessor.setSemitone(semitoneValue);
+            audioProcessor.setOsc1Semitone(semitoneValue);
         }
     }
     else if (isDraggingFineTune)
@@ -1172,7 +1221,7 @@ void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
         {
             fineTuneValue = newFineTune;
             pitchControlsFineTuneValueLabel.setText(juce::String(fineTuneValue), juce::dontSendNotification);
-            audioProcessor.setFineTune(fineTuneValue);
+            audioProcessor.setOsc1FineTune(fineTuneValue);
         }
     }
     else if (isDraggingVoiceCount)
@@ -1187,7 +1236,7 @@ void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
         {
             voiceCountValue = newVoiceCount;
             pitchControlsVoiceCountValueLabel.setText(juce::String(voiceCountValue), juce::dontSendNotification);
-            audioProcessor.setVoiceCount(voiceCountValue);
+            audioProcessor.setOsc1VoiceCount(voiceCountValue);
         }
     }
 }
@@ -1419,6 +1468,48 @@ void SynthesizerComponent::layoutPhaseControls(juce::Rectangle<int>& bounds)
     phaseControlsPhaseKnob.setBounds(phaseKnobArea);
 }
 
+void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
+{
+    auto controlHeight = 100;
+    bounds.removeFromTop(20); // spacing
+    auto osc2Row = bounds.removeFromTop(controlHeight);
+    auto osc2Section = osc2Row.removeFromLeft(osc2Row.getWidth() / 3);
+    
+    // Apply group offset for MOVEABLE Second Oscillator Group (Row 6)
+    auto offsetOsc2Section = osc2Section.translated(
+        static_cast<int>(secondOscillatorGroupOffsetX), 
+        static_cast<int>(secondOscillatorGroupOffsetY)
+    );
+    
+    // Store bounds for background drawing (with offset applied)
+    secondOscillatorBounds = offsetOsc2Section;
+    
+    // Calculate spacing for title, sine button, and volume knob
+    auto titleHeight = 20;
+    auto buttonHeight = 40;
+    auto spacing = 10;
+    
+    // Title label
+    auto titleArea = offsetOsc2Section.removeFromTop(titleHeight);
+    osc2TitleLabel.setBounds(titleArea);
+    
+    offsetOsc2Section.removeFromTop(spacing);
+    
+    // Sine button (left side)
+    auto controlsArea = offsetOsc2Section;
+    auto buttonWidth = 60;
+    auto buttonArea = controlsArea.removeFromLeft(buttonWidth);
+    buttonArea.setHeight(buttonHeight);
+    osc2SineButton.setBounds(buttonArea);
+    
+    controlsArea.removeFromLeft(spacing);
+    
+    // Volume knob (right side)
+    auto volumeArea = controlsArea.removeFromLeft(80);
+    osc2VolumeLabel.setBounds(volumeArea.removeFromTop(20));
+    osc2VolumeKnob.setBounds(volumeArea);
+}
+
 // ============================================================================
 // Grouped Background Drawing Methods
 // ============================================================================
@@ -1609,5 +1700,45 @@ void SynthesizerComponent::drawPhaseControlsBackground(juce::Graphics& g, juce::
     g.drawRoundedRectangle(phaseKnobArea.getCentreX() - 39, phaseKnobArea.getCentreY() - 45, 78, 92, 3.0f, 2.0f);
     g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
     g.drawRoundedRectangle(phaseKnobArea.getCentreX() - 37, phaseKnobArea.getCentreY() - 43, 74, 88, 2.0f, 1.0f);
+}
+
+void SynthesizerComponent::drawSecondOscillatorBackground(juce::Graphics& g, juce::Rectangle<int> bounds)
+{
+    // Draw background for the second oscillator section
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(bounds.toFloat(), 8.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(bounds.toFloat(), 8.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(bounds.reduced(2).toFloat(), 6.0f, 1.0f);
+    
+    // Calculate positions to match layout exactly
+    auto titleHeight = 20;
+    auto buttonHeight = 40;
+    auto spacing = 10;
+    auto buttonWidth = 60;
+    
+    auto workingBounds = bounds;
+    workingBounds.removeFromTop(titleHeight + spacing);
+    
+    // Button background
+    auto buttonArea = workingBounds.removeFromLeft(buttonWidth);
+    buttonArea.setHeight(buttonHeight);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(buttonArea.toFloat(), 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(buttonArea.toFloat(), 4.0f, 2.0f);
+    
+    workingBounds.removeFromLeft(spacing);
+    
+    // Volume knob background
+    auto volumeArea = workingBounds.removeFromLeft(80);
+    volumeArea.removeFromTop(20); // label space
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(volumeArea.getCentreX() - 40, volumeArea.getCentreY() - 30, 80, 60, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(volumeArea.getCentreX() - 39, volumeArea.getCentreY() - 29, 78, 58, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(volumeArea.getCentreX() - 37, volumeArea.getCentreY() - 27, 74, 54, 2.0f, 1.0f);
 }
 

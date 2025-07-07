@@ -436,6 +436,7 @@ public:
     void layoutVolumeKnobs(juce::Rectangle<int>& bounds);
     void layoutOctaveControls(juce::Rectangle<int>& bounds);
     void layoutPhaseControls(juce::Rectangle<int>& bounds);
+    void layoutSecondOscillator(juce::Rectangle<int>& bounds);
     
     void drawWaveTypeButtonsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
     void drawADSREnvelopeBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
@@ -443,6 +444,7 @@ public:
     void drawVolumeKnobsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
     void drawOctaveControlsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
     void drawPhaseControlsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
+    void drawSecondOscillatorBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
 
 private:
     SummonerXSerum2AudioProcessor& audioProcessor;
@@ -508,6 +510,12 @@ private:
     juce::TextButton waveTypePinkNoiseButton;
     juce::TextButton waveTypeRandomPhaseButton;
     
+    // SECOND OSCILLATOR CONTROLS - Row 6 (MOVEABLE)
+    juce::TextButton osc2SineButton;
+    juce::Slider osc2VolumeKnob;
+    juce::Label osc2VolumeLabel;
+    juce::Label osc2TitleLabel;
+    
     // Octave control state
     int octaveValue = 0;
     bool isDraggingOctave = false;
@@ -536,6 +544,7 @@ private:
     juce::Rectangle<int> volumeKnobsBounds;
     juce::Rectangle<int> octaveControlsBounds;
     juce::Rectangle<int> phaseControlsBounds;
+    juce::Rectangle<int> secondOscillatorBounds;
     
     // MOVEABLE COMPONENT GROUPS - Offset controls for easy repositioning
     // Wave Type Buttons Group (Row 1 - Top row with SIN, SAW, SQR, TRI, WHT, PNK, RND PHASE)
@@ -557,6 +566,10 @@ private:
     // Pitch Controls Group (Row 5 - Octave, Semitone, Fine Tune, Voice Count sliders)
     float pitchControlsGroupOffsetX = 0.0f;
     float pitchControlsGroupOffsetY = 18.0f;      // MOVED DOWN 18 pixels (tiny adjustment)
+    
+    // Second Oscillator Group (Row 6 - Simple sine wave and volume)
+    float secondOscillatorGroupOffsetX = 0.0f;
+    float secondOscillatorGroupOffsetY = 25.0f;   // MOVED DOWN 25 pixels
     
     // STATIONARY COMPONENTS - These remain in place
     // Phase Controls Group (Phase knob + button - stays put)

@@ -99,47 +99,61 @@ public:
     }
     float getSynthRelease() const { return synthRelease; }
     
-    void setOscillatorType(int type) { 
-        oscillatorType = type; 
-        updateOscillatorType();
+    // Oscillator 1 controls
+    void setOsc1Type(int type) { 
+        osc1Type = type; 
+        updateOsc1Type();
     }
-    int getOscillatorType() const { return oscillatorType; }
+    int getOsc1Type() const { return osc1Type; }
     
-    void setPulseWidth(float width) { 
-        pulseWidth = width; 
-        updatePulseWidth();
+    void setOsc1PulseWidth(float width) { 
+        osc1PulseWidth = width; 
+        updateOsc1PulseWidth();
     }
-    float getPulseWidth() const { return pulseWidth; }
+    float getOsc1PulseWidth() const { return osc1PulseWidth; }
     
-    void setOctave(int oct) { 
-        octave = oct; 
-        updateOctave();
+    void setOsc1Octave(int oct) { 
+        osc1Octave = oct; 
+        updateOsc1Octave();
     }
-    int getOctave() const { return octave; }
+    int getOsc1Octave() const { return osc1Octave; }
     
-    void setSemitone(int semi) { 
-        semitone = semi; 
-        updateSemitone();
+    void setOsc1Semitone(int semi) { 
+        osc1Semitone = semi; 
+        updateOsc1Semitone();
     }
-    int getSemitone() const { return semitone; }
+    int getOsc1Semitone() const { return osc1Semitone; }
     
-    void setFineTune(int fine) { 
-        fineTune = fine; 
-        updateFineTune();
+    void setOsc1FineTune(int fine) { 
+        osc1FineTune = fine; 
+        updateOsc1FineTune();
     }
-    int getFineTune() const { return fineTune; }
+    int getOsc1FineTune() const { return osc1FineTune; }
     
-    void setRandomPhase(bool random) { 
-        randomPhase = random; 
-        updateRandomPhase();
+    void setOsc1RandomPhase(bool random) { 
+        osc1RandomPhase = random; 
+        updateOsc1RandomPhase();
     }
-    bool getRandomPhase() const { return randomPhase; }
+    bool getOsc1RandomPhase() const { return osc1RandomPhase; }
     
-    void setVoiceCount(int count) { 
-        voiceCount = count; 
-        updateVoiceCount();
+    void setOsc1VoiceCount(int count) { 
+        osc1VoiceCount = count; 
+        updateOsc1VoiceCount();
     }
-    int getVoiceCount() const { return voiceCount; }
+    int getOsc1VoiceCount() const { return osc1VoiceCount; }
+    
+    // Second oscillator controls
+    void setOsc2Volume(float volume) { 
+        osc2Volume = volume; 
+        updateOsc2Parameters();
+    }
+    float getOsc2Volume() const { return osc2Volume; }
+    
+    void setOsc2Enabled(bool enabled) { 
+        osc2Enabled = enabled; 
+        updateOsc2Parameters();
+    }
+    bool getOsc2Enabled() const { return osc2Enabled; }
 
 private:
     std::map<std::string, int> parameterMap;
@@ -148,17 +162,18 @@ private:
     float parseValue(const std::string& value);
     
     void updateEnvelopeParameters();
-    void updateOscillatorType();
-    void updatePulseWidth();
-    void updateOctave();
-    void updateSemitone();
-    void updateFineTune();
-    void updateRandomPhase();
-    void updateVoiceCount();
+    void updateOsc1Type();
+    void updateOsc1PulseWidth();
+    void updateOsc1Octave();
+    void updateOsc1Semitone();
+    void updateOsc1FineTune();
+    void updateOsc1RandomPhase();
+    void updateOsc1VoiceCount();
     void updateDetune();
     void updateStereoWidth();
     void updatePan();
     void updatePhase();
+    void updateOsc2Parameters();
 
     SettingsComponent settingsComponent;
     std::vector<std::map<std::string, std::string>> responses;
@@ -176,13 +191,19 @@ private:
     float synthDecay = 0.2f;
     float synthSustain = 0.7f;
     float synthRelease = 0.3f;
-    float pulseWidth = 0.5f;
-    int octave = 0; // -4 to +4 octaves
-    int semitone = 0; // -12 to +12 semitones
-    int fineTune = 0; // -100 to +100 cents
-    bool randomPhase = true; // true = random phase, false = consistent phase
-    int voiceCount = 1; // 1 to 16 unison voices
-    int oscillatorType = 0; // 0 = sine, 1 = saw
+    
+    // Oscillator 1 parameters
+    float osc1PulseWidth = 0.5f;
+    int osc1Octave = 0; // -4 to +4 octaves
+    int osc1Semitone = 0; // -12 to +12 semitones
+    int osc1FineTune = 0; // -100 to +100 cents
+    bool osc1RandomPhase = true; // true = random phase, false = consistent phase
+    int osc1VoiceCount = 1; // 1 to 16 unison voices
+    int osc1Type = 0; // 0 = sine, 1 = saw
+    
+    // Second oscillator parameters
+    float osc2Volume = 0.0f; // 0.0 to 1.0
+    bool osc2Enabled = false; // true when sine button is toggled
     
     struct SineWaveSound : public juce::SynthesiserSound
     {
@@ -205,33 +226,34 @@ private:
         
         void startNote(int midiNoteNumber, float velocity, juce::SynthesiserSound*, int) override
         {
+            // Calculate oscillator 1 frequency with all its modifications
             frequency = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
-            // Apply octave shift: each octave doubles/halves the frequency
-            frequency *= std::pow(2.0, octave);
-            // Apply semitone shift: each semitone is 2^(1/12) frequency ratio
-            frequency *= std::pow(2.0, semitone / 12.0);
-            // Apply fine tune shift: each cent is 2^(1/1200) frequency ratio
-            frequency *= std::pow(2.0, fineTune / 1200.0);
+            // Apply oscillator 1 octave shift: each octave doubles/halves the frequency
+            frequency *= std::pow(2.0, osc1Octave);
+            // Apply oscillator 1 semitone shift: each semitone is 2^(1/12) frequency ratio
+            frequency *= std::pow(2.0, osc1Semitone / 12.0);
+            // Apply oscillator 1 fine tune shift: each cent is 2^(1/1200) frequency ratio
+            frequency *= std::pow(2.0, osc1FineTune / 1200.0);
             level = velocity * 0.15;
             
-            // Initialize unison voices with detuning
+            // Initialize oscillator 1 unison voices with detuning
             for (int i = 0; i < maxUnisonVoices; ++i)
             {
                 // Calculate detune amount: spread voices based on detune parameter
                 double detuneCents = 0.0;
-                if (unisonVoices > 1)
+                if (osc1VoiceCount > 1)
                 {
                     // Max detune of 50 cents * detune parameter (0.0 to 1.0)
                     double maxDetune = 50.0 * detune;
-                    detuneCents = (i - (unisonVoices - 1) / 2.0) * (maxDetune * 2.0 / (unisonVoices - 1));
+                    detuneCents = (i - (osc1VoiceCount - 1) / 2.0) * (maxDetune * 2.0 / (osc1VoiceCount - 1));
                 }
                 
                 // Apply detuning
                 unisonFrequencies[i] = frequency * std::pow(2.0, detuneCents / 1200.0);
                 unisonDeltas[i] = unisonFrequencies[i] * 2.0 * juce::MathConstants<double>::pi / getSampleRate();
                 
-                // Set initial phase
-                if (randomPhase)
+                // Set initial phase for oscillator 1
+                if (osc1RandomPhase)
                 {
                     unisonAngles[i] = random.nextFloat() * 2.0 * juce::MathConstants<double>::pi;
                 }
@@ -242,9 +264,14 @@ private:
                 }
             }
             
-            // Keep legacy variables for compatibility
+            // Keep legacy variables for oscillator 1 compatibility
             angleDelta = frequency * 2.0 * juce::MathConstants<double>::pi / getSampleRate();
-            currentAngle = randomPhase ? random.nextFloat() * 2.0 * juce::MathConstants<double>::pi : (fixedPhase * juce::MathConstants<double>::pi / 180.0);
+            currentAngle = osc1RandomPhase ? random.nextFloat() * 2.0 * juce::MathConstants<double>::pi : (fixedPhase * juce::MathConstants<double>::pi / 180.0);
+            
+            // Initialize second oscillator with INDEPENDENT frequency (no modifications)
+            double osc2BaseFrequency = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
+            osc2AngleDelta = osc2BaseFrequency * 2.0 * juce::MathConstants<double>::pi / getSampleRate();
+            osc2CurrentAngle = 0.0; // Start at zero phase for clean sine wave
             
             envelope.setSampleRate(getSampleRate());
             envelope.noteOn();
@@ -258,6 +285,7 @@ private:
             {
                 clearCurrentNote();
                 angleDelta = 0.0;
+                osc2AngleDelta = 0.0;
             }
         }
         
@@ -273,51 +301,51 @@ private:
                     float leftSample = 0.0f;
                     float rightSample = 0.0f;
                     
-                    // Sum all active unison voices with stereo panning
-                    for (int voice = 0; voice < unisonVoices; ++voice)
+                    // Sum all active oscillator 1 unison voices with stereo panning
+                    for (int voice = 0; voice < osc1VoiceCount; ++voice)
                     {
                         float voiceSample;
                         
-                        // Generate waveform based on oscillator type for this voice
-                        if (oscillatorType == 0) // Sine wave
+                        // Generate waveform based on oscillator 1 type for this voice
+                        if (osc1Type == 0) // Sine wave
                         {
                             voiceSample = (float)(std::sin(unisonAngles[voice]) * level);
                         }
-                        else if (oscillatorType == 1) // Saw wave
+                        else if (osc1Type == 1) // Saw wave
                         {
                             // Sawtooth wave: variable ramp using pulse width
                             auto normalizedAngle = std::fmod(unisonAngles[voice], 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
-                            if (pulseWidth < 0.5) {
+                            if (osc1PulseWidth < 0.5) {
                                 // More reverse saw character
-                                auto adjustedAngle = normalizedAngle * (1.0 - pulseWidth) + pulseWidth;
+                                auto adjustedAngle = normalizedAngle * (1.0 - osc1PulseWidth) + osc1PulseWidth;
                                 voiceSample = (float)((2.0 * (1.0 - adjustedAngle) - 1.0) * level);
                             } else {
                                 // More forward saw character
-                                auto adjustedAngle = normalizedAngle * pulseWidth;
+                                auto adjustedAngle = normalizedAngle * osc1PulseWidth;
                                 voiceSample = (float)((2.0 * adjustedAngle - 1.0) * level);
                             }
                         }
-                        else if (oscillatorType == 2) // Square wave
+                        else if (osc1Type == 2) // Square wave
                         {
                             // Square wave: variable duty cycle using pulse width
                             auto normalizedAngle = std::fmod(unisonAngles[voice], 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
-                            voiceSample = (float)((normalizedAngle < pulseWidth ? 1.0 : -1.0) * level);
+                            voiceSample = (float)((normalizedAngle < osc1PulseWidth ? 1.0 : -1.0) * level);
                         }
-                        else if (oscillatorType == 3) // Triangle wave
+                        else if (osc1Type == 3) // Triangle wave
                         {
                             // Triangle wave: variable peak position using pulse width
                             auto normalizedAngle = std::fmod(unisonAngles[voice], 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
-                            if (normalizedAngle < pulseWidth)
-                                voiceSample = (float)((normalizedAngle / pulseWidth * 2.0 - 1.0) * level); // Rising: -1 to 1
+                            if (normalizedAngle < osc1PulseWidth)
+                                voiceSample = (float)((normalizedAngle / osc1PulseWidth * 2.0 - 1.0) * level); // Rising: -1 to 1
                             else
-                                voiceSample = (float)((1.0 - (normalizedAngle - pulseWidth) / (1.0 - pulseWidth)) * 2.0 - 1.0) * level; // Falling: 1 to -1
+                                voiceSample = (float)((1.0 - (normalizedAngle - osc1PulseWidth) / (1.0 - osc1PulseWidth)) * 2.0 - 1.0) * level; // Falling: 1 to -1
                         }
-                        else if (oscillatorType == 4) // White noise
+                        else if (osc1Type == 4) // White noise
                         {
                             // White noise: random values between -1 and 1 (same for all unison voices)
                             voiceSample = (float)((random.nextFloat() * 2.0f - 1.0f) * level);
                         }
-                        else if (oscillatorType == 5) // Pink noise
+                        else if (osc1Type == 5) // Pink noise
                         {
                             // Pink noise using Paul Kellett's method (same for all unison voices)
                             float white = random.nextFloat() * 2.0f - 1.0f;
@@ -342,10 +370,10 @@ private:
                         
                         // Calculate stereo panning for this voice
                         float voicePan = 0.0f; // Center by default
-                        if (unisonVoices > 1)
+                        if (osc1VoiceCount > 1)
                         {
                             // Spread voices across stereo field based on stereo width
-                            voicePan = (voice - (unisonVoices - 1) / 2.0f) / ((unisonVoices - 1) / 2.0f) * stereoWidth;
+                            voicePan = (voice - (osc1VoiceCount - 1) / 2.0f) / ((osc1VoiceCount - 1) / 2.0f) * stereoWidth;
                             voicePan = juce::jlimit(-1.0f, 1.0f, voicePan);
                         }
                         
@@ -360,24 +388,41 @@ private:
                         unisonAngles[voice] += unisonDeltas[voice];
                     }
                     
-                    // Apply level scaling to prevent clipping from multiple voices
-                    leftSample /= std::sqrt((float)unisonVoices);
-                    rightSample /= std::sqrt((float)unisonVoices);
+                    // Apply level scaling to prevent clipping from multiple oscillator 1 voices
+                    leftSample /= std::sqrt((float)osc1VoiceCount);
+                    rightSample /= std::sqrt((float)osc1VoiceCount);
                     
+                    // Apply envelope to oscillator 1 ONLY
                     auto envelopeValue = envelope.getNextSample();
                     leftSample *= envelopeValue;
                     rightSample *= envelopeValue;
                     
-                    // Apply overall pan (-50 to +50 range)
+                    // Apply overall pan to oscillator 1 ONLY (-50 to +50 range)
                     float normalizedPan = pan / 50.0f; // Convert to -1.0 to +1.0 range
                     normalizedPan = juce::jlimit(-1.0f, 1.0f, normalizedPan);
                     
-                    // Apply overall pan using equal power panning
+                    // Apply overall pan using equal power panning to oscillator 1
                     float panLeftGain = std::cos((normalizedPan + 1.0f) * juce::MathConstants<float>::pi * 0.25f);
                     float panRightGain = std::sin((normalizedPan + 1.0f) * juce::MathConstants<float>::pi * 0.25f);
                     
                     leftSample *= panLeftGain;
                     rightSample *= panRightGain;
+                    
+                    // Add second oscillator if enabled (COMPLETELY INDEPENDENT)
+                    // Only runs when there's an active note (same timing as osc1 but no envelope)
+                    if (osc2Enabled && osc2Volume > 0.0f && osc2AngleDelta != 0.0)
+                    {
+                        // Generate simple sine wave for oscillator 2 - completely independent
+                        // NO envelope, NO pan, NO velocity, NO other oscillator 1 effects
+                        float osc2Sample = (float)(std::sin(osc2CurrentAngle) * osc2Volume * 0.15);
+                        
+                        // Add to both channels (always centered) - completely independent
+                        leftSample += osc2Sample;
+                        rightSample += osc2Sample;
+                        
+                        // Update oscillator 2 angle
+                        osc2CurrentAngle += osc2AngleDelta;
+                    }
                     
                     // Output to stereo channels
                     if (outputBuffer.getNumChannels() >= 2)
@@ -397,6 +442,7 @@ private:
                     {
                         clearCurrentNote();
                         angleDelta = 0.0;
+                        osc2AngleDelta = 0.0; // Also stop oscillator 2
                         break;
                     }
                 }
@@ -408,39 +454,39 @@ private:
             envelope.setParameters({attack, decay, sustain, release});
         }
         
-        void setOscillatorType(int type)
+        void setOsc1Type(int type)
         {
-            oscillatorType = type;
+            osc1Type = type;
         }
         
-        void setPulseWidth(float width)
+        void setOsc1PulseWidth(float width)
         {
-            pulseWidth = width;
+            osc1PulseWidth = width;
         }
         
-        void setOctave(int oct)
+        void setOsc1Octave(int oct)
         {
-            octave = oct;
+            osc1Octave = oct;
         }
         
-        void setSemitone(int semi)
+        void setOsc1Semitone(int semi)
         {
-            semitone = semi;
+            osc1Semitone = semi;
         }
         
-        void setFineTune(int fine)
+        void setOsc1FineTune(int fine)
         {
-            fineTune = fine;
+            osc1FineTune = fine;
         }
         
-        void setRandomPhase(bool random)
+        void setOsc1RandomPhase(bool random)
         {
-            randomPhase = random;
+            osc1RandomPhase = random;
         }
         
-        void setUnisonVoices(int count)
+        void setOsc1VoiceCount(int count)
         {
-            unisonVoices = juce::jlimit(1, 16, count);
+            osc1VoiceCount = juce::jlimit(1, 16, count);
         }
         
         void setDetune(float detuneAmount)
@@ -463,28 +509,44 @@ private:
             fixedPhase = phaseValue;
         }
         
+        void setOsc2Volume(float volume)
+        {
+            osc2Volume = volume;
+        }
+        
+        void setOsc2Enabled(bool enabled)
+        {
+            osc2Enabled = enabled;
+        }
+        
     private:
         double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
         
-        // Unison voice arrays (support up to 16 voices)
+        // Oscillator 1 unison voice arrays (support up to 16 voices)
         static constexpr int maxUnisonVoices = 16;
         std::array<double, maxUnisonVoices> unisonAngles;
         std::array<double, maxUnisonVoices> unisonDeltas;
         std::array<double, maxUnisonVoices> unisonFrequencies;
-        int oscillatorType = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise, 5 = pink noise
-        float pulseWidth = 0.5f;
-        int octave = 0; // -4 to +4 octaves
-        int semitone = 0; // -12 to +12 semitones
-        int fineTune = 0; // -100 to +100 cents
-        bool randomPhase = true; // true = random phase, false = consistent phase
-        int unisonVoices = 1; // Number of unison voices (1-16)
+        int osc1Type = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise, 5 = pink noise
+        float osc1PulseWidth = 0.5f;
+        int osc1Octave = 0; // -4 to +4 octaves
+        int osc1Semitone = 0; // -12 to +12 semitones
+        int osc1FineTune = 0; // -100 to +100 cents
+        bool osc1RandomPhase = true; // true = random phase, false = consistent phase
+        int osc1VoiceCount = 1; // Number of unison voices (1-16)
         float detune = 0.0f; // Detune amount (0.0 = no detune, 1.0 = max detune)
         float stereoWidth = 0.5f; // Stereo width (0.0 = mono, 1.0 = full stereo)
         float pan = 0.0f; // Pan position (-50 = left, 0 = center, 50 = right)
         float fixedPhase = 0.0f; // Fixed phase in degrees (0-360)
         juce::ADSR envelope;
         juce::Random random;
+        
+        // Second oscillator parameters
+        float osc2Volume = 0.0f;
+        bool osc2Enabled = false;
+        double osc2CurrentAngle = 0.0;
+        double osc2AngleDelta = 0.0;
         
         // Pink noise generation state (Paul Kellett's method)
         float pinkFilter[7] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
