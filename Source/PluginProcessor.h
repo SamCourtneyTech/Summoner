@@ -141,6 +141,12 @@ public:
         updateOsc1VoiceCount();
     }
     int getOsc1VoiceCount() const { return osc1VoiceCount; }
+
+    void setOsc1Volume(float volume) {
+        osc1Volume = volume;
+        updateOsc1Volume();
+    }
+    float getOsc1Volume() const { return osc1Volume; }
     
     // Second oscillator controls
     void setOsc2Volume(float volume) { 
@@ -173,6 +179,7 @@ private:
     void updateStereoWidth();
     void updatePan();
     void updatePhase();
+    void updateOsc1Volume();
     void updateOsc2Parameters();
 
     SettingsComponent settingsComponent;
@@ -200,6 +207,7 @@ private:
     bool osc1RandomPhase = true; // true = random phase, false = consistent phase
     int osc1VoiceCount = 1; // 1 to 16 unison voices
     int osc1Type = 0; // 0 = sine, 1 = saw
+    float osc1Volume = 0.5f;
     
     // Second oscillator parameters
     float osc2Volume = 0.0f; // 0.0 to 1.0
@@ -391,6 +399,10 @@ private:
                     // Apply level scaling to prevent clipping from multiple oscillator 1 voices
                     leftSample /= std::sqrt((float)osc1VoiceCount);
                     rightSample /= std::sqrt((float)osc1VoiceCount);
+
+                    // Apply Oscillator 1 volume
+                    leftSample *= osc1Volume;
+                    rightSample *= osc1Volume;
                     
                     // Apply envelope to oscillator 1 ONLY
                     auto envelopeValue = envelope.getNextSample();
@@ -488,6 +500,11 @@ private:
         {
             osc1VoiceCount = juce::jlimit(1, 16, count);
         }
+
+        void setOsc1Volume(float volume)
+        {
+            osc1Volume = volume;
+        }
         
         void setDetune(float detuneAmount)
         {
@@ -535,6 +552,7 @@ private:
         int osc1FineTune = 0; // -100 to +100 cents
         bool osc1RandomPhase = true; // true = random phase, false = consistent phase
         int osc1VoiceCount = 1; // Number of unison voices (1-16)
+        float osc1Volume = 0.5f; // Volume for oscillator 1 (0.0 to 1.0)
         float detune = 0.0f; // Detune amount (0.0 = no detune, 1.0 = max detune)
         float stereoWidth = 0.5f; // Stereo width (0.0 = mono, 1.0 = full stereo)
         float pan = 0.0f; // Pan position (-50 = left, 0 = center, 50 = right)

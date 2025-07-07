@@ -227,6 +227,17 @@ void SummonerXSerum2AudioProcessor::updateOsc1VoiceCount()
     }
 }
 
+void SummonerXSerum2AudioProcessor::updateOsc1Volume()
+{
+    for (int i = 0; i < synthesiser.getNumVoices(); ++i)
+    {
+        if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
+        {
+            voice->setOsc1Volume(osc1Volume);
+        }
+    }
+}
+
 void SummonerXSerum2AudioProcessor::updateDetune()
 {
     // Update detune amount for all existing voices

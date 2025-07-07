@@ -989,7 +989,7 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
 {
     if (slider == &volumeControlsVolumeKnob)
     {
-        audioProcessor.setSynthVolume(static_cast<float>(volumeControlsVolumeKnob.getValue()));
+        audioProcessor.setOsc1Volume(static_cast<float>(volumeControlsVolumeKnob.getValue()));
     }
     else if (slider == &volumeControlsDetuneKnob)
     {
