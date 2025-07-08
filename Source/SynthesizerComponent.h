@@ -519,6 +519,8 @@ private:
     juce::TextButton osc2PinkNoiseButton;
     juce::Slider osc2VolumeKnob;
     juce::Label osc2VolumeLabel;
+    juce::Slider osc2DetuneKnob;
+    juce::Label osc2DetuneLabel;
     juce::Slider osc2VoicesKnob;
     juce::Label osc2VoicesLabel;
     juce::Label osc2TitleLabel;

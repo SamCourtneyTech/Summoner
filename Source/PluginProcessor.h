@@ -155,6 +155,12 @@ public:
     }
     float getOsc2Volume() const { return osc2Volume; }
     
+    void setOsc2Detune(float detune) { 
+        osc2Detune = detune; 
+        updateOsc2Parameters();
+    }
+    float getOsc2Detune() const { return osc2Detune; }
+    
     void setOsc2Enabled(bool enabled) { 
         osc2Enabled = enabled; 
         updateOsc2Parameters();
@@ -254,6 +260,7 @@ private:
     bool osc2Enabled = false; // true when sine button is toggled
     int osc2Type = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise, 5 = pink noise
     int osc2VoiceCount = 1; // 1 to 16 unison voices
+    float osc2Detune = 0.0f; // 0.0 to 1.0, controls detune amount
     float osc2Attack = 0.1f;
     float osc2Decay = 0.2f;
     float osc2Sustain = 0.7f;
@@ -327,15 +334,15 @@ private:
             osc2AngleDelta = osc2BaseFrequency * 2.0 * juce::MathConstants<double>::pi / getSampleRate();
             osc2CurrentAngle = 0.0; // Start at zero phase for clean sine wave
             
-            // Initialize oscillator 2 unison voices with slight detuning
+            // Initialize oscillator 2 unison voices with controllable detuning
             for (int i = 0; i < maxOsc2UnisonVoices; ++i)
             {
-                // Calculate detune amount for osc2: spread voices based on a fixed detune amount
+                // Calculate detune amount for osc2: spread voices based on detune parameter
                 double osc2DetuneCents = 0.0;
                 if (osc2VoiceCount > 1)
                 {
-                    // Max detune of 25 cents for osc2 (less than osc1 for subtlety)
-                    double maxOsc2Detune = 25.0;
+                    // Max detune of 50 cents * detune parameter (0.0 to 1.0)
+                    double maxOsc2Detune = 50.0 * osc2Detune;
                     osc2DetuneCents = (i - (osc2VoiceCount - 1) / 2.0) * (maxOsc2Detune * 2.0 / (osc2VoiceCount - 1));
                 }
                 
@@ -692,6 +699,11 @@ private:
             osc2VoiceCount = juce::jlimit(1, 16, count);
         }
         
+        void setOsc2Detune(float detune)
+        {
+            osc2Detune = detune;
+        }
+        
     private:
         double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
@@ -722,6 +734,7 @@ private:
         bool osc2Enabled = false;
         int osc2Type = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise, 5 = pink noise
         int osc2VoiceCount = 1; // Number of unison voices (1-16)
+        float osc2Detune = 0.0f; // Detune amount (0.0 to 1.0)
         double osc2CurrentAngle = 0.0;
         double osc2AngleDelta = 0.0;
         

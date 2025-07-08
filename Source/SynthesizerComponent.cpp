@@ -484,6 +484,14 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     osc2VolumeKnob.setLookAndFeel(&customKnobLookAndFeel);
     osc2VolumeKnob.addListener(this);
     addAndMakeVisible(osc2VolumeKnob);
+
+    osc2DetuneKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    osc2DetuneKnob.setRange(0.0, 1.0, 0.01);
+    osc2DetuneKnob.setValue(0.0); // Start at 0 detune
+    osc2DetuneKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    osc2DetuneKnob.setLookAndFeel(&customKnobLookAndFeel);
+    osc2DetuneKnob.addListener(this);
+    addAndMakeVisible(osc2DetuneKnob);
     
     osc2VolumeLabel.setText("VOLUME", juce::dontSendNotification);
     osc2VolumeLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
@@ -491,6 +499,13 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     osc2VolumeLabel.setJustificationType(juce::Justification::centred);
     osc2VolumeLabel.setLookAndFeel(&ledLabelLookAndFeel);
     addAndMakeVisible(osc2VolumeLabel);
+
+    osc2DetuneLabel.setText("DETUNE", juce::dontSendNotification);
+    osc2DetuneLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
+    osc2DetuneLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    osc2DetuneLabel.setJustificationType(juce::Justification::centred);
+    osc2DetuneLabel.setLookAndFeel(&ledLabelLookAndFeel);
+    addAndMakeVisible(osc2DetuneLabel);
     
     // Oscillator 2 ADSR controls
     osc2AttackLabel.setText("ATTACK", juce::dontSendNotification);
@@ -616,6 +631,8 @@ SynthesizerComponent::~SynthesizerComponent()
     osc2SustainLabel.setLookAndFeel(nullptr);
     osc2ReleaseKnob.setLookAndFeel(nullptr);
     osc2ReleaseLabel.setLookAndFeel(nullptr);
+    osc2DetuneKnob.setLookAndFeel(nullptr);
+    osc2DetuneLabel.setLookAndFeel(nullptr);
     
     // pulseWidthSlider.setLookAndFeel(nullptr); // commented out
 }
@@ -1168,6 +1185,10 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     else if (slider == &osc2VolumeKnob)
     {
         audioProcessor.setOsc2Volume(static_cast<float>(osc2VolumeKnob.getValue()));
+    }
+    else if (slider == &osc2DetuneKnob)
+    {
+        audioProcessor.setOsc2Detune(static_cast<float>(osc2DetuneKnob.getValue()));
     }
     else if (slider == &osc2AttackKnob)
     {
@@ -1865,6 +1886,13 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto voicesArea = controlsArea.removeFromLeft(knobWidth);
     osc2VoicesLabel.setBounds(voicesArea.removeFromTop(20));
     osc2VoicesKnob.setBounds(voicesArea);
+    
+    controlsArea.removeFromLeft(spacing);
+    
+    // Detune knob
+    auto detuneArea = controlsArea.removeFromLeft(knobWidth);
+    osc2DetuneLabel.setBounds(detuneArea.removeFromTop(20));
+    osc2DetuneKnob.setBounds(detuneArea);
     
     controlsArea.removeFromLeft(spacing);
     
