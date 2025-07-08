@@ -424,6 +424,10 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     osc2SineButton.addListener(this);
     addAndMakeVisible(osc2SineButton);
     
+    // Set oscillator 2 to sine wave and enable it by default
+    audioProcessor.setOsc2Type(0); // 0 = sine
+    audioProcessor.setOsc2Enabled(true);
+    
     osc2SawButton.setButtonText("SAW");
     osc2SawButton.setLookAndFeel(&customWaveButtonLookAndFeel);
     osc2SawButton.setClickingTogglesState(true);
