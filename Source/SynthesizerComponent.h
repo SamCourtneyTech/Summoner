@@ -514,6 +514,8 @@ private:
     juce::TextButton osc2SineButton;
     juce::TextButton osc2SawButton;
     juce::TextButton osc2SquareButton;
+    juce::TextButton osc2TriangleButton;
+    juce::TextButton osc2WhiteNoiseButton;
     juce::Slider osc2VolumeKnob;
     juce::Label osc2VolumeLabel;
     juce::Label osc2TitleLabel;

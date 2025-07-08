@@ -245,7 +245,7 @@ private:
     // Second oscillator parameters
     float osc2Volume = 0.0f; // 0.0 to 1.0
     bool osc2Enabled = false; // true when sine button is toggled
-    int osc2Type = 0; // 0 = sine, 1 = saw, 2 = square
+    int osc2Type = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise
     float osc2Attack = 0.1f;
     float osc2Decay = 0.2f;
     float osc2Sustain = 0.7f;
@@ -484,6 +484,20 @@ private:
                             auto normalizedAngle = std::fmod(osc2CurrentAngle, 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
                             osc2Sample = (float)((normalizedAngle < 0.5 ? 1.0 : -1.0) * osc2Volume * 0.15);
                         }
+                        else if (osc2Type == 3) // Triangle wave
+                        {
+                            // Triangle wave: rises from -1 to 1 in first half, falls from 1 to -1 in second half
+                            auto normalizedAngle = std::fmod(osc2CurrentAngle, 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
+                            if (normalizedAngle < 0.5)
+                                osc2Sample = (float)((normalizedAngle * 4.0 - 1.0) * osc2Volume * 0.15); // Rising: -1 to 1
+                            else
+                                osc2Sample = (float)((3.0 - normalizedAngle * 4.0) * osc2Volume * 0.15); // Falling: 1 to -1
+                        }
+                        else if (osc2Type == 4) // White noise
+                        {
+                            // White noise: random values between -1 and 1
+                            osc2Sample = (float)((random.nextFloat() * 2.0f - 1.0f) * osc2Volume * 0.15);
+                        }
                         else
                         {
                             // Default to sine wave for unknown types
@@ -640,7 +654,7 @@ private:
         // Second oscillator parameters
         float osc2Volume = 0.0f;
         bool osc2Enabled = false;
-        int osc2Type = 0; // 0 = sine, 1 = saw, 2 = square
+        int osc2Type = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise
         double osc2CurrentAngle = 0.0;
         double osc2AngleDelta = 0.0;
         
