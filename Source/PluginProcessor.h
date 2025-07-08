@@ -185,6 +185,13 @@ public:
         updateOsc2EnvelopeParameters();
     }
     float getOsc2Release() const { return osc2Release; }
+    
+    // Oscillator 2 wave type control
+    void setOsc2Type(int type) {
+        osc2Type = type;
+        updateOsc2Parameters();
+    }
+    int getOsc2Type() const { return osc2Type; }
 
 private:
     std::map<std::string, int> parameterMap;
@@ -238,6 +245,7 @@ private:
     // Second oscillator parameters
     float osc2Volume = 0.0f; // 0.0 to 1.0
     bool osc2Enabled = false; // true when sine button is toggled
+    int osc2Type = 0; // 0 = sine, 1 = saw
     float osc2Attack = 0.1f;
     float osc2Decay = 0.2f;
     float osc2Sustain = 0.7f;
@@ -457,8 +465,24 @@ private:
                     // Add second oscillator if enabled with its own envelope
                     if (osc2Enabled && osc2Volume > 0.0f && osc2AngleDelta != 0.0)
                     {
-                        // Generate simple sine wave for oscillator 2
-                        float osc2Sample = (float)(std::sin(osc2CurrentAngle) * osc2Volume * 0.15);
+                        float osc2Sample;
+                        
+                        // Generate waveform based on oscillator 2 type
+                        if (osc2Type == 0) // Sine wave
+                        {
+                            osc2Sample = (float)(std::sin(osc2CurrentAngle) * osc2Volume * 0.15);
+                        }
+                        else if (osc2Type == 1) // Saw wave
+                        {
+                            // Simple sawtooth wave: linear ramp from -1 to 1
+                            auto normalizedAngle = std::fmod(osc2CurrentAngle, 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
+                            osc2Sample = (float)((2.0 * normalizedAngle - 1.0) * osc2Volume * 0.15);
+                        }
+                        else
+                        {
+                            // Default to sine wave for unknown types
+                            osc2Sample = (float)(std::sin(osc2CurrentAngle) * osc2Volume * 0.15);
+                        }
                         
                         // Apply osc2 envelope
                         auto osc2EnvelopeValue = osc2Envelope.getNextSample();
@@ -577,6 +601,11 @@ private:
             osc2Envelope.setParameters({attack, decay, sustain, release});
         }
         
+        void setOsc2Type(int type)
+        {
+            osc2Type = type;
+        }
+        
     private:
         double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
@@ -605,6 +634,7 @@ private:
         // Second oscillator parameters
         float osc2Volume = 0.0f;
         bool osc2Enabled = false;
+        int osc2Type = 0; // 0 = sine, 1 = saw
         double osc2CurrentAngle = 0.0;
         double osc2AngleDelta = 0.0;
         

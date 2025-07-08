@@ -512,6 +512,7 @@ private:
     
     // SECOND OSCILLATOR CONTROLS - Row 6 (MOVEABLE)
     juce::TextButton osc2SineButton;
+    juce::TextButton osc2SawButton;
     juce::Slider osc2VolumeKnob;
     juce::Label osc2VolumeLabel;
     juce::Label osc2TitleLabel;

@@ -420,9 +420,16 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     osc2SineButton.setButtonText("SIN");
     osc2SineButton.setLookAndFeel(&customWaveButtonLookAndFeel);
     osc2SineButton.setClickingTogglesState(true);
-    osc2SineButton.setToggleState(false, juce::dontSendNotification); // Start unselected
+    osc2SineButton.setToggleState(true, juce::dontSendNotification); // Start selected (sine is default)
     osc2SineButton.addListener(this);
     addAndMakeVisible(osc2SineButton);
+    
+    osc2SawButton.setButtonText("SAW");
+    osc2SawButton.setLookAndFeel(&customWaveButtonLookAndFeel);
+    osc2SawButton.setClickingTogglesState(true);
+    osc2SawButton.setToggleState(false, juce::dontSendNotification); // Start unselected
+    osc2SawButton.addListener(this);
+    addAndMakeVisible(osc2SawButton);
     
     osc2VolumeKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     osc2VolumeKnob.setRange(0.0, 1.0, 0.01);
@@ -545,6 +552,7 @@ SynthesizerComponent::~SynthesizerComponent()
     
     // Reset oscillator 2 controls look and feel
     osc2SineButton.setLookAndFeel(nullptr);
+    osc2SawButton.setLookAndFeel(nullptr);
     osc2VolumeKnob.setLookAndFeel(nullptr);
     osc2VolumeLabel.setLookAndFeel(nullptr);
     osc2TitleLabel.setLookAndFeel(nullptr);
@@ -1238,8 +1246,47 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
     }
     else if (button == &osc2SineButton)
     {
-        // Toggle oscillator 2 on/off
-        audioProcessor.setOsc2Enabled(osc2SineButton.getToggleState());
+        if (osc2SineButton.getToggleState())
+        {
+            // Select sine wave for oscillator 2
+            osc2SawButton.setToggleState(false, juce::dontSendNotification);
+            audioProcessor.setOsc2Type(0); // 0 = sine
+            audioProcessor.setOsc2Enabled(true);
+        }
+        else
+        {
+            // If deselecting sine, keep at least one selected
+            if (!osc2SawButton.getToggleState())
+            {
+                osc2SineButton.setToggleState(true, juce::dontSendNotification);
+            }
+            else
+            {
+                audioProcessor.setOsc2Enabled(false);
+            }
+        }
+    }
+    else if (button == &osc2SawButton)
+    {
+        if (osc2SawButton.getToggleState())
+        {
+            // Select saw wave for oscillator 2
+            osc2SineButton.setToggleState(false, juce::dontSendNotification);
+            audioProcessor.setOsc2Type(1); // 1 = saw
+            audioProcessor.setOsc2Enabled(true);
+        }
+        else
+        {
+            // If deselecting saw, keep at least one selected
+            if (!osc2SineButton.getToggleState())
+            {
+                osc2SawButton.setToggleState(true, juce::dontSendNotification);
+            }
+            else
+            {
+                audioProcessor.setOsc2Enabled(false);
+            }
+        }
     }
 }
 
@@ -1568,8 +1615,8 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     bounds.removeFromTop(20); // spacing
     auto osc2Row = bounds.removeFromTop(controlHeight);
     
-    // Increased width to accommodate new ADSR knobs
-    auto sectionWidth = 520; // Width for title + button + 5 knobs + spacing
+    // Increased width to accommodate both wave buttons + 5 knobs
+    auto sectionWidth = 590; // Width for title + 2 buttons + 5 knobs + spacing
     auto osc2Section = osc2Row.withSizeKeepingCentre(sectionWidth, controlHeight);
     
     // Apply group offset for MOVEABLE Second Oscillator Group (Row 6)
@@ -1581,7 +1628,7 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     // Store bounds for background drawing (with offset applied)
     secondOscillatorBounds = offsetOsc2Section;
     
-    // Calculate spacing for title, sine button, and knobs
+    // Calculate spacing for title, wave buttons, and knobs
     auto titleHeight = 20;
     auto buttonHeight = 40;
     auto spacing = 10;
@@ -1598,9 +1645,16 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto knobWidth = 80;
     
     // Sine button (leftmost)
-    auto buttonArea = controlsArea.removeFromLeft(buttonWidth);
-    buttonArea.setHeight(buttonHeight);
-    osc2SineButton.setBounds(buttonArea);
+    auto sineButtonArea = controlsArea.removeFromLeft(buttonWidth);
+    sineButtonArea.setHeight(buttonHeight);
+    osc2SineButton.setBounds(sineButtonArea);
+    
+    controlsArea.removeFromLeft(spacing);
+    
+    // Saw button
+    auto sawButtonArea = controlsArea.removeFromLeft(buttonWidth);
+    sawButtonArea.setHeight(buttonHeight);
+    osc2SawButton.setBounds(sawButtonArea);
     
     controlsArea.removeFromLeft(spacing);
     
