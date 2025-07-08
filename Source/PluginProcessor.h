@@ -245,7 +245,7 @@ private:
     // Second oscillator parameters
     float osc2Volume = 0.0f; // 0.0 to 1.0
     bool osc2Enabled = false; // true when sine button is toggled
-    int osc2Type = 0; // 0 = sine, 1 = saw
+    int osc2Type = 0; // 0 = sine, 1 = saw, 2 = square
     float osc2Attack = 0.1f;
     float osc2Decay = 0.2f;
     float osc2Sustain = 0.7f;
@@ -478,6 +478,12 @@ private:
                             auto normalizedAngle = std::fmod(osc2CurrentAngle, 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
                             osc2Sample = (float)((2.0 * normalizedAngle - 1.0) * osc2Volume * 0.15);
                         }
+                        else if (osc2Type == 2) // Square wave
+                        {
+                            // Square wave: 50% duty cycle
+                            auto normalizedAngle = std::fmod(osc2CurrentAngle, 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
+                            osc2Sample = (float)((normalizedAngle < 0.5 ? 1.0 : -1.0) * osc2Volume * 0.15);
+                        }
                         else
                         {
                             // Default to sine wave for unknown types
@@ -634,7 +640,7 @@ private:
         // Second oscillator parameters
         float osc2Volume = 0.0f;
         bool osc2Enabled = false;
-        int osc2Type = 0; // 0 = sine, 1 = saw
+        int osc2Type = 0; // 0 = sine, 1 = saw, 2 = square
         double osc2CurrentAngle = 0.0;
         double osc2AngleDelta = 0.0;
         
