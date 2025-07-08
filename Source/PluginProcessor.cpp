@@ -296,6 +296,7 @@ void SummonerXSerum2AudioProcessor::updateOsc2Parameters()
             voice->setOsc2Volume(osc2Volume);
             voice->setOsc2Enabled(osc2Enabled);
             voice->setOsc2Type(osc2Type);
+            voice->setOsc2VoiceCount(osc2VoiceCount);
         }
     }
 }

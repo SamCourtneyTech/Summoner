@@ -192,6 +192,13 @@ public:
         updateOsc2Parameters();
     }
     int getOsc2Type() const { return osc2Type; }
+    
+    // Oscillator 2 unison voices control
+    void setOsc2VoiceCount(int count) {
+        osc2VoiceCount = count;
+        updateOsc2Parameters();
+    }
+    int getOsc2VoiceCount() const { return osc2VoiceCount; }
 
 private:
     std::map<std::string, int> parameterMap;
@@ -246,6 +253,7 @@ private:
     float osc2Volume = 0.0f; // 0.0 to 1.0
     bool osc2Enabled = false; // true when sine button is toggled
     int osc2Type = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise, 5 = pink noise
+    int osc2VoiceCount = 1; // 1 to 16 unison voices
     float osc2Attack = 0.1f;
     float osc2Decay = 0.2f;
     float osc2Sustain = 0.7f;
@@ -318,6 +326,26 @@ private:
             double osc2BaseFrequency = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
             osc2AngleDelta = osc2BaseFrequency * 2.0 * juce::MathConstants<double>::pi / getSampleRate();
             osc2CurrentAngle = 0.0; // Start at zero phase for clean sine wave
+            
+            // Initialize oscillator 2 unison voices with slight detuning
+            for (int i = 0; i < maxOsc2UnisonVoices; ++i)
+            {
+                // Calculate detune amount for osc2: spread voices based on a fixed detune amount
+                double osc2DetuneCents = 0.0;
+                if (osc2VoiceCount > 1)
+                {
+                    // Max detune of 25 cents for osc2 (less than osc1 for subtlety)
+                    double maxOsc2Detune = 25.0;
+                    osc2DetuneCents = (i - (osc2VoiceCount - 1) / 2.0) * (maxOsc2Detune * 2.0 / (osc2VoiceCount - 1));
+                }
+                
+                // Apply detuning to osc2
+                osc2UnisonFrequencies[i] = osc2BaseFrequency * std::pow(2.0, osc2DetuneCents / 1200.0);
+                osc2UnisonDeltas[i] = osc2UnisonFrequencies[i] * 2.0 * juce::MathConstants<double>::pi / getSampleRate();
+                
+                // Set initial phase for oscillator 2 (always start at zero for consistency)
+                osc2UnisonAngles[i] = 0.0;
+            }
             
             envelope.setSampleRate(getSampleRate());
             envelope.noteOn();
@@ -462,74 +490,90 @@ private:
                     leftSample *= panLeftGain;
                     rightSample *= panRightGain;
                     
-                    // Add second oscillator if enabled with its own envelope
+                    // Add second oscillator if enabled with its own envelope and unison voices
                     if (osc2Enabled && osc2Volume > 0.0f && osc2AngleDelta != 0.0)
                     {
-                        float osc2Sample;
+                        float osc2LeftSample = 0.0f;
+                        float osc2RightSample = 0.0f;
                         
-                        // Generate waveform based on oscillator 2 type
-                        if (osc2Type == 0) // Sine wave
+                        // Sum all active oscillator 2 unison voices
+                        for (int voice = 0; voice < osc2VoiceCount; ++voice)
                         {
-                            osc2Sample = (float)(std::sin(osc2CurrentAngle) * osc2Volume * 0.15);
-                        }
-                        else if (osc2Type == 1) // Saw wave
-                        {
-                            // Simple sawtooth wave: linear ramp from -1 to 1
-                            auto normalizedAngle = std::fmod(osc2CurrentAngle, 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
-                            osc2Sample = (float)((2.0 * normalizedAngle - 1.0) * osc2Volume * 0.15);
-                        }
-                        else if (osc2Type == 2) // Square wave
-                        {
-                            // Square wave: 50% duty cycle
-                            auto normalizedAngle = std::fmod(osc2CurrentAngle, 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
-                            osc2Sample = (float)((normalizedAngle < 0.5 ? 1.0 : -1.0) * osc2Volume * 0.15);
-                        }
-                        else if (osc2Type == 3) // Triangle wave
-                        {
-                            // Triangle wave: rises from -1 to 1 in first half, falls from 1 to -1 in second half
-                            auto normalizedAngle = std::fmod(osc2CurrentAngle, 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
-                            if (normalizedAngle < 0.5)
-                                osc2Sample = (float)((normalizedAngle * 4.0 - 1.0) * osc2Volume * 0.15); // Rising: -1 to 1
+                            float voiceSample;
+                            
+                            // Generate waveform based on oscillator 2 type for this voice
+                            if (osc2Type == 0) // Sine wave
+                            {
+                                voiceSample = (float)(std::sin(osc2UnisonAngles[voice]) * osc2Volume * 0.15);
+                            }
+                            else if (osc2Type == 1) // Saw wave
+                            {
+                                auto normalizedAngle = std::fmod(osc2UnisonAngles[voice], 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
+                                voiceSample = (float)((2.0 * normalizedAngle - 1.0) * osc2Volume * 0.15);
+                            }
+                            else if (osc2Type == 2) // Square wave
+                            {
+                                auto normalizedAngle = std::fmod(osc2UnisonAngles[voice], 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
+                                voiceSample = (float)((normalizedAngle < 0.5 ? 1.0 : -1.0) * osc2Volume * 0.15);
+                            }
+                            else if (osc2Type == 3) // Triangle wave
+                            {
+                                auto normalizedAngle = std::fmod(osc2UnisonAngles[voice], 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
+                                if (normalizedAngle < 0.5)
+                                    voiceSample = (float)((normalizedAngle * 4.0 - 1.0) * osc2Volume * 0.15);
+                                else
+                                    voiceSample = (float)((3.0 - normalizedAngle * 4.0) * osc2Volume * 0.15);
+                            }
+                            else if (osc2Type == 4) // White noise
+                            {
+                                // White noise: same for all unison voices
+                                voiceSample = (float)((random.nextFloat() * 2.0f - 1.0f) * osc2Volume * 0.15);
+                            }
+                            else if (osc2Type == 5) // Pink noise
+                            {
+                                // Pink noise: same for all unison voices
+                                float white = random.nextFloat() * 2.0f - 1.0f;
+                                
+                                osc2PinkFilter[0] = 0.99886f * osc2PinkFilter[0] + white * 0.0555179f;
+                                osc2PinkFilter[1] = 0.99332f * osc2PinkFilter[1] + white * 0.0750759f;
+                                osc2PinkFilter[2] = 0.96900f * osc2PinkFilter[2] + white * 0.1538520f;
+                                osc2PinkFilter[3] = 0.86650f * osc2PinkFilter[3] + white * 0.3104856f;
+                                osc2PinkFilter[4] = 0.55000f * osc2PinkFilter[4] + white * 0.5329522f;
+                                osc2PinkFilter[5] = -0.7616f * osc2PinkFilter[5] - white * 0.0168980f;
+                                
+                                float pink = osc2PinkFilter[0] + osc2PinkFilter[1] + osc2PinkFilter[2] + osc2PinkFilter[3] + osc2PinkFilter[4] + osc2PinkFilter[5] + osc2PinkFilter[6] + white * 0.5362f;
+                                osc2PinkFilter[6] = white * 0.115926f;
+                                
+                                voiceSample = (float)(pink * 0.11f * osc2Volume * 0.15);
+                            }
                             else
-                                osc2Sample = (float)((3.0 - normalizedAngle * 4.0) * osc2Volume * 0.15); // Falling: 1 to -1
-                        }
-                        else if (osc2Type == 4) // White noise
-                        {
-                            // White noise: random values between -1 and 1
-                            osc2Sample = (float)((random.nextFloat() * 2.0f - 1.0f) * osc2Volume * 0.15);
-                        }
-                        else if (osc2Type == 5) // Pink noise
-                        {
-                            // Pink noise using Paul Kellett's method for osc2
-                            float white = random.nextFloat() * 2.0f - 1.0f;
+                            {
+                                // Default to sine wave for unknown types
+                                voiceSample = (float)(std::sin(osc2UnisonAngles[voice]) * osc2Volume * 0.15);
+                            }
                             
-                            osc2PinkFilter[0] = 0.99886f * osc2PinkFilter[0] + white * 0.0555179f;
-                            osc2PinkFilter[1] = 0.99332f * osc2PinkFilter[1] + white * 0.0750759f;
-                            osc2PinkFilter[2] = 0.96900f * osc2PinkFilter[2] + white * 0.1538520f;
-                            osc2PinkFilter[3] = 0.86650f * osc2PinkFilter[3] + white * 0.3104856f;
-                            osc2PinkFilter[4] = 0.55000f * osc2PinkFilter[4] + white * 0.5329522f;
-                            osc2PinkFilter[5] = -0.7616f * osc2PinkFilter[5] - white * 0.0168980f;
+                            // Add voice to mix (osc2 is always centered, no stereo spreading)
+                            osc2LeftSample += voiceSample;
+                            osc2RightSample += voiceSample;
                             
-                            float pink = osc2PinkFilter[0] + osc2PinkFilter[1] + osc2PinkFilter[2] + osc2PinkFilter[3] + osc2PinkFilter[4] + osc2PinkFilter[5] + osc2PinkFilter[6] + white * 0.5362f;
-                            osc2PinkFilter[6] = white * 0.115926f;
-                            
-                            osc2Sample = (float)(pink * 0.11f * osc2Volume * 0.15); // Scale down to prevent clipping
+                            // Update angle for this voice
+                            osc2UnisonAngles[voice] += osc2UnisonDeltas[voice];
                         }
-                        else
-                        {
-                            // Default to sine wave for unknown types
-                            osc2Sample = (float)(std::sin(osc2CurrentAngle) * osc2Volume * 0.15);
-                        }
+                        
+                        // Apply level scaling to prevent clipping from multiple osc2 voices
+                        osc2LeftSample /= std::sqrt((float)osc2VoiceCount);
+                        osc2RightSample /= std::sqrt((float)osc2VoiceCount);
                         
                         // Apply osc2 envelope
                         auto osc2EnvelopeValue = osc2Envelope.getNextSample();
-                        osc2Sample *= osc2EnvelopeValue;
+                        osc2LeftSample *= osc2EnvelopeValue;
+                        osc2RightSample *= osc2EnvelopeValue;
                         
-                        // Add to both channels (always centered)
-                        leftSample += osc2Sample;
-                        rightSample += osc2Sample;
+                        // Add to main mix
+                        leftSample += osc2LeftSample;
+                        rightSample += osc2RightSample;
                         
-                        // Update oscillator 2 angle
+                        // Update legacy oscillator 2 angle for compatibility
                         osc2CurrentAngle += osc2AngleDelta;
                     }
                     
@@ -643,6 +687,11 @@ private:
             osc2Type = type;
         }
         
+        void setOsc2VoiceCount(int count)
+        {
+            osc2VoiceCount = juce::jlimit(1, 16, count);
+        }
+        
     private:
         double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
@@ -672,8 +721,15 @@ private:
         float osc2Volume = 0.0f;
         bool osc2Enabled = false;
         int osc2Type = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise, 5 = pink noise
+        int osc2VoiceCount = 1; // Number of unison voices (1-16)
         double osc2CurrentAngle = 0.0;
         double osc2AngleDelta = 0.0;
+        
+        // Oscillator 2 unison voice arrays (support up to 16 voices)
+        static constexpr int maxOsc2UnisonVoices = 16;
+        std::array<double, maxOsc2UnisonVoices> osc2UnisonAngles;
+        std::array<double, maxOsc2UnisonVoices> osc2UnisonDeltas;
+        std::array<double, maxOsc2UnisonVoices> osc2UnisonFrequencies;
         
         // Pink noise generation state for osc2 (Paul Kellett's method)
         float osc2PinkFilter[7] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};

@@ -424,6 +424,21 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     osc2SineButton.addListener(this);
     addAndMakeVisible(osc2SineButton);
     
+    osc2VoicesLabel.setText("VOICES", juce::dontSendNotification);
+    osc2VoicesLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
+    osc2VoicesLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    osc2VoicesLabel.setJustificationType(juce::Justification::centred);
+    osc2VoicesLabel.setLookAndFeel(&ledLabelLookAndFeel);
+    addAndMakeVisible(osc2VoicesLabel);
+    
+    osc2VoicesKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    osc2VoicesKnob.setRange(1, 16, 1);
+    osc2VoicesKnob.setValue(1);
+    osc2VoicesKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    osc2VoicesKnob.setLookAndFeel(&customKnobLookAndFeel);
+    osc2VoicesKnob.addListener(this);
+    addAndMakeVisible(osc2VoicesKnob);
+    
     // Set oscillator 2 to sine wave and enable it by default
     audioProcessor.setOsc2Type(0); // 0 = sine
     audioProcessor.setOsc2Enabled(true);
@@ -591,6 +606,8 @@ SynthesizerComponent::~SynthesizerComponent()
     osc2PinkNoiseButton.setLookAndFeel(nullptr);
     osc2VolumeKnob.setLookAndFeel(nullptr);
     osc2VolumeLabel.setLookAndFeel(nullptr);
+    osc2VoicesKnob.setLookAndFeel(nullptr);
+    osc2VoicesLabel.setLookAndFeel(nullptr);
     osc2TitleLabel.setLookAndFeel(nullptr);
     osc2AttackKnob.setLookAndFeel(nullptr);
     osc2AttackLabel.setLookAndFeel(nullptr);
@@ -1168,6 +1185,10 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     else if (slider == &osc2ReleaseKnob)
     {
         audioProcessor.setOsc2Release(static_cast<float>(osc2ReleaseKnob.getValue()));
+    }
+    else if (slider == &osc2VoicesKnob)
+    {
+        audioProcessor.setOsc2VoiceCount(static_cast<int>(osc2VoicesKnob.getValue()));
     }
     /*
     else if (slider == &pulseWidthSlider)
@@ -1763,8 +1784,8 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     bounds.removeFromTop(20); // spacing
     auto osc2Row = bounds.removeFromTop(controlHeight);
     
-    // Increased width to accommodate 6 wave buttons + 5 knobs
-    auto sectionWidth = 870; // Width for title + 6 buttons + 5 knobs + spacing
+    // Increased width to accommodate 6 wave buttons + 6 knobs
+    auto sectionWidth = 950; // Width for title + 6 buttons + 6 knobs + spacing
     auto osc2Section = osc2Row.withSizeKeepingCentre(sectionWidth, controlHeight);
     
     // Apply group offset for MOVEABLE Second Oscillator Group (Row 6)
@@ -1838,6 +1859,13 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto volumeArea = controlsArea.removeFromLeft(knobWidth);
     osc2VolumeLabel.setBounds(volumeArea.removeFromTop(20));
     osc2VolumeKnob.setBounds(volumeArea);
+    
+    controlsArea.removeFromLeft(spacing);
+    
+    // Voices knob
+    auto voicesArea = controlsArea.removeFromLeft(knobWidth);
+    osc2VoicesLabel.setBounds(voicesArea.removeFromTop(20));
+    osc2VoicesKnob.setBounds(voicesArea);
     
     controlsArea.removeFromLeft(spacing);
     
