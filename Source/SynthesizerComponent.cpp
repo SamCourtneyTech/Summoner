@@ -439,6 +439,67 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     osc2VolumeLabel.setLookAndFeel(&ledLabelLookAndFeel);
     addAndMakeVisible(osc2VolumeLabel);
     
+    // Oscillator 2 ADSR controls
+    osc2AttackLabel.setText("ATTACK", juce::dontSendNotification);
+    osc2AttackLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
+    osc2AttackLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    osc2AttackLabel.setJustificationType(juce::Justification::centred);
+    osc2AttackLabel.setLookAndFeel(&ledLabelLookAndFeel);
+    addAndMakeVisible(osc2AttackLabel);
+    
+    osc2AttackKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    osc2AttackKnob.setRange(0.01, 2.0, 0.01);
+    osc2AttackKnob.setValue(0.1);
+    osc2AttackKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    osc2AttackKnob.setLookAndFeel(&customKnobLookAndFeel);
+    osc2AttackKnob.addListener(this);
+    addAndMakeVisible(osc2AttackKnob);
+    
+    osc2DecayLabel.setText("DECAY", juce::dontSendNotification);
+    osc2DecayLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
+    osc2DecayLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    osc2DecayLabel.setJustificationType(juce::Justification::centred);
+    osc2DecayLabel.setLookAndFeel(&ledLabelLookAndFeel);
+    addAndMakeVisible(osc2DecayLabel);
+    
+    osc2DecayKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    osc2DecayKnob.setRange(0.01, 2.0, 0.01);
+    osc2DecayKnob.setValue(0.2);
+    osc2DecayKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    osc2DecayKnob.setLookAndFeel(&customKnobLookAndFeel);
+    osc2DecayKnob.addListener(this);
+    addAndMakeVisible(osc2DecayKnob);
+    
+    osc2SustainLabel.setText("SUSTAIN", juce::dontSendNotification);
+    osc2SustainLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
+    osc2SustainLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    osc2SustainLabel.setJustificationType(juce::Justification::centred);
+    osc2SustainLabel.setLookAndFeel(&ledLabelLookAndFeel);
+    addAndMakeVisible(osc2SustainLabel);
+    
+    osc2SustainKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    osc2SustainKnob.setRange(0.0, 1.0, 0.01);
+    osc2SustainKnob.setValue(0.7);
+    osc2SustainKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    osc2SustainKnob.setLookAndFeel(&customKnobLookAndFeel);
+    osc2SustainKnob.addListener(this);
+    addAndMakeVisible(osc2SustainKnob);
+    
+    osc2ReleaseLabel.setText("RELEASE", juce::dontSendNotification);
+    osc2ReleaseLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
+    osc2ReleaseLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    osc2ReleaseLabel.setJustificationType(juce::Justification::centred);
+    osc2ReleaseLabel.setLookAndFeel(&ledLabelLookAndFeel);
+    addAndMakeVisible(osc2ReleaseLabel);
+    
+    osc2ReleaseKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    osc2ReleaseKnob.setRange(0.01, 3.0, 0.01);
+    osc2ReleaseKnob.setValue(0.3);
+    osc2ReleaseKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    osc2ReleaseKnob.setLookAndFeel(&customKnobLookAndFeel);
+    osc2ReleaseKnob.addListener(this);
+    addAndMakeVisible(osc2ReleaseKnob);
+    
     // ADSR ENVELOPE VISUALIZER GROUP - Row 2 (MOVEABLE)
     addAndMakeVisible(adsrEnvelopeVisualizer);
     
@@ -481,6 +542,21 @@ SynthesizerComponent::~SynthesizerComponent()
     pitchControlsSemitoneValueLabel.setLookAndFeel(nullptr);
     pitchControlsFineTuneValueLabel.setLookAndFeel(nullptr);
     pitchControlsVoiceCountValueLabel.setLookAndFeel(nullptr);
+    
+    // Reset oscillator 2 controls look and feel
+    osc2SineButton.setLookAndFeel(nullptr);
+    osc2VolumeKnob.setLookAndFeel(nullptr);
+    osc2VolumeLabel.setLookAndFeel(nullptr);
+    osc2TitleLabel.setLookAndFeel(nullptr);
+    osc2AttackKnob.setLookAndFeel(nullptr);
+    osc2AttackLabel.setLookAndFeel(nullptr);
+    osc2DecayKnob.setLookAndFeel(nullptr);
+    osc2DecayLabel.setLookAndFeel(nullptr);
+    osc2SustainKnob.setLookAndFeel(nullptr);
+    osc2SustainLabel.setLookAndFeel(nullptr);
+    osc2ReleaseKnob.setLookAndFeel(nullptr);
+    osc2ReleaseLabel.setLookAndFeel(nullptr);
+    
     // pulseWidthSlider.setLookAndFeel(nullptr); // commented out
 }
 
@@ -1033,6 +1109,22 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     {
         audioProcessor.setOsc2Volume(static_cast<float>(osc2VolumeKnob.getValue()));
     }
+    else if (slider == &osc2AttackKnob)
+    {
+        audioProcessor.setOsc2Attack(static_cast<float>(osc2AttackKnob.getValue()));
+    }
+    else if (slider == &osc2DecayKnob)
+    {
+        audioProcessor.setOsc2Decay(static_cast<float>(osc2DecayKnob.getValue()));
+    }
+    else if (slider == &osc2SustainKnob)
+    {
+        audioProcessor.setOsc2Sustain(static_cast<float>(osc2SustainKnob.getValue()));
+    }
+    else if (slider == &osc2ReleaseKnob)
+    {
+        audioProcessor.setOsc2Release(static_cast<float>(osc2ReleaseKnob.getValue()));
+    }
     /*
     else if (slider == &pulseWidthSlider)
     {
@@ -1476,8 +1568,8 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     bounds.removeFromTop(20); // spacing
     auto osc2Row = bounds.removeFromTop(controlHeight);
     
-    // Center the oscillator 2 section - calculate width needed and center it
-    auto sectionWidth = 200; // Width for title + button + knob + spacing
+    // Increased width to accommodate new ADSR knobs
+    auto sectionWidth = 520; // Width for title + button + 5 knobs + spacing
     auto osc2Section = osc2Row.withSizeKeepingCentre(sectionWidth, controlHeight);
     
     // Apply group offset for MOVEABLE Second Oscillator Group (Row 6)
@@ -1489,7 +1581,7 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     // Store bounds for background drawing (with offset applied)
     secondOscillatorBounds = offsetOsc2Section;
     
-    // Calculate spacing for title, sine button, and volume knob
+    // Calculate spacing for title, sine button, and knobs
     auto titleHeight = 20;
     auto buttonHeight = 40;
     auto spacing = 10;
@@ -1500,19 +1592,50 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     
     offsetOsc2Section.removeFromTop(spacing);
     
-    // Sine button (left side)
+    // Controls area
     auto controlsArea = offsetOsc2Section;
     auto buttonWidth = 60;
+    auto knobWidth = 80;
+    
+    // Sine button (leftmost)
     auto buttonArea = controlsArea.removeFromLeft(buttonWidth);
     buttonArea.setHeight(buttonHeight);
     osc2SineButton.setBounds(buttonArea);
     
     controlsArea.removeFromLeft(spacing);
     
-    // Volume knob (right side)
-    auto volumeArea = controlsArea.removeFromLeft(80);
+    // Volume knob
+    auto volumeArea = controlsArea.removeFromLeft(knobWidth);
     osc2VolumeLabel.setBounds(volumeArea.removeFromTop(20));
     osc2VolumeKnob.setBounds(volumeArea);
+    
+    controlsArea.removeFromLeft(spacing);
+    
+    // Attack knob
+    auto attackArea = controlsArea.removeFromLeft(knobWidth);
+    osc2AttackLabel.setBounds(attackArea.removeFromTop(20));
+    osc2AttackKnob.setBounds(attackArea);
+    
+    controlsArea.removeFromLeft(spacing);
+    
+    // Decay knob
+    auto decayArea = controlsArea.removeFromLeft(knobWidth);
+    osc2DecayLabel.setBounds(decayArea.removeFromTop(20));
+    osc2DecayKnob.setBounds(decayArea);
+    
+    controlsArea.removeFromLeft(spacing);
+    
+    // Sustain knob
+    auto sustainArea = controlsArea.removeFromLeft(knobWidth);
+    osc2SustainLabel.setBounds(sustainArea.removeFromTop(20));
+    osc2SustainKnob.setBounds(sustainArea);
+    
+    controlsArea.removeFromLeft(spacing);
+    
+    // Release knob
+    auto releaseArea = controlsArea.removeFromLeft(knobWidth);
+    osc2ReleaseLabel.setBounds(releaseArea.removeFromTop(20));
+    osc2ReleaseKnob.setBounds(releaseArea);
 }
 
 // ============================================================================

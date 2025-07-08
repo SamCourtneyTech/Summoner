@@ -299,6 +299,17 @@ void SummonerXSerum2AudioProcessor::updateOsc2Parameters()
     }
 }
 
+void SummonerXSerum2AudioProcessor::updateOsc2EnvelopeParameters()
+{
+    for (int i = 0; i < synthesiser.getNumVoices(); ++i)
+    {
+        if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
+        {
+            voice->setOsc2EnvelopeParameters(osc2Attack, osc2Decay, osc2Sustain, osc2Release);
+        }
+    }
+}
+
 bool SummonerXSerum2AudioProcessor::hasEditor() const
 {
     return true;

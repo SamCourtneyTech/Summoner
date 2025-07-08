@@ -515,6 +515,14 @@ private:
     juce::Slider osc2VolumeKnob;
     juce::Label osc2VolumeLabel;
     juce::Label osc2TitleLabel;
+    juce::Slider osc2AttackKnob;
+    juce::Label osc2AttackLabel;
+    juce::Slider osc2DecayKnob;
+    juce::Label osc2DecayLabel;
+    juce::Slider osc2SustainKnob;
+    juce::Label osc2SustainLabel;
+    juce::Slider osc2ReleaseKnob;
+    juce::Label osc2ReleaseLabel;
     
     // Octave control state
     int octaveValue = 0;

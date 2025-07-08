@@ -160,6 +160,31 @@ public:
         updateOsc2Parameters();
     }
     bool getOsc2Enabled() const { return osc2Enabled; }
+    
+    // Oscillator 2 ADSR controls
+    void setOsc2Attack(float attack) {
+        osc2Attack = attack;
+        updateOsc2EnvelopeParameters();
+    }
+    float getOsc2Attack() const { return osc2Attack; }
+    
+    void setOsc2Decay(float decay) {
+        osc2Decay = decay;
+        updateOsc2EnvelopeParameters();
+    }
+    float getOsc2Decay() const { return osc2Decay; }
+    
+    void setOsc2Sustain(float sustain) {
+        osc2Sustain = sustain;
+        updateOsc2EnvelopeParameters();
+    }
+    float getOsc2Sustain() const { return osc2Sustain; }
+    
+    void setOsc2Release(float release) {
+        osc2Release = release;
+        updateOsc2EnvelopeParameters();
+    }
+    float getOsc2Release() const { return osc2Release; }
 
 private:
     std::map<std::string, int> parameterMap;
@@ -181,6 +206,7 @@ private:
     void updatePhase();
     void updateOsc1Volume();
     void updateOsc2Parameters();
+    void updateOsc2EnvelopeParameters();
 
     SettingsComponent settingsComponent;
     std::vector<std::map<std::string, std::string>> responses;
@@ -212,6 +238,10 @@ private:
     // Second oscillator parameters
     float osc2Volume = 0.0f; // 0.0 to 1.0
     bool osc2Enabled = false; // true when sine button is toggled
+    float osc2Attack = 0.1f;
+    float osc2Decay = 0.2f;
+    float osc2Sustain = 0.7f;
+    float osc2Release = 0.3f;
     
     struct SineWaveSound : public juce::SynthesiserSound
     {
@@ -283,11 +313,15 @@ private:
             
             envelope.setSampleRate(getSampleRate());
             envelope.noteOn();
+            
+            osc2Envelope.setSampleRate(getSampleRate());
+            osc2Envelope.noteOn();
         }
         
         void stopNote(float, bool allowTailOff) override
         {
             envelope.noteOff();
+            osc2Envelope.noteOff();
             
             if (!allowTailOff)
             {
@@ -420,15 +454,17 @@ private:
                     leftSample *= panLeftGain;
                     rightSample *= panRightGain;
                     
-                    // Add second oscillator if enabled (COMPLETELY INDEPENDENT)
-                    // Only runs when there's an active note (same timing as osc1 but no envelope)
+                    // Add second oscillator if enabled with its own envelope
                     if (osc2Enabled && osc2Volume > 0.0f && osc2AngleDelta != 0.0)
                     {
-                        // Generate simple sine wave for oscillator 2 - completely independent
-                        // NO envelope, NO pan, NO velocity, NO other oscillator 1 effects
+                        // Generate simple sine wave for oscillator 2
                         float osc2Sample = (float)(std::sin(osc2CurrentAngle) * osc2Volume * 0.15);
                         
-                        // Add to both channels (always centered) - completely independent
+                        // Apply osc2 envelope
+                        auto osc2EnvelopeValue = osc2Envelope.getNextSample();
+                        osc2Sample *= osc2EnvelopeValue;
+                        
+                        // Add to both channels (always centered)
                         leftSample += osc2Sample;
                         rightSample += osc2Sample;
                         
@@ -450,11 +486,11 @@ private:
                     
                     ++startSample;
                     
-                    if (!envelope.isActive())
+                    if (!envelope.isActive() && !osc2Envelope.isActive())
                     {
                         clearCurrentNote();
                         angleDelta = 0.0;
-                        osc2AngleDelta = 0.0; // Also stop oscillator 2
+                        osc2AngleDelta = 0.0;
                         break;
                     }
                 }
@@ -536,6 +572,11 @@ private:
             osc2Enabled = enabled;
         }
         
+        void setOsc2EnvelopeParameters(float attack, float decay, float sustain, float release)
+        {
+            osc2Envelope.setParameters({attack, decay, sustain, release});
+        }
+        
     private:
         double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
@@ -558,6 +599,7 @@ private:
         float pan = 0.0f; // Pan position (-50 = left, 0 = center, 50 = right)
         float fixedPhase = 0.0f; // Fixed phase in degrees (0-360)
         juce::ADSR envelope;
+        juce::ADSR osc2Envelope;
         juce::Random random;
         
         // Second oscillator parameters
