@@ -245,7 +245,7 @@ private:
     // Second oscillator parameters
     float osc2Volume = 0.0f; // 0.0 to 1.0
     bool osc2Enabled = false; // true when sine button is toggled
-    int osc2Type = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise
+    int osc2Type = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise, 5 = pink noise
     float osc2Attack = 0.1f;
     float osc2Decay = 0.2f;
     float osc2Sustain = 0.7f;
@@ -498,6 +498,23 @@ private:
                             // White noise: random values between -1 and 1
                             osc2Sample = (float)((random.nextFloat() * 2.0f - 1.0f) * osc2Volume * 0.15);
                         }
+                        else if (osc2Type == 5) // Pink noise
+                        {
+                            // Pink noise using Paul Kellett's method for osc2
+                            float white = random.nextFloat() * 2.0f - 1.0f;
+                            
+                            osc2PinkFilter[0] = 0.99886f * osc2PinkFilter[0] + white * 0.0555179f;
+                            osc2PinkFilter[1] = 0.99332f * osc2PinkFilter[1] + white * 0.0750759f;
+                            osc2PinkFilter[2] = 0.96900f * osc2PinkFilter[2] + white * 0.1538520f;
+                            osc2PinkFilter[3] = 0.86650f * osc2PinkFilter[3] + white * 0.3104856f;
+                            osc2PinkFilter[4] = 0.55000f * osc2PinkFilter[4] + white * 0.5329522f;
+                            osc2PinkFilter[5] = -0.7616f * osc2PinkFilter[5] - white * 0.0168980f;
+                            
+                            float pink = osc2PinkFilter[0] + osc2PinkFilter[1] + osc2PinkFilter[2] + osc2PinkFilter[3] + osc2PinkFilter[4] + osc2PinkFilter[5] + osc2PinkFilter[6] + white * 0.5362f;
+                            osc2PinkFilter[6] = white * 0.115926f;
+                            
+                            osc2Sample = (float)(pink * 0.11f * osc2Volume * 0.15); // Scale down to prevent clipping
+                        }
                         else
                         {
                             // Default to sine wave for unknown types
@@ -654,9 +671,12 @@ private:
         // Second oscillator parameters
         float osc2Volume = 0.0f;
         bool osc2Enabled = false;
-        int osc2Type = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise
+        int osc2Type = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise, 5 = pink noise
         double osc2CurrentAngle = 0.0;
         double osc2AngleDelta = 0.0;
+        
+        // Pink noise generation state for osc2 (Paul Kellett's method)
+        float osc2PinkFilter[7] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
         
         // Pink noise generation state (Paul Kellett's method)
         float pinkFilter[7] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};

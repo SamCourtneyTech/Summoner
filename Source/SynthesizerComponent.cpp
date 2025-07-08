@@ -452,6 +452,13 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     osc2WhiteNoiseButton.addListener(this);
     addAndMakeVisible(osc2WhiteNoiseButton);
     
+    osc2PinkNoiseButton.setButtonText("PNK");
+    osc2PinkNoiseButton.setLookAndFeel(&customWaveButtonLookAndFeel);
+    osc2PinkNoiseButton.setClickingTogglesState(true);
+    osc2PinkNoiseButton.setToggleState(false, juce::dontSendNotification); // Start unselected
+    osc2PinkNoiseButton.addListener(this);
+    addAndMakeVisible(osc2PinkNoiseButton);
+    
     osc2VolumeKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     osc2VolumeKnob.setRange(0.0, 1.0, 0.01);
     osc2VolumeKnob.setValue(0.0); // Start at 0 volume
@@ -577,6 +584,7 @@ SynthesizerComponent::~SynthesizerComponent()
     osc2SquareButton.setLookAndFeel(nullptr);
     osc2TriangleButton.setLookAndFeel(nullptr);
     osc2WhiteNoiseButton.setLookAndFeel(nullptr);
+    osc2PinkNoiseButton.setLookAndFeel(nullptr);
     osc2VolumeKnob.setLookAndFeel(nullptr);
     osc2VolumeLabel.setLookAndFeel(nullptr);
     osc2TitleLabel.setLookAndFeel(nullptr);
@@ -1277,13 +1285,14 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             osc2SquareButton.setToggleState(false, juce::dontSendNotification);
             osc2TriangleButton.setToggleState(false, juce::dontSendNotification);
             osc2WhiteNoiseButton.setToggleState(false, juce::dontSendNotification);
+            osc2PinkNoiseButton.setToggleState(false, juce::dontSendNotification);
             audioProcessor.setOsc2Type(0); // 0 = sine
             audioProcessor.setOsc2Enabled(true);
         }
         else
         {
             // If deselecting sine, keep at least one selected
-            if (!osc2SawButton.getToggleState() && !osc2SquareButton.getToggleState() && !osc2TriangleButton.getToggleState() && !osc2WhiteNoiseButton.getToggleState())
+            if (!osc2SawButton.getToggleState() && !osc2SquareButton.getToggleState() && !osc2TriangleButton.getToggleState() && !osc2WhiteNoiseButton.getToggleState() && !osc2PinkNoiseButton.getToggleState())
             {
                 osc2SineButton.setToggleState(true, juce::dontSendNotification);
             }
@@ -1302,13 +1311,14 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             osc2SquareButton.setToggleState(false, juce::dontSendNotification);
             osc2TriangleButton.setToggleState(false, juce::dontSendNotification);
             osc2WhiteNoiseButton.setToggleState(false, juce::dontSendNotification);
+            osc2PinkNoiseButton.setToggleState(false, juce::dontSendNotification);
             audioProcessor.setOsc2Type(1); // 1 = saw
             audioProcessor.setOsc2Enabled(true);
         }
         else
         {
             // If deselecting saw, keep at least one selected
-            if (!osc2SineButton.getToggleState() && !osc2SquareButton.getToggleState() && !osc2TriangleButton.getToggleState() && !osc2WhiteNoiseButton.getToggleState())
+            if (!osc2SineButton.getToggleState() && !osc2SquareButton.getToggleState() && !osc2TriangleButton.getToggleState() && !osc2WhiteNoiseButton.getToggleState() && !osc2PinkNoiseButton.getToggleState())
             {
                 osc2SawButton.setToggleState(true, juce::dontSendNotification);
             }
@@ -1327,13 +1337,14 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             osc2SawButton.setToggleState(false, juce::dontSendNotification);
             osc2TriangleButton.setToggleState(false, juce::dontSendNotification);
             osc2WhiteNoiseButton.setToggleState(false, juce::dontSendNotification);
+            osc2PinkNoiseButton.setToggleState(false, juce::dontSendNotification);
             audioProcessor.setOsc2Type(2); // 2 = square
             audioProcessor.setOsc2Enabled(true);
         }
         else
         {
             // If deselecting square, keep at least one selected
-            if (!osc2SineButton.getToggleState() && !osc2SawButton.getToggleState() && !osc2TriangleButton.getToggleState() && !osc2WhiteNoiseButton.getToggleState())
+            if (!osc2SineButton.getToggleState() && !osc2SawButton.getToggleState() && !osc2TriangleButton.getToggleState() && !osc2WhiteNoiseButton.getToggleState() && !osc2PinkNoiseButton.getToggleState())
             {
                 osc2SquareButton.setToggleState(true, juce::dontSendNotification);
             }
@@ -1352,13 +1363,14 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             osc2SawButton.setToggleState(false, juce::dontSendNotification);
             osc2SquareButton.setToggleState(false, juce::dontSendNotification);
             osc2WhiteNoiseButton.setToggleState(false, juce::dontSendNotification);
+            osc2PinkNoiseButton.setToggleState(false, juce::dontSendNotification);
             audioProcessor.setOsc2Type(3); // 3 = triangle
             audioProcessor.setOsc2Enabled(true);
         }
         else
         {
             // If deselecting triangle, keep at least one selected
-            if (!osc2SineButton.getToggleState() && !osc2SawButton.getToggleState() && !osc2SquareButton.getToggleState() && !osc2WhiteNoiseButton.getToggleState())
+            if (!osc2SineButton.getToggleState() && !osc2SawButton.getToggleState() && !osc2SquareButton.getToggleState() && !osc2WhiteNoiseButton.getToggleState() && !osc2PinkNoiseButton.getToggleState())
             {
                 osc2TriangleButton.setToggleState(true, juce::dontSendNotification);
             }
@@ -1377,15 +1389,42 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             osc2SawButton.setToggleState(false, juce::dontSendNotification);
             osc2SquareButton.setToggleState(false, juce::dontSendNotification);
             osc2TriangleButton.setToggleState(false, juce::dontSendNotification);
+            osc2PinkNoiseButton.setToggleState(false, juce::dontSendNotification);
             audioProcessor.setOsc2Type(4); // 4 = white noise
             audioProcessor.setOsc2Enabled(true);
         }
         else
         {
             // If deselecting white noise, keep at least one selected
-            if (!osc2SineButton.getToggleState() && !osc2SawButton.getToggleState() && !osc2SquareButton.getToggleState() && !osc2TriangleButton.getToggleState())
+            if (!osc2SineButton.getToggleState() && !osc2SawButton.getToggleState() && !osc2SquareButton.getToggleState() && !osc2TriangleButton.getToggleState() && !osc2PinkNoiseButton.getToggleState())
             {
                 osc2WhiteNoiseButton.setToggleState(true, juce::dontSendNotification);
+            }
+            else
+            {
+                audioProcessor.setOsc2Enabled(false);
+            }
+        }
+    }
+    else if (button == &osc2PinkNoiseButton)
+    {
+        if (osc2PinkNoiseButton.getToggleState())
+        {
+            // Select pink noise for oscillator 2
+            osc2SineButton.setToggleState(false, juce::dontSendNotification);
+            osc2SawButton.setToggleState(false, juce::dontSendNotification);
+            osc2SquareButton.setToggleState(false, juce::dontSendNotification);
+            osc2TriangleButton.setToggleState(false, juce::dontSendNotification);
+            osc2WhiteNoiseButton.setToggleState(false, juce::dontSendNotification);
+            audioProcessor.setOsc2Type(5); // 5 = pink noise
+            audioProcessor.setOsc2Enabled(true);
+        }
+        else
+        {
+            // If deselecting pink noise, keep at least one selected
+            if (!osc2SineButton.getToggleState() && !osc2SawButton.getToggleState() && !osc2SquareButton.getToggleState() && !osc2TriangleButton.getToggleState() && !osc2WhiteNoiseButton.getToggleState())
+            {
+                osc2PinkNoiseButton.setToggleState(true, juce::dontSendNotification);
             }
             else
             {
@@ -1720,8 +1759,8 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     bounds.removeFromTop(20); // spacing
     auto osc2Row = bounds.removeFromTop(controlHeight);
     
-    // Increased width to accommodate 5 wave buttons + 5 knobs
-    auto sectionWidth = 800; // Width for title + 5 buttons + 5 knobs + spacing
+    // Increased width to accommodate 6 wave buttons + 5 knobs
+    auto sectionWidth = 870; // Width for title + 6 buttons + 5 knobs + spacing
     auto osc2Section = osc2Row.withSizeKeepingCentre(sectionWidth, controlHeight);
     
     // Apply group offset for MOVEABLE Second Oscillator Group (Row 6)
@@ -1781,6 +1820,13 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto whiteNoiseButtonArea = controlsArea.removeFromLeft(buttonWidth);
     whiteNoiseButtonArea.setHeight(buttonHeight);
     osc2WhiteNoiseButton.setBounds(whiteNoiseButtonArea);
+    
+    controlsArea.removeFromLeft(spacing);
+    
+    // Pink noise button
+    auto pinkNoiseButtonArea = controlsArea.removeFromLeft(buttonWidth);
+    pinkNoiseButtonArea.setHeight(buttonHeight);
+    osc2PinkNoiseButton.setBounds(pinkNoiseButtonArea);
     
     controlsArea.removeFromLeft(spacing);
     
