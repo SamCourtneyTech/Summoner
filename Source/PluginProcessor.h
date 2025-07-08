@@ -161,6 +161,12 @@ public:
     }
     float getOsc2Detune() const { return osc2Detune; }
     
+    void setOsc2Stereo(float stereo) { 
+        osc2Stereo = stereo; 
+        updateOsc2Parameters();
+    }
+    float getOsc2Stereo() const { return osc2Stereo; }
+    
     void setOsc2Enabled(bool enabled) { 
         osc2Enabled = enabled; 
         updateOsc2Parameters();
@@ -261,6 +267,7 @@ private:
     int osc2Type = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise, 5 = pink noise
     int osc2VoiceCount = 1; // 1 to 16 unison voices
     float osc2Detune = 0.0f; // 0.0 to 1.0, controls detune amount
+    float osc2Stereo = 0.5f; // 0.0 to 1.0, controls stereo width
     float osc2Attack = 0.1f;
     float osc2Decay = 0.2f;
     float osc2Sustain = 0.7f;
@@ -559,9 +566,21 @@ private:
                                 voiceSample = (float)(std::sin(osc2UnisonAngles[voice]) * osc2Volume * 0.15);
                             }
                             
-                            // Add voice to mix (osc2 is always centered, no stereo spreading)
-                            osc2LeftSample += voiceSample;
-                            osc2RightSample += voiceSample;
+                            // Calculate stereo panning for this osc2 voice
+                            float voicePan = 0.0f; // Center by default
+                            if (osc2VoiceCount > 1)
+                            {
+                                // Spread voices across stereo field based on stereo width
+                                voicePan = (voice - (osc2VoiceCount - 1) / 2.0f) / ((osc2VoiceCount - 1) / 2.0f) * osc2Stereo;
+                                voicePan = juce::jlimit(-1.0f, 1.0f, voicePan);
+                            }
+                            
+                            // Apply panning (equal power panning)
+                            float leftGain = std::cos((voicePan + 1.0f) * juce::MathConstants<float>::pi * 0.25f);
+                            float rightGain = std::sin((voicePan + 1.0f) * juce::MathConstants<float>::pi * 0.25f);
+                            
+                            osc2LeftSample += voiceSample * leftGain;
+                            osc2RightSample += voiceSample * rightGain;
                             
                             // Update angle for this voice
                             osc2UnisonAngles[voice] += osc2UnisonDeltas[voice];
@@ -704,6 +723,11 @@ private:
             osc2Detune = detune;
         }
         
+        void setOsc2Stereo(float stereo)
+        {
+            osc2Stereo = stereo;
+        }
+        
     private:
         double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
@@ -735,6 +759,7 @@ private:
         int osc2Type = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise, 5 = pink noise
         int osc2VoiceCount = 1; // Number of unison voices (1-16)
         float osc2Detune = 0.0f; // Detune amount (0.0 to 1.0)
+        float osc2Stereo = 0.5f; // Stereo width (0.0 to 1.0)
         double osc2CurrentAngle = 0.0;
         double osc2AngleDelta = 0.0;
         

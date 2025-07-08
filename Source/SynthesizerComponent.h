@@ -521,6 +521,8 @@ private:
     juce::Label osc2VolumeLabel;
     juce::Slider osc2DetuneKnob;
     juce::Label osc2DetuneLabel;
+    juce::Slider osc2StereoKnob;
+    juce::Label osc2StereoLabel;
     juce::Slider osc2VoicesKnob;
     juce::Label osc2VoicesLabel;
     juce::Label osc2TitleLabel;

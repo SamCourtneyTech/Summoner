@@ -298,6 +298,7 @@ void SummonerXSerum2AudioProcessor::updateOsc2Parameters()
             voice->setOsc2Type(osc2Type);
             voice->setOsc2VoiceCount(osc2VoiceCount);
             voice->setOsc2Detune(osc2Detune);
+            voice->setOsc2Stereo(osc2Stereo);
         }
     }
 }
