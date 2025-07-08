@@ -954,7 +954,9 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     // Second oscillator section
     sectionBounds.removeFromTop(20); // spacing
     auto secondOscSectionBounds = sectionBounds.removeFromTop(100);
-    secondOscSectionBounds = secondOscSectionBounds.removeFromLeft(secondOscSectionBounds.getWidth() / 3);
+    // Center the oscillator 2 section to match layout
+    auto sectionWidth = 200; // Same width as in layout function
+    secondOscSectionBounds = secondOscSectionBounds.withSizeKeepingCentre(sectionWidth, 100);
     secondOscSectionBounds = secondOscSectionBounds.translated(
         static_cast<int>(secondOscillatorGroupOffsetX), 
         static_cast<int>(secondOscillatorGroupOffsetY)
@@ -1473,7 +1475,10 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto controlHeight = 100;
     bounds.removeFromTop(20); // spacing
     auto osc2Row = bounds.removeFromTop(controlHeight);
-    auto osc2Section = osc2Row.removeFromLeft(osc2Row.getWidth() / 3);
+    
+    // Center the oscillator 2 section - calculate width needed and center it
+    auto sectionWidth = 200; // Width for title + button + knob + spacing
+    auto osc2Section = osc2Row.withSizeKeepingCentre(sectionWidth, controlHeight);
     
     // Apply group offset for MOVEABLE Second Oscillator Group (Row 6)
     auto offsetOsc2Section = osc2Section.translated(
