@@ -1821,13 +1821,17 @@ void SynthesizerComponent::layoutPhaseControls(juce::Rectangle<int>& bounds)
 
 void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
 {
-    auto controlHeight = 100;
-    bounds.removeFromTop(20); // spacing
-    auto osc2Row = bounds.removeFromTop(controlHeight);
+    // Move to top-right position - use a specific position instead of removing from bounds
+    auto totalWidth = getWidth();
+    auto totalHeight = getHeight();
     
-    // Increased width to accommodate 6 wave buttons + 6 knobs
-    auto sectionWidth = 950; // Width for title + 6 buttons + 6 knobs + spacing
-    auto osc2Section = osc2Row.withSizeKeepingCentre(sectionWidth, controlHeight);
+    // Position oscillator 2 in top-right corner
+    auto osc2Width = 450;
+    auto osc2Height = 140;
+    auto osc2X = totalWidth - osc2Width - 20; // 20px margin from right edge
+    auto osc2Y = 40; // 40px margin from top edge
+    
+    auto osc2Section = juce::Rectangle<int>(osc2X, osc2Y, osc2Width, osc2Height);
     
     // Apply group offset for MOVEABLE Second Oscillator Group (Row 6)
     auto offsetOsc2Section = osc2Section.translated(
@@ -1838,117 +1842,109 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     // Store bounds for background drawing (with offset applied)
     secondOscillatorBounds = offsetOsc2Section;
     
-    // Calculate spacing for title, wave buttons, and knobs
-    auto titleHeight = 20;
-    auto buttonHeight = 40;
-    auto spacing = 10;
+    // Layout similar to oscillator 1 - organized in rows
+    auto workingArea = offsetOsc2Section;
     
-    // Title label
-    auto titleArea = offsetOsc2Section.removeFromTop(titleHeight);
+    // Title label (emblem)
+    auto titleHeight = 20;
+    auto titleArea = workingArea.removeFromTop(titleHeight);
     osc2TitleLabel.setBounds(titleArea);
     
-    offsetOsc2Section.removeFromTop(spacing);
+    workingArea.removeFromTop(5); // small spacing
     
-    // Controls area
-    auto controlsArea = offsetOsc2Section;
+    // Wave type buttons row
+    auto buttonHeight = 30;
+    auto waveButtonsRow = workingArea.removeFromTop(buttonHeight);
     auto buttonWidth = 60;
-    auto knobWidth = 80;
+    auto buttonSpacing = 10;
     
-    // Sine button (leftmost)
-    auto sineButtonArea = controlsArea.removeFromLeft(buttonWidth);
-    sineButtonArea.setHeight(buttonHeight);
+    // Center the wave buttons horizontally
+    auto totalButtonWidth = 6 * buttonWidth + 5 * buttonSpacing;
+    auto buttonStartX = (waveButtonsRow.getWidth() - totalButtonWidth) / 2;
+    auto buttonArea = waveButtonsRow.withX(waveButtonsRow.getX() + buttonStartX).withWidth(totalButtonWidth);
+    
+    // Sine button
+    auto sineButtonArea = buttonArea.removeFromLeft(buttonWidth);
     osc2SineButton.setBounds(sineButtonArea);
-    
-    controlsArea.removeFromLeft(spacing);
+    buttonArea.removeFromLeft(buttonSpacing);
     
     // Saw button
-    auto sawButtonArea = controlsArea.removeFromLeft(buttonWidth);
-    sawButtonArea.setHeight(buttonHeight);
+    auto sawButtonArea = buttonArea.removeFromLeft(buttonWidth);
     osc2SawButton.setBounds(sawButtonArea);
-    
-    controlsArea.removeFromLeft(spacing);
+    buttonArea.removeFromLeft(buttonSpacing);
     
     // Square button
-    auto squareButtonArea = controlsArea.removeFromLeft(buttonWidth);
-    squareButtonArea.setHeight(buttonHeight);
+    auto squareButtonArea = buttonArea.removeFromLeft(buttonWidth);
     osc2SquareButton.setBounds(squareButtonArea);
-    
-    controlsArea.removeFromLeft(spacing);
+    buttonArea.removeFromLeft(buttonSpacing);
     
     // Triangle button
-    auto triangleButtonArea = controlsArea.removeFromLeft(buttonWidth);
-    triangleButtonArea.setHeight(buttonHeight);
+    auto triangleButtonArea = buttonArea.removeFromLeft(buttonWidth);
     osc2TriangleButton.setBounds(triangleButtonArea);
-    
-    controlsArea.removeFromLeft(spacing);
+    buttonArea.removeFromLeft(buttonSpacing);
     
     // White noise button
-    auto whiteNoiseButtonArea = controlsArea.removeFromLeft(buttonWidth);
-    whiteNoiseButtonArea.setHeight(buttonHeight);
+    auto whiteNoiseButtonArea = buttonArea.removeFromLeft(buttonWidth);
     osc2WhiteNoiseButton.setBounds(whiteNoiseButtonArea);
-    
-    controlsArea.removeFromLeft(spacing);
+    buttonArea.removeFromLeft(buttonSpacing);
     
     // Pink noise button
-    auto pinkNoiseButtonArea = controlsArea.removeFromLeft(buttonWidth);
-    pinkNoiseButtonArea.setHeight(buttonHeight);
+    auto pinkNoiseButtonArea = buttonArea.removeFromLeft(buttonWidth);
     osc2PinkNoiseButton.setBounds(pinkNoiseButtonArea);
     
-    controlsArea.removeFromLeft(spacing);
+    workingArea.removeFromTop(10); // spacing between rows
     
-    // Volume knob
-    auto volumeArea = controlsArea.removeFromLeft(knobWidth);
-    osc2VolumeLabel.setBounds(volumeArea.removeFromTop(20));
-    osc2VolumeKnob.setBounds(volumeArea);
+    // ADSR knobs row
+    auto knobHeight = 60;
+    auto knobLabelHeight = 15;
+    auto adsrKnobsRow = workingArea.removeFromTop(knobHeight + knobLabelHeight);
+    auto knobWidth = 80;
+    auto knobSpacing = 20;
     
-    controlsArea.removeFromLeft(spacing);
-    
-    // Voices knob
-    auto voicesArea = controlsArea.removeFromLeft(knobWidth);
-    osc2VoicesLabel.setBounds(voicesArea.removeFromTop(20));
-    osc2VoicesKnob.setBounds(voicesArea);
-    
-    controlsArea.removeFromLeft(spacing);
-    
-    // Detune knob
-    auto detuneArea = controlsArea.removeFromLeft(knobWidth);
-    osc2DetuneLabel.setBounds(detuneArea.removeFromTop(20));
-    osc2DetuneKnob.setBounds(detuneArea);
-    
-    controlsArea.removeFromLeft(spacing);
-    
-    // Stereo knob
-    auto stereoArea = controlsArea.removeFromLeft(knobWidth);
-    osc2StereoLabel.setBounds(stereoArea.removeFromTop(20));
-    osc2StereoKnob.setBounds(stereoArea);
-    
-    controlsArea.removeFromLeft(spacing);
+    // Center the ADSR knobs horizontally
+    auto totalKnobWidth = 4 * knobWidth + 3 * knobSpacing;
+    auto knobStartX = (adsrKnobsRow.getWidth() - totalKnobWidth) / 2;
+    auto knobArea = adsrKnobsRow.withX(adsrKnobsRow.getX() + knobStartX).withWidth(totalKnobWidth);
     
     // Attack knob
-    auto attackArea = controlsArea.removeFromLeft(knobWidth);
-    osc2AttackLabel.setBounds(attackArea.removeFromTop(20));
+    auto attackArea = knobArea.removeFromLeft(knobWidth);
+    osc2AttackLabel.setBounds(attackArea.removeFromTop(knobLabelHeight));
     osc2AttackKnob.setBounds(attackArea);
-    
-    controlsArea.removeFromLeft(spacing);
+    knobArea.removeFromLeft(knobSpacing);
     
     // Decay knob
-    auto decayArea = controlsArea.removeFromLeft(knobWidth);
-    osc2DecayLabel.setBounds(decayArea.removeFromTop(20));
+    auto decayArea = knobArea.removeFromLeft(knobWidth);
+    osc2DecayLabel.setBounds(decayArea.removeFromTop(knobLabelHeight));
     osc2DecayKnob.setBounds(decayArea);
-    
-    controlsArea.removeFromLeft(spacing);
+    knobArea.removeFromLeft(knobSpacing);
     
     // Sustain knob
-    auto sustainArea = controlsArea.removeFromLeft(knobWidth);
-    osc2SustainLabel.setBounds(sustainArea.removeFromTop(20));
+    auto sustainArea = knobArea.removeFromLeft(knobWidth);
+    osc2SustainLabel.setBounds(sustainArea.removeFromTop(knobLabelHeight));
     osc2SustainKnob.setBounds(sustainArea);
-    
-    controlsArea.removeFromLeft(spacing);
+    knobArea.removeFromLeft(knobSpacing);
     
     // Release knob
-    auto releaseArea = controlsArea.removeFromLeft(knobWidth);
-    osc2ReleaseLabel.setBounds(releaseArea.removeFromTop(20));
+    auto releaseArea = knobArea.removeFromLeft(knobWidth);
+    osc2ReleaseLabel.setBounds(releaseArea.removeFromTop(knobLabelHeight));
     osc2ReleaseKnob.setBounds(releaseArea);
+    
+    // Position remaining controls (volume, voices, detune, stereo) to the right or bottom
+    // For now, let's hide them or position them in a compact way
+    // Volume knob - position to the right of ADSR knobs
+    auto remainingArea = workingArea;
+    auto volumeArea = remainingArea.removeFromTop(60);
+    volumeArea = volumeArea.removeFromRight(80);
+    osc2VolumeLabel.setBounds(volumeArea.removeFromTop(15));
+    osc2VolumeKnob.setBounds(volumeArea);
+    
+    // Hide other knobs for now to keep layout clean
+    osc2VoicesKnob.setBounds(0, 0, 0, 0);
+    osc2VoicesLabel.setBounds(0, 0, 0, 0);
+    osc2DetuneKnob.setBounds(0, 0, 0, 0);
+    osc2DetuneLabel.setBounds(0, 0, 0, 0);
+    osc2StereoKnob.setBounds(0, 0, 0, 0);
+    osc2StereoLabel.setBounds(0, 0, 0, 0);
 }
 
 // ============================================================================
