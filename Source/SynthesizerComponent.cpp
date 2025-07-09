@@ -1827,7 +1827,7 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     
     // Position oscillator 2 in top-right corner
     auto osc2Width = 450;
-    auto osc2Height = 140;
+    auto osc2Height = 220; // Increased height for additional knob row
     auto osc2X = totalWidth - osc2Width - 20; // 20px margin from right edge
     auto osc2Y = 40; // 40px margin from top edge
     
@@ -1929,22 +1929,38 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     osc2ReleaseLabel.setBounds(releaseArea.removeFromTop(knobLabelHeight));
     osc2ReleaseKnob.setBounds(releaseArea);
     
-    // Position remaining controls (volume, voices, detune, stereo) to the right or bottom
-    // For now, let's hide them or position them in a compact way
-    // Volume knob - position to the right of ADSR knobs
-    auto remainingArea = workingArea;
-    auto volumeArea = remainingArea.removeFromTop(60);
-    volumeArea = volumeArea.removeFromRight(80);
-    osc2VolumeLabel.setBounds(volumeArea.removeFromTop(15));
-    osc2VolumeKnob.setBounds(volumeArea);
+    workingArea.removeFromTop(10); // spacing between ADSR and additional knobs
     
-    // Hide other knobs for now to keep layout clean
-    osc2VoicesKnob.setBounds(0, 0, 0, 0);
-    osc2VoicesLabel.setBounds(0, 0, 0, 0);
-    osc2DetuneKnob.setBounds(0, 0, 0, 0);
-    osc2DetuneLabel.setBounds(0, 0, 0, 0);
-    osc2StereoKnob.setBounds(0, 0, 0, 0);
-    osc2StereoLabel.setBounds(0, 0, 0, 0);
+    // Additional knobs row (volume, voices, detune, stereo)
+    auto additionalKnobsRow = workingArea.removeFromTop(knobHeight + knobLabelHeight);
+    
+    // Center the additional knobs horizontally
+    auto totalAdditionalKnobWidth = 4 * knobWidth + 3 * knobSpacing;
+    auto additionalKnobStartX = (additionalKnobsRow.getWidth() - totalAdditionalKnobWidth) / 2;
+    auto additionalKnobArea = additionalKnobsRow.withX(additionalKnobsRow.getX() + additionalKnobStartX).withWidth(totalAdditionalKnobWidth);
+    
+    // Volume knob
+    auto volumeArea = additionalKnobArea.removeFromLeft(knobWidth);
+    osc2VolumeLabel.setBounds(volumeArea.removeFromTop(knobLabelHeight));
+    osc2VolumeKnob.setBounds(volumeArea);
+    additionalKnobArea.removeFromLeft(knobSpacing);
+    
+    // Voices knob
+    auto voicesArea = additionalKnobArea.removeFromLeft(knobWidth);
+    osc2VoicesLabel.setBounds(voicesArea.removeFromTop(knobLabelHeight));
+    osc2VoicesKnob.setBounds(voicesArea);
+    additionalKnobArea.removeFromLeft(knobSpacing);
+    
+    // Detune knob
+    auto detuneArea = additionalKnobArea.removeFromLeft(knobWidth);
+    osc2DetuneLabel.setBounds(detuneArea.removeFromTop(knobLabelHeight));
+    osc2DetuneKnob.setBounds(detuneArea);
+    additionalKnobArea.removeFromLeft(knobSpacing);
+    
+    // Stereo knob
+    auto stereoArea = additionalKnobArea.removeFromLeft(knobWidth);
+    osc2StereoLabel.setBounds(stereoArea.removeFromTop(knobLabelHeight));
+    osc2StereoKnob.setBounds(stereoArea);
 }
 
 // ============================================================================
