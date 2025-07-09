@@ -520,7 +520,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     osc2PhaseKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     osc2PhaseKnob.setRange(0.0, 360.0, 1.0);
     osc2PhaseKnob.setValue(0.0);
-    osc2PhaseKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    osc2PhaseKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 60, 20);
     osc2PhaseKnob.setLookAndFeel(&customKnobLookAndFeel);
     osc2PhaseKnob.addListener(this);
     addAndMakeVisible(osc2PhaseKnob);
@@ -1242,6 +1242,7 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     );
     drawSecondOscillatorBackground(g, secondOscSectionBounds);
     drawOsc2PitchControlsBackground(g, osc2PitchControlsBounds);
+    // drawOsc2PhaseControlsBackground(g, osc2PhaseControlsBounds); // Removed - was covering the knob
     
     // Main window border
     g.setColour(juce::Colour(0xff16213e));
@@ -2360,8 +2361,8 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     
     workingArea.removeFromTop(10); // spacing between sliders and random phase button
     
-    // Random phase button and phase knob row
-    auto phaseControlsRow = workingArea.removeFromTop(knobHeight + knobLabelHeight);
+    // Random phase button and phase knob row - increase height for better knob visibility
+    auto phaseControlsRow = workingArea.removeFromTop(100);
     
     // Position random phase button and phase knob side by side
     auto phaseControlsWidth = buttonWidth + knobSpacing + knobWidth;
@@ -2379,8 +2380,15 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     
     // Phase knob (right side)
     auto phaseKnobArea = phaseControlsArea.removeFromLeft(knobWidth);
-    osc2PhaseLabel.setBounds(phaseKnobArea.removeFromTop(knobLabelHeight));
-    osc2PhaseKnob.setBounds(phaseKnobArea);
+    
+    // Store bounds for background drawing - use the full area before any modifications
+    osc2PhaseControlsBounds = phaseKnobArea;
+    
+    osc2PhaseLabel.setBounds(phaseKnobArea.removeFromTop(20));
+    
+    // DEBUG: Use exact same size as ADSR knobs which we know work
+    auto debugKnobArea = juce::Rectangle<int>(phaseKnobArea.getX(), phaseKnobArea.getY(), 80, 80);
+    osc2PhaseKnob.setBounds(debugKnobArea);
 }
 
 // ============================================================================
@@ -2623,6 +2631,22 @@ void SynthesizerComponent::drawPhaseControlsBackground(juce::Graphics& g, juce::
     g.drawRoundedRectangle(phaseKnobArea.getCentreX() - 39, phaseKnobArea.getCentreY() - 45, 78, 92, 3.0f, 2.0f);
     g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
     g.drawRoundedRectangle(phaseKnobArea.getCentreX() - 37, phaseKnobArea.getCentreY() - 43, 74, 88, 2.0f, 1.0f);
+}
+
+void SynthesizerComponent::drawOsc2PhaseControlsBackground(juce::Graphics& g, juce::Rectangle<int> bounds)
+{
+    // Phase knob background for oscillator 2 - matching oscillator 1 style
+    // Use the bounds directly with proper centering
+    auto centreX = bounds.getCentreX();
+    auto centreY = bounds.getCentreY();
+    
+    // Adjust background size to fit within the 100px total height (20 label + 80 knob)
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(centreX - 40, centreY - 50, 80, 100, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(centreX - 39, centreY - 49, 78, 98, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(centreX - 37, centreY - 47, 74, 94, 2.0f, 1.0f);
 }
 
 void SynthesizerComponent::drawSecondOscillatorBackground(juce::Graphics& g, juce::Rectangle<int> bounds)
