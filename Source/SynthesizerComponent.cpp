@@ -2386,9 +2386,9 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     
     osc2PhaseLabel.setBounds(phaseKnobArea.removeFromTop(20));
     
-    // DEBUG: Use exact same size as ADSR knobs which we know work
-    auto debugKnobArea = juce::Rectangle<int>(phaseKnobArea.getX(), phaseKnobArea.getY(), 80, 80);
-    osc2PhaseKnob.setBounds(debugKnobArea);
+    // Match oscillator 1 phase knob size: 80 width × 60 height
+    auto matchingKnobArea = juce::Rectangle<int>(phaseKnobArea.getX(), phaseKnobArea.getY(), 80, 60);
+    osc2PhaseKnob.setBounds(matchingKnobArea);
 }
 
 // ============================================================================
