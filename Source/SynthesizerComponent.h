@@ -462,6 +462,9 @@ private:
     // ADSR ENVELOPE VISUALIZER GROUP - Row 2 (MOVEABLE)
     ADSREnvelopeComponent adsrEnvelopeVisualizer;
     
+    // OSCILLATOR 2 ADSR ENVELOPE VISUALIZER
+    ADSREnvelopeComponent osc2AdsrEnvelopeVisualizer;
+    
     // Placeholder UI elements for the synthesizer
     juce::Label titleLabel;
     juce::Label placeholderLabel;

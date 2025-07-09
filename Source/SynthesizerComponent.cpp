@@ -665,6 +665,9 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     // ADSR ENVELOPE VISUALIZER GROUP - Row 2 (MOVEABLE)
     addAndMakeVisible(adsrEnvelopeVisualizer);
     
+    // OSCILLATOR 2 ADSR ENVELOPE VISUALIZER
+    addAndMakeVisible(osc2AdsrEnvelopeVisualizer);
+    
     // Initialize envelope display with default values
     updateEnvelopeDisplay();
 }
@@ -1304,18 +1307,22 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     else if (slider == &osc2AttackKnob)
     {
         audioProcessor.setOsc2Attack(static_cast<float>(osc2AttackKnob.getValue()));
+        updateEnvelopeDisplay();
     }
     else if (slider == &osc2DecayKnob)
     {
         audioProcessor.setOsc2Decay(static_cast<float>(osc2DecayKnob.getValue()));
+        updateEnvelopeDisplay();
     }
     else if (slider == &osc2SustainKnob)
     {
         audioProcessor.setOsc2Sustain(static_cast<float>(osc2SustainKnob.getValue()));
+        updateEnvelopeDisplay();
     }
     else if (slider == &osc2ReleaseKnob)
     {
         audioProcessor.setOsc2Release(static_cast<float>(osc2ReleaseKnob.getValue()));
+        updateEnvelopeDisplay();
     }
     else if (slider == &osc2VoicesKnob)
     {
@@ -1722,6 +1729,13 @@ void SynthesizerComponent::updateEnvelopeDisplay()
         static_cast<float>(adsrSustainKnob.getValue()),
         static_cast<float>(adsrReleaseKnob.getValue())
     );
+    
+    osc2AdsrEnvelopeVisualizer.updateEnvelope(
+        static_cast<float>(osc2AttackKnob.getValue()),
+        static_cast<float>(osc2DecayKnob.getValue()),
+        static_cast<float>(osc2SustainKnob.getValue()),
+        static_cast<float>(osc2ReleaseKnob.getValue())
+    );
 }
 
 // ============================================================================
@@ -1941,7 +1955,7 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     
     // Position oscillator 2 in top-right corner
     auto osc2Width = 760; // Width for multiple control rows
-    auto osc2Height = 350; // Increased height for additional button row
+    auto osc2Height = 450; // Increased height for ADSR visualizer and additional controls
     auto osc2X = totalWidth - osc2Width - 20; // 20px margin from right edge
     auto osc2Y = 40; // 40px margin from top edge
     
@@ -2007,6 +2021,15 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     osc2PinkNoiseButton.setBounds(pinkNoiseButtonArea);
     
     workingArea.removeFromTop(10); // spacing between rows
+    
+    // ADSR envelope visualizer row
+    auto envelopeHeight = 80;
+    auto osc2EnvelopeArea = workingArea.removeFromTop(envelopeHeight);
+    auto envelopeWidth = 300; // Similar to oscillator 1
+    auto centeredEnvelopeArea = osc2EnvelopeArea.withSizeKeepingCentre(envelopeWidth, envelopeHeight);
+    osc2AdsrEnvelopeVisualizer.setBounds(centeredEnvelopeArea);
+    
+    workingArea.removeFromTop(10); // spacing between envelope and knobs
     
     // ADSR knobs row
     auto knobHeight = 60;
