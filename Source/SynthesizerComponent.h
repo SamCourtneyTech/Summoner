@@ -630,7 +630,7 @@ private:
     
     // Second Oscillator Group (Row 6 - Simple sine wave and volume)
     float secondOscillatorGroupOffsetX = 0.0f;
-    float secondOscillatorGroupOffsetY = 25.0f;   // MOVED DOWN 25 pixels
+    float secondOscillatorGroupOffsetY = 0.0f;   // Reset to 0 for top-right positioning
     
     // STATIONARY COMPONENTS - These remain in place
     // Phase Controls Group (Phase knob + button - stays put)

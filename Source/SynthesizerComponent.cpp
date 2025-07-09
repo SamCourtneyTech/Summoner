@@ -2160,8 +2160,8 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     // Position oscillator 2 in top-right corner
     auto osc2Width = 760; // Width for multiple control rows
     auto osc2Height = 500; // Increased height for ADSR visualizer, link button, and additional controls
-    auto osc2X = totalWidth - osc2Width + 15; // 20px shift to the right from original position
-    auto osc2Y = 40; // 40px margin from top edge
+    auto osc2X = totalWidth - osc2Width + 130; // Push 130px to the right (150 - 20)
+    auto osc2Y = 20; // 20px margin from top edge
     
     auto osc2Section = juce::Rectangle<int>(osc2X, osc2Y, osc2Width, osc2Height);
     
