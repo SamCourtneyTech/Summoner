@@ -533,6 +533,7 @@ private:
     juce::Label osc2SemitoneLabel;
     juce::Slider osc2FineTuneKnob;
     juce::Label osc2FineTuneLabel;
+    juce::TextButton osc2RandomPhaseButton;
     juce::Label osc2TitleLabel;
     juce::Slider osc2AttackKnob;
     juce::Label osc2AttackLabel;

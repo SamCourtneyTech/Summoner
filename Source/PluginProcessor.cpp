@@ -303,6 +303,7 @@ void SummonerXSerum2AudioProcessor::updateOsc2Parameters()
             voice->setOsc2Octave(osc2Octave);
             voice->setOsc2Semitone(osc2Semitone);
             voice->setOsc2FineTune(osc2FineTune);
+            voice->setOsc2RandomPhase(osc2RandomPhase);
         }
     }
 }

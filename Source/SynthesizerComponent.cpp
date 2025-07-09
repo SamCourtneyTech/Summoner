@@ -495,6 +495,13 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     osc2FineTuneKnob.addListener(this);
     addAndMakeVisible(osc2FineTuneKnob);
     
+    osc2RandomPhaseButton.setButtonText("RND PHASE");
+    osc2RandomPhaseButton.setClickingTogglesState(true);
+    osc2RandomPhaseButton.setToggleState(true, juce::dontSendNotification); // Enabled by default
+    osc2RandomPhaseButton.setLookAndFeel(&customWaveButtonLookAndFeel);
+    osc2RandomPhaseButton.addListener(this);
+    addAndMakeVisible(osc2RandomPhaseButton);
+    
     // Set oscillator 2 to sine wave and enable it by default
     audioProcessor.setOsc2Type(0); // 0 = sine
     audioProcessor.setOsc2Enabled(true);
@@ -702,6 +709,7 @@ SynthesizerComponent::~SynthesizerComponent()
     osc2SemitoneLabel.setLookAndFeel(nullptr);
     // osc2FineTuneKnob uses default look and feel (no custom styling needed)
     osc2FineTuneLabel.setLookAndFeel(nullptr);
+    osc2RandomPhaseButton.setLookAndFeel(nullptr);
     osc2TitleLabel.setLookAndFeel(nullptr);
     osc2AttackKnob.setLookAndFeel(nullptr);
     osc2AttackLabel.setLookAndFeel(nullptr);
@@ -1579,6 +1587,10 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             }
         }
     }
+    else if (button == &osc2RandomPhaseButton)
+    {
+        audioProcessor.setOsc2RandomPhase(osc2RandomPhaseButton.getToggleState());
+    }
 }
 
 void SynthesizerComponent::mouseDown(const juce::MouseEvent& event)
@@ -1939,8 +1951,8 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto buttonWidth = 60;
     auto buttonSpacing = 10;
     
-    // Center the wave buttons horizontally
-    auto totalButtonWidth = 6 * buttonWidth + 5 * buttonSpacing;
+    // Center the wave buttons horizontally (7 buttons now including random phase)
+    auto totalButtonWidth = 7 * buttonWidth + 6 * buttonSpacing;
     auto buttonStartX = (waveButtonsRow.getWidth() - totalButtonWidth) / 2;
     auto buttonArea = waveButtonsRow.withX(waveButtonsRow.getX() + buttonStartX).withWidth(totalButtonWidth);
     
@@ -1972,6 +1984,11 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     // Pink noise button
     auto pinkNoiseButtonArea = buttonArea.removeFromLeft(buttonWidth);
     osc2PinkNoiseButton.setBounds(pinkNoiseButtonArea);
+    buttonArea.removeFromLeft(buttonSpacing);
+    
+    // Random phase button
+    auto randomPhaseButtonArea = buttonArea.removeFromLeft(buttonWidth);
+    osc2RandomPhaseButton.setBounds(randomPhaseButtonArea);
     
     workingArea.removeFromTop(10); // spacing between rows
     

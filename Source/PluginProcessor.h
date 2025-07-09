@@ -191,6 +191,12 @@ public:
     }
     int getOsc2FineTune() const { return osc2FineTune; }
     
+    void setOsc2RandomPhase(bool randomPhase) { 
+        osc2RandomPhase = randomPhase; 
+        updateOsc2Parameters();
+    }
+    bool getOsc2RandomPhase() const { return osc2RandomPhase; }
+    
     void setOsc2Enabled(bool enabled) { 
         osc2Enabled = enabled; 
         updateOsc2Parameters();
@@ -296,6 +302,7 @@ private:
     int osc2Octave = 0; // -4 to +4 octaves
     int osc2Semitone = 0; // -12 to +12 semitones
     int osc2FineTune = 0; // -100 to +100 cents
+    bool osc2RandomPhase = true; // true = random phase, false = fixed phase
     float osc2Attack = 0.1f;
     float osc2Decay = 0.2f;
     float osc2Sustain = 0.7f;
@@ -373,7 +380,7 @@ private:
             // Apply oscillator 2 fine tune shift: each cent is 2^(1/1200) frequency ratio
             osc2BaseFrequency *= std::pow(2.0, osc2FineTune / 1200.0);
             osc2AngleDelta = osc2BaseFrequency * 2.0 * juce::MathConstants<double>::pi / getSampleRate();
-            osc2CurrentAngle = 0.0; // Start at zero phase for clean sine wave
+            osc2CurrentAngle = osc2RandomPhase ? random.nextFloat() * 2.0 * juce::MathConstants<double>::pi : 0.0;
             
             // Initialize oscillator 2 unison voices with controllable detuning
             for (int i = 0; i < maxOsc2UnisonVoices; ++i)
@@ -391,8 +398,8 @@ private:
                 osc2UnisonFrequencies[i] = osc2BaseFrequency * std::pow(2.0, osc2DetuneCents / 1200.0);
                 osc2UnisonDeltas[i] = osc2UnisonFrequencies[i] * 2.0 * juce::MathConstants<double>::pi / getSampleRate();
                 
-                // Set initial phase for oscillator 2 (always start at zero for consistency)
-                osc2UnisonAngles[i] = 0.0;
+                // Set initial phase for oscillator 2 (random or fixed based on setting)
+                osc2UnisonAngles[i] = osc2RandomPhase ? random.nextFloat() * 2.0 * juce::MathConstants<double>::pi : 0.0;
             }
             
             envelope.setSampleRate(getSampleRate());
@@ -789,6 +796,11 @@ private:
             osc2FineTune = juce::jlimit(-100, 100, fineTune);
         }
         
+        void setOsc2RandomPhase(bool randomPhase)
+        {
+            osc2RandomPhase = randomPhase;
+        }
+        
     private:
         double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
@@ -825,6 +837,7 @@ private:
         int osc2Octave = 0; // Octave offset (-4 to +4)
         int osc2Semitone = 0; // Semitone offset (-12 to +12)
         int osc2FineTune = 0; // Fine tune offset (-100 to +100 cents)
+        bool osc2RandomPhase = true; // true = random phase, false = fixed phase
         double osc2CurrentAngle = 0.0;
         double osc2AngleDelta = 0.0;
         
