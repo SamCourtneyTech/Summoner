@@ -445,6 +445,7 @@ public:
     void drawOctaveControlsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
     void drawPhaseControlsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
     void drawSecondOscillatorBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
+    void drawOsc2PitchControlsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
 
 private:
     SummonerXSerum2AudioProcessor& audioProcessor;
@@ -526,16 +527,16 @@ private:
     juce::Label osc2DetuneLabel;
     juce::Slider osc2StereoKnob;
     juce::Label osc2StereoLabel;
-    juce::Slider osc2VoicesKnob;
     juce::Label osc2VoicesLabel;
+    juce::Label osc2VoicesValueLabel;
     juce::Slider osc2PanKnob;
     juce::Label osc2PanLabel;
-    juce::Slider osc2OctaveKnob;
     juce::Label osc2OctaveLabel;
-    juce::Slider osc2SemitoneKnob;
+    juce::Label osc2OctaveValueLabel;
     juce::Label osc2SemitoneLabel;
-    juce::Slider osc2FineTuneKnob;
+    juce::Label osc2SemitoneValueLabel;
     juce::Label osc2FineTuneLabel;
+    juce::Label osc2FineTuneValueLabel;
     juce::TextButton osc2RandomPhaseButton;
     juce::Slider osc2PhaseKnob;
     juce::Label osc2PhaseLabel;
@@ -577,6 +578,23 @@ private:
     float osc2OriginalSustain = 0.7f;
     float osc2OriginalRelease = 0.3f;
     
+    // Oscillator 2 pitch control state
+    int osc2OctaveValue = 0;
+    bool isDraggingOsc2Octave = false;
+    int dragStartOsc2Octave = 0;
+    
+    int osc2SemitoneValue = 0;
+    bool isDraggingOsc2Semitone = false;
+    int dragStartOsc2Semitone = 0;
+    
+    int osc2FineTuneValue = 0;
+    bool isDraggingOsc2FineTune = false;
+    int dragStartOsc2FineTune = 0;
+    
+    int osc2VoiceCountValue = 1;
+    bool isDraggingOsc2VoiceCount = false;
+    int dragStartOsc2VoiceCount = 0;
+    
     // Cached bounds for each section to share between resized() and paint()
     juce::Rectangle<int> waveButtonsBounds;
     juce::Rectangle<int> adsrEnvelopeBounds;
@@ -585,6 +603,7 @@ private:
     juce::Rectangle<int> octaveControlsBounds;
     juce::Rectangle<int> phaseControlsBounds;
     juce::Rectangle<int> secondOscillatorBounds;
+    juce::Rectangle<int> osc2PitchControlsBounds;
     
     // MOVEABLE COMPONENT GROUPS - Offset controls for easy repositioning
     // Wave Type Buttons Group (Row 1 - Top row with SIN, SAW, SQR, TRI, WHT, PNK, RND PHASE)
