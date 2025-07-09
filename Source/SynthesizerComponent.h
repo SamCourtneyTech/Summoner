@@ -534,6 +534,8 @@ private:
     juce::Slider osc2FineTuneKnob;
     juce::Label osc2FineTuneLabel;
     juce::TextButton osc2RandomPhaseButton;
+    juce::Slider osc2PhaseKnob;
+    juce::Label osc2PhaseLabel;
     juce::Label osc2TitleLabel;
     juce::Slider osc2AttackKnob;
     juce::Label osc2AttackLabel;

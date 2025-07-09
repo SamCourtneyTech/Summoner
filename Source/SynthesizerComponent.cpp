@@ -502,6 +502,21 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     osc2RandomPhaseButton.addListener(this);
     addAndMakeVisible(osc2RandomPhaseButton);
     
+    osc2PhaseLabel.setText("PHASE", juce::dontSendNotification);
+    osc2PhaseLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
+    osc2PhaseLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    osc2PhaseLabel.setJustificationType(juce::Justification::centred);
+    osc2PhaseLabel.setLookAndFeel(&ledLabelLookAndFeel);
+    addAndMakeVisible(osc2PhaseLabel);
+
+    osc2PhaseKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    osc2PhaseKnob.setRange(0.0, 360.0, 1.0);
+    osc2PhaseKnob.setValue(0.0);
+    osc2PhaseKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    osc2PhaseKnob.setLookAndFeel(&customKnobLookAndFeel);
+    osc2PhaseKnob.addListener(this);
+    addAndMakeVisible(osc2PhaseKnob);
+    
     // Set oscillator 2 to sine wave and enable it by default
     audioProcessor.setOsc2Type(0); // 0 = sine
     audioProcessor.setOsc2Enabled(true);
@@ -710,6 +725,8 @@ SynthesizerComponent::~SynthesizerComponent()
     // osc2FineTuneKnob uses default look and feel (no custom styling needed)
     osc2FineTuneLabel.setLookAndFeel(nullptr);
     osc2RandomPhaseButton.setLookAndFeel(nullptr);
+    osc2PhaseKnob.setLookAndFeel(nullptr);
+    osc2PhaseLabel.setLookAndFeel(nullptr);
     osc2TitleLabel.setLookAndFeel(nullptr);
     osc2AttackKnob.setLookAndFeel(nullptr);
     osc2AttackLabel.setLookAndFeel(nullptr);
@@ -1320,6 +1337,10 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     {
         audioProcessor.setOsc2FineTune(static_cast<int>(osc2FineTuneKnob.getValue()));
     }
+    else if (slider == &osc2PhaseKnob)
+    {
+        audioProcessor.setOsc2Phase(static_cast<float>(osc2PhaseKnob.getValue()));
+    }
     /*
     else if (slider == &pulseWidthSlider)
     {
@@ -1920,7 +1941,7 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     
     // Position oscillator 2 in top-right corner
     auto osc2Width = 760; // Width for multiple control rows
-    auto osc2Height = 300; // Increased height for additional slider row
+    auto osc2Height = 350; // Increased height for additional button row
     auto osc2X = totalWidth - osc2Width - 20; // 20px margin from right edge
     auto osc2Y = 40; // 40px margin from top edge
     
@@ -1951,8 +1972,8 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto buttonWidth = 60;
     auto buttonSpacing = 10;
     
-    // Center the wave buttons horizontally (7 buttons now including random phase)
-    auto totalButtonWidth = 7 * buttonWidth + 6 * buttonSpacing;
+    // Center the wave buttons horizontally (6 buttons, removed random phase)
+    auto totalButtonWidth = 6 * buttonWidth + 5 * buttonSpacing;
     auto buttonStartX = (waveButtonsRow.getWidth() - totalButtonWidth) / 2;
     auto buttonArea = waveButtonsRow.withX(waveButtonsRow.getX() + buttonStartX).withWidth(totalButtonWidth);
     
@@ -1984,11 +2005,6 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     // Pink noise button
     auto pinkNoiseButtonArea = buttonArea.removeFromLeft(buttonWidth);
     osc2PinkNoiseButton.setBounds(pinkNoiseButtonArea);
-    buttonArea.removeFromLeft(buttonSpacing);
-    
-    // Random phase button
-    auto randomPhaseButtonArea = buttonArea.removeFromLeft(buttonWidth);
-    osc2RandomPhaseButton.setBounds(randomPhaseButtonArea);
     
     workingArea.removeFromTop(10); // spacing between rows
     
@@ -2092,6 +2108,30 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto voicesArea = slidersArea.removeFromLeft(knobWidth);
     osc2VoicesLabel.setBounds(voicesArea.removeFromTop(knobLabelHeight));
     osc2VoicesKnob.setBounds(voicesArea);
+    
+    workingArea.removeFromTop(10); // spacing between sliders and random phase button
+    
+    // Random phase button and phase knob row
+    auto phaseControlsRow = workingArea.removeFromTop(knobHeight + knobLabelHeight);
+    
+    // Position random phase button and phase knob side by side
+    auto phaseControlsWidth = buttonWidth + knobSpacing + knobWidth;
+    auto phaseControlsStartX = (phaseControlsRow.getWidth() - phaseControlsWidth) / 2;
+    auto phaseControlsArea = phaseControlsRow.withX(phaseControlsRow.getX() + phaseControlsStartX).withWidth(phaseControlsWidth);
+    
+    // Random phase button (left side)
+    auto randomPhaseButtonArea = phaseControlsArea.removeFromLeft(buttonWidth);
+    // Center the button vertically in the row
+    auto buttonVerticalOffset = (phaseControlsRow.getHeight() - buttonHeight) / 2;
+    randomPhaseButtonArea = randomPhaseButtonArea.withY(randomPhaseButtonArea.getY() + buttonVerticalOffset).withHeight(buttonHeight);
+    osc2RandomPhaseButton.setBounds(randomPhaseButtonArea);
+    
+    phaseControlsArea.removeFromLeft(knobSpacing);
+    
+    // Phase knob (right side)
+    auto phaseKnobArea = phaseControlsArea.removeFromLeft(knobWidth);
+    osc2PhaseLabel.setBounds(phaseKnobArea.removeFromTop(knobLabelHeight));
+    osc2PhaseKnob.setBounds(phaseKnobArea);
 }
 
 // ============================================================================
