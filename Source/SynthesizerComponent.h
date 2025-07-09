@@ -571,6 +571,12 @@ private:
     bool isDraggingVoiceCount = false;
     int dragStartVoiceCount = 0;
     
+    // Oscillator 2 ADSR original values (stored when linking is enabled)
+    float osc2OriginalAttack = 0.1f;
+    float osc2OriginalDecay = 0.2f;
+    float osc2OriginalSustain = 0.7f;
+    float osc2OriginalRelease = 0.3f;
+    
     // Cached bounds for each section to share between resized() and paint()
     juce::Rectangle<int> waveButtonsBounds;
     juce::Rectangle<int> adsrEnvelopeBounds;

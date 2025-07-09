@@ -1695,6 +1695,12 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
     {
         if (osc2AdsrLinkButton.getToggleState())
         {
+            // Store oscillator 2's current ADSR values before linking
+            osc2OriginalAttack = static_cast<float>(osc2AttackKnob.getValue());
+            osc2OriginalDecay = static_cast<float>(osc2DecayKnob.getValue());
+            osc2OriginalSustain = static_cast<float>(osc2SustainKnob.getValue());
+            osc2OriginalRelease = static_cast<float>(osc2ReleaseKnob.getValue());
+            
             // Link oscillator 2 ADSR to oscillator 1 - copy current values
             osc2AttackKnob.setValue(adsrAttackKnob.getValue(), juce::dontSendNotification);
             osc2DecayKnob.setValue(adsrDecayKnob.getValue(), juce::dontSendNotification);
@@ -1710,7 +1716,23 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             // Update the envelope display
             updateEnvelopeDisplay();
         }
-        // When unlinked, oscillator 2 ADSR keeps its current values and can be adjusted independently
+        else
+        {
+            // Restore oscillator 2's original ADSR values when unlinking
+            osc2AttackKnob.setValue(osc2OriginalAttack, juce::dontSendNotification);
+            osc2DecayKnob.setValue(osc2OriginalDecay, juce::dontSendNotification);
+            osc2SustainKnob.setValue(osc2OriginalSustain, juce::dontSendNotification);
+            osc2ReleaseKnob.setValue(osc2OriginalRelease, juce::dontSendNotification);
+            
+            // Update audio processor with restored values
+            audioProcessor.setOsc2Attack(osc2OriginalAttack);
+            audioProcessor.setOsc2Decay(osc2OriginalDecay);
+            audioProcessor.setOsc2Sustain(osc2OriginalSustain);
+            audioProcessor.setOsc2Release(osc2OriginalRelease);
+            
+            // Update the envelope display
+            updateEnvelopeDisplay();
+        }
     }
 }
 
