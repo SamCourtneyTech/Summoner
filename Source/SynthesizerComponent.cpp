@@ -1907,8 +1907,8 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto totalHeight = getHeight();
     
     // Position oscillator 2 in top-right corner
-    auto osc2Width = 760; // Increased width for 8th control
-    auto osc2Height = 220; // Increased height for additional knob row
+    auto osc2Width = 760; // Width for multiple control rows
+    auto osc2Height = 300; // Increased height for additional slider row
     auto osc2X = totalWidth - osc2Width - 20; // 20px margin from right edge
     auto osc2Y = 40; // 40px margin from top edge
     
@@ -2012,60 +2012,69 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     
     workingArea.removeFromTop(10); // spacing between ADSR and additional knobs
     
-    // Additional knobs row (volume, voices, detune, stereo, pan, octave, semitone, fine)
-    auto additionalKnobsRow = workingArea.removeFromTop(knobHeight + knobLabelHeight);
+    // First additional row - knobs (volume, detune, stereo, pan)
+    auto knobsRow = workingArea.removeFromTop(knobHeight + knobLabelHeight);
     
-    // Center the additional knobs horizontally (8 controls now)
-    auto totalAdditionalKnobWidth = 8 * knobWidth + 7 * knobSpacing;
-    auto additionalKnobStartX = (additionalKnobsRow.getWidth() - totalAdditionalKnobWidth) / 2;
-    auto additionalKnobArea = additionalKnobsRow.withX(additionalKnobsRow.getX() + additionalKnobStartX).withWidth(totalAdditionalKnobWidth);
+    // Center the knobs horizontally (4 knobs)
+    auto totalKnobsWidth = 4 * knobWidth + 3 * knobSpacing;
+    auto knobsStartX = (knobsRow.getWidth() - totalKnobsWidth) / 2;
+    auto knobsArea = knobsRow.withX(knobsRow.getX() + knobsStartX).withWidth(totalKnobsWidth);
     
     // Volume knob
-    auto volumeArea = additionalKnobArea.removeFromLeft(knobWidth);
+    auto volumeArea = knobsArea.removeFromLeft(knobWidth);
     osc2VolumeLabel.setBounds(volumeArea.removeFromTop(knobLabelHeight));
     osc2VolumeKnob.setBounds(volumeArea);
-    additionalKnobArea.removeFromLeft(knobSpacing);
-    
-    // Voices knob
-    auto voicesArea = additionalKnobArea.removeFromLeft(knobWidth);
-    osc2VoicesLabel.setBounds(voicesArea.removeFromTop(knobLabelHeight));
-    osc2VoicesKnob.setBounds(voicesArea);
-    additionalKnobArea.removeFromLeft(knobSpacing);
+    knobsArea.removeFromLeft(knobSpacing);
     
     // Detune knob
-    auto detuneArea = additionalKnobArea.removeFromLeft(knobWidth);
+    auto detuneArea = knobsArea.removeFromLeft(knobWidth);
     osc2DetuneLabel.setBounds(detuneArea.removeFromTop(knobLabelHeight));
     osc2DetuneKnob.setBounds(detuneArea);
-    additionalKnobArea.removeFromLeft(knobSpacing);
+    knobsArea.removeFromLeft(knobSpacing);
     
     // Stereo knob
-    auto stereoArea = additionalKnobArea.removeFromLeft(knobWidth);
+    auto stereoArea = knobsArea.removeFromLeft(knobWidth);
     osc2StereoLabel.setBounds(stereoArea.removeFromTop(knobLabelHeight));
     osc2StereoKnob.setBounds(stereoArea);
-    additionalKnobArea.removeFromLeft(knobSpacing);
+    knobsArea.removeFromLeft(knobSpacing);
     
     // Pan knob
-    auto panArea = additionalKnobArea.removeFromLeft(knobWidth);
+    auto panArea = knobsArea.removeFromLeft(knobWidth);
     osc2PanLabel.setBounds(panArea.removeFromTop(knobLabelHeight));
     osc2PanKnob.setBounds(panArea);
-    additionalKnobArea.removeFromLeft(knobSpacing);
     
-    // Octave knob
-    auto octaveArea = additionalKnobArea.removeFromLeft(knobWidth);
+    workingArea.removeFromTop(10); // spacing between knobs and sliders
+    
+    // Second additional row - sliders (octave, semitone, fine tune, voices)
+    auto slidersRow = workingArea.removeFromTop(knobHeight + knobLabelHeight);
+    
+    // Center the sliders horizontally (4 sliders)
+    auto totalSlidersWidth = 4 * knobWidth + 3 * knobSpacing;
+    auto slidersStartX = (slidersRow.getWidth() - totalSlidersWidth) / 2;
+    auto slidersArea = slidersRow.withX(slidersRow.getX() + slidersStartX).withWidth(totalSlidersWidth);
+    
+    // Octave slider
+    auto octaveArea = slidersArea.removeFromLeft(knobWidth);
     osc2OctaveLabel.setBounds(octaveArea.removeFromTop(knobLabelHeight));
     osc2OctaveKnob.setBounds(octaveArea);
-    additionalKnobArea.removeFromLeft(knobSpacing);
+    slidersArea.removeFromLeft(knobSpacing);
     
-    // Semitone knob
-    auto semitoneArea = additionalKnobArea.removeFromLeft(knobWidth);
+    // Semitone slider
+    auto semitoneArea = slidersArea.removeFromLeft(knobWidth);
     osc2SemitoneLabel.setBounds(semitoneArea.removeFromTop(knobLabelHeight));
     osc2SemitoneKnob.setBounds(semitoneArea);
-    additionalKnobArea.removeFromLeft(knobSpacing);
+    slidersArea.removeFromLeft(knobSpacing);
     
-    // Fine tune knob
-    auto fineTuneArea = additionalKnobArea.removeFromLeft(knobWidth);
+    // Fine tune slider
+    auto fineTuneArea = slidersArea.removeFromLeft(knobWidth);
     osc2FineTuneLabel.setBounds(fineTuneArea.removeFromTop(knobLabelHeight));
     osc2FineTuneKnob.setBounds(fineTuneArea);
+    slidersArea.removeFromLeft(knobSpacing);
+    
+    // Voices slider
+    auto voicesArea = slidersArea.removeFromLeft(knobWidth);
+    osc2VoicesLabel.setBounds(voicesArea.removeFromTop(knobLabelHeight));
+    osc2VoicesKnob.setBounds(voicesArea);
 }
 
 // ============================================================================
