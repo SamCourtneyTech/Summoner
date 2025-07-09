@@ -453,6 +453,21 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     osc2PanKnob.addListener(this);
     addAndMakeVisible(osc2PanKnob);
     
+    osc2OctaveLabel.setText("OCTAVE", juce::dontSendNotification);
+    osc2OctaveLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
+    osc2OctaveLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    osc2OctaveLabel.setJustificationType(juce::Justification::centred);
+    osc2OctaveLabel.setLookAndFeel(&ledLabelLookAndFeel);
+    addAndMakeVisible(osc2OctaveLabel);
+    
+    osc2OctaveKnob.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+    osc2OctaveKnob.setRange(-4.0, 4.0, 1.0);
+    osc2OctaveKnob.setValue(0.0);
+    osc2OctaveKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    osc2OctaveKnob.setLookAndFeel(&customKnobLookAndFeel);
+    osc2OctaveKnob.addListener(this);
+    addAndMakeVisible(osc2OctaveKnob);
+    
     // Set oscillator 2 to sine wave and enable it by default
     audioProcessor.setOsc2Type(0); // 0 = sine
     audioProcessor.setOsc2Enabled(true);
@@ -493,7 +508,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     addAndMakeVisible(osc2PinkNoiseButton);
     
     osc2VolumeKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    osc2VolumeKnob.setRange(0.0, 1.0, 0.01);
+    osc2VolumeKnob.setRange(0.0, 0.237, 0.001); // Max reduced by 12.5 dB to match osc1 level
     osc2VolumeKnob.setValue(0.0); // Start at 0 volume
     osc2VolumeKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
     osc2VolumeKnob.setLookAndFeel(&customKnobLookAndFeel);
@@ -654,6 +669,8 @@ SynthesizerComponent::~SynthesizerComponent()
     osc2VoicesLabel.setLookAndFeel(nullptr);
     osc2PanKnob.setLookAndFeel(nullptr);
     osc2PanLabel.setLookAndFeel(nullptr);
+    osc2OctaveKnob.setLookAndFeel(nullptr);
+    osc2OctaveLabel.setLookAndFeel(nullptr);
     osc2TitleLabel.setLookAndFeel(nullptr);
     osc2AttackKnob.setLookAndFeel(nullptr);
     osc2AttackLabel.setLookAndFeel(nullptr);
@@ -1252,6 +1269,10 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     {
         audioProcessor.setOsc2Pan(static_cast<float>(osc2PanKnob.getValue()));
     }
+    else if (slider == &osc2OctaveKnob)
+    {
+        audioProcessor.setOsc2Octave(static_cast<int>(osc2OctaveKnob.getValue()));
+    }
     /*
     else if (slider == &pulseWidthSlider)
     {
@@ -1847,7 +1868,7 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto totalHeight = getHeight();
     
     // Position oscillator 2 in top-right corner
-    auto osc2Width = 520; // Increased width for 5th knob
+    auto osc2Width = 600; // Increased width for 6th knob
     auto osc2Height = 220; // Increased height for additional knob row
     auto osc2X = totalWidth - osc2Width - 20; // 20px margin from right edge
     auto osc2Y = 40; // 40px margin from top edge
@@ -1952,11 +1973,11 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     
     workingArea.removeFromTop(10); // spacing between ADSR and additional knobs
     
-    // Additional knobs row (volume, voices, detune, stereo, pan)
+    // Additional knobs row (volume, voices, detune, stereo, pan, octave)
     auto additionalKnobsRow = workingArea.removeFromTop(knobHeight + knobLabelHeight);
     
-    // Center the additional knobs horizontally (5 knobs now)
-    auto totalAdditionalKnobWidth = 5 * knobWidth + 4 * knobSpacing;
+    // Center the additional knobs horizontally (6 knobs now)
+    auto totalAdditionalKnobWidth = 6 * knobWidth + 5 * knobSpacing;
     auto additionalKnobStartX = (additionalKnobsRow.getWidth() - totalAdditionalKnobWidth) / 2;
     auto additionalKnobArea = additionalKnobsRow.withX(additionalKnobsRow.getX() + additionalKnobStartX).withWidth(totalAdditionalKnobWidth);
     
@@ -1988,6 +2009,12 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto panArea = additionalKnobArea.removeFromLeft(knobWidth);
     osc2PanLabel.setBounds(panArea.removeFromTop(knobLabelHeight));
     osc2PanKnob.setBounds(panArea);
+    additionalKnobArea.removeFromLeft(knobSpacing);
+    
+    // Octave knob
+    auto octaveArea = additionalKnobArea.removeFromLeft(knobWidth);
+    osc2OctaveLabel.setBounds(octaveArea.removeFromTop(knobLabelHeight));
+    osc2OctaveKnob.setBounds(octaveArea);
 }
 
 // ============================================================================

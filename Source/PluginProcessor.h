@@ -173,6 +173,12 @@ public:
     }
     float getOsc2Pan() const { return osc2Pan; }
     
+    void setOsc2Octave(int octave) { 
+        osc2Octave = juce::jlimit(-4, 4, octave); 
+        updateOsc2Parameters();
+    }
+    int getOsc2Octave() const { return osc2Octave; }
+    
     void setOsc2Enabled(bool enabled) { 
         osc2Enabled = enabled; 
         updateOsc2Parameters();
@@ -275,6 +281,7 @@ private:
     float osc2Detune = 0.0f; // 0.0 to 1.0, controls detune amount
     float osc2Stereo = 0.5f; // 0.0 to 1.0, controls stereo width
     float osc2Pan = 0.0f; // -1.0 to 1.0, controls left/right panning
+    int osc2Octave = 0; // -4 to +4 octaves
     float osc2Attack = 0.1f;
     float osc2Decay = 0.2f;
     float osc2Sustain = 0.7f;
@@ -343,8 +350,10 @@ private:
             angleDelta = frequency * 2.0 * juce::MathConstants<double>::pi / getSampleRate();
             currentAngle = osc1RandomPhase ? random.nextFloat() * 2.0 * juce::MathConstants<double>::pi : (fixedPhase * juce::MathConstants<double>::pi / 180.0);
             
-            // Initialize second oscillator with INDEPENDENT frequency (no modifications)
+            // Initialize second oscillator with INDEPENDENT frequency and octave offset
             double osc2BaseFrequency = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
+            // Apply oscillator 2 octave shift: each octave doubles/halves the frequency
+            osc2BaseFrequency *= std::pow(2.0, osc2Octave);
             osc2AngleDelta = osc2BaseFrequency * 2.0 * juce::MathConstants<double>::pi / getSampleRate();
             osc2CurrentAngle = 0.0; // Start at zero phase for clean sine wave
             
@@ -525,30 +534,30 @@ private:
                             // Generate waveform based on oscillator 2 type for this voice
                             if (osc2Type == 0) // Sine wave
                             {
-                                voiceSample = (float)(std::sin(osc2UnisonAngles[voice]) * osc2Volume * 0.15);
+                                voiceSample = (float)(std::sin(osc2UnisonAngles[voice]) * osc2Volume);
                             }
                             else if (osc2Type == 1) // Saw wave
                             {
                                 auto normalizedAngle = std::fmod(osc2UnisonAngles[voice], 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
-                                voiceSample = (float)((2.0 * normalizedAngle - 1.0) * osc2Volume * 0.15);
+                                voiceSample = (float)((2.0 * normalizedAngle - 1.0) * osc2Volume);
                             }
                             else if (osc2Type == 2) // Square wave
                             {
                                 auto normalizedAngle = std::fmod(osc2UnisonAngles[voice], 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
-                                voiceSample = (float)((normalizedAngle < 0.5 ? 1.0 : -1.0) * osc2Volume * 0.15);
+                                voiceSample = (float)((normalizedAngle < 0.5 ? 1.0 : -1.0) * osc2Volume);
                             }
                             else if (osc2Type == 3) // Triangle wave
                             {
                                 auto normalizedAngle = std::fmod(osc2UnisonAngles[voice], 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
                                 if (normalizedAngle < 0.5)
-                                    voiceSample = (float)((normalizedAngle * 4.0 - 1.0) * osc2Volume * 0.15);
+                                    voiceSample = (float)((normalizedAngle * 4.0 - 1.0) * osc2Volume);
                                 else
-                                    voiceSample = (float)((3.0 - normalizedAngle * 4.0) * osc2Volume * 0.15);
+                                    voiceSample = (float)((3.0 - normalizedAngle * 4.0) * osc2Volume);
                             }
                             else if (osc2Type == 4) // White noise
                             {
                                 // White noise: same for all unison voices
-                                voiceSample = (float)((random.nextFloat() * 2.0f - 1.0f) * osc2Volume * 0.15);
+                                voiceSample = (float)((random.nextFloat() * 2.0f - 1.0f) * osc2Volume);
                             }
                             else if (osc2Type == 5) // Pink noise
                             {
@@ -565,12 +574,12 @@ private:
                                 float pink = osc2PinkFilter[0] + osc2PinkFilter[1] + osc2PinkFilter[2] + osc2PinkFilter[3] + osc2PinkFilter[4] + osc2PinkFilter[5] + osc2PinkFilter[6] + white * 0.5362f;
                                 osc2PinkFilter[6] = white * 0.115926f;
                                 
-                                voiceSample = (float)(pink * 0.11f * osc2Volume * 0.15);
+                                voiceSample = (float)(pink * 0.11f * osc2Volume);
                             }
                             else
                             {
                                 // Default to sine wave for unknown types
-                                voiceSample = (float)(std::sin(osc2UnisonAngles[voice]) * osc2Volume * 0.15);
+                                voiceSample = (float)(std::sin(osc2UnisonAngles[voice]) * osc2Volume);
                             }
                             
                             // Calculate stereo panning for this osc2 voice
@@ -747,6 +756,11 @@ private:
             osc2Pan = pan;
         }
         
+        void setOsc2Octave(int octave)
+        {
+            osc2Octave = juce::jlimit(-4, 4, octave);
+        }
+        
     private:
         double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
@@ -780,6 +794,7 @@ private:
         float osc2Detune = 0.0f; // Detune amount (0.0 to 1.0)
         float osc2Stereo = 0.5f; // Stereo width (0.0 to 1.0)
         float osc2Pan = 0.0f; // Pan position (-1.0 to 1.0)
+        int osc2Octave = 0; // Octave offset (-4 to +4)
         double osc2CurrentAngle = 0.0;
         double osc2AngleDelta = 0.0;
         
