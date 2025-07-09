@@ -1346,39 +1346,55 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     }
     else if (slider == &osc2AttackKnob)
     {
-        // Only allow independent control when not linked to oscillator 1
-        if (!osc2AdsrLinkButton.getToggleState())
+        audioProcessor.setOsc2Attack(static_cast<float>(osc2AttackKnob.getValue()));
+        
+        // If ADSR is linked, also update oscillator 1
+        if (osc2AdsrLinkButton.getToggleState())
         {
-            audioProcessor.setOsc2Attack(static_cast<float>(osc2AttackKnob.getValue()));
-            updateEnvelopeDisplay();
+            adsrAttackKnob.setValue(osc2AttackKnob.getValue(), juce::dontSendNotification);
+            audioProcessor.setSynthAttack(static_cast<float>(osc2AttackKnob.getValue()));
         }
+        
+        updateEnvelopeDisplay();
     }
     else if (slider == &osc2DecayKnob)
     {
-        // Only allow independent control when not linked to oscillator 1
-        if (!osc2AdsrLinkButton.getToggleState())
+        audioProcessor.setOsc2Decay(static_cast<float>(osc2DecayKnob.getValue()));
+        
+        // If ADSR is linked, also update oscillator 1
+        if (osc2AdsrLinkButton.getToggleState())
         {
-            audioProcessor.setOsc2Decay(static_cast<float>(osc2DecayKnob.getValue()));
-            updateEnvelopeDisplay();
+            adsrDecayKnob.setValue(osc2DecayKnob.getValue(), juce::dontSendNotification);
+            audioProcessor.setSynthDecay(static_cast<float>(osc2DecayKnob.getValue()));
         }
+        
+        updateEnvelopeDisplay();
     }
     else if (slider == &osc2SustainKnob)
     {
-        // Only allow independent control when not linked to oscillator 1
-        if (!osc2AdsrLinkButton.getToggleState())
+        audioProcessor.setOsc2Sustain(static_cast<float>(osc2SustainKnob.getValue()));
+        
+        // If ADSR is linked, also update oscillator 1
+        if (osc2AdsrLinkButton.getToggleState())
         {
-            audioProcessor.setOsc2Sustain(static_cast<float>(osc2SustainKnob.getValue()));
-            updateEnvelopeDisplay();
+            adsrSustainKnob.setValue(osc2SustainKnob.getValue(), juce::dontSendNotification);
+            audioProcessor.setSynthSustain(static_cast<float>(osc2SustainKnob.getValue()));
         }
+        
+        updateEnvelopeDisplay();
     }
     else if (slider == &osc2ReleaseKnob)
     {
-        // Only allow independent control when not linked to oscillator 1
-        if (!osc2AdsrLinkButton.getToggleState())
+        audioProcessor.setOsc2Release(static_cast<float>(osc2ReleaseKnob.getValue()));
+        
+        // If ADSR is linked, also update oscillator 1
+        if (osc2AdsrLinkButton.getToggleState())
         {
-            audioProcessor.setOsc2Release(static_cast<float>(osc2ReleaseKnob.getValue()));
-            updateEnvelopeDisplay();
+            adsrReleaseKnob.setValue(osc2ReleaseKnob.getValue(), juce::dontSendNotification);
+            audioProcessor.setSynthRelease(static_cast<float>(osc2ReleaseKnob.getValue()));
         }
+        
+        updateEnvelopeDisplay();
     }
     else if (slider == &osc2VoicesKnob)
     {
