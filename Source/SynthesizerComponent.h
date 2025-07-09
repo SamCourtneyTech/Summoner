@@ -548,6 +548,7 @@ private:
     juce::Label osc2SustainLabel;
     juce::Slider osc2ReleaseKnob;
     juce::Label osc2ReleaseLabel;
+    juce::TextButton osc2AdsrLinkButton;
     
     // Octave control state
     int octaveValue = 0;
