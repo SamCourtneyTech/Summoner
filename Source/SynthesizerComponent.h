@@ -529,6 +529,8 @@ private:
     juce::Label osc2PanLabel;
     juce::Slider osc2OctaveKnob;
     juce::Label osc2OctaveLabel;
+    juce::Slider osc2SemitoneKnob;
+    juce::Label osc2SemitoneLabel;
     juce::Label osc2TitleLabel;
     juce::Slider osc2AttackKnob;
     juce::Label osc2AttackLabel;

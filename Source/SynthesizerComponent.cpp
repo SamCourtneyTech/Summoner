@@ -467,6 +467,20 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     osc2OctaveKnob.addListener(this);
     addAndMakeVisible(osc2OctaveKnob);
     
+    osc2SemitoneLabel.setText("SEMI", juce::dontSendNotification);
+    osc2SemitoneLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
+    osc2SemitoneLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    osc2SemitoneLabel.setJustificationType(juce::Justification::centred);
+    osc2SemitoneLabel.setLookAndFeel(&ledLabelLookAndFeel);
+    addAndMakeVisible(osc2SemitoneLabel);
+    
+    osc2SemitoneKnob.setSliderStyle(juce::Slider::LinearVertical);
+    osc2SemitoneKnob.setRange(-12.0, 12.0, 1.0);
+    osc2SemitoneKnob.setValue(0.0);
+    osc2SemitoneKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    osc2SemitoneKnob.addListener(this);
+    addAndMakeVisible(osc2SemitoneKnob);
+    
     // Set oscillator 2 to sine wave and enable it by default
     audioProcessor.setOsc2Type(0); // 0 = sine
     audioProcessor.setOsc2Enabled(true);
@@ -670,6 +684,8 @@ SynthesizerComponent::~SynthesizerComponent()
     osc2PanLabel.setLookAndFeel(nullptr);
     // osc2OctaveKnob uses default look and feel (no custom styling needed)
     osc2OctaveLabel.setLookAndFeel(nullptr);
+    // osc2SemitoneKnob uses default look and feel (no custom styling needed)
+    osc2SemitoneLabel.setLookAndFeel(nullptr);
     osc2TitleLabel.setLookAndFeel(nullptr);
     osc2AttackKnob.setLookAndFeel(nullptr);
     osc2AttackLabel.setLookAndFeel(nullptr);
@@ -1272,6 +1288,10 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     {
         audioProcessor.setOsc2Octave(static_cast<int>(osc2OctaveKnob.getValue()));
     }
+    else if (slider == &osc2SemitoneKnob)
+    {
+        audioProcessor.setOsc2Semitone(static_cast<int>(osc2SemitoneKnob.getValue()));
+    }
     /*
     else if (slider == &pulseWidthSlider)
     {
@@ -1867,7 +1887,7 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto totalHeight = getHeight();
     
     // Position oscillator 2 in top-right corner
-    auto osc2Width = 600; // Increased width for 6th knob
+    auto osc2Width = 680; // Increased width for 7th control
     auto osc2Height = 220; // Increased height for additional knob row
     auto osc2X = totalWidth - osc2Width - 20; // 20px margin from right edge
     auto osc2Y = 40; // 40px margin from top edge
@@ -1972,11 +1992,11 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     
     workingArea.removeFromTop(10); // spacing between ADSR and additional knobs
     
-    // Additional knobs row (volume, voices, detune, stereo, pan, octave)
+    // Additional knobs row (volume, voices, detune, stereo, pan, octave, semitone)
     auto additionalKnobsRow = workingArea.removeFromTop(knobHeight + knobLabelHeight);
     
-    // Center the additional knobs horizontally (6 knobs now)
-    auto totalAdditionalKnobWidth = 6 * knobWidth + 5 * knobSpacing;
+    // Center the additional knobs horizontally (7 controls now)
+    auto totalAdditionalKnobWidth = 7 * knobWidth + 6 * knobSpacing;
     auto additionalKnobStartX = (additionalKnobsRow.getWidth() - totalAdditionalKnobWidth) / 2;
     auto additionalKnobArea = additionalKnobsRow.withX(additionalKnobsRow.getX() + additionalKnobStartX).withWidth(totalAdditionalKnobWidth);
     
@@ -2014,6 +2034,12 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto octaveArea = additionalKnobArea.removeFromLeft(knobWidth);
     osc2OctaveLabel.setBounds(octaveArea.removeFromTop(knobLabelHeight));
     osc2OctaveKnob.setBounds(octaveArea);
+    additionalKnobArea.removeFromLeft(knobSpacing);
+    
+    // Semitone knob
+    auto semitoneArea = additionalKnobArea.removeFromLeft(knobWidth);
+    osc2SemitoneLabel.setBounds(semitoneArea.removeFromTop(knobLabelHeight));
+    osc2SemitoneKnob.setBounds(semitoneArea);
 }
 
 // ============================================================================

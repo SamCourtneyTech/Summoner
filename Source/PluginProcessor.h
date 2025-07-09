@@ -179,6 +179,12 @@ public:
     }
     int getOsc2Octave() const { return osc2Octave; }
     
+    void setOsc2Semitone(int semitone) { 
+        osc2Semitone = juce::jlimit(-12, 12, semitone); 
+        updateOsc2Parameters();
+    }
+    int getOsc2Semitone() const { return osc2Semitone; }
+    
     void setOsc2Enabled(bool enabled) { 
         osc2Enabled = enabled; 
         updateOsc2Parameters();
@@ -282,6 +288,7 @@ private:
     float osc2Stereo = 0.5f; // 0.0 to 1.0, controls stereo width
     float osc2Pan = 0.0f; // -1.0 to 1.0, controls left/right panning
     int osc2Octave = 0; // -4 to +4 octaves
+    int osc2Semitone = 0; // -12 to +12 semitones
     float osc2Attack = 0.1f;
     float osc2Decay = 0.2f;
     float osc2Sustain = 0.7f;
@@ -350,10 +357,12 @@ private:
             angleDelta = frequency * 2.0 * juce::MathConstants<double>::pi / getSampleRate();
             currentAngle = osc1RandomPhase ? random.nextFloat() * 2.0 * juce::MathConstants<double>::pi : (fixedPhase * juce::MathConstants<double>::pi / 180.0);
             
-            // Initialize second oscillator with INDEPENDENT frequency and octave offset
+            // Initialize second oscillator with INDEPENDENT frequency and pitch offsets
             double osc2BaseFrequency = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
             // Apply oscillator 2 octave shift: each octave doubles/halves the frequency
             osc2BaseFrequency *= std::pow(2.0, osc2Octave);
+            // Apply oscillator 2 semitone shift: each semitone is 2^(1/12) frequency ratio
+            osc2BaseFrequency *= std::pow(2.0, osc2Semitone / 12.0);
             osc2AngleDelta = osc2BaseFrequency * 2.0 * juce::MathConstants<double>::pi / getSampleRate();
             osc2CurrentAngle = 0.0; // Start at zero phase for clean sine wave
             
@@ -761,6 +770,11 @@ private:
             osc2Octave = juce::jlimit(-4, 4, octave);
         }
         
+        void setOsc2Semitone(int semitone)
+        {
+            osc2Semitone = juce::jlimit(-12, 12, semitone);
+        }
+        
     private:
         double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
@@ -795,6 +809,7 @@ private:
         float osc2Stereo = 0.5f; // Stereo width (0.0 to 1.0)
         float osc2Pan = 0.0f; // Pan position (-1.0 to 1.0)
         int osc2Octave = 0; // Octave offset (-4 to +4)
+        int osc2Semitone = 0; // Semitone offset (-12 to +12)
         double osc2CurrentAngle = 0.0;
         double osc2AngleDelta = 0.0;
         
