@@ -2365,15 +2365,17 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto phaseControlsRow = workingArea.removeFromTop(100);
     
     // Position random phase button and phase knob side by side
-    auto phaseControlsWidth = buttonWidth + knobSpacing + knobWidth;
+    auto randomPhaseButtonWidth = 100; // Match oscillator 1 width
+    auto phaseControlsWidth = randomPhaseButtonWidth + knobSpacing + knobWidth;
     auto phaseControlsStartX = (phaseControlsRow.getWidth() - phaseControlsWidth) / 2;
     auto phaseControlsArea = phaseControlsRow.withX(phaseControlsRow.getX() + phaseControlsStartX).withWidth(phaseControlsWidth);
     
     // Random phase button (left side)
-    auto randomPhaseButtonArea = phaseControlsArea.removeFromLeft(buttonWidth);
+    auto randomPhaseButtonArea = phaseControlsArea.removeFromLeft(randomPhaseButtonWidth);
     // Center the button vertically in the row
-    auto buttonVerticalOffset = (phaseControlsRow.getHeight() - buttonHeight) / 2;
-    randomPhaseButtonArea = randomPhaseButtonArea.withY(randomPhaseButtonArea.getY() + buttonVerticalOffset).withHeight(buttonHeight);
+    auto randomPhaseButtonHeight = 40; // Match oscillator 1 height
+    auto buttonVerticalOffset = (phaseControlsRow.getHeight() - randomPhaseButtonHeight) / 2;
+    randomPhaseButtonArea = randomPhaseButtonArea.withY(randomPhaseButtonArea.getY() + buttonVerticalOffset).withHeight(randomPhaseButtonHeight);
     osc2RandomPhaseButton.setBounds(randomPhaseButtonArea);
     
     phaseControlsArea.removeFromLeft(knobSpacing);
