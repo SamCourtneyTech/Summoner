@@ -185,6 +185,12 @@ public:
     }
     int getOsc2Semitone() const { return osc2Semitone; }
     
+    void setOsc2FineTune(int fineTune) { 
+        osc2FineTune = juce::jlimit(-100, 100, fineTune); 
+        updateOsc2Parameters();
+    }
+    int getOsc2FineTune() const { return osc2FineTune; }
+    
     void setOsc2Enabled(bool enabled) { 
         osc2Enabled = enabled; 
         updateOsc2Parameters();
@@ -289,6 +295,7 @@ private:
     float osc2Pan = 0.0f; // -1.0 to 1.0, controls left/right panning
     int osc2Octave = 0; // -4 to +4 octaves
     int osc2Semitone = 0; // -12 to +12 semitones
+    int osc2FineTune = 0; // -100 to +100 cents
     float osc2Attack = 0.1f;
     float osc2Decay = 0.2f;
     float osc2Sustain = 0.7f;
@@ -363,6 +370,8 @@ private:
             osc2BaseFrequency *= std::pow(2.0, osc2Octave);
             // Apply oscillator 2 semitone shift: each semitone is 2^(1/12) frequency ratio
             osc2BaseFrequency *= std::pow(2.0, osc2Semitone / 12.0);
+            // Apply oscillator 2 fine tune shift: each cent is 2^(1/1200) frequency ratio
+            osc2BaseFrequency *= std::pow(2.0, osc2FineTune / 1200.0);
             osc2AngleDelta = osc2BaseFrequency * 2.0 * juce::MathConstants<double>::pi / getSampleRate();
             osc2CurrentAngle = 0.0; // Start at zero phase for clean sine wave
             
@@ -775,6 +784,11 @@ private:
             osc2Semitone = juce::jlimit(-12, 12, semitone);
         }
         
+        void setOsc2FineTune(int fineTune)
+        {
+            osc2FineTune = juce::jlimit(-100, 100, fineTune);
+        }
+        
     private:
         double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
@@ -810,6 +824,7 @@ private:
         float osc2Pan = 0.0f; // Pan position (-1.0 to 1.0)
         int osc2Octave = 0; // Octave offset (-4 to +4)
         int osc2Semitone = 0; // Semitone offset (-12 to +12)
+        int osc2FineTune = 0; // Fine tune offset (-100 to +100 cents)
         double osc2CurrentAngle = 0.0;
         double osc2AngleDelta = 0.0;
         
