@@ -460,11 +460,10 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     osc2OctaveLabel.setLookAndFeel(&ledLabelLookAndFeel);
     addAndMakeVisible(osc2OctaveLabel);
     
-    osc2OctaveKnob.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+    osc2OctaveKnob.setSliderStyle(juce::Slider::LinearVertical);
     osc2OctaveKnob.setRange(-4.0, 4.0, 1.0);
     osc2OctaveKnob.setValue(0.0);
     osc2OctaveKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    osc2OctaveKnob.setLookAndFeel(&customKnobLookAndFeel);
     osc2OctaveKnob.addListener(this);
     addAndMakeVisible(osc2OctaveKnob);
     
@@ -669,7 +668,7 @@ SynthesizerComponent::~SynthesizerComponent()
     osc2VoicesLabel.setLookAndFeel(nullptr);
     osc2PanKnob.setLookAndFeel(nullptr);
     osc2PanLabel.setLookAndFeel(nullptr);
-    osc2OctaveKnob.setLookAndFeel(nullptr);
+    // osc2OctaveKnob uses default look and feel (no custom styling needed)
     osc2OctaveLabel.setLookAndFeel(nullptr);
     osc2TitleLabel.setLookAndFeel(nullptr);
     osc2AttackKnob.setLookAndFeel(nullptr);
