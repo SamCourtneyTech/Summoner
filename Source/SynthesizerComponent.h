@@ -525,6 +525,8 @@ private:
     juce::Label osc2StereoLabel;
     juce::Slider osc2VoicesKnob;
     juce::Label osc2VoicesLabel;
+    juce::Slider osc2PanKnob;
+    juce::Label osc2PanLabel;
     juce::Label osc2TitleLabel;
     juce::Slider osc2AttackKnob;
     juce::Label osc2AttackLabel;

@@ -438,6 +438,21 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     osc2VoicesKnob.addListener(this);
     addAndMakeVisible(osc2VoicesKnob);
     
+    osc2PanLabel.setText("PAN", juce::dontSendNotification);
+    osc2PanLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
+    osc2PanLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    osc2PanLabel.setJustificationType(juce::Justification::centred);
+    osc2PanLabel.setLookAndFeel(&ledLabelLookAndFeel);
+    addAndMakeVisible(osc2PanLabel);
+    
+    osc2PanKnob.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+    osc2PanKnob.setRange(-1.0, 1.0, 0.01);
+    osc2PanKnob.setValue(0.0);
+    osc2PanKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    osc2PanKnob.setLookAndFeel(&customKnobLookAndFeel);
+    osc2PanKnob.addListener(this);
+    addAndMakeVisible(osc2PanKnob);
+    
     // Set oscillator 2 to sine wave and enable it by default
     audioProcessor.setOsc2Type(0); // 0 = sine
     audioProcessor.setOsc2Enabled(true);
@@ -637,6 +652,8 @@ SynthesizerComponent::~SynthesizerComponent()
     osc2VolumeLabel.setLookAndFeel(nullptr);
     // osc2VoicesKnob uses default look and feel (no custom styling needed)
     osc2VoicesLabel.setLookAndFeel(nullptr);
+    osc2PanKnob.setLookAndFeel(nullptr);
+    osc2PanLabel.setLookAndFeel(nullptr);
     osc2TitleLabel.setLookAndFeel(nullptr);
     osc2AttackKnob.setLookAndFeel(nullptr);
     osc2AttackLabel.setLookAndFeel(nullptr);
@@ -1230,6 +1247,10 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     else if (slider == &osc2VoicesKnob)
     {
         audioProcessor.setOsc2VoiceCount(static_cast<int>(osc2VoicesKnob.getValue()));
+    }
+    else if (slider == &osc2PanKnob)
+    {
+        audioProcessor.setOsc2Pan(static_cast<float>(osc2PanKnob.getValue()));
     }
     /*
     else if (slider == &pulseWidthSlider)
@@ -1826,7 +1847,7 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto totalHeight = getHeight();
     
     // Position oscillator 2 in top-right corner
-    auto osc2Width = 450;
+    auto osc2Width = 520; // Increased width for 5th knob
     auto osc2Height = 220; // Increased height for additional knob row
     auto osc2X = totalWidth - osc2Width - 20; // 20px margin from right edge
     auto osc2Y = 40; // 40px margin from top edge
@@ -1931,11 +1952,11 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     
     workingArea.removeFromTop(10); // spacing between ADSR and additional knobs
     
-    // Additional knobs row (volume, voices, detune, stereo)
+    // Additional knobs row (volume, voices, detune, stereo, pan)
     auto additionalKnobsRow = workingArea.removeFromTop(knobHeight + knobLabelHeight);
     
-    // Center the additional knobs horizontally
-    auto totalAdditionalKnobWidth = 4 * knobWidth + 3 * knobSpacing;
+    // Center the additional knobs horizontally (5 knobs now)
+    auto totalAdditionalKnobWidth = 5 * knobWidth + 4 * knobSpacing;
     auto additionalKnobStartX = (additionalKnobsRow.getWidth() - totalAdditionalKnobWidth) / 2;
     auto additionalKnobArea = additionalKnobsRow.withX(additionalKnobsRow.getX() + additionalKnobStartX).withWidth(totalAdditionalKnobWidth);
     
@@ -1961,6 +1982,12 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto stereoArea = additionalKnobArea.removeFromLeft(knobWidth);
     osc2StereoLabel.setBounds(stereoArea.removeFromTop(knobLabelHeight));
     osc2StereoKnob.setBounds(stereoArea);
+    additionalKnobArea.removeFromLeft(knobSpacing);
+    
+    // Pan knob
+    auto panArea = additionalKnobArea.removeFromLeft(knobWidth);
+    osc2PanLabel.setBounds(panArea.removeFromTop(knobLabelHeight));
+    osc2PanKnob.setBounds(panArea);
 }
 
 // ============================================================================

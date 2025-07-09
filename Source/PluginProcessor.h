@@ -167,6 +167,12 @@ public:
     }
     float getOsc2Stereo() const { return osc2Stereo; }
     
+    void setOsc2Pan(float pan) { 
+        osc2Pan = pan; 
+        updateOsc2Parameters();
+    }
+    float getOsc2Pan() const { return osc2Pan; }
+    
     void setOsc2Enabled(bool enabled) { 
         osc2Enabled = enabled; 
         updateOsc2Parameters();
@@ -268,6 +274,7 @@ private:
     int osc2VoiceCount = 1; // 1 to 16 unison voices
     float osc2Detune = 0.0f; // 0.0 to 1.0, controls detune amount
     float osc2Stereo = 0.5f; // 0.0 to 1.0, controls stereo width
+    float osc2Pan = 0.0f; // -1.0 to 1.0, controls left/right panning
     float osc2Attack = 0.1f;
     float osc2Decay = 0.2f;
     float osc2Sustain = 0.7f;
@@ -595,6 +602,13 @@ private:
                         osc2LeftSample *= osc2EnvelopeValue;
                         osc2RightSample *= osc2EnvelopeValue;
                         
+                        // Apply overall pan control for oscillator 2
+                        float osc2PanLeftGain = std::cos((osc2Pan + 1.0f) * juce::MathConstants<float>::pi * 0.25f);
+                        float osc2PanRightGain = std::sin((osc2Pan + 1.0f) * juce::MathConstants<float>::pi * 0.25f);
+                        
+                        osc2LeftSample *= osc2PanLeftGain;
+                        osc2RightSample *= osc2PanRightGain;
+                        
                         // Add to main mix
                         leftSample += osc2LeftSample;
                         rightSample += osc2RightSample;
@@ -728,6 +742,11 @@ private:
             osc2Stereo = stereo;
         }
         
+        void setOsc2Pan(float pan)
+        {
+            osc2Pan = pan;
+        }
+        
     private:
         double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
@@ -760,6 +779,7 @@ private:
         int osc2VoiceCount = 1; // Number of unison voices (1-16)
         float osc2Detune = 0.0f; // Detune amount (0.0 to 1.0)
         float osc2Stereo = 0.5f; // Stereo width (0.0 to 1.0)
+        float osc2Pan = 0.0f; // Pan position (-1.0 to 1.0)
         double osc2CurrentAngle = 0.0;
         double osc2AngleDelta = 0.0;
         
