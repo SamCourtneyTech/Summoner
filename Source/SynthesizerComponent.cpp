@@ -2184,16 +2184,20 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     
     workingArea.removeFromTop(18); // tiny bit more spacing to push buttons slightly lower
     
-    // Wave type buttons row - subtle adjustments to match oscillator 1 proportionally
+    // Wave type buttons row - stretch to align pink noise button with right screw
     auto buttonHeight = 40; // Match oscillator 1 height
     auto waveButtonsRow = workingArea.removeFromTop(buttonHeight);
-    auto buttonWidth = 55; // Slightly smaller than 60 to better match proportions
-    auto buttonSpacing = 8; // Slightly tighter spacing
+    auto buttonWidth = 55; // Keep current button width
+    auto screwInset = 15; // Screw position from edge (from background drawing code)
+    auto buttonStartX = 15; // Keep sine button in same position
     
-    // Position buttons more to the left like oscillator 1
-    auto totalButtonWidth = 6 * buttonWidth + 5 * buttonSpacing;
-    auto buttonStartX = 15; // Fixed left margin instead of centered
-    auto buttonArea = waveButtonsRow.withX(waveButtonsRow.getX() + buttonStartX).withWidth(totalButtonWidth);
+    // Calculate spacing to stretch row so pink noise button aligns with right screw
+    auto availableWidth = waveButtonsRow.getWidth() - buttonStartX - screwInset - buttonWidth; // Width from sine start to screw position minus one button width
+    auto totalButtonWidth = 6 * buttonWidth; // Total width of all buttons
+    auto totalSpacingWidth = availableWidth - totalButtonWidth + buttonWidth; // Available space for 5 gaps
+    auto buttonSpacing = totalSpacingWidth / 5; // Spacing between buttons
+    
+    auto buttonArea = waveButtonsRow.withX(waveButtonsRow.getX() + buttonStartX);
     
     // Sine button
     auto sineButtonArea = buttonArea.removeFromLeft(buttonWidth);
