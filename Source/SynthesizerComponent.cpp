@@ -2182,17 +2182,17 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto titleArea = workingArea.removeFromTop(titleHeight);
     osc2TitleLabel.setBounds(titleArea);
     
-    workingArea.removeFromTop(5); // small spacing
+    workingArea.removeFromTop(18); // tiny bit more spacing to push buttons slightly lower
     
-    // Wave type buttons row
-    auto buttonHeight = 30;
+    // Wave type buttons row - subtle adjustments to match oscillator 1 proportionally
+    auto buttonHeight = 40; // Match oscillator 1 height
     auto waveButtonsRow = workingArea.removeFromTop(buttonHeight);
-    auto buttonWidth = 60;
-    auto buttonSpacing = 10;
+    auto buttonWidth = 55; // Slightly smaller than 60 to better match proportions
+    auto buttonSpacing = 8; // Slightly tighter spacing
     
-    // Center the wave buttons horizontally (6 buttons, removed random phase)
+    // Position buttons more to the left like oscillator 1
     auto totalButtonWidth = 6 * buttonWidth + 5 * buttonSpacing;
-    auto buttonStartX = (waveButtonsRow.getWidth() - totalButtonWidth) / 2;
+    auto buttonStartX = 15; // Fixed left margin instead of centered
     auto buttonArea = waveButtonsRow.withX(waveButtonsRow.getX() + buttonStartX).withWidth(totalButtonWidth);
     
     // Sine button
