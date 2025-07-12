@@ -1240,7 +1240,7 @@ void SynthesizerComponent::paint(juce::Graphics& g)
         static_cast<int>(secondOscillatorGroupOffsetX), 
         static_cast<int>(secondOscillatorGroupOffsetY)
     );
-    drawSecondOscillatorBackground(g, secondOscSectionBounds);
+    drawSecondOscillatorBackground(g, secondOscillatorBounds);
     drawOsc2PitchControlsBackground(g, osc2PitchControlsBounds);
     // drawOsc2PhaseControlsBackground(g, osc2PhaseControlsBounds); // Removed - was covering the knob
     
@@ -2157,10 +2157,10 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto totalWidth = getWidth();
     auto totalHeight = getHeight();
     
-    // Position oscillator 2 in top-right corner
-    auto osc2Width = 760; // Width for multiple control rows
-    auto osc2Height = 500; // Increased height for ADSR visualizer, link button, and additional controls
-    auto osc2X = totalWidth - osc2Width + 130; // Push 130px to the right (150 - 20)
+    // Position oscillator 2 in top-right corner - match oscillator 1 size exactly
+    auto osc2Width = 320 + 63 + 24; // Same calculation as oscillator 1: tuning width + padding + border = 407
+    auto osc2Height = 40 + 7 + 60 + 15 + 100 + 20 + 100 + 40 + 80 + 20 + 80 + 20 + 24; // Same calculation as oscillator 1: all sections + spacing + border = 606
+    auto osc2X = totalWidth - osc2Width - 50; // 50px margin from right edge
     auto osc2Y = 20; // 20px margin from top edge
     
     auto osc2Section = juce::Rectangle<int>(osc2X, osc2Y, osc2Width, osc2Height);
@@ -2653,41 +2653,309 @@ void SynthesizerComponent::drawOsc2PhaseControlsBackground(juce::Graphics& g, ju
 
 void SynthesizerComponent::drawSecondOscillatorBackground(juce::Graphics& g, juce::Rectangle<int> bounds)
 {
-    // Draw background for the second oscillator section
+    // Convert to float for precise drawing
+    auto masterOutlineBounds = bounds.toFloat();
+    
+    // Create 3D depth effect with multiple layers - same as oscillator 1
+    
+    // Shadow layer (bottom-right offset for depth)
+    auto shadowBounds = masterOutlineBounds.translated(3.0f, 3.0f);
+    g.setColour(juce::Colours::black.withAlpha(0.4f));
+    g.fillRoundedRectangle(shadowBounds, 10.0f);
+    
+    // Dark base layer (for depth)
+    g.setColour(juce::Colour(0xff1a1a1a));
+    g.fillRoundedRectangle(masterOutlineBounds, 10.0f);
+    
+    // Main raised surface - metallic modular synth module look
+    auto raisedBounds = masterOutlineBounds.reduced(2.0f);
+    
+    // Much darker metallic grey base
+    g.setColour(juce::Colour(0xff202020));
+    g.fillRoundedRectangle(raisedBounds, 8.0f);
+    
+    // Add very dark metallic gradient for depth
+    juce::ColourGradient metallicGradient(juce::Colour(0xff2a2a2a), raisedBounds.getX(), raisedBounds.getY(),
+                                         juce::Colour(0xff151515), raisedBounds.getX(), raisedBounds.getBottom(), false);
+    g.setGradientFill(metallicGradient);
+    g.fillRoundedRectangle(raisedBounds, 8.0f);
+    
+    // Add subtle metallic texture
+    juce::Random metallicRandom(42);
+    g.setColour(juce::Colour(0xff202020).withAlpha(0.3f));
+    for (int i = 0; i < 200; ++i)
+    {
+        auto x = raisedBounds.getX() + metallicRandom.nextFloat() * raisedBounds.getWidth();
+        auto y = raisedBounds.getY() + metallicRandom.nextFloat() * raisedBounds.getHeight();
+        g.fillRect(x, y, 1.0f, 1.0f);
+    }
+    
+    // Add lighter metallic highlights
+    metallicRandom.setSeed(123);
+    g.setColour(juce::Colour(0xff606060).withAlpha(0.2f));
+    for (int i = 0; i < 150; ++i)
+    {
+        auto x = raisedBounds.getX() + metallicRandom.nextFloat() * raisedBounds.getWidth();
+        auto y = raisedBounds.getY() + metallicRandom.nextFloat() * raisedBounds.getHeight();
+        g.fillRect(x, y, 1.0f, 1.0f);
+    }
+    
+    // Top and left highlights (simulating light from top-left)
+    g.setColour(juce::Colour(0xff707070).withAlpha(0.8f));
+    // Top highlight
+    g.drawLine(raisedBounds.getX() + 8, raisedBounds.getY() + 1, 
+               raisedBounds.getRight() - 8, raisedBounds.getY() + 1, 2.0f);
+    // Left highlight  
+    g.drawLine(raisedBounds.getX() + 1, raisedBounds.getY() + 8, 
+               raisedBounds.getX() + 1, raisedBounds.getBottom() - 8, 2.0f);
+    
+    // Bottom and right shadows (simulating shadow from top-left light)
+    g.setColour(juce::Colour(0xff202020).withAlpha(0.9f));
+    // Bottom shadow
+    g.drawLine(raisedBounds.getX() + 8, raisedBounds.getBottom() - 1, 
+               raisedBounds.getRight() - 8, raisedBounds.getBottom() - 1, 2.0f);
+    // Right shadow
+    g.drawLine(raisedBounds.getRight() - 1, raisedBounds.getY() + 8, 
+               raisedBounds.getRight() - 1, raisedBounds.getBottom() - 8, 2.0f);
+    
+    // Add corner screws for modular synth module look
+    auto screwRadius = 6.0f;
+    auto screwInset = 15.0f;
+    
+    // Top-left screw
+    auto tlScrew = juce::Rectangle<float>(raisedBounds.getX() + screwInset, raisedBounds.getY() + screwInset, screwRadius * 2, screwRadius * 2);
+    g.setColour(juce::Colour(0xff404040));
+    g.fillEllipse(tlScrew);
+    g.setColour(juce::Colour(0xff808080));
+    g.drawEllipse(tlScrew, 1.0f);
+    // Screw slot
+    g.setColour(juce::Colour(0xff101010));
+    g.drawLine(tlScrew.getCentreX() - 3, tlScrew.getCentreY(), tlScrew.getCentreX() + 3, tlScrew.getCentreY(), 1.5f);
+    
+    // Top-right screw
+    auto trScrew = juce::Rectangle<float>(raisedBounds.getRight() - screwInset - screwRadius * 2, raisedBounds.getY() + screwInset, screwRadius * 2, screwRadius * 2);
+    g.setColour(juce::Colour(0xff404040));
+    g.fillEllipse(trScrew);
+    g.setColour(juce::Colour(0xff808080));
+    g.drawEllipse(trScrew, 1.0f);
+    // Screw slot
+    g.setColour(juce::Colour(0xff101010));
+    g.drawLine(trScrew.getCentreX() - 3, trScrew.getCentreY(), trScrew.getCentreX() + 3, trScrew.getCentreY(), 1.5f);
+    
+    // Bottom-left screw
+    auto blScrew = juce::Rectangle<float>(raisedBounds.getX() + screwInset, raisedBounds.getBottom() - screwInset - screwRadius * 2, screwRadius * 2, screwRadius * 2);
+    g.setColour(juce::Colour(0xff404040));
+    g.fillEllipse(blScrew);
+    g.setColour(juce::Colour(0xff808080));
+    g.drawEllipse(blScrew, 1.0f);
+    // Screw slot
+    g.setColour(juce::Colour(0xff101010));
+    g.drawLine(blScrew.getCentreX() - 3, blScrew.getCentreY(), blScrew.getCentreX() + 3, blScrew.getCentreY(), 1.5f);
+    
+    // Bottom-right screw
+    auto brScrew = juce::Rectangle<float>(raisedBounds.getRight() - screwInset - screwRadius * 2, raisedBounds.getBottom() - screwInset - screwRadius * 2, screwRadius * 2, screwRadius * 2);
+    g.setColour(juce::Colour(0xff404040));
+    g.fillEllipse(brScrew);
+    g.setColour(juce::Colour(0xff808080));
+    g.drawEllipse(brScrew, 1.0f);
+    // Screw slot
+    g.setColour(juce::Colour(0xff101010));
+    g.drawLine(brScrew.getCentreX() - 3, brScrew.getCentreY(), brScrew.getCentreX() + 3, brScrew.getCentreY(), 1.5f);
+    
+    // Add "Oscillator 2" label to top center of module component
+    auto labelBounds = juce::Rectangle<float>(raisedBounds.getCentreX() - 45, raisedBounds.getY() + 5, 90, 20);
+    
+    // Slightly lighter metallic background for label
+    g.setColour(juce::Colour(0xff505050));
+    g.fillRoundedRectangle(labelBounds, 4.0f);
+    
+    // Darker border for depth
+    g.setColour(juce::Colour(0xff303030));
+    g.drawRoundedRectangle(labelBounds, 4.0f, 1.0f);
+    
+    // Light highlight on top for metallic effect
+    g.setColour(juce::Colour(0xff707070));
+    g.drawLine(labelBounds.getX() + 4, labelBounds.getY() + 1, 
+               labelBounds.getRight() - 4, labelBounds.getY() + 1, 1.0f);
+    
+    // Engraved 3D text effect
+    auto textBounds = labelBounds.toNearestInt();
+    g.setFont(juce::Font("Arial", 11.0f, juce::Font::bold));
+    
+    // Dark shadow below and right for engraved effect
+    g.setColour(juce::Colour(0xff303030));
+    g.drawText("OSCILLATOR 2", textBounds.translated(1, 1), juce::Justification::centred, true);
+    
+    // Light highlight above and left for raised effect
+    g.setColour(juce::Colour(0xff808080));
+    g.drawText("OSCILLATOR 2", textBounds.translated(-1, -1), juce::Justification::centred, true);
+    
+    // Main text
+    g.setColour(juce::Colour(0xff606060));
+    g.drawText("OSCILLATOR 2", textBounds, juce::Justification::centred, true);
+    
+    // Add metal slots for knobs - match oscillator 2 layout
+    // Get oscillator 2 bounds from secondOscillatorBounds
+    auto slotBounds = secondOscillatorBounds;
+    
+    // Skip title area
+    slotBounds.removeFromTop(20); // title height
+    slotBounds.removeFromTop(10); // spacing
+    
+    // Wave buttons section
+    slotBounds.removeFromTop(40); // wave buttons height
+    slotBounds.removeFromTop(10); // spacing
+    
+    // ADSR envelope visualization
+    slotBounds.removeFromTop(60); // envelope height
+    slotBounds.removeFromTop(10); // spacing
+    
+    // ADSR knobs metal slots - 4 knobs in a row
+    auto adsrRow = slotBounds.removeFromTop(80);
+    auto adsrKnobWidth = (adsrRow.getWidth() - 45) / 4; // Same calculation as oscillator 1
+    
+    // Attack knob slot
+    auto attackArea = adsrRow.removeFromLeft(adsrKnobWidth);
     g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(bounds.toFloat(), 8.0f);
+    g.fillRoundedRectangle(attackArea.getCentreX() - 40, attackArea.getCentreY() - 50, 80, 100, 4.0f);
     g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(bounds.toFloat(), 8.0f, 2.0f);
+    g.drawRoundedRectangle(attackArea.getCentreX() - 39, attackArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
     g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(bounds.reduced(2).toFloat(), 6.0f, 1.0f);
+    g.drawRoundedRectangle(attackArea.getCentreX() - 37, attackArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
     
-    // Calculate positions to match layout exactly
-    auto titleHeight = 20;
-    auto buttonHeight = 40;
-    auto spacing = 10;
-    auto buttonWidth = 60;
+    adsrRow.removeFromLeft(15); // spacing
     
-    auto workingBounds = bounds;
-    workingBounds.removeFromTop(titleHeight + spacing);
-    
-    // Button background
-    auto buttonArea = workingBounds.removeFromLeft(buttonWidth);
-    buttonArea.setHeight(buttonHeight);
+    // Decay knob slot
+    auto decayArea = adsrRow.removeFromLeft(adsrKnobWidth);
     g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(buttonArea.toFloat(), 4.0f);
+    g.fillRoundedRectangle(decayArea.getCentreX() - 40, decayArea.getCentreY() - 50, 80, 100, 4.0f);
     g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(buttonArea.toFloat(), 4.0f, 2.0f);
-    
-    workingBounds.removeFromLeft(spacing);
-    
-    // Volume knob background
-    auto volumeArea = workingBounds.removeFromLeft(80);
-    volumeArea.removeFromTop(20); // label space
-    g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(volumeArea.getCentreX() - 40, volumeArea.getCentreY() - 30, 80, 60, 4.0f);
-    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(volumeArea.getCentreX() - 39, volumeArea.getCentreY() - 29, 78, 58, 3.0f, 2.0f);
+    g.drawRoundedRectangle(decayArea.getCentreX() - 39, decayArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
     g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(volumeArea.getCentreX() - 37, volumeArea.getCentreY() - 27, 74, 54, 2.0f, 1.0f);
+    g.drawRoundedRectangle(decayArea.getCentreX() - 37, decayArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
+    
+    adsrRow.removeFromLeft(15); // spacing
+    
+    // Sustain knob slot
+    auto sustainArea = adsrRow.removeFromLeft(adsrKnobWidth);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(sustainArea.getCentreX() - 40, sustainArea.getCentreY() - 50, 80, 100, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(sustainArea.getCentreX() - 39, sustainArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(sustainArea.getCentreX() - 37, sustainArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
+    
+    adsrRow.removeFromLeft(15); // spacing
+    
+    // Release knob slot
+    auto releaseArea = adsrRow;
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(releaseArea.getCentreX() - 40, releaseArea.getCentreY() - 50, 80, 100, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(releaseArea.getCentreX() - 39, releaseArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(releaseArea.getCentreX() - 37, releaseArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
+    
+    slotBounds.removeFromTop(10); // spacing
+    
+    // Volume controls metal slots - 4 knobs in a row
+    auto volumeRow = slotBounds.removeFromTop(80);
+    auto volumeKnobWidth = (volumeRow.getWidth() - 45) / 4;
+    
+    // Volume knob slot
+    auto volumeArea = volumeRow.removeFromLeft(volumeKnobWidth);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(volumeArea.getCentreX() - 40, volumeArea.getCentreY() - 50, 80, 100, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(volumeArea.getCentreX() - 39, volumeArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(volumeArea.getCentreX() - 37, volumeArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
+    
+    volumeRow.removeFromLeft(15); // spacing
+    
+    // Detune knob slot
+    auto detuneArea = volumeRow.removeFromLeft(volumeKnobWidth);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(detuneArea.getCentreX() - 40, detuneArea.getCentreY() - 50, 80, 100, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(detuneArea.getCentreX() - 39, detuneArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(detuneArea.getCentreX() - 37, detuneArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
+    
+    volumeRow.removeFromLeft(15); // spacing
+    
+    // Stereo knob slot
+    auto stereoArea = volumeRow.removeFromLeft(volumeKnobWidth);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(stereoArea.getCentreX() - 40, stereoArea.getCentreY() - 50, 80, 100, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(stereoArea.getCentreX() - 39, stereoArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(stereoArea.getCentreX() - 37, stereoArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
+    
+    volumeRow.removeFromLeft(15); // spacing
+    
+    // Pan knob slot
+    auto panArea = volumeRow;
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(panArea.getCentreX() - 40, panArea.getCentreY() - 50, 80, 100, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(panArea.getCentreX() - 39, panArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(panArea.getCentreX() - 37, panArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
+    
+    slotBounds.removeFromTop(10); // spacing
+    
+    // Pitch controls metal slots - 4 controls in a row
+    auto pitchRow = slotBounds.removeFromTop(60);
+    auto pitchControlWidth = pitchRow.getWidth() / 4;
+    
+    // Octave control slot
+    auto octaveArea = pitchRow.removeFromLeft(pitchControlWidth);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(octaveArea.getCentreX() - 35, octaveArea.getCentreY() - 35, 70, 70, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(octaveArea.getCentreX() - 34, octaveArea.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(octaveArea.getCentreX() - 32, octaveArea.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
+    
+    // Semitone control slot
+    auto semitoneArea = pitchRow.removeFromLeft(pitchControlWidth);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(semitoneArea.getCentreX() - 35, semitoneArea.getCentreY() - 35, 70, 70, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(semitoneArea.getCentreX() - 34, semitoneArea.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(semitoneArea.getCentreX() - 32, semitoneArea.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
+    
+    // Fine tune control slot
+    auto fineTuneArea = pitchRow.removeFromLeft(pitchControlWidth);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(fineTuneArea.getCentreX() - 35, fineTuneArea.getCentreY() - 35, 70, 70, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(fineTuneArea.getCentreX() - 34, fineTuneArea.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(fineTuneArea.getCentreX() - 32, fineTuneArea.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
+    
+    // Voice count control slot
+    auto voiceArea = pitchRow;
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(voiceArea.getCentreX() - 35, voiceArea.getCentreY() - 35, 70, 70, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(voiceArea.getCentreX() - 34, voiceArea.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(voiceArea.getCentreX() - 32, voiceArea.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
+    
+    slotBounds.removeFromTop(10); // spacing
+    
+    // Phase control slot - single knob
+    auto phaseRow = slotBounds.removeFromTop(60);
+    auto phaseArea = phaseRow.removeFromRight(80); // Position on right side
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(phaseArea.getCentreX() - 40, phaseArea.getCentreY() - 40, 80, 80, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(phaseArea.getCentreX() - 39, phaseArea.getCentreY() - 39, 78, 78, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(phaseArea.getCentreX() - 37, phaseArea.getCentreY() - 37, 74, 74, 2.0f, 1.0f);
 }
 
