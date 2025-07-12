@@ -2224,7 +2224,7 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto pinkNoiseButtonArea = buttonArea.removeFromLeft(buttonWidth);
     osc2PinkNoiseButton.setBounds(pinkNoiseButtonArea);
     
-    workingArea.removeFromTop(10); // spacing between rows
+    workingArea.removeFromTop(5); // reduced spacing between rows
     
     // ADSR envelope visualizer row
     auto envelopeHeight = 80;
@@ -2233,7 +2233,7 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto centeredEnvelopeArea = osc2EnvelopeArea.withSizeKeepingCentre(envelopeWidth, envelopeHeight);
     osc2AdsrEnvelopeVisualizer.setBounds(centeredEnvelopeArea);
     
-    workingArea.removeFromTop(10); // spacing between envelope and knobs
+    workingArea.removeFromTop(5); // reduced spacing between envelope and knobs
     
     // ADSR knobs row - match oscillator 1 dimensions
     auto knobHeight = 80; // Match oscillator 1 knob height
@@ -2270,26 +2270,22 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     osc2ReleaseLabel.setBounds(releaseArea.removeFromTop(knobLabelHeight));
     osc2ReleaseKnob.setBounds(releaseArea);
     
-    workingArea.removeFromTop(10); // spacing between ADSR and link button
-    
-    // ADSR Link button row - centered on entire screen
-    auto linkButtonHeight = 30;
-    auto linkButtonRow = workingArea.removeFromTop(linkButtonHeight);
+    // Position ADSR Link button outside the main row layout - centered on screen
+    auto linkButtonHeight = 25;
     auto linkButtonWidth = 100;
-    
-    // Center the button on the entire screen, shifted 10px to the left
     auto screenCenterX = totalWidth / 2;
     auto linkButtonArea = juce::Rectangle<int>(
-        screenCenterX - linkButtonWidth / 2 - 10,
-        linkButtonRow.getY(),
+        screenCenterX - linkButtonWidth / 2, // centered horizontally on screen
+        offsetOsc2Section.getY() + 30, // 30px from top edge (below title)
         linkButtonWidth,
         linkButtonHeight
     );
     osc2AdsrLinkButton.setBounds(linkButtonArea);
     
-    workingArea.removeFromTop(10); // spacing between link button and additional knobs
+    // No spacing needed since link button is now outside the row flow
     
-    // First additional row - knobs (volume, detune, stereo, pan)
+    // First additional row - knobs (volume, detune, stereo, pan) - move up closer
+    workingArea.removeFromTop(5); // smaller spacing to pull rows up
     auto knobsRow = workingArea.removeFromTop(knobHeight + knobLabelHeight);
     
     // Center the knobs horizontally (4 knobs)
@@ -2320,7 +2316,7 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     osc2PanLabel.setBounds(panArea.removeFromTop(knobLabelHeight));
     osc2PanKnob.setBounds(panArea);
     
-    workingArea.removeFromTop(10); // spacing between knobs and sliders
+    workingArea.removeFromTop(5); // reduced spacing between knobs and sliders
     
     // Second additional row - pitch controls (octave, semitone, fine tune, voices) - label style like oscillator 1
     auto pitchControlsHeight = 50; // 20 for label + 30 for value
@@ -2359,7 +2355,7 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     osc2VoicesLabel.setBounds(voicesArea.removeFromTop(20));
     osc2VoicesValueLabel.setBounds(voicesArea.removeFromTop(30));
     
-    workingArea.removeFromTop(10); // spacing between sliders and random phase button
+    workingArea.removeFromTop(5); // reduced spacing between sliders and random phase button
     
     // Random phase button and phase knob row - increase height for better knob visibility
     auto phaseControlsRow = workingArea.removeFromTop(100);
