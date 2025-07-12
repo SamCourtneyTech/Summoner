@@ -2187,53 +2187,45 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     // Wave type buttons row - stretch to align pink noise button with right screw
     auto buttonHeight = 40; // Match oscillator 1 height
     auto waveButtonsRow = workingArea.removeFromTop(buttonHeight);
-    auto buttonWidth = 55; // Keep current button width
+    auto buttonWidth = 55; // Back to previous setting
     auto screwInset = 15; // Screw position from edge (from background drawing code)
     auto buttonStartX = 15; // Keep sine button in same position
     
-    // Calculate spacing to stretch row so pink noise button aligns with right screw
-    auto availableWidth = waveButtonsRow.getWidth() - buttonStartX - screwInset - buttonWidth; // Width from sine start to screw position minus one button width
+    // Calculate spacing to stretch row so pink noise button aligns with right screw (one more pixel)
+    auto availableWidth = waveButtonsRow.getWidth() - buttonStartX - screwInset - buttonWidth + 3; // Add 3px stretch
     auto totalButtonWidth = 6 * buttonWidth; // Total width of all buttons
     auto totalSpacingWidth = availableWidth - totalButtonWidth + buttonWidth; // Available space for 5 gaps
     auto buttonSpacing = totalSpacingWidth / 5; // Spacing between buttons
     
     auto buttonArea = waveButtonsRow.withX(waveButtonsRow.getX() + buttonStartX);
     
-    // Sine button
-    auto sineButtonArea = buttonArea.removeFromLeft(buttonWidth);
-    osc2SineButton.setBounds(sineButtonArea);
-    buttonArea.removeFromLeft(buttonSpacing);
+    // Set button bounds with explicit height like oscillator 1
+    osc2SineButton.setBounds(buttonArea.getX(), buttonArea.getY(), buttonWidth, buttonHeight);
+    buttonArea.removeFromLeft(buttonWidth + buttonSpacing);
     
-    // Saw button
-    auto sawButtonArea = buttonArea.removeFromLeft(buttonWidth);
-    osc2SawButton.setBounds(sawButtonArea);
-    buttonArea.removeFromLeft(buttonSpacing);
+    osc2SawButton.setBounds(buttonArea.getX(), buttonArea.getY(), buttonWidth, buttonHeight);
+    buttonArea.removeFromLeft(buttonWidth + buttonSpacing);
     
-    // Square button
-    auto squareButtonArea = buttonArea.removeFromLeft(buttonWidth);
-    osc2SquareButton.setBounds(squareButtonArea);
-    buttonArea.removeFromLeft(buttonSpacing);
+    osc2SquareButton.setBounds(buttonArea.getX(), buttonArea.getY(), buttonWidth, buttonHeight);
+    buttonArea.removeFromLeft(buttonWidth + buttonSpacing);
     
-    // Triangle button
-    auto triangleButtonArea = buttonArea.removeFromLeft(buttonWidth);
-    osc2TriangleButton.setBounds(triangleButtonArea);
-    buttonArea.removeFromLeft(buttonSpacing);
+    osc2TriangleButton.setBounds(buttonArea.getX(), buttonArea.getY(), buttonWidth, buttonHeight);
+    buttonArea.removeFromLeft(buttonWidth + buttonSpacing);
     
-    // White noise button
-    auto whiteNoiseButtonArea = buttonArea.removeFromLeft(buttonWidth);
-    osc2WhiteNoiseButton.setBounds(whiteNoiseButtonArea);
-    buttonArea.removeFromLeft(buttonSpacing);
+    osc2WhiteNoiseButton.setBounds(buttonArea.getX(), buttonArea.getY(), buttonWidth, buttonHeight);
+    buttonArea.removeFromLeft(buttonWidth + buttonSpacing);
     
-    // Pink noise button
-    auto pinkNoiseButtonArea = buttonArea.removeFromLeft(buttonWidth);
-    osc2PinkNoiseButton.setBounds(pinkNoiseButtonArea);
+    osc2PinkNoiseButton.setBounds(buttonArea.getX(), buttonArea.getY(), buttonWidth, buttonHeight);
     
     workingArea.removeFromTop(5); // reduced spacing between rows
     
-    // ADSR envelope visualizer row
-    auto envelopeHeight = 80;
+    // ADSR envelope visualizer row - match oscillator 1 proportions exactly
+    auto envelopeHeight = 60; // Match oscillator 1 height
     auto osc2EnvelopeArea = workingArea.removeFromTop(envelopeHeight);
-    auto envelopeWidth = 300; // Similar to oscillator 1
+    // Use the same width calculation as oscillator 1's original bounds
+    auto originalBounds = getLocalBounds();
+    originalBounds.reduce(20, 20);
+    auto envelopeWidth = originalBounds.getWidth() / 3; // Match oscillator 1 exact calculation
     auto centeredEnvelopeArea = osc2EnvelopeArea.withSizeKeepingCentre(envelopeWidth, envelopeHeight);
     osc2AdsrEnvelopeVisualizer.setBounds(centeredEnvelopeArea);
     
