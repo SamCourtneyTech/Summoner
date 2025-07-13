@@ -1241,7 +1241,7 @@ void SynthesizerComponent::paint(juce::Graphics& g)
         static_cast<int>(secondOscillatorGroupOffsetY)
     );
     drawSecondOscillatorBackground(g, secondOscillatorBounds);
-    drawOsc2PitchControlsBackground(g, osc2PitchControlsBounds);
+    // drawOsc2PitchControlsBackground(g, osc2PitchControlsBounds); // REMOVED - individual pitch control backgrounds
     // drawOsc2PhaseControlsBackground(g, osc2PhaseControlsBounds); // Removed - was covering the knob
     
     // Precision alignment grid overlay - symmetrical and aligned to boundaries
@@ -2859,152 +2859,152 @@ void SynthesizerComponent::drawSecondOscillatorBackground(juce::Graphics& g, juc
     slotBounds.removeFromTop(60); // envelope height
     slotBounds.removeFromTop(10); // spacing
     
-    // ADSR knobs metal slots - 4 knobs in a row
+    // ADSR knobs metal slots - 4 knobs in a row - REMOVED BACKGROUNDS
     auto adsrRow = slotBounds.removeFromTop(80);
-    auto adsrKnobWidth = (adsrRow.getWidth() - 45) / 4; // Same calculation as oscillator 1
+    // auto adsrKnobWidth = (adsrRow.getWidth() - 45) / 4; // Same calculation as oscillator 1
     
-    // Attack knob slot
-    auto attackArea = adsrRow.removeFromLeft(adsrKnobWidth);
-    g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(attackArea.getCentreX() - 40, attackArea.getCentreY() - 50, 80, 100, 4.0f);
-    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(attackArea.getCentreX() - 39, attackArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
-    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(attackArea.getCentreX() - 37, attackArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
+    // Attack knob slot - BACKGROUND REMOVED
+    // auto attackArea = adsrRow.removeFromLeft(adsrKnobWidth);
+    // g.setColour(juce::Colour(0xff0f0f0f));
+    // g.fillRoundedRectangle(attackArea.getCentreX() - 40, attackArea.getCentreY() - 50, 80, 100, 4.0f);
+    // g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    // g.drawRoundedRectangle(attackArea.getCentreX() - 39, attackArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
+    // g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    // g.drawRoundedRectangle(attackArea.getCentreX() - 37, attackArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
     
-    adsrRow.removeFromLeft(15); // spacing
+    // adsrRow.removeFromLeft(15); // spacing
     
-    // Decay knob slot
-    auto decayArea = adsrRow.removeFromLeft(adsrKnobWidth);
-    g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(decayArea.getCentreX() - 40, decayArea.getCentreY() - 50, 80, 100, 4.0f);
-    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(decayArea.getCentreX() - 39, decayArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
-    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(decayArea.getCentreX() - 37, decayArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
+    // Decay knob slot - BACKGROUND REMOVED
+    // auto decayArea = adsrRow.removeFromLeft(adsrKnobWidth);
+    // g.setColour(juce::Colour(0xff0f0f0f));
+    // g.fillRoundedRectangle(decayArea.getCentreX() - 40, decayArea.getCentreY() - 50, 80, 100, 4.0f);
+    // g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    // g.drawRoundedRectangle(decayArea.getCentreX() - 39, decayArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
+    // g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    // g.drawRoundedRectangle(decayArea.getCentreX() - 37, decayArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
     
-    adsrRow.removeFromLeft(15); // spacing
+    // adsrRow.removeFromLeft(15); // spacing
     
-    // Sustain knob slot
-    auto sustainArea = adsrRow.removeFromLeft(adsrKnobWidth);
-    g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(sustainArea.getCentreX() - 40, sustainArea.getCentreY() - 50, 80, 100, 4.0f);
-    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(sustainArea.getCentreX() - 39, sustainArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
-    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(sustainArea.getCentreX() - 37, sustainArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
+    // Sustain knob slot - BACKGROUND REMOVED
+    // auto sustainArea = adsrRow.removeFromLeft(adsrKnobWidth);
+    // g.setColour(juce::Colour(0xff0f0f0f));
+    // g.fillRoundedRectangle(sustainArea.getCentreX() - 40, sustainArea.getCentreY() - 50, 80, 100, 4.0f);
+    // g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    // g.drawRoundedRectangle(sustainArea.getCentreX() - 39, sustainArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
+    // g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    // g.drawRoundedRectangle(sustainArea.getCentreX() - 37, sustainArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
     
-    adsrRow.removeFromLeft(15); // spacing
+    // adsrRow.removeFromLeft(15); // spacing
     
-    // Release knob slot
-    auto releaseArea = adsrRow;
-    g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(releaseArea.getCentreX() - 40, releaseArea.getCentreY() - 50, 80, 100, 4.0f);
-    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(releaseArea.getCentreX() - 39, releaseArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
-    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(releaseArea.getCentreX() - 37, releaseArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
+    // Release knob slot - BACKGROUND REMOVED
+    // auto releaseArea = adsrRow;
+    // g.setColour(juce::Colour(0xff0f0f0f));
+    // g.fillRoundedRectangle(releaseArea.getCentreX() - 40, releaseArea.getCentreY() - 50, 80, 100, 4.0f);
+    // g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    // g.drawRoundedRectangle(releaseArea.getCentreX() - 39, releaseArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
+    // g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    // g.drawRoundedRectangle(releaseArea.getCentreX() - 37, releaseArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
     
     slotBounds.removeFromTop(10); // spacing
     
-    // Volume controls metal slots - 4 knobs in a row
+    // Volume controls metal slots - 4 knobs in a row - REMOVED BACKGROUNDS
     auto volumeRow = slotBounds.removeFromTop(80);
-    auto volumeKnobWidth = (volumeRow.getWidth() - 45) / 4;
+    // auto volumeKnobWidth = (volumeRow.getWidth() - 45) / 4;
     
-    // Volume knob slot
-    auto volumeArea = volumeRow.removeFromLeft(volumeKnobWidth);
-    g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(volumeArea.getCentreX() - 40, volumeArea.getCentreY() - 50, 80, 100, 4.0f);
-    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(volumeArea.getCentreX() - 39, volumeArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
-    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(volumeArea.getCentreX() - 37, volumeArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
+    // Volume knob slot - BACKGROUND REMOVED
+    // auto volumeArea = volumeRow.removeFromLeft(volumeKnobWidth);
+    // g.setColour(juce::Colour(0xff0f0f0f));
+    // g.fillRoundedRectangle(volumeArea.getCentreX() - 40, volumeArea.getCentreY() - 50, 80, 100, 4.0f);
+    // g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    // g.drawRoundedRectangle(volumeArea.getCentreX() - 39, volumeArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
+    // g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    // g.drawRoundedRectangle(volumeArea.getCentreX() - 37, volumeArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
     
-    volumeRow.removeFromLeft(15); // spacing
+    // volumeRow.removeFromLeft(15); // spacing
     
-    // Detune knob slot
-    auto detuneArea = volumeRow.removeFromLeft(volumeKnobWidth);
-    g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(detuneArea.getCentreX() - 40, detuneArea.getCentreY() - 50, 80, 100, 4.0f);
-    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(detuneArea.getCentreX() - 39, detuneArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
-    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(detuneArea.getCentreX() - 37, detuneArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
+    // Detune knob slot - BACKGROUND REMOVED
+    // auto detuneArea = volumeRow.removeFromLeft(volumeKnobWidth);
+    // g.setColour(juce::Colour(0xff0f0f0f));
+    // g.fillRoundedRectangle(detuneArea.getCentreX() - 40, detuneArea.getCentreY() - 50, 80, 100, 4.0f);
+    // g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    // g.drawRoundedRectangle(detuneArea.getCentreX() - 39, detuneArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
+    // g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    // g.drawRoundedRectangle(detuneArea.getCentreX() - 37, detuneArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
     
-    volumeRow.removeFromLeft(15); // spacing
+    // volumeRow.removeFromLeft(15); // spacing
     
-    // Stereo knob slot
-    auto stereoArea = volumeRow.removeFromLeft(volumeKnobWidth);
-    g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(stereoArea.getCentreX() - 40, stereoArea.getCentreY() - 50, 80, 100, 4.0f);
-    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(stereoArea.getCentreX() - 39, stereoArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
-    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(stereoArea.getCentreX() - 37, stereoArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
+    // Stereo knob slot - BACKGROUND REMOVED
+    // auto stereoArea = volumeRow.removeFromLeft(volumeKnobWidth);
+    // g.setColour(juce::Colour(0xff0f0f0f));
+    // g.fillRoundedRectangle(stereoArea.getCentreX() - 40, stereoArea.getCentreY() - 50, 80, 100, 4.0f);
+    // g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    // g.drawRoundedRectangle(stereoArea.getCentreX() - 39, stereoArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
+    // g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    // g.drawRoundedRectangle(stereoArea.getCentreX() - 37, stereoArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
     
-    volumeRow.removeFromLeft(15); // spacing
+    // volumeRow.removeFromLeft(15); // spacing
     
-    // Pan knob slot
-    auto panArea = volumeRow;
-    g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(panArea.getCentreX() - 40, panArea.getCentreY() - 50, 80, 100, 4.0f);
-    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(panArea.getCentreX() - 39, panArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
-    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(panArea.getCentreX() - 37, panArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
+    // Pan knob slot - BACKGROUND REMOVED
+    // auto panArea = volumeRow;
+    // g.setColour(juce::Colour(0xff0f0f0f));
+    // g.fillRoundedRectangle(panArea.getCentreX() - 40, panArea.getCentreY() - 50, 80, 100, 4.0f);
+    // g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    // g.drawRoundedRectangle(panArea.getCentreX() - 39, panArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
+    // g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    // g.drawRoundedRectangle(panArea.getCentreX() - 37, panArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
     
     slotBounds.removeFromTop(10); // spacing
     
-    // Pitch controls metal slots - 4 controls in a row
+    // Pitch controls metal slots - 4 controls in a row - REMOVED BACKGROUNDS
     auto pitchRow = slotBounds.removeFromTop(60);
-    auto pitchControlWidth = pitchRow.getWidth() / 4;
+    // auto pitchControlWidth = pitchRow.getWidth() / 4;
     
-    // Octave control slot
-    auto octaveArea = pitchRow.removeFromLeft(pitchControlWidth);
-    g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(octaveArea.getCentreX() - 35, octaveArea.getCentreY() - 35, 70, 70, 4.0f);
-    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(octaveArea.getCentreX() - 34, octaveArea.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
-    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(octaveArea.getCentreX() - 32, octaveArea.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
+    // Octave control slot - BACKGROUND REMOVED
+    // auto octaveArea = pitchRow.removeFromLeft(pitchControlWidth);
+    // g.setColour(juce::Colour(0xff0f0f0f));
+    // g.fillRoundedRectangle(octaveArea.getCentreX() - 35, octaveArea.getCentreY() - 35, 70, 70, 4.0f);
+    // g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    // g.drawRoundedRectangle(octaveArea.getCentreX() - 34, octaveArea.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
+    // g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    // g.drawRoundedRectangle(octaveArea.getCentreX() - 32, octaveArea.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
     
-    // Semitone control slot
-    auto semitoneArea = pitchRow.removeFromLeft(pitchControlWidth);
-    g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(semitoneArea.getCentreX() - 35, semitoneArea.getCentreY() - 35, 70, 70, 4.0f);
-    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(semitoneArea.getCentreX() - 34, semitoneArea.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
-    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(semitoneArea.getCentreX() - 32, semitoneArea.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
+    // Semitone control slot - BACKGROUND REMOVED
+    // auto semitoneArea = pitchRow.removeFromLeft(pitchControlWidth);
+    // g.setColour(juce::Colour(0xff0f0f0f));
+    // g.fillRoundedRectangle(semitoneArea.getCentreX() - 35, semitoneArea.getCentreY() - 35, 70, 70, 4.0f);
+    // g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    // g.drawRoundedRectangle(semitoneArea.getCentreX() - 34, semitoneArea.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
+    // g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    // g.drawRoundedRectangle(semitoneArea.getCentreX() - 32, semitoneArea.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
     
-    // Fine tune control slot
-    auto fineTuneArea = pitchRow.removeFromLeft(pitchControlWidth);
-    g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(fineTuneArea.getCentreX() - 35, fineTuneArea.getCentreY() - 35, 70, 70, 4.0f);
-    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(fineTuneArea.getCentreX() - 34, fineTuneArea.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
-    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(fineTuneArea.getCentreX() - 32, fineTuneArea.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
+    // Fine tune control slot - BACKGROUND REMOVED
+    // auto fineTuneArea = pitchRow.removeFromLeft(pitchControlWidth);
+    // g.setColour(juce::Colour(0xff0f0f0f));
+    // g.fillRoundedRectangle(fineTuneArea.getCentreX() - 35, fineTuneArea.getCentreY() - 35, 70, 70, 4.0f);
+    // g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    // g.drawRoundedRectangle(fineTuneArea.getCentreX() - 34, fineTuneArea.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
+    // g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    // g.drawRoundedRectangle(fineTuneArea.getCentreX() - 32, fineTuneArea.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
     
-    // Voice count control slot
-    auto voiceArea = pitchRow;
-    g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(voiceArea.getCentreX() - 35, voiceArea.getCentreY() - 35, 70, 70, 4.0f);
-    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(voiceArea.getCentreX() - 34, voiceArea.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
-    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(voiceArea.getCentreX() - 32, voiceArea.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
+    // Voice count control slot - BACKGROUND REMOVED
+    // auto voiceArea = pitchRow;
+    // g.setColour(juce::Colour(0xff0f0f0f));
+    // g.fillRoundedRectangle(voiceArea.getCentreX() - 35, voiceArea.getCentreY() - 35, 70, 70, 4.0f);
+    // g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    // g.drawRoundedRectangle(voiceArea.getCentreX() - 34, voiceArea.getCentreY() - 34, 68, 68, 3.0f, 2.0f);
+    // g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    // g.drawRoundedRectangle(voiceArea.getCentreX() - 32, voiceArea.getCentreY() - 32, 64, 64, 2.0f, 1.0f);
     
     slotBounds.removeFromTop(10); // spacing
     
-    // Phase control slot - single knob
+    // Phase control slot - single knob - BACKGROUND REMOVED
     auto phaseRow = slotBounds.removeFromTop(60);
-    auto phaseArea = phaseRow.removeFromRight(80); // Position on right side
-    g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(phaseArea.getCentreX() - 40, phaseArea.getCentreY() - 40, 80, 80, 4.0f);
-    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(phaseArea.getCentreX() - 39, phaseArea.getCentreY() - 39, 78, 78, 3.0f, 2.0f);
-    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(phaseArea.getCentreX() - 37, phaseArea.getCentreY() - 37, 74, 74, 2.0f, 1.0f);
+    // auto phaseArea = phaseRow.removeFromRight(80); // Position on right side
+    // g.setColour(juce::Colour(0xff0f0f0f));
+    // g.fillRoundedRectangle(phaseArea.getCentreX() - 40, phaseArea.getCentreY() - 40, 80, 80, 4.0f);
+    // g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    // g.drawRoundedRectangle(phaseArea.getCentreX() - 39, phaseArea.getCentreY() - 39, 78, 78, 3.0f, 2.0f);
+    // g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    // g.drawRoundedRectangle(phaseArea.getCentreX() - 37, phaseArea.getCentreY() - 37, 74, 74, 2.0f, 1.0f);
 }
 
