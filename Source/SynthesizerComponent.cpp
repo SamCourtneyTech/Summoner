@@ -1244,6 +1244,53 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     drawOsc2PitchControlsBackground(g, osc2PitchControlsBounds);
     // drawOsc2PhaseControlsBackground(g, osc2PhaseControlsBounds); // Removed - was covering the knob
     
+    // Precision alignment grid overlay - symmetrical and aligned to boundaries
+    auto gridBounds = getLocalBounds().toFloat();
+    auto centerX = gridBounds.getWidth() / 2.0f;
+    auto centerY = gridBounds.getHeight() / 2.0f;
+    
+    g.setColour(juce::Colours::cyan.withAlpha(0.3f));
+    
+    // Vertical grid lines - symmetrical from center
+    for (int i = 1; i * 20 < centerX; ++i)
+    {
+        float offset = i * 20.0f;
+        // Right side
+        g.drawLine(centerX + offset, 0, centerX + offset, gridBounds.getHeight(), 0.5f);
+        // Left side
+        g.drawLine(centerX - offset, 0, centerX - offset, gridBounds.getHeight(), 0.5f);
+    }
+    
+    // Horizontal grid lines - symmetrical from center
+    for (int i = 1; i * 20 < centerY; ++i)
+    {
+        float offset = i * 20.0f;
+        // Bottom half
+        g.drawLine(0, centerY + offset, gridBounds.getWidth(), centerY + offset, 0.5f);
+        // Top half
+        g.drawLine(0, centerY - offset, gridBounds.getWidth(), centerY - offset, 0.5f);
+    }
+    
+    // Center lines
+    g.setColour(juce::Colours::cyan.withAlpha(0.6f));
+    g.drawLine(centerX, 0, centerX, gridBounds.getHeight(), 1.0f); // Vertical center
+    g.drawLine(0, centerY, gridBounds.getWidth(), centerY, 1.0f);   // Horizontal center
+    
+    // Major grid lines every 100 pixels - also symmetrical
+    g.setColour(juce::Colours::cyan.withAlpha(0.5f));
+    for (int i = 1; i * 100 < centerX; ++i)
+    {
+        float offset = i * 100.0f;
+        g.drawLine(centerX + offset, 0, centerX + offset, gridBounds.getHeight(), 1.0f);
+        g.drawLine(centerX - offset, 0, centerX - offset, gridBounds.getHeight(), 1.0f);
+    }
+    for (int i = 1; i * 100 < centerY; ++i)
+    {
+        float offset = i * 100.0f;
+        g.drawLine(0, centerY + offset, gridBounds.getWidth(), centerY + offset, 1.0f);
+        g.drawLine(0, centerY - offset, gridBounds.getWidth(), centerY - offset, 1.0f);
+    }
+
     // Main window border
     g.setColour(juce::Colour(0xff16213e));
     g.drawRect(getLocalBounds(), 2);
