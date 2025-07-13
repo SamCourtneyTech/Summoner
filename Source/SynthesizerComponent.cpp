@@ -2365,7 +2365,7 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     osc2PanLabel.setBounds(panArea.removeFromTop(knobLabelHeight));
     osc2PanKnob.setBounds(panArea);
     
-    workingArea.removeFromTop(5); // reduced spacing between knobs and sliders
+    workingArea.removeFromTop(32); // increased spacing to move pitch controls down 27px
     
     // Second additional row - pitch controls (octave, semitone, fine tune, voices) - label style like oscillator 1
     auto pitchControlsHeight = 50; // 20 for label + 30 for value
@@ -2374,11 +2374,11 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     // Store bounds for background drawing
     osc2PitchControlsBounds = pitchControlsRow;
     
-    // Center the pitch controls horizontally (4 controls)
+    // Move the pitch controls 20 pixels to the right
     auto pitchControlWidth = 60; // Match oscillator 1
     auto pitchControlSpacing = 10; // Match oscillator 1
     auto totalPitchControlsWidth = 4 * pitchControlWidth + 3 * pitchControlSpacing;
-    auto pitchControlsStartX = (pitchControlsRow.getWidth() - totalPitchControlsWidth) / 2;
+    auto pitchControlsStartX = (pitchControlsRow.getWidth() - totalPitchControlsWidth) / 2 + 65; // Move 65px right
     auto pitchControlsArea = pitchControlsRow.withX(pitchControlsRow.getX() + pitchControlsStartX).withWidth(totalPitchControlsWidth);
     
     // Octave control
