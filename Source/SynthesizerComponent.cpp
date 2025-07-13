@@ -2236,10 +2236,10 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto waveButtonsRow = workingArea.removeFromTop(buttonHeight);
     auto buttonWidth = 55; // Back to previous setting
     auto screwInset = 15; // Screw position from edge (from background drawing code)
-    auto buttonStartX = 15; // Keep sine button in same position
+    auto buttonStartX = 17; // Move buttons slightly to the right
     
-    // Calculate spacing to stretch row so pink noise button aligns with right screw (one more pixel)
-    auto availableWidth = waveButtonsRow.getWidth() - buttonStartX - screwInset - buttonWidth + 3; // Add 3px stretch
+    // Calculate spacing to stretch row so pink noise button aligns with right screw (extend further)
+    auto availableWidth = waveButtonsRow.getWidth() - buttonStartX - screwInset - buttonWidth + 8; // Add 8px stretch for more extension
     auto totalButtonWidth = 6 * buttonWidth; // Total width of all buttons
     auto totalSpacingWidth = availableWidth - totalButtonWidth + buttonWidth; // Available space for 5 gaps
     auto buttonSpacing = totalSpacingWidth / 5; // Spacing between buttons
@@ -2760,9 +2760,10 @@ void SynthesizerComponent::drawSecondOscillatorBackground(juce::Graphics& g, juc
     // Add corner screws for modular synth module look
     auto screwRadius = 6.0f;
     auto screwInset = 15.0f;
+    auto topScrewInset = screwInset - 2.0f; // Move top screws up 3 pixels higher
     
-    // Top-left screw
-    auto tlScrew = juce::Rectangle<float>(raisedBounds.getX() + screwInset, raisedBounds.getY() + screwInset, screwRadius * 2, screwRadius * 2);
+    // Top-left screw (moved up slightly and right by 2px)
+    auto tlScrew = juce::Rectangle<float>(raisedBounds.getX() + screwInset + 2.0f, raisedBounds.getY() + topScrewInset, screwRadius * 2, screwRadius * 2);
     g.setColour(juce::Colour(0xff404040));
     g.fillEllipse(tlScrew);
     g.setColour(juce::Colour(0xff808080));
@@ -2771,8 +2772,8 @@ void SynthesizerComponent::drawSecondOscillatorBackground(juce::Graphics& g, juc
     g.setColour(juce::Colour(0xff101010));
     g.drawLine(tlScrew.getCentreX() - 3, tlScrew.getCentreY(), tlScrew.getCentreX() + 3, tlScrew.getCentreY(), 1.5f);
     
-    // Top-right screw
-    auto trScrew = juce::Rectangle<float>(raisedBounds.getRight() - screwInset - screwRadius * 2, raisedBounds.getY() + screwInset, screwRadius * 2, screwRadius * 2);
+    // Top-right screw (moved up slightly and right by 2px from original)
+    auto trScrew = juce::Rectangle<float>(raisedBounds.getRight() - screwInset - screwRadius * 2 + 2.0f, raisedBounds.getY() + topScrewInset, screwRadius * 2, screwRadius * 2);
     g.setColour(juce::Colour(0xff404040));
     g.fillEllipse(trScrew);
     g.setColour(juce::Colour(0xff808080));
