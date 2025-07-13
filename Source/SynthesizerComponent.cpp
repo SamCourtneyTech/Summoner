@@ -2378,7 +2378,7 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto pitchControlWidth = 60; // Match oscillator 1
     auto pitchControlSpacing = 10; // Match oscillator 1
     auto totalPitchControlsWidth = 4 * pitchControlWidth + 3 * pitchControlSpacing;
-    auto pitchControlsStartX = (pitchControlsRow.getWidth() - totalPitchControlsWidth) / 2 + 65; // Move 65px right
+    auto pitchControlsStartX = (pitchControlsRow.getWidth() - totalPitchControlsWidth) / 2 - 36; // Move 36px left from center
     auto pitchControlsArea = pitchControlsRow.withX(pitchControlsRow.getX() + pitchControlsStartX).withWidth(totalPitchControlsWidth);
     
     // Octave control
