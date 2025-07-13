@@ -2332,8 +2332,8 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     
     // No spacing needed since link button is now outside the row flow
     
-    // First additional row - knobs (volume, detune, stereo, pan) - move up closer
-    workingArea.removeFromTop(5); // smaller spacing to pull rows up
+    // First additional row - knobs (volume, detune, stereo, pan) - move down 15 pixels
+    workingArea.removeFromTop(20); // increased spacing to push rows down 15px
     auto knobsRow = workingArea.removeFromTop(knobHeight + knobLabelHeight);
     
     // Stretch the stereo knobs row 12 pixels and shift right 6 pixels (volume stays in place)
