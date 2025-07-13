@@ -2365,7 +2365,7 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     osc2PanLabel.setBounds(panArea.removeFromTop(knobLabelHeight));
     osc2PanKnob.setBounds(panArea);
     
-    workingArea.removeFromTop(32); // increased spacing to move pitch controls down 27px
+    workingArea.removeFromTop(33); // increased spacing to move pitch controls down 28px
     
     // Second additional row - pitch controls (octave, semitone, fine tune, voices) - label style like oscillator 1
     auto pitchControlsHeight = 50; // 20 for label + 30 for value
@@ -2409,18 +2409,20 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     // Random phase button and phase knob row - increase height for better knob visibility
     auto phaseControlsRow = workingArea.removeFromTop(100);
     
-    // Position random phase button and phase knob side by side
+    // Position random phase button and phase knob side by side - move 40px left
     auto randomPhaseButtonWidth = 100; // Match oscillator 1 width
     auto phaseControlsWidth = randomPhaseButtonWidth + knobSpacing + knobWidth;
-    auto phaseControlsStartX = (phaseControlsRow.getWidth() - phaseControlsWidth) / 2;
+    auto phaseControlsStartX = (phaseControlsRow.getWidth() - phaseControlsWidth) / 2 - 70; // Move 70px left
     auto phaseControlsArea = phaseControlsRow.withX(phaseControlsRow.getX() + phaseControlsStartX).withWidth(phaseControlsWidth);
     
     // Random phase button (left side)
     auto randomPhaseButtonArea = phaseControlsArea.removeFromLeft(randomPhaseButtonWidth);
-    // Center the button vertically in the row
+    // Center the button vertically in the row, then move up 5px
     auto randomPhaseButtonHeight = 40; // Match oscillator 1 height
-    auto buttonVerticalOffset = (phaseControlsRow.getHeight() - randomPhaseButtonHeight) / 2;
+    auto buttonVerticalOffset = (phaseControlsRow.getHeight() - randomPhaseButtonHeight) / 2 - 3; // Move up 3px (was 5px, now down 2px)
     randomPhaseButtonArea = randomPhaseButtonArea.withY(randomPhaseButtonArea.getY() + buttonVerticalOffset).withHeight(randomPhaseButtonHeight);
+    // Move button 2 pixels to the left
+    randomPhaseButtonArea = randomPhaseButtonArea.translated(-2, 0);
     osc2RandomPhaseButton.setBounds(randomPhaseButtonArea);
     
     phaseControlsArea.removeFromLeft(knobSpacing);
@@ -2431,10 +2433,10 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     // Store bounds for background drawing - use the full area before any modifications
     osc2PhaseControlsBounds = phaseKnobArea;
     
-    osc2PhaseLabel.setBounds(phaseKnobArea.removeFromTop(20));
+    osc2PhaseLabel.setBounds(phaseKnobArea.removeFromTop(15)); // Reduced from 20 to 15 to bring label closer
     
-    // Match oscillator 1 phase knob size: 80 width × 60 height
-    auto matchingKnobArea = juce::Rectangle<int>(phaseKnobArea.getX(), phaseKnobArea.getY(), 80, 60);
+    // Match oscillator 1 phase knob size: 80 width × 60 height, move down 20px
+    auto matchingKnobArea = juce::Rectangle<int>(phaseKnobArea.getX(), phaseKnobArea.getY() + 20, 80, 60);
     osc2PhaseKnob.setBounds(matchingKnobArea);
 }
 
