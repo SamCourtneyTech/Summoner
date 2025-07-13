@@ -2289,28 +2289,29 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto knobWidth = 80;
     auto knobSpacing = 15; // Match oscillator 1 spacing
     
-    // Center the ADSR knobs horizontally
-    auto totalKnobWidth = 4 * knobWidth + 3 * knobSpacing;
-    auto knobStartX = (adsrKnobsRow.getWidth() - totalKnobWidth) / 2;
+    // Stretch the ADSR knobs row 12 pixels and shift right 6 pixels (attack stays in place)
+    auto totalKnobWidth = 4 * knobWidth + 3 * knobSpacing + 12; // Add 12px stretch
+    auto knobStartX = (adsrKnobsRow.getWidth() - totalKnobWidth) / 2 + 6; // Shift right 6px
     auto knobArea = adsrKnobsRow.withX(adsrKnobsRow.getX() + knobStartX).withWidth(totalKnobWidth);
+    auto stretchedSpacing = knobSpacing + (12.0f / 3.0f); // Distribute extra 12px across 3 gaps
     
     // Attack knob
     auto attackArea = knobArea.removeFromLeft(knobWidth);
     osc2AttackLabel.setBounds(attackArea.removeFromTop(knobLabelHeight));
     osc2AttackKnob.setBounds(attackArea);
-    knobArea.removeFromLeft(knobSpacing);
+    knobArea.removeFromLeft(stretchedSpacing);
     
     // Decay knob
     auto decayArea = knobArea.removeFromLeft(knobWidth);
     osc2DecayLabel.setBounds(decayArea.removeFromTop(knobLabelHeight));
     osc2DecayKnob.setBounds(decayArea);
-    knobArea.removeFromLeft(knobSpacing);
+    knobArea.removeFromLeft(stretchedSpacing);
     
     // Sustain knob
     auto sustainArea = knobArea.removeFromLeft(knobWidth);
     osc2SustainLabel.setBounds(sustainArea.removeFromTop(knobLabelHeight));
     osc2SustainKnob.setBounds(sustainArea);
-    knobArea.removeFromLeft(knobSpacing);
+    knobArea.removeFromLeft(stretchedSpacing);
     
     // Release knob
     auto releaseArea = knobArea.removeFromLeft(knobWidth);
@@ -2335,28 +2336,29 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     workingArea.removeFromTop(5); // smaller spacing to pull rows up
     auto knobsRow = workingArea.removeFromTop(knobHeight + knobLabelHeight);
     
-    // Center the knobs horizontally (4 knobs)
-    auto totalKnobsWidth = 4 * knobWidth + 3 * knobSpacing;
-    auto knobsStartX = (knobsRow.getWidth() - totalKnobsWidth) / 2;
+    // Stretch the stereo knobs row 12 pixels and shift right 6 pixels (volume stays in place)
+    auto totalKnobsWidth = 4 * knobWidth + 3 * knobSpacing + 12; // Add 12px stretch
+    auto knobsStartX = (knobsRow.getWidth() - totalKnobsWidth) / 2 + 6; // Shift right 6px
     auto knobsArea = knobsRow.withX(knobsRow.getX() + knobsStartX).withWidth(totalKnobsWidth);
+    auto stretchedKnobSpacing = knobSpacing + (12.0f / 3.0f); // Distribute extra 12px across 3 gaps
     
     // Volume knob
     auto volumeArea = knobsArea.removeFromLeft(knobWidth);
     osc2VolumeLabel.setBounds(volumeArea.removeFromTop(knobLabelHeight));
     osc2VolumeKnob.setBounds(volumeArea);
-    knobsArea.removeFromLeft(knobSpacing);
+    knobsArea.removeFromLeft(stretchedKnobSpacing);
     
     // Detune knob
     auto detuneArea = knobsArea.removeFromLeft(knobWidth);
     osc2DetuneLabel.setBounds(detuneArea.removeFromTop(knobLabelHeight));
     osc2DetuneKnob.setBounds(detuneArea);
-    knobsArea.removeFromLeft(knobSpacing);
+    knobsArea.removeFromLeft(stretchedKnobSpacing);
     
     // Stereo knob
     auto stereoArea = knobsArea.removeFromLeft(knobWidth);
     osc2StereoLabel.setBounds(stereoArea.removeFromTop(knobLabelHeight));
     osc2StereoKnob.setBounds(stereoArea);
-    knobsArea.removeFromLeft(knobSpacing);
+    knobsArea.removeFromLeft(stretchedKnobSpacing);
     
     // Pan knob
     auto panArea = knobsArea.removeFromLeft(knobWidth);
