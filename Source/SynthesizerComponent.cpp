@@ -2274,7 +2274,7 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     originalBounds.reduce(20, 20);
     auto envelopeWidth = originalBounds.getWidth() / 3; // Match oscillator 1 exact calculation
     auto centeredEnvelopeArea = osc2EnvelopeArea.withSizeKeepingCentre(envelopeWidth, envelopeHeight);
-    osc2AdsrEnvelopeVisualizer.setBounds(centeredEnvelopeArea);
+    osc2AdsrEnvelopeVisualizer.setBounds(centeredEnvelopeArea.translated(2, 1));
     
     workingArea.removeFromTop(5); // reduced spacing between envelope and knobs
     
