@@ -2160,7 +2160,7 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     // Position oscillator 2 in top-right corner - match oscillator 1 size exactly
     auto osc2Width = 320 + 63 + 24; // Same calculation as oscillator 1: tuning width + padding + border = 407
     auto osc2Height = 40 + 7 + 60 + 15 + 100 + 20 + 100 + 40 + 80 + 20 + 80 + 20 + 24; // Same calculation as oscillator 1: all sections + spacing + border = 606
-    auto osc2X = totalWidth - osc2Width - 50; // 50px margin from right edge
+    auto osc2X = totalWidth - osc2Width - 20; // 20px margin to touch wood border
     auto osc2Y = 20; // 20px margin from top edge
     
     auto osc2Section = juce::Rectangle<int>(osc2X, osc2Y, osc2Width, osc2Height);
