@@ -2229,7 +2229,7 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto titleArea = workingArea.removeFromTop(titleHeight);
     osc2TitleLabel.setBounds(titleArea);
     
-    workingArea.removeFromTop(18); // tiny bit more spacing to push buttons slightly lower
+    workingArea.removeFromTop(15); // reduced spacing to push buttons up slightly
     
     // Wave type buttons row - stretch to align pink noise button with right screw
     auto buttonHeight = 40; // Match oscillator 1 height
