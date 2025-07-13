@@ -2433,10 +2433,11 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     // Store bounds for background drawing - use the full area before any modifications
     osc2PhaseControlsBounds = phaseKnobArea;
     
-    osc2PhaseLabel.setBounds(phaseKnobArea.removeFromTop(15)); // Reduced from 20 to 15 to bring label closer
+    auto phaseLabelArea = phaseKnobArea.removeFromTop(15); // Reduced from 20 to 15 to bring label closer
+    osc2PhaseLabel.setBounds(phaseLabelArea.translated(0, 31)); // Move label down 31 pixels (28 + 3)
     
-    // Match oscillator 1 phase knob size: 80 width × 60 height, move down 20px
-    auto matchingKnobArea = juce::Rectangle<int>(phaseKnobArea.getX(), phaseKnobArea.getY() + 20, 80, 60);
+    // Match oscillator 1 phase knob size: 80 width × 60 height, move down 33px
+    auto matchingKnobArea = juce::Rectangle<int>(phaseKnobArea.getX(), phaseKnobArea.getY() + 33, 80, 60);
     osc2PhaseKnob.setBounds(matchingKnobArea);
 }
 
