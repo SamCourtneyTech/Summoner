@@ -2278,6 +2278,10 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     
     workingArea.removeFromTop(5); // reduced spacing between envelope and knobs
     
+    // Apply offset to all elements below ADSR visualizer
+    auto elementsOffset = juce::Point<int>(-6, 12); // Move left 6px, down 12px
+    workingArea = workingArea.translated(elementsOffset.x, elementsOffset.y);
+    
     // ADSR knobs row - match oscillator 1 dimensions
     auto knobHeight = 80; // Match oscillator 1 knob height
     auto knobLabelHeight = 20; // Match oscillator 1 label height
