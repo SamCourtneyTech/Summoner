@@ -2905,6 +2905,40 @@ void SynthesizerComponent::drawSecondOscillatorBackground(juce::Graphics& g, juc
     g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
     g.drawRoundedRectangle(releaseArea.getCentreX() - 37 - 5, releaseArea.getCentreY() - 57 + 1 + 5, 74, 112, 2.0f, 1.0f);
     
+    // Duplicate ADSR knob backgrounds for stereo knob row (121px lower)
+    
+    // Duplicate Attack knob background - moved down 121px from original position
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(attackArea.getCentreX() - 40 + 5, attackArea.getCentreY() - 60 + 7 - 2.5f + 2 + 121, 80, 117, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(attackArea.getCentreX() - 39 + 5, attackArea.getCentreY() - 59 + 7 - 2.5f + 2 + 121, 78, 115, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(attackArea.getCentreX() - 37 + 5, attackArea.getCentreY() - 57 + 7 - 2.5f + 2 + 121, 74, 111, 2.0f, 1.0f);
+    
+    // Duplicate Decay knob background - moved down 121px from original position
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(decayArea.getCentreX() - 40 + 3, decayArea.getCentreY() - 60 + 5 + 1 + 121, 80, 118, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(decayArea.getCentreX() - 39 + 3, decayArea.getCentreY() - 59 + 5 + 1 + 121, 78, 116, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(decayArea.getCentreX() - 37 + 3, decayArea.getCentreY() - 57 + 5 + 1 + 121, 74, 112, 2.0f, 1.0f);
+    
+    // Duplicate Sustain knob background - moved down 121px from original position
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(sustainArea.getCentreX() - 40 - 1, sustainArea.getCentreY() - 60 + 1 + 5 + 121, 80, 118, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(sustainArea.getCentreX() - 39 - 1, sustainArea.getCentreY() - 59 + 1 + 5 + 121, 78, 116, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(sustainArea.getCentreX() - 37 - 1, sustainArea.getCentreY() - 57 + 1 + 5 + 121, 74, 112, 2.0f, 1.0f);
+    
+    // Duplicate Release knob background - moved down 121px from original position
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(releaseArea.getCentreX() - 40 - 5, releaseArea.getCentreY() - 60 + 1 + 5 + 121, 80, 118, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(releaseArea.getCentreX() - 39 - 5, releaseArea.getCentreY() - 59 + 1 + 5 + 121, 78, 116, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(releaseArea.getCentreX() - 37 - 5, releaseArea.getCentreY() - 57 + 1 + 5 + 121, 74, 112, 2.0f, 1.0f);
+    
     slotBounds.removeFromTop(10); // spacing
     
     // Volume controls metal slots - 4 knobs in a row - REMOVED BACKGROUNDS
