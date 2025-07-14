@@ -2885,25 +2885,25 @@ void SynthesizerComponent::drawSecondOscillatorBackground(juce::Graphics& g, juc
     
     adsrRow.removeFromLeft(1); // minimal spacing reduced from 3 to 1
     
-    // Sustain knob slot - elongated metal (matching oscillator 1)
+    // Sustain knob slot - elongated metal (matching oscillator 1) - height reduced by 2px, moved down 5px, moved left 1px
     auto sustainArea = adsrRow.removeFromLeft(adsrKnobWidth);
     g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(sustainArea.getCentreX() - 40, sustainArea.getCentreY() - 60, 80, 120, 4.0f);
+    g.fillRoundedRectangle(sustainArea.getCentreX() - 40 - 1, sustainArea.getCentreY() - 60 + 1 + 5, 80, 118, 4.0f);
     g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(sustainArea.getCentreX() - 39, sustainArea.getCentreY() - 59, 78, 118, 3.0f, 2.0f);
+    g.drawRoundedRectangle(sustainArea.getCentreX() - 39 - 1, sustainArea.getCentreY() - 59 + 1 + 5, 78, 116, 3.0f, 2.0f);
     g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(sustainArea.getCentreX() - 37, sustainArea.getCentreY() - 57, 74, 114, 2.0f, 1.0f);
+    g.drawRoundedRectangle(sustainArea.getCentreX() - 37 - 1, sustainArea.getCentreY() - 57 + 1 + 5, 74, 112, 2.0f, 1.0f);
     
     adsrRow.removeFromLeft(1); // minimal spacing reduced from 3 to 1
     
-    // Release knob slot - elongated metal (matching oscillator 1)
+    // Release knob slot - elongated metal (matching oscillator 1) - height reduced by 2px, moved down 5px, moved left 5px
     auto releaseArea = adsrRow;
     g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(releaseArea.getCentreX() - 40, releaseArea.getCentreY() - 60, 80, 120, 4.0f);
+    g.fillRoundedRectangle(releaseArea.getCentreX() - 40 - 5, releaseArea.getCentreY() - 60 + 1 + 5, 80, 118, 4.0f);
     g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(releaseArea.getCentreX() - 39, releaseArea.getCentreY() - 59, 78, 118, 3.0f, 2.0f);
+    g.drawRoundedRectangle(releaseArea.getCentreX() - 39 - 5, releaseArea.getCentreY() - 59 + 1 + 5, 78, 116, 3.0f, 2.0f);
     g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(releaseArea.getCentreX() - 37, releaseArea.getCentreY() - 57, 74, 114, 2.0f, 1.0f);
+    g.drawRoundedRectangle(releaseArea.getCentreX() - 37 - 5, releaseArea.getCentreY() - 57 + 1 + 5, 74, 112, 2.0f, 1.0f);
     
     slotBounds.removeFromTop(10); // spacing
     
