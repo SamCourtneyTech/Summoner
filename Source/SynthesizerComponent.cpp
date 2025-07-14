@@ -2857,53 +2857,53 @@ void SynthesizerComponent::drawSecondOscillatorBackground(juce::Graphics& g, juc
     
     // ADSR envelope visualization
     slotBounds.removeFromTop(60); // envelope height
-    slotBounds.removeFromTop(10); // spacing
+    slotBounds.removeFromTop(20); // increased spacing from 10 to 20 (moves ADSR row down 10 pixels)
     
-    // ADSR knobs metal slots - 4 knobs in a row - REMOVED BACKGROUNDS
+    // ADSR knobs metal slots - 4 knobs in a row - matching oscillator 1 style with minimal spacing
     auto adsrRow = slotBounds.removeFromTop(80);
-    // auto adsrKnobWidth = (adsrRow.getWidth() - 45) / 4; // Same calculation as oscillator 1
+    auto adsrKnobWidth = (adsrRow.getWidth() - 3) / 4; // Minimal spacing: reduced from 9 to 3 (3x1 instead of 3x3)
     
-    // Attack knob slot - BACKGROUND REMOVED
-    // auto attackArea = adsrRow.removeFromLeft(adsrKnobWidth);
-    // g.setColour(juce::Colour(0xff0f0f0f));
-    // g.fillRoundedRectangle(attackArea.getCentreX() - 40, attackArea.getCentreY() - 50, 80, 100, 4.0f);
-    // g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    // g.drawRoundedRectangle(attackArea.getCentreX() - 39, attackArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
-    // g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    // g.drawRoundedRectangle(attackArea.getCentreX() - 37, attackArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
+    // Attack knob slot - elongated metal (matching oscillator 1) - extended down 2px and moved down 2px
+    auto attackArea = adsrRow.removeFromLeft(adsrKnobWidth);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(attackArea.getCentreX() - 40 + 5, attackArea.getCentreY() - 60 + 7 - 2.5f + 2, 80, 117, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(attackArea.getCentreX() - 39 + 5, attackArea.getCentreY() - 59 + 7 - 2.5f + 2, 78, 115, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(attackArea.getCentreX() - 37 + 5, attackArea.getCentreY() - 57 + 7 - 2.5f + 2, 74, 111, 2.0f, 1.0f);
     
-    // adsrRow.removeFromLeft(15); // spacing
+    adsrRow.removeFromLeft(1); // minimal spacing reduced from 3 to 1
     
-    // Decay knob slot - BACKGROUND REMOVED
-    // auto decayArea = adsrRow.removeFromLeft(adsrKnobWidth);
-    // g.setColour(juce::Colour(0xff0f0f0f));
-    // g.fillRoundedRectangle(decayArea.getCentreX() - 40, decayArea.getCentreY() - 50, 80, 100, 4.0f);
-    // g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    // g.drawRoundedRectangle(decayArea.getCentreX() - 39, decayArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
-    // g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    // g.drawRoundedRectangle(decayArea.getCentreX() - 37, decayArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
+    // Decay knob slot - elongated metal (matching oscillator 1)
+    auto decayArea = adsrRow.removeFromLeft(adsrKnobWidth);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(decayArea.getCentreX() - 40, decayArea.getCentreY() - 60, 80, 120, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(decayArea.getCentreX() - 39, decayArea.getCentreY() - 59, 78, 118, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(decayArea.getCentreX() - 37, decayArea.getCentreY() - 57, 74, 114, 2.0f, 1.0f);
     
-    // adsrRow.removeFromLeft(15); // spacing
+    adsrRow.removeFromLeft(1); // minimal spacing reduced from 3 to 1
     
-    // Sustain knob slot - BACKGROUND REMOVED
-    // auto sustainArea = adsrRow.removeFromLeft(adsrKnobWidth);
-    // g.setColour(juce::Colour(0xff0f0f0f));
-    // g.fillRoundedRectangle(sustainArea.getCentreX() - 40, sustainArea.getCentreY() - 50, 80, 100, 4.0f);
-    // g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    // g.drawRoundedRectangle(sustainArea.getCentreX() - 39, sustainArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
-    // g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    // g.drawRoundedRectangle(sustainArea.getCentreX() - 37, sustainArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
+    // Sustain knob slot - elongated metal (matching oscillator 1)
+    auto sustainArea = adsrRow.removeFromLeft(adsrKnobWidth);
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(sustainArea.getCentreX() - 40, sustainArea.getCentreY() - 60, 80, 120, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(sustainArea.getCentreX() - 39, sustainArea.getCentreY() - 59, 78, 118, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(sustainArea.getCentreX() - 37, sustainArea.getCentreY() - 57, 74, 114, 2.0f, 1.0f);
     
-    // adsrRow.removeFromLeft(15); // spacing
+    adsrRow.removeFromLeft(1); // minimal spacing reduced from 3 to 1
     
-    // Release knob slot - BACKGROUND REMOVED
-    // auto releaseArea = adsrRow;
-    // g.setColour(juce::Colour(0xff0f0f0f));
-    // g.fillRoundedRectangle(releaseArea.getCentreX() - 40, releaseArea.getCentreY() - 50, 80, 100, 4.0f);
-    // g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    // g.drawRoundedRectangle(releaseArea.getCentreX() - 39, releaseArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
-    // g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    // g.drawRoundedRectangle(releaseArea.getCentreX() - 37, releaseArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
+    // Release knob slot - elongated metal (matching oscillator 1)
+    auto releaseArea = adsrRow;
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(releaseArea.getCentreX() - 40, releaseArea.getCentreY() - 60, 80, 120, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(releaseArea.getCentreX() - 39, releaseArea.getCentreY() - 59, 78, 118, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(releaseArea.getCentreX() - 37, releaseArea.getCentreY() - 57, 74, 114, 2.0f, 1.0f);
     
     slotBounds.removeFromTop(10); // spacing
     
