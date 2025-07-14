@@ -2994,8 +2994,8 @@ void SynthesizerComponent::drawSecondOscillatorBackground(juce::Graphics& g, juc
     auto totalWidth = 4 * 70; // 4 backgrounds at 70px width + no gaps = completely touching
     auto pitchControlWidth = 70; // Fixed width per control
     auto gapWidth = 0; // No gap between backgrounds - completely touching
-    auto startX = (pitchRow.getWidth() - totalWidth) / 2; // Center the squeezed row
-    auto squeezedRow = pitchRow.withX(pitchRow.getX() + startX).withWidth(totalWidth);
+    auto startX = (pitchRow.getWidth() - totalWidth) / 2 - 50 + 20 - 5 - 5 - 3; // Center the squeezed row, then move left 50px, then right 20px, then left 5px, then left 5px more, then left 3px
+    auto squeezedRow = pitchRow.withX(pitchRow.getX() + startX).withWidth(totalWidth).translated(0, 30 + 40 - 10 + 5 - 1 - 1 - 1); // Move down 30px, then down 40px more, then up 10px, then down 5px, then up 1px, then up 1px more, then up 1px again
     
     // Octave control slot - matching oscillator 1 style
     auto octaveArea = squeezedRow.removeFromLeft(pitchControlWidth);
