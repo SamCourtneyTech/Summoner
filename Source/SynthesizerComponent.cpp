@@ -410,12 +410,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     addAndMakeVisible(waveTypeRandomPhaseButton);
     
     // SECOND OSCILLATOR CONTROLS - Row 6 (MOVEABLE)
-    osc2TitleLabel.setText("OSCILLATOR 2", juce::dontSendNotification);
-    osc2TitleLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    osc2TitleLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    osc2TitleLabel.setJustificationType(juce::Justification::centred);
-    osc2TitleLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(osc2TitleLabel);
+    // osc2TitleLabel removed
     
     osc2SineButton.setButtonText("SIN");
     osc2SineButton.setLookAndFeel(&customWaveButtonLookAndFeel);
@@ -2971,13 +2966,13 @@ void SynthesizerComponent::drawSecondOscillatorBackground(juce::Graphics& g, juc
     auto stereoArea = volumeRow.removeFromLeft(volumeKnobWidth);
     // Original stereo background removed - only keeping the duplicate
     
-    // Duplicate stereo knob background - shifted down 200 pixels
+    // Osc2 Phase knob background - custom positioned for phase control (shifted down 244 pixels and left 70 pixels from stereo position)
     g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(stereoArea.getCentreX() - 40, stereoArea.getCentreY() - 50 + 200, 80, 100, 4.0f);
+    g.fillRoundedRectangle(stereoArea.getCentreX() - 40 - 70, stereoArea.getCentreY() - 50 + 244, 80, 100, 4.0f);
     g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(stereoArea.getCentreX() - 39, stereoArea.getCentreY() - 49 + 200, 78, 98, 3.0f, 2.0f);
+    g.drawRoundedRectangle(stereoArea.getCentreX() - 39 - 70, stereoArea.getCentreY() - 49 + 244, 78, 98, 3.0f, 2.0f);
     g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(stereoArea.getCentreX() - 37, stereoArea.getCentreY() - 47 + 200, 74, 94, 2.0f, 1.0f);
+    g.drawRoundedRectangle(stereoArea.getCentreX() - 37 - 70, stereoArea.getCentreY() - 47 + 244, 74, 94, 2.0f, 1.0f);
     
     // volumeRow.removeFromLeft(15); // spacing
     
