@@ -2874,14 +2874,14 @@ void SynthesizerComponent::drawSecondOscillatorBackground(juce::Graphics& g, juc
     
     adsrRow.removeFromLeft(1); // minimal spacing reduced from 3 to 1
     
-    // Decay knob slot - elongated metal (matching oscillator 1)
+    // Decay knob slot - elongated metal (matching oscillator 1) - moved down 5px and right 3px, shortened by 2px
     auto decayArea = adsrRow.removeFromLeft(adsrKnobWidth);
     g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(decayArea.getCentreX() - 40, decayArea.getCentreY() - 60, 80, 120, 4.0f);
+    g.fillRoundedRectangle(decayArea.getCentreX() - 40 + 3, decayArea.getCentreY() - 60 + 5 + 1, 80, 118, 4.0f);
     g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(decayArea.getCentreX() - 39, decayArea.getCentreY() - 59, 78, 118, 3.0f, 2.0f);
+    g.drawRoundedRectangle(decayArea.getCentreX() - 39 + 3, decayArea.getCentreY() - 59 + 5 + 1, 78, 116, 3.0f, 2.0f);
     g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(decayArea.getCentreX() - 37, decayArea.getCentreY() - 57, 74, 114, 2.0f, 1.0f);
+    g.drawRoundedRectangle(decayArea.getCentreX() - 37 + 3, decayArea.getCentreY() - 57 + 5 + 1, 74, 112, 2.0f, 1.0f);
     
     adsrRow.removeFromLeft(1); // minimal spacing reduced from 3 to 1
     
