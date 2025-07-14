@@ -2941,12 +2941,12 @@ void SynthesizerComponent::drawSecondOscillatorBackground(juce::Graphics& g, juc
     
     slotBounds.removeFromTop(10); // spacing
     
-    // Volume controls metal slots - 4 knobs in a row - REMOVED BACKGROUNDS
+    // Volume controls metal slots - only stereo knob background enabled
     auto volumeRow = slotBounds.removeFromTop(80);
-    // auto volumeKnobWidth = (volumeRow.getWidth() - 45) / 4;
+    auto volumeKnobWidth = (volumeRow.getWidth() - 45) / 4;
     
     // Volume knob slot - BACKGROUND REMOVED
-    // auto volumeArea = volumeRow.removeFromLeft(volumeKnobWidth);
+    auto volumeArea = volumeRow.removeFromLeft(volumeKnobWidth);
     // g.setColour(juce::Colour(0xff0f0f0f));
     // g.fillRoundedRectangle(volumeArea.getCentreX() - 40, volumeArea.getCentreY() - 50, 80, 100, 4.0f);
     // g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
@@ -2954,10 +2954,10 @@ void SynthesizerComponent::drawSecondOscillatorBackground(juce::Graphics& g, juc
     // g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
     // g.drawRoundedRectangle(volumeArea.getCentreX() - 37, volumeArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
     
-    // volumeRow.removeFromLeft(15); // spacing
+    volumeRow.removeFromLeft(15); // spacing
     
     // Detune knob slot - BACKGROUND REMOVED
-    // auto detuneArea = volumeRow.removeFromLeft(volumeKnobWidth);
+    auto detuneArea = volumeRow.removeFromLeft(volumeKnobWidth);
     // g.setColour(juce::Colour(0xff0f0f0f));
     // g.fillRoundedRectangle(detuneArea.getCentreX() - 40, detuneArea.getCentreY() - 50, 80, 100, 4.0f);
     // g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
@@ -2965,16 +2965,19 @@ void SynthesizerComponent::drawSecondOscillatorBackground(juce::Graphics& g, juc
     // g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
     // g.drawRoundedRectangle(detuneArea.getCentreX() - 37, detuneArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
     
-    // volumeRow.removeFromLeft(15); // spacing
+    volumeRow.removeFromLeft(15); // spacing
     
-    // Stereo knob slot - BACKGROUND REMOVED
-    // auto stereoArea = volumeRow.removeFromLeft(volumeKnobWidth);
-    // g.setColour(juce::Colour(0xff0f0f0f));
-    // g.fillRoundedRectangle(stereoArea.getCentreX() - 40, stereoArea.getCentreY() - 50, 80, 100, 4.0f);
-    // g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    // g.drawRoundedRectangle(stereoArea.getCentreX() - 39, stereoArea.getCentreY() - 49, 78, 98, 3.0f, 2.0f);
-    // g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    // g.drawRoundedRectangle(stereoArea.getCentreX() - 37, stereoArea.getCentreY() - 47, 74, 94, 2.0f, 1.0f);
+    // Stereo knob slot - only duplicate background enabled, shifted down 100 pixels
+    auto stereoArea = volumeRow.removeFromLeft(volumeKnobWidth);
+    // Original stereo background removed - only keeping the duplicate
+    
+    // Duplicate stereo knob background - shifted down 200 pixels
+    g.setColour(juce::Colour(0xff0f0f0f));
+    g.fillRoundedRectangle(stereoArea.getCentreX() - 40, stereoArea.getCentreY() - 50 + 200, 80, 100, 4.0f);
+    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
+    g.drawRoundedRectangle(stereoArea.getCentreX() - 39, stereoArea.getCentreY() - 49 + 200, 78, 98, 3.0f, 2.0f);
+    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
+    g.drawRoundedRectangle(stereoArea.getCentreX() - 37, stereoArea.getCentreY() - 47 + 200, 74, 94, 2.0f, 1.0f);
     
     // volumeRow.removeFromLeft(15); // spacing
     
