@@ -27,7 +27,7 @@ public:
     
     void setResonance(float resonance)
     {
-        resonanceQ = juce::jlimit(0.5f, 4.0f, resonance);
+        resonanceQ = juce::jlimit(0.5f, 3.0f, resonance); // Reduced max resonance for stability
         coefficientsNeedUpdate = true;
     }
     
@@ -62,24 +62,25 @@ public:
         if (coefficientsNeedUpdate)
             updateCoefficients();
         
-        // Denormal protection
+        // Input limiting and denormal protection
+        inputSample = juce::jlimit(-2.0f, 2.0f, inputSample);
         if (std::abs(inputSample) < 1e-10f)
             inputSample = 0.0f;
         
         const float output = b0 * inputSample + b1 * x1[channel] + b2 * x2[channel] 
                            - a1 * y1[channel] - a2 * y2[channel];
         
-        // Update delay line for this channel
+        // Update delay line for this channel with limited values
         x2[channel] = x1[channel];
         x1[channel] = inputSample;
         y2[channel] = y1[channel];
-        y1[channel] = output;
+        y1[channel] = juce::jlimit(-3.0f, 3.0f, output); // Limit filter state
         
-        // Denormal protection for output
+        // Denormal protection and output limiting
         if (std::abs(output) < 1e-10f)
             return 0.0f;
         
-        return output;
+        return juce::jlimit(-2.0f, 2.0f, output);
     }
 
 private:
@@ -828,9 +829,10 @@ private:
                         // Apply filter to OSC2 if enabled
                         if (osc2FilterEnabled && osc2FilterInstance != nullptr)
                         {
-                            // Scale down input to prevent filter overdrive
-                            osc2LeftSample *= 0.7f;
-                            osc2RightSample *= 0.7f;
+                            // Extra scaling for square waves to prevent close-interval beating distortion
+                            float scaleAmount = (osc2Type == 2) ? 0.5f : 0.7f; // More aggressive scaling for square waves
+                            osc2LeftSample *= scaleAmount;
+                            osc2RightSample *= scaleAmount;
                             
                             // Additional denormal protection before filtering
                             if (std::abs(osc2LeftSample) < 1e-10f) osc2LeftSample = 0.0f;
@@ -839,9 +841,11 @@ private:
                             osc2LeftSample = osc2FilterInstance->processSample(osc2LeftSample, 0);
                             osc2RightSample = osc2FilterInstance->processSample(osc2RightSample, 1);
                             
-                            // Gentle saturation instead of hard clipping
-                            osc2LeftSample = std::tanh(osc2LeftSample * 0.8f) * 1.25f;
-                            osc2RightSample = std::tanh(osc2RightSample * 0.8f) * 1.25f;
+                            // More aggressive saturation for square waves
+                            float saturationAmount = (osc2Type == 2) ? 0.6f : 0.8f;
+                            float saturationGain = (osc2Type == 2) ? 1.4f : 1.25f;
+                            osc2LeftSample = std::tanh(osc2LeftSample * saturationAmount) * saturationGain;
+                            osc2RightSample = std::tanh(osc2RightSample * saturationAmount) * saturationGain;
                         }
                         
                         // Add to main mix
