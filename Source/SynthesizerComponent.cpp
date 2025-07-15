@@ -742,6 +742,13 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     filterBPButton.addListener(this);
     addAndMakeVisible(filterBPButton);
     
+    filterNotchButton.setButtonText("NOTCH");
+    filterNotchButton.setClickingTogglesState(true);
+    filterNotchButton.setToggleState(false, juce::dontSendNotification); // NOTCH off by default
+    filterNotchButton.setLookAndFeel(&customWaveButtonLookAndFeel);
+    filterNotchButton.addListener(this);
+    addAndMakeVisible(filterNotchButton);
+    
     // Filter slope buttons (12dB and 24dB) - radio button behavior
     filter12dBButton.setButtonText("12dB");
     filter12dBButton.setClickingTogglesState(true);
@@ -1898,12 +1905,14 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             return;
         }
         
-        // LP selected - deselect HP and BP
+        // LP selected - deselect HP, BP, and Notch
         filterHPButton.setToggleState(false, juce::dontSendNotification);
         filterBPButton.setToggleState(false, juce::dontSendNotification);
+        filterNotchButton.setToggleState(false, juce::dontSendNotification);
         audioProcessor.setFilterLPEnabled(true);
         audioProcessor.setFilterHPEnabled(false);
         audioProcessor.setFilterBPEnabled(false);
+        audioProcessor.setFilterNotchEnabled(false);
     }
     else if (button == &filterHPButton)
     {
@@ -1915,12 +1924,14 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             return;
         }
         
-        // HP selected - deselect LP and BP
+        // HP selected - deselect LP, BP, and Notch
         filterLPButton.setToggleState(false, juce::dontSendNotification);
         filterBPButton.setToggleState(false, juce::dontSendNotification);
+        filterNotchButton.setToggleState(false, juce::dontSendNotification);
         audioProcessor.setFilterLPEnabled(false);
         audioProcessor.setFilterHPEnabled(true);
         audioProcessor.setFilterBPEnabled(false);
+        audioProcessor.setFilterNotchEnabled(false);
     }
     else if (button == &filterBPButton)
     {
@@ -1932,12 +1943,33 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             return;
         }
         
-        // BP selected - deselect LP and HP
+        // BP selected - deselect LP, HP, and Notch
         filterLPButton.setToggleState(false, juce::dontSendNotification);
         filterHPButton.setToggleState(false, juce::dontSendNotification);
+        filterNotchButton.setToggleState(false, juce::dontSendNotification);
         audioProcessor.setFilterLPEnabled(false);
         audioProcessor.setFilterHPEnabled(false);
         audioProcessor.setFilterBPEnabled(true);
+        audioProcessor.setFilterNotchEnabled(false);
+    }
+    else if (button == &filterNotchButton)
+    {
+        // Radio button behavior - Notch cannot be unselected, only LP, HP, or BP can be selected instead
+        if (!filterNotchButton.getToggleState())
+        {
+            // Prevent deselection - keep Notch selected
+            filterNotchButton.setToggleState(true, juce::dontSendNotification);
+            return;
+        }
+        
+        // Notch selected - deselect LP, HP, and BP
+        filterLPButton.setToggleState(false, juce::dontSendNotification);
+        filterHPButton.setToggleState(false, juce::dontSendNotification);
+        filterBPButton.setToggleState(false, juce::dontSendNotification);
+        audioProcessor.setFilterLPEnabled(false);
+        audioProcessor.setFilterHPEnabled(false);
+        audioProcessor.setFilterBPEnabled(false);
+        audioProcessor.setFilterNotchEnabled(true);
     }
     else if (button == &filter12dBButton)
     {
@@ -2634,15 +2666,18 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto centerX = getWidth() / 2;
     auto filterSectionY = totalHeight - 200; // Position near bottom center
     
-    // Filter type buttons above the cutoff knob (3 buttons: LP, HP, BP)
-    auto filterLPButtonArea = juce::Rectangle<int>(centerX - 80, filterSectionY - 40, 50, 25);
+    // Filter type buttons above the cutoff knob (4 buttons: LP, HP, BP, NOTCH)
+    auto filterLPButtonArea = juce::Rectangle<int>(centerX - 100, filterSectionY - 40, 45, 25);
     filterLPButton.setBounds(filterLPButtonArea);
     
-    auto filterHPButtonArea = juce::Rectangle<int>(centerX - 25, filterSectionY - 40, 50, 25);
+    auto filterHPButtonArea = juce::Rectangle<int>(centerX - 50, filterSectionY - 40, 45, 25);
     filterHPButton.setBounds(filterHPButtonArea);
     
-    auto filterBPButtonArea = juce::Rectangle<int>(centerX + 30, filterSectionY - 40, 50, 25);
+    auto filterBPButtonArea = juce::Rectangle<int>(centerX, filterSectionY - 40, 45, 25);
     filterBPButton.setBounds(filterBPButtonArea);
+    
+    auto filterNotchButtonArea = juce::Rectangle<int>(centerX + 50, filterSectionY - 40, 55, 25);
+    filterNotchButton.setBounds(filterNotchButtonArea);
     
     // Filter slope buttons below the filter type buttons
     auto filter12dBButtonArea = juce::Rectangle<int>(centerX - 55, filterSectionY - 10, 50, 25);
@@ -2651,15 +2686,15 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto filter24dBButtonArea = juce::Rectangle<int>(centerX + 5, filterSectionY - 10, 50, 25);
     filter24dBButton.setBounds(filter24dBButtonArea);
     
-    // Filter cutoff knob on the left (moved down to make space for slope buttons)
-    auto filterCutoffKnobArea = juce::Rectangle<int>(centerX - 80, filterSectionY + 30, 80, 60);
+    // Filter cutoff knob on the left (moved down further to make more space for slope buttons)
+    auto filterCutoffKnobArea = juce::Rectangle<int>(centerX - 80, filterSectionY + 45, 80, 60);
     filterCutoffKnob.setBounds(filterCutoffKnobArea);
     
     auto filterCutoffLabelArea = juce::Rectangle<int>(filterCutoffKnobArea.getX(), filterCutoffKnobArea.getY() - 20, 80, 20);
     filterCutoffLabel.setBounds(filterCutoffLabelArea);
     
-    // Filter Resonance knob on the right (moved down to make space for slope buttons)
-    auto filterResonanceKnobArea = juce::Rectangle<int>(centerX + 10, filterSectionY + 30, 80, 60);
+    // Filter Resonance knob on the right (moved down further to make more space for slope buttons)
+    auto filterResonanceKnobArea = juce::Rectangle<int>(centerX + 10, filterSectionY + 45, 80, 60);
     filterResonanceKnob.setBounds(filterResonanceKnobArea);
     
     auto filterResonanceLabelArea = juce::Rectangle<int>(filterResonanceKnobArea.getX(), filterResonanceKnobArea.getY() - 20, 80, 20);
@@ -2668,7 +2703,7 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     // OSC filter enable buttons - positioned on either side of the moved knobs
     auto filterButtonWidth = 60;
     auto filterButtonHeight = 30;
-    auto buttonY = filterSectionY + 100; // Below the moved knobs
+    auto buttonY = filterSectionY + 115; // Below the moved knobs (adjusted for extra space)
     
     auto osc1FilterButtonArea = juce::Rectangle<int>(centerX - 80 - filterButtonWidth/2, buttonY, filterButtonWidth, filterButtonHeight);
     osc1FilterEnableButton.setBounds(osc1FilterButtonArea);

@@ -12,7 +12,8 @@ public:
         OFF = 0,
         LOWPASS = 1,
         HIGHPASS = 2,
-        BANDPASS = 3
+        BANDPASS = 3,
+        NOTCH = 4
     };
     
     enum FilterSlope
@@ -161,6 +162,16 @@ private:
             a1 = 0.0f;
             a2 = -a0;
             b1 = 2.0f * (1.0f - cSq) * norm;
+            b2 = (1.0f - cQ + cSq) * norm;
+        }
+        else if (filterType == NOTCH)
+        {
+            // 12dB/octave notch (band-reject) coefficients with Q
+            float norm = 1.0f / (1.0f + cQ + cSq);
+            a0 = (1.0f + cSq) * norm;
+            a1 = 2.0f * (1.0f - cSq) * norm;
+            a2 = a0;
+            b1 = a1; // Same as a1 for notch
             b2 = (1.0f - cQ + cSq) * norm;
         }
         
@@ -474,6 +485,12 @@ public:
     }
     bool getFilterBPEnabled() const { return filterBPEnabled; }
     
+    void setFilterNotchEnabled(bool enabled) {
+        filterNotchEnabled = enabled;
+        updateFilterParameters();
+    }
+    bool getFilterNotchEnabled() const { return filterNotchEnabled; }
+    
     void setFilter12dBEnabled(bool enabled) {
         filter12dBEnabled = enabled;
         updateFilterParameters();
@@ -568,6 +585,7 @@ private:
     bool filterLPEnabled = true; // LP filter enabled by default
     bool filterHPEnabled = false; // HP filter disabled by default
     bool filterBPEnabled = false; // BP filter disabled by default
+    bool filterNotchEnabled = false; // Notch filter disabled by default
     bool filter12dBEnabled = true; // 12dB slope enabled by default
     bool filter24dBEnabled = false; // 24dB slope disabled by default
     bool osc1FilterEnabled = false; // OSC 1 filter disabled by default
