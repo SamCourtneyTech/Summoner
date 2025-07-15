@@ -3,7 +3,7 @@
 #include <array>
 #include "SettingsComponent.h"
 
-// 12dB/octave filter with separate LP and HP modes
+// Variable slope filter with separate LP and HP modes
 class SimpleStableFilter
 {
 public:
@@ -13,6 +13,12 @@ public:
         LOWPASS = 1,
         HIGHPASS = 2,
         BANDPASS = 3
+    };
+    
+    enum FilterSlope
+    {
+        SLOPE_12DB = 0,
+        SLOPE_24DB = 1
     };
     
     SimpleStableFilter()
@@ -45,15 +51,24 @@ public:
         updateCoeff();
     }
     
+    void setFilterSlope(FilterSlope slope)
+    {
+        filterSlope = slope;
+        updateCoeff();
+    }
+    
     // Getter methods for per-voice filter synchronization
     float getCutoffFrequency() const { return cutoffFreq; }
     FilterType getFilterType() const { return filterType; }
+    FilterSlope getFilterSlope() const { return filterSlope; }
     float getResonance() const { return q; }
     
     void reset()
     {
         z1 = 0.0f;
         z2 = 0.0f;
+        z3 = 0.0f;
+        z4 = 0.0f;
     }
     
     void processBlock(juce::AudioBuffer<float>& buffer)
@@ -69,17 +84,37 @@ public:
         // Apply input scaling to prevent numerical issues
         inputSample = juce::jlimit(-1.0f, 1.0f, inputSample);
         
-        // Direct Form II implementation for 12dB/octave response
-        float output = inputSample * a0 + z1;
-        
-        // Update delay line
-        z1 = inputSample * a1 + z2 - b1 * output;
-        z2 = inputSample * a2 - b2 * output;
-        
-        // Apply gentle saturation for stability
-        output = std::tanh(output * 0.8f) * 1.25f;
-        
-        return output;
+        if (filterSlope == SLOPE_12DB)
+        {
+            // Single 12dB stage
+            float output = inputSample * a0 + z1;
+            
+            // Update delay line
+            z1 = inputSample * a1 + z2 - b1 * output;
+            z2 = inputSample * a2 - b2 * output;
+            
+            // Apply gentle saturation for stability
+            output = std::tanh(output * 0.8f) * 1.25f;
+            
+            return output;
+        }
+        else // SLOPE_24DB
+        {
+            // First 12dB stage
+            float stage1 = inputSample * a0 + z1;
+            z1 = inputSample * a1 + z2 - b1 * stage1;
+            z2 = inputSample * a2 - b2 * stage1;
+            
+            // Second 12dB stage (cascaded)
+            float output = stage1 * a0 + z3;
+            z3 = stage1 * a1 + z4 - b1 * output;
+            z4 = stage1 * a2 - b2 * output;
+            
+            // Apply gentle saturation for stability
+            output = std::tanh(output * 0.8f) * 1.25f;
+            
+            return output;
+        }
     }
 
 private:
@@ -141,13 +176,14 @@ private:
     float cutoffFreq = 1000.0f;
     float q = 0.707f; // Q factor for resonance
     FilterType filterType = OFF;
+    FilterSlope filterSlope = SLOPE_12DB;
     
     // Filter coefficients
     float a0 = 1.0f, a1 = 0.0f, a2 = 0.0f;
     float b1 = 0.0f, b2 = 0.0f;
     
-    // State variables
-    float z1 = 0.0f, z2 = 0.0f;
+    // State variables (z3, z4 for 24dB filters)
+    float z1 = 0.0f, z2 = 0.0f, z3 = 0.0f, z4 = 0.0f;
 };
 
 class SummonerXSerum2AudioProcessor : public juce::AudioProcessor
@@ -437,6 +473,18 @@ public:
         updateFilterParameters();
     }
     bool getFilterBPEnabled() const { return filterBPEnabled; }
+    
+    void setFilter12dBEnabled(bool enabled) {
+        filter12dBEnabled = enabled;
+        updateFilterParameters();
+    }
+    bool getFilter12dBEnabled() const { return filter12dBEnabled; }
+    
+    void setFilter24dBEnabled(bool enabled) {
+        filter24dBEnabled = enabled;
+        updateFilterParameters();
+    }
+    bool getFilter24dBEnabled() const { return filter24dBEnabled; }
 
 private:
     std::map<std::string, int> parameterMap;
@@ -520,6 +568,8 @@ private:
     bool filterLPEnabled = true; // LP filter enabled by default
     bool filterHPEnabled = false; // HP filter disabled by default
     bool filterBPEnabled = false; // BP filter disabled by default
+    bool filter12dBEnabled = true; // 12dB slope enabled by default
+    bool filter24dBEnabled = false; // 24dB slope disabled by default
     bool osc1FilterEnabled = false; // OSC 1 filter disabled by default
     bool osc2FilterEnabled = false; // OSC 2 filter disabled by default
     SimpleStableFilter osc1Filter; // Separate filter instance for OSC1
@@ -1064,6 +1114,7 @@ private:
                 voiceOsc1Filter.setCutoffFrequency(osc1FilterInstance->getCutoffFrequency());
                 voiceOsc1Filter.setResonance(osc1FilterInstance->getResonance());
                 voiceOsc1Filter.setFilterType(osc1FilterInstance->getFilterType());
+                voiceOsc1Filter.setFilterSlope(osc1FilterInstance->getFilterSlope());
                 voiceOsc1Filter.reset();
             }
             if (osc2FilterInstance != nullptr)
@@ -1072,6 +1123,7 @@ private:
                 voiceOsc2Filter.setCutoffFrequency(osc2FilterInstance->getCutoffFrequency());
                 voiceOsc2Filter.setResonance(osc2FilterInstance->getResonance());
                 voiceOsc2Filter.setFilterType(osc2FilterInstance->getFilterType());
+                voiceOsc2Filter.setFilterSlope(osc2FilterInstance->getFilterSlope());
                 voiceOsc2Filter.reset();
             }
         }

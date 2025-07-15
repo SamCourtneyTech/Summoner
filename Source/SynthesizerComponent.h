@@ -562,6 +562,8 @@ private:
     juce::TextButton filterLPButton;
     juce::TextButton filterHPButton;
     juce::TextButton filterBPButton;
+    juce::TextButton filter12dBButton;
+    juce::TextButton filter24dBButton;
     
     // Octave control state
     int octaveValue = 0;

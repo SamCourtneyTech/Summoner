@@ -107,15 +107,22 @@ void SummonerXSerum2AudioProcessor::prepareToPlay(double sampleRate, int samples
     else if (filterBPEnabled)
         initialFilterType = SimpleStableFilter::BANDPASS;
     
+    // Determine initial filter slope
+    SimpleStableFilter::FilterSlope initialFilterSlope = SimpleStableFilter::SLOPE_12DB;
+    if (filter24dBEnabled)
+        initialFilterSlope = SimpleStableFilter::SLOPE_24DB;
+    
     osc1Filter.setSampleRate(sampleRate);
     osc1Filter.setCutoffFrequency(filterCutoff);
     osc1Filter.setResonance(resonanceToQ(filterResonance));
     osc1Filter.setFilterType(initialFilterType);
+    osc1Filter.setFilterSlope(initialFilterSlope);
     
     osc2Filter.setSampleRate(sampleRate);
     osc2Filter.setCutoffFrequency(filterCutoff);
     osc2Filter.setResonance(resonanceToQ(filterResonance));
     osc2Filter.setFilterType(initialFilterType);
+    osc2Filter.setFilterSlope(initialFilterSlope);
     
     // Initialize temporary buffers for oscillator separation
     osc1Buffer.setSize(2, samplesPerBlock);
@@ -377,12 +384,19 @@ void SummonerXSerum2AudioProcessor::updateFilterParameters()
     else if (filterBPEnabled)
         filterType = SimpleStableFilter::BANDPASS;
     
+    // Determine filter slope
+    SimpleStableFilter::FilterSlope filterSlope = SimpleStableFilter::SLOPE_12DB;
+    if (filter24dBEnabled)
+        filterSlope = SimpleStableFilter::SLOPE_24DB;
+    
     osc1Filter.setCutoffFrequency(filterCutoff);
     osc1Filter.setResonance(resonanceToQ(filterResonance));
     osc1Filter.setFilterType(filterType);
+    osc1Filter.setFilterSlope(filterSlope);
     osc2Filter.setCutoffFrequency(filterCutoff);
     osc2Filter.setResonance(resonanceToQ(filterResonance));
     osc2Filter.setFilterType(filterType);
+    osc2Filter.setFilterSlope(filterSlope);
     updateFilterRouting();
     
     // Update per-voice filters for all active voices

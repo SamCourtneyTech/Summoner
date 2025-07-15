@@ -742,6 +742,21 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     filterBPButton.addListener(this);
     addAndMakeVisible(filterBPButton);
     
+    // Filter slope buttons (12dB and 24dB) - radio button behavior
+    filter12dBButton.setButtonText("12dB");
+    filter12dBButton.setClickingTogglesState(true);
+    filter12dBButton.setToggleState(true, juce::dontSendNotification); // 12dB selected by default
+    filter12dBButton.setLookAndFeel(&customWaveButtonLookAndFeel);
+    filter12dBButton.addListener(this);
+    addAndMakeVisible(filter12dBButton);
+    
+    filter24dBButton.setButtonText("24dB");
+    filter24dBButton.setClickingTogglesState(true);
+    filter24dBButton.setToggleState(false, juce::dontSendNotification); // 24dB off by default
+    filter24dBButton.setLookAndFeel(&customWaveButtonLookAndFeel);
+    filter24dBButton.addListener(this);
+    addAndMakeVisible(filter24dBButton);
+    
     // ADSR ENVELOPE VISUALIZER GROUP - Row 2 (MOVEABLE)
     addAndMakeVisible(adsrEnvelopeVisualizer);
     
@@ -831,6 +846,8 @@ SynthesizerComponent::~SynthesizerComponent()
     filterLPButton.setLookAndFeel(nullptr);
     filterHPButton.setLookAndFeel(nullptr);
     filterBPButton.setLookAndFeel(nullptr);
+    filter12dBButton.setLookAndFeel(nullptr);
+    filter24dBButton.setLookAndFeel(nullptr);
     osc2DetuneKnob.setLookAndFeel(nullptr);
     osc2DetuneLabel.setLookAndFeel(nullptr);
     osc2StereoKnob.setLookAndFeel(nullptr);
@@ -1922,6 +1939,36 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
         audioProcessor.setFilterHPEnabled(false);
         audioProcessor.setFilterBPEnabled(true);
     }
+    else if (button == &filter12dBButton)
+    {
+        // Radio button behavior - 12dB cannot be unselected, only 24dB can be selected instead
+        if (!filter12dBButton.getToggleState())
+        {
+            // Prevent deselection - keep 12dB selected
+            filter12dBButton.setToggleState(true, juce::dontSendNotification);
+            return;
+        }
+        
+        // 12dB selected - deselect 24dB
+        filter24dBButton.setToggleState(false, juce::dontSendNotification);
+        audioProcessor.setFilter12dBEnabled(true);
+        audioProcessor.setFilter24dBEnabled(false);
+    }
+    else if (button == &filter24dBButton)
+    {
+        // Radio button behavior - 24dB cannot be unselected, only 12dB can be selected instead
+        if (!filter24dBButton.getToggleState())
+        {
+            // Prevent deselection - keep 24dB selected
+            filter24dBButton.setToggleState(true, juce::dontSendNotification);
+            return;
+        }
+        
+        // 24dB selected - deselect 12dB
+        filter12dBButton.setToggleState(false, juce::dontSendNotification);
+        audioProcessor.setFilter12dBEnabled(false);
+        audioProcessor.setFilter24dBEnabled(true);
+    }
 }
 
 void SynthesizerComponent::mouseDown(const juce::MouseEvent& event)
@@ -2597,24 +2644,31 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto filterBPButtonArea = juce::Rectangle<int>(centerX + 30, filterSectionY - 40, 50, 25);
     filterBPButton.setBounds(filterBPButtonArea);
     
-    // Filter cutoff knob on the left
-    auto filterCutoffKnobArea = juce::Rectangle<int>(centerX - 80, filterSectionY, 80, 60);
+    // Filter slope buttons below the filter type buttons
+    auto filter12dBButtonArea = juce::Rectangle<int>(centerX - 55, filterSectionY - 10, 50, 25);
+    filter12dBButton.setBounds(filter12dBButtonArea);
+    
+    auto filter24dBButtonArea = juce::Rectangle<int>(centerX + 5, filterSectionY - 10, 50, 25);
+    filter24dBButton.setBounds(filter24dBButtonArea);
+    
+    // Filter cutoff knob on the left (moved down to make space for slope buttons)
+    auto filterCutoffKnobArea = juce::Rectangle<int>(centerX - 80, filterSectionY + 30, 80, 60);
     filterCutoffKnob.setBounds(filterCutoffKnobArea);
     
     auto filterCutoffLabelArea = juce::Rectangle<int>(filterCutoffKnobArea.getX(), filterCutoffKnobArea.getY() - 20, 80, 20);
     filterCutoffLabel.setBounds(filterCutoffLabelArea);
     
-    // Filter Resonance knob on the right
-    auto filterResonanceKnobArea = juce::Rectangle<int>(centerX + 10, filterSectionY, 80, 60);
+    // Filter Resonance knob on the right (moved down to make space for slope buttons)
+    auto filterResonanceKnobArea = juce::Rectangle<int>(centerX + 10, filterSectionY + 30, 80, 60);
     filterResonanceKnob.setBounds(filterResonanceKnobArea);
     
     auto filterResonanceLabelArea = juce::Rectangle<int>(filterResonanceKnobArea.getX(), filterResonanceKnobArea.getY() - 20, 80, 20);
     filterResonanceLabel.setBounds(filterResonanceLabelArea);
     
-    // OSC filter enable buttons - positioned on either side of the cutoff knob
+    // OSC filter enable buttons - positioned on either side of the moved knobs
     auto filterButtonWidth = 60;
     auto filterButtonHeight = 30;
-    auto buttonY = filterSectionY + 70; // Below the knob
+    auto buttonY = filterSectionY + 100; // Below the moved knobs
     
     auto osc1FilterButtonArea = juce::Rectangle<int>(centerX - 80 - filterButtonWidth/2, buttonY, filterButtonWidth, filterButtonHeight);
     osc1FilterEnableButton.setBounds(osc1FilterButtonArea);
