@@ -98,13 +98,24 @@ void SummonerXSerum2AudioProcessor::prepareToPlay(double sampleRate, int samples
     synthesiser.setCurrentPlaybackSampleRate(sampleRate);
     
     // Initialize both filter instances
+    // Determine initial filter type
+    SimpleStableFilter::FilterType initialFilterType = SimpleStableFilter::OFF;
+    if (filterLPEnabled)
+        initialFilterType = SimpleStableFilter::LOWPASS;
+    else if (filterHPEnabled)
+        initialFilterType = SimpleStableFilter::HIGHPASS;
+    else if (filterBPEnabled)
+        initialFilterType = SimpleStableFilter::BANDPASS;
+    
     osc1Filter.setSampleRate(sampleRate);
     osc1Filter.setCutoffFrequency(filterCutoff);
     osc1Filter.setResonance(filterResonance);
+    osc1Filter.setFilterType(initialFilterType);
     
     osc2Filter.setSampleRate(sampleRate);
     osc2Filter.setCutoffFrequency(filterCutoff);
     osc2Filter.setResonance(filterResonance);
+    osc2Filter.setFilterType(initialFilterType);
     
     // Initialize temporary buffers for oscillator separation
     osc1Buffer.setSize(2, samplesPerBlock);
@@ -353,11 +364,35 @@ void SummonerXSerum2AudioProcessor::updateOsc2EnvelopeParameters()
 
 void SummonerXSerum2AudioProcessor::updateFilterParameters()
 {
+    // Reset filters before updating parameters
+    osc1Filter.reset();
+    osc2Filter.reset();
+    
+    // Determine filter type
+    SimpleStableFilter::FilterType filterType = SimpleStableFilter::OFF;
+    if (filterLPEnabled)
+        filterType = SimpleStableFilter::LOWPASS;
+    else if (filterHPEnabled)
+        filterType = SimpleStableFilter::HIGHPASS;
+    else if (filterBPEnabled)
+        filterType = SimpleStableFilter::BANDPASS;
+    
     osc1Filter.setCutoffFrequency(filterCutoff);
     osc1Filter.setResonance(filterResonance);
+    osc1Filter.setFilterType(filterType);
     osc2Filter.setCutoffFrequency(filterCutoff);
     osc2Filter.setResonance(filterResonance);
+    osc2Filter.setFilterType(filterType);
     updateFilterRouting();
+    
+    // Update per-voice filters for all active voices
+    for (int i = 0; i < synthesiser.getNumVoices(); ++i)
+    {
+        if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
+        {
+            voice->updatePerVoiceFilters();
+        }
+    }
 }
 
 void SummonerXSerum2AudioProcessor::updateFilterRouting()
@@ -367,6 +402,7 @@ void SummonerXSerum2AudioProcessor::updateFilterRouting()
         if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
         {
             voice->setFilterRouting(osc1FilterEnabled, osc2FilterEnabled, &osc1Filter, &osc2Filter);
+            voice->updatePerVoiceFilters();
         }
     }
 }

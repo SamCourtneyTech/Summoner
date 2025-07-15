@@ -704,6 +704,28 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     osc2FilterEnableButton.addListener(this);
     addAndMakeVisible(osc2FilterEnableButton);
     
+    // Filter type buttons (Low-pass and High-pass) - radio button behavior
+    filterLPButton.setButtonText("LP");
+    filterLPButton.setClickingTogglesState(true);
+    filterLPButton.setToggleState(true, juce::dontSendNotification); // LP selected by default
+    filterLPButton.setLookAndFeel(&customWaveButtonLookAndFeel);
+    filterLPButton.addListener(this);
+    addAndMakeVisible(filterLPButton);
+    
+    filterHPButton.setButtonText("HP");
+    filterHPButton.setClickingTogglesState(true);
+    filterHPButton.setToggleState(false, juce::dontSendNotification); // HP off by default
+    filterHPButton.setLookAndFeel(&customWaveButtonLookAndFeel);
+    filterHPButton.addListener(this);
+    addAndMakeVisible(filterHPButton);
+    
+    filterBPButton.setButtonText("BP");
+    filterBPButton.setClickingTogglesState(true);
+    filterBPButton.setToggleState(false, juce::dontSendNotification); // BP off by default
+    filterBPButton.setLookAndFeel(&customWaveButtonLookAndFeel);
+    filterBPButton.addListener(this);
+    addAndMakeVisible(filterBPButton);
+    
     // ADSR ENVELOPE VISUALIZER GROUP - Row 2 (MOVEABLE)
     addAndMakeVisible(adsrEnvelopeVisualizer);
     
@@ -788,6 +810,9 @@ SynthesizerComponent::~SynthesizerComponent()
     filterCutoffLabel.setLookAndFeel(nullptr);
     osc1FilterEnableButton.setLookAndFeel(nullptr);
     osc2FilterEnableButton.setLookAndFeel(nullptr);
+    filterLPButton.setLookAndFeel(nullptr);
+    filterHPButton.setLookAndFeel(nullptr);
+    filterBPButton.setLookAndFeel(nullptr);
     osc2DetuneKnob.setLookAndFeel(nullptr);
     osc2DetuneLabel.setLookAndFeel(nullptr);
     osc2StereoKnob.setLookAndFeel(nullptr);
@@ -1824,6 +1849,57 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
     {
         audioProcessor.setOsc2FilterEnabled(osc2FilterEnableButton.getToggleState());
     }
+    else if (button == &filterLPButton)
+    {
+        // Radio button behavior - LP cannot be unselected, only HP can be selected instead
+        if (!filterLPButton.getToggleState())
+        {
+            // Prevent deselection - keep LP selected
+            filterLPButton.setToggleState(true, juce::dontSendNotification);
+            return;
+        }
+        
+        // LP selected - deselect HP and BP
+        filterHPButton.setToggleState(false, juce::dontSendNotification);
+        filterBPButton.setToggleState(false, juce::dontSendNotification);
+        audioProcessor.setFilterLPEnabled(true);
+        audioProcessor.setFilterHPEnabled(false);
+        audioProcessor.setFilterBPEnabled(false);
+    }
+    else if (button == &filterHPButton)
+    {
+        // Radio button behavior - HP cannot be unselected, only LP can be selected instead
+        if (!filterHPButton.getToggleState())
+        {
+            // Prevent deselection - keep HP selected
+            filterHPButton.setToggleState(true, juce::dontSendNotification);
+            return;
+        }
+        
+        // HP selected - deselect LP and BP
+        filterLPButton.setToggleState(false, juce::dontSendNotification);
+        filterBPButton.setToggleState(false, juce::dontSendNotification);
+        audioProcessor.setFilterLPEnabled(false);
+        audioProcessor.setFilterHPEnabled(true);
+        audioProcessor.setFilterBPEnabled(false);
+    }
+    else if (button == &filterBPButton)
+    {
+        // Radio button behavior - BP cannot be unselected, only LP or HP can be selected instead
+        if (!filterBPButton.getToggleState())
+        {
+            // Prevent deselection - keep BP selected
+            filterBPButton.setToggleState(true, juce::dontSendNotification);
+            return;
+        }
+        
+        // BP selected - deselect LP and HP
+        filterLPButton.setToggleState(false, juce::dontSendNotification);
+        filterHPButton.setToggleState(false, juce::dontSendNotification);
+        audioProcessor.setFilterLPEnabled(false);
+        audioProcessor.setFilterHPEnabled(false);
+        audioProcessor.setFilterBPEnabled(true);
+    }
 }
 
 void SynthesizerComponent::mouseDown(const juce::MouseEvent& event)
@@ -2488,6 +2564,16 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     // Filter section positioning - center of the page
     auto centerX = getWidth() / 2;
     auto filterSectionY = totalHeight - 200; // Position near bottom center
+    
+    // Filter type buttons above the cutoff knob (3 buttons: LP, HP, BP)
+    auto filterLPButtonArea = juce::Rectangle<int>(centerX - 80, filterSectionY - 40, 50, 25);
+    filterLPButton.setBounds(filterLPButtonArea);
+    
+    auto filterHPButtonArea = juce::Rectangle<int>(centerX - 25, filterSectionY - 40, 50, 25);
+    filterHPButton.setBounds(filterHPButtonArea);
+    
+    auto filterBPButtonArea = juce::Rectangle<int>(centerX + 30, filterSectionY - 40, 50, 25);
+    filterBPButton.setBounds(filterBPButtonArea);
     
     // Filter cutoff knob in center
     auto filterKnobArea = juce::Rectangle<int>(centerX - 40, filterSectionY, 80, 60);

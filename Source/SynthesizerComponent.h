@@ -557,6 +557,9 @@ private:
     juce::Label filterCutoffLabel;
     juce::TextButton osc1FilterEnableButton;
     juce::TextButton osc2FilterEnableButton;
+    juce::TextButton filterLPButton;
+    juce::TextButton filterHPButton;
+    juce::TextButton filterBPButton;
     
     // Octave control state
     int octaveValue = 0;
