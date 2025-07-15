@@ -555,6 +555,8 @@ private:
     // Filter controls
     juce::Slider filterCutoffKnob;
     juce::Label filterCutoffLabel;
+    juce::Slider filterResonanceKnob;
+    juce::Label filterResonanceLabel;
     juce::TextButton osc1FilterEnableButton;
     juce::TextButton osc2FilterEnableButton;
     juce::TextButton filterLPButton;

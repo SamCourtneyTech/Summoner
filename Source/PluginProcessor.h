@@ -34,7 +34,9 @@ public:
     
     void setResonance(float resonance)
     {
-        // No resonance for stability
+        // Q factor: 0.707 = no resonance, higher values = more resonance
+        q = juce::jlimit(0.1f, 20.0f, resonance);
+        updateCoeff();
     }
     
     void setFilterType(FilterType type)
@@ -46,6 +48,7 @@ public:
     // Getter methods for per-voice filter synchronization
     float getCutoffFrequency() const { return cutoffFreq; }
     FilterType getFilterType() const { return filterType; }
+    float getResonance() const { return q; }
     
     void reset()
     {
@@ -89,39 +92,41 @@ private:
             return;
         }
         
-        // Standard 12dB/octave filter design
+        // Standard 12dB/octave filter design with Q factor
         float omega = 2.0f * juce::MathConstants<float>::pi * cutoffFreq / static_cast<float>(sampleRate);
         float c = 1.0f / std::tan(omega * 0.5f);
+        float cSq = c * c;
+        float cQ = c / q; // Use Q factor instead of sqrt(2)
         
         if (filterType == LOWPASS)
         {
-            // 12dB/octave low-pass coefficients
-            float norm = 1.0f / (1.0f + c * juce::MathConstants<float>::sqrt2 + c * c);
+            // 12dB/octave low-pass coefficients with Q
+            float norm = 1.0f / (1.0f + cQ + cSq);
             a0 = norm;
             a1 = 2.0f * a0;
             a2 = a0;
-            b1 = 2.0f * (1.0f - c * c) * norm;
-            b2 = (1.0f - c * juce::MathConstants<float>::sqrt2 + c * c) * norm;
+            b1 = 2.0f * (1.0f - cSq) * norm;
+            b2 = (1.0f - cQ + cSq) * norm;
         }
         else if (filterType == HIGHPASS)
         {
-            // 12dB/octave high-pass coefficients
-            float norm = 1.0f / (1.0f + c * juce::MathConstants<float>::sqrt2 + c * c);
-            a0 = c * c * norm;
+            // 12dB/octave high-pass coefficients with Q
+            float norm = 1.0f / (1.0f + cQ + cSq);
+            a0 = cSq * norm;
             a1 = -2.0f * a0;
             a2 = a0;
-            b1 = 2.0f * (1.0f - c * c) * norm;
-            b2 = (1.0f - c * juce::MathConstants<float>::sqrt2 + c * c) * norm;
+            b1 = 2.0f * (1.0f - cSq) * norm;
+            b2 = (1.0f - cQ + cSq) * norm;
         }
         else if (filterType == BANDPASS)
         {
-            // 12dB/octave band-pass coefficients
-            float norm = 1.0f / (1.0f + c * juce::MathConstants<float>::sqrt2 + c * c);
-            a0 = c * norm;
+            // 12dB/octave band-pass coefficients with Q
+            float norm = 1.0f / (1.0f + cQ + cSq);
+            a0 = cQ * norm;
             a1 = 0.0f;
             a2 = -a0;
-            b1 = 2.0f * (1.0f - c * c) * norm;
-            b2 = (1.0f - c * juce::MathConstants<float>::sqrt2 + c * c) * norm;
+            b1 = 2.0f * (1.0f - cSq) * norm;
+            b2 = (1.0f - cQ + cSq) * norm;
         }
         
         // Clamp coefficients to prevent instability
@@ -134,6 +139,7 @@ private:
     
     double sampleRate = 44100.0;
     float cutoffFreq = 1000.0f;
+    float q = 0.707f; // Q factor for resonance
     FilterType filterType = OFF;
     
     // Filter coefficients
@@ -455,6 +461,13 @@ private:
     void updateOsc2EnvelopeParameters();
     void updateFilterParameters();
     void updateFilterRouting();
+    
+    // Helper function to convert resonance (0.0-1.0) to Q factor
+    float resonanceToQ(float resonance) const {
+        // Convert 0.0-1.0 resonance to Q factor (0.707 to 20.0)
+        // 0.0 = 0.707 (no resonance), 1.0 = 20.0 (high resonance)
+        return 0.707f + (resonance * 19.293f); // 19.293 = 20.0 - 0.707
+    }
 
     SettingsComponent settingsComponent;
     std::vector<std::map<std::string, std::string>> responses;
@@ -503,7 +516,7 @@ private:
     
     // Filter parameters
     float filterCutoff = 1000.0f; // 20Hz to 20kHz
-    float filterResonance = 0.707f; // 0.707 to 2.0 (safe range)
+    float filterResonance = 0.0f; // Resonance: 0.0 to 1.0 (0.0 = no resonance)
     bool filterLPEnabled = true; // LP filter enabled by default
     bool filterHPEnabled = false; // HP filter disabled by default
     bool filterBPEnabled = false; // BP filter disabled by default
@@ -1049,6 +1062,7 @@ private:
             {
                 voiceOsc1Filter.setSampleRate(getSampleRate());
                 voiceOsc1Filter.setCutoffFrequency(osc1FilterInstance->getCutoffFrequency());
+                voiceOsc1Filter.setResonance(osc1FilterInstance->getResonance());
                 voiceOsc1Filter.setFilterType(osc1FilterInstance->getFilterType());
                 voiceOsc1Filter.reset();
             }
@@ -1056,6 +1070,7 @@ private:
             {
                 voiceOsc2Filter.setSampleRate(getSampleRate());
                 voiceOsc2Filter.setCutoffFrequency(osc2FilterInstance->getCutoffFrequency());
+                voiceOsc2Filter.setResonance(osc2FilterInstance->getResonance());
                 voiceOsc2Filter.setFilterType(osc2FilterInstance->getFilterType());
                 voiceOsc2Filter.reset();
             }

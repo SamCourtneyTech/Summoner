@@ -109,12 +109,12 @@ void SummonerXSerum2AudioProcessor::prepareToPlay(double sampleRate, int samples
     
     osc1Filter.setSampleRate(sampleRate);
     osc1Filter.setCutoffFrequency(filterCutoff);
-    osc1Filter.setResonance(filterResonance);
+    osc1Filter.setResonance(resonanceToQ(filterResonance));
     osc1Filter.setFilterType(initialFilterType);
     
     osc2Filter.setSampleRate(sampleRate);
     osc2Filter.setCutoffFrequency(filterCutoff);
-    osc2Filter.setResonance(filterResonance);
+    osc2Filter.setResonance(resonanceToQ(filterResonance));
     osc2Filter.setFilterType(initialFilterType);
     
     // Initialize temporary buffers for oscillator separation
@@ -378,10 +378,10 @@ void SummonerXSerum2AudioProcessor::updateFilterParameters()
         filterType = SimpleStableFilter::BANDPASS;
     
     osc1Filter.setCutoffFrequency(filterCutoff);
-    osc1Filter.setResonance(filterResonance);
+    osc1Filter.setResonance(resonanceToQ(filterResonance));
     osc1Filter.setFilterType(filterType);
     osc2Filter.setCutoffFrequency(filterCutoff);
-    osc2Filter.setResonance(filterResonance);
+    osc2Filter.setResonance(resonanceToQ(filterResonance));
     osc2Filter.setFilterType(filterType);
     updateFilterRouting();
     

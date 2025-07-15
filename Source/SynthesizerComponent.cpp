@@ -689,6 +689,22 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     filterCutoffKnob.addListener(this);
     addAndMakeVisible(filterCutoffKnob);
     
+    // Filter Resonance knob
+    filterResonanceKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    filterResonanceKnob.setRange(0.0, 1.0, 0.01);
+    filterResonanceKnob.setValue(0.0);
+    filterResonanceKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    filterResonanceKnob.setLookAndFeel(&customKnobLookAndFeel);
+    filterResonanceKnob.addListener(this);
+    addAndMakeVisible(filterResonanceKnob);
+    
+    // Filter Resonance label
+    filterResonanceLabel.setText("RES", juce::dontSendNotification);
+    filterResonanceLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    filterResonanceLabel.setJustificationType(juce::Justification::centred);
+    filterResonanceLabel.setLookAndFeel(&ledLabelLookAndFeel);
+    addAndMakeVisible(filterResonanceLabel);
+    
     // OSC filter enable buttons
     osc1FilterEnableButton.setButtonText("OSC 1");
     osc1FilterEnableButton.setClickingTogglesState(true);
@@ -808,6 +824,8 @@ SynthesizerComponent::~SynthesizerComponent()
     // Filter controls cleanup
     filterCutoffKnob.setLookAndFeel(nullptr);
     filterCutoffLabel.setLookAndFeel(nullptr);
+    filterResonanceKnob.setLookAndFeel(nullptr);
+    filterResonanceLabel.setLookAndFeel(nullptr);
     osc1FilterEnableButton.setLookAndFeel(nullptr);
     osc2FilterEnableButton.setLookAndFeel(nullptr);
     filterLPButton.setLookAndFeel(nullptr);
@@ -1526,6 +1544,10 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     else if (slider == &filterCutoffKnob)
     {
         audioProcessor.setFilterCutoff(static_cast<float>(filterCutoffKnob.getValue()));
+    }
+    else if (slider == &filterResonanceKnob)
+    {
+        audioProcessor.setFilterResonance(static_cast<float>(filterResonanceKnob.getValue()));
     }
     /*
     else if (slider == &pulseWidthSlider)
@@ -2575,12 +2597,19 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto filterBPButtonArea = juce::Rectangle<int>(centerX + 30, filterSectionY - 40, 50, 25);
     filterBPButton.setBounds(filterBPButtonArea);
     
-    // Filter cutoff knob in center
-    auto filterKnobArea = juce::Rectangle<int>(centerX - 40, filterSectionY, 80, 60);
-    filterCutoffKnob.setBounds(filterKnobArea);
+    // Filter cutoff knob on the left
+    auto filterCutoffKnobArea = juce::Rectangle<int>(centerX - 80, filterSectionY, 80, 60);
+    filterCutoffKnob.setBounds(filterCutoffKnobArea);
     
-    auto filterLabelArea = juce::Rectangle<int>(filterKnobArea.getX(), filterKnobArea.getY() - 20, 80, 20);
-    filterCutoffLabel.setBounds(filterLabelArea);
+    auto filterCutoffLabelArea = juce::Rectangle<int>(filterCutoffKnobArea.getX(), filterCutoffKnobArea.getY() - 20, 80, 20);
+    filterCutoffLabel.setBounds(filterCutoffLabelArea);
+    
+    // Filter Resonance knob on the right
+    auto filterResonanceKnobArea = juce::Rectangle<int>(centerX + 10, filterSectionY, 80, 60);
+    filterResonanceKnob.setBounds(filterResonanceKnobArea);
+    
+    auto filterResonanceLabelArea = juce::Rectangle<int>(filterResonanceKnobArea.getX(), filterResonanceKnobArea.getY() - 20, 80, 20);
+    filterResonanceLabel.setBounds(filterResonanceLabelArea);
     
     // OSC filter enable buttons - positioned on either side of the cutoff knob
     auto filterButtonWidth = 60;
