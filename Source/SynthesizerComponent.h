@@ -552,6 +552,12 @@ private:
     juce::Label osc2ReleaseLabel;
     juce::TextButton osc2AdsrLinkButton;
     
+    // Filter controls
+    juce::Slider filterCutoffKnob;
+    juce::Label filterCutoffLabel;
+    juce::TextButton osc1FilterEnableButton;
+    juce::TextButton osc2FilterEnableButton;
+    
     // Octave control state
     int octaveValue = 0;
     bool isDraggingOctave = false;

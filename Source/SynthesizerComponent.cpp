@@ -672,6 +672,38 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     osc2AdsrLinkButton.addListener(this);
     addAndMakeVisible(osc2AdsrLinkButton);
     
+    // FILTER CONTROLS
+    filterCutoffLabel.setText("CUTOFF", juce::dontSendNotification);
+    filterCutoffLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
+    filterCutoffLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    filterCutoffLabel.setJustificationType(juce::Justification::centred);
+    filterCutoffLabel.setLookAndFeel(&ledLabelLookAndFeel);
+    addAndMakeVisible(filterCutoffLabel);
+    
+    filterCutoffKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    filterCutoffKnob.setRange(20.0, 20000.0, 1.0);
+    filterCutoffKnob.setValue(1000.0);
+    filterCutoffKnob.setSkewFactorFromMidPoint(1000.0);
+    filterCutoffKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    filterCutoffKnob.setLookAndFeel(&customKnobLookAndFeel);
+    filterCutoffKnob.addListener(this);
+    addAndMakeVisible(filterCutoffKnob);
+    
+    // OSC filter enable buttons
+    osc1FilterEnableButton.setButtonText("OSC 1");
+    osc1FilterEnableButton.setClickingTogglesState(true);
+    osc1FilterEnableButton.setToggleState(false, juce::dontSendNotification); // Off by default
+    osc1FilterEnableButton.setLookAndFeel(&customWaveButtonLookAndFeel);
+    osc1FilterEnableButton.addListener(this);
+    addAndMakeVisible(osc1FilterEnableButton);
+    
+    osc2FilterEnableButton.setButtonText("OSC 2");
+    osc2FilterEnableButton.setClickingTogglesState(true);
+    osc2FilterEnableButton.setToggleState(false, juce::dontSendNotification); // Off by default
+    osc2FilterEnableButton.setLookAndFeel(&customWaveButtonLookAndFeel);
+    osc2FilterEnableButton.addListener(this);
+    addAndMakeVisible(osc2FilterEnableButton);
+    
     // ADSR ENVELOPE VISUALIZER GROUP - Row 2 (MOVEABLE)
     addAndMakeVisible(adsrEnvelopeVisualizer);
     
@@ -750,6 +782,12 @@ SynthesizerComponent::~SynthesizerComponent()
     osc2ReleaseKnob.setLookAndFeel(nullptr);
     osc2ReleaseLabel.setLookAndFeel(nullptr);
     osc2AdsrLinkButton.setLookAndFeel(nullptr);
+    
+    // Filter controls cleanup
+    filterCutoffKnob.setLookAndFeel(nullptr);
+    filterCutoffLabel.setLookAndFeel(nullptr);
+    osc1FilterEnableButton.setLookAndFeel(nullptr);
+    osc2FilterEnableButton.setLookAndFeel(nullptr);
     osc2DetuneKnob.setLookAndFeel(nullptr);
     osc2DetuneLabel.setLookAndFeel(nullptr);
     osc2StereoKnob.setLookAndFeel(nullptr);
@@ -1460,6 +1498,10 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     {
         audioProcessor.setOsc2Phase(static_cast<float>(osc2PhaseKnob.getValue()));
     }
+    else if (slider == &filterCutoffKnob)
+    {
+        audioProcessor.setFilterCutoff(static_cast<float>(filterCutoffKnob.getValue()));
+    }
     /*
     else if (slider == &pulseWidthSlider)
     {
@@ -1773,6 +1815,14 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             // Update the envelope display
             updateEnvelopeDisplay();
         }
+    }
+    else if (button == &osc1FilterEnableButton)
+    {
+        audioProcessor.setOsc1FilterEnabled(osc1FilterEnableButton.getToggleState());
+    }
+    else if (button == &osc2FilterEnableButton)
+    {
+        audioProcessor.setOsc2FilterEnabled(osc2FilterEnableButton.getToggleState());
     }
 }
 
@@ -2434,6 +2484,28 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     // Match oscillator 1 phase knob size: 80 width × 60 height, move down 33px
     auto matchingKnobArea = juce::Rectangle<int>(phaseKnobArea.getX(), phaseKnobArea.getY() + 33, 80, 60);
     osc2PhaseKnob.setBounds(matchingKnobArea);
+    
+    // Filter section positioning - center of the page
+    auto centerX = getWidth() / 2;
+    auto filterSectionY = totalHeight - 200; // Position near bottom center
+    
+    // Filter cutoff knob in center
+    auto filterKnobArea = juce::Rectangle<int>(centerX - 40, filterSectionY, 80, 60);
+    filterCutoffKnob.setBounds(filterKnobArea);
+    
+    auto filterLabelArea = juce::Rectangle<int>(filterKnobArea.getX(), filterKnobArea.getY() - 20, 80, 20);
+    filterCutoffLabel.setBounds(filterLabelArea);
+    
+    // OSC filter enable buttons - positioned on either side of the cutoff knob
+    auto filterButtonWidth = 60;
+    auto filterButtonHeight = 30;
+    auto buttonY = filterSectionY + 70; // Below the knob
+    
+    auto osc1FilterButtonArea = juce::Rectangle<int>(centerX - 80 - filterButtonWidth/2, buttonY, filterButtonWidth, filterButtonHeight);
+    osc1FilterEnableButton.setBounds(osc1FilterButtonArea);
+    
+    auto osc2FilterButtonArea = juce::Rectangle<int>(centerX + 80 - filterButtonWidth/2, buttonY, filterButtonWidth, filterButtonHeight);
+    osc2FilterEnableButton.setBounds(osc2FilterButtonArea);
 }
 
 // ============================================================================

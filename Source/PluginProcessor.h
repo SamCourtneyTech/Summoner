@@ -3,6 +3,123 @@
 #include <array>
 #include "SettingsComponent.h"
 
+// Inline LowPassFilter class to avoid linking issues
+class LowPassFilter
+{
+public:
+    LowPassFilter()
+    {
+        reset();
+        updateCoefficients();
+    }
+    
+    void setSampleRate(double newSampleRate)
+    {
+        sampleRate = newSampleRate;
+        coefficientsNeedUpdate = true;
+    }
+    
+    void setCutoffFrequency(float cutoff)
+    {
+        cutoffFreq = juce::jlimit(20.0f, static_cast<float>(sampleRate * 0.4), cutoff);
+        coefficientsNeedUpdate = true;
+    }
+    
+    void setResonance(float resonance)
+    {
+        resonanceQ = juce::jlimit(0.5f, 4.0f, resonance);
+        coefficientsNeedUpdate = true;
+    }
+    
+    void reset()
+    {
+        for (int ch = 0; ch < 2; ++ch)
+        {
+            x1[ch] = x2[ch] = y1[ch] = y2[ch] = 0.0f;
+        }
+    }
+    
+    void processBlock(juce::AudioBuffer<float>& buffer)
+    {
+        if (coefficientsNeedUpdate)
+            updateCoefficients();
+            
+        const int numChannels = juce::jmin(buffer.getNumChannels(), 2);
+        
+        for (int channel = 0; channel < numChannels; ++channel)
+        {
+            float* channelData = buffer.getWritePointer(channel);
+            
+            for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+            {
+                channelData[sample] = processSample(channelData[sample], channel);
+            }
+        }
+    }
+    
+    float processSample(float inputSample, int channel)
+    {
+        if (coefficientsNeedUpdate)
+            updateCoefficients();
+        
+        // Denormal protection
+        if (std::abs(inputSample) < 1e-10f)
+            inputSample = 0.0f;
+        
+        const float output = b0 * inputSample + b1 * x1[channel] + b2 * x2[channel] 
+                           - a1 * y1[channel] - a2 * y2[channel];
+        
+        // Update delay line for this channel
+        x2[channel] = x1[channel];
+        x1[channel] = inputSample;
+        y2[channel] = y1[channel];
+        y1[channel] = output;
+        
+        // Denormal protection for output
+        if (std::abs(output) < 1e-10f)
+            return 0.0f;
+        
+        return output;
+    }
+
+private:
+    void updateCoefficients()
+    {
+        if (!coefficientsNeedUpdate)
+            return;
+            
+        // Clamp frequency to safe range
+        const float safeCutoff = juce::jlimit(20.0f, static_cast<float>(sampleRate * 0.4), cutoffFreq);
+        const float omega = 2.0f * juce::MathConstants<float>::pi * safeCutoff / static_cast<float>(sampleRate);
+        const float cosOmega = std::cos(omega);
+        const float sinOmega = std::sin(omega);
+        const float alpha = sinOmega / (2.0f * resonanceQ);
+        
+        const float norm = 1.0f / (1.0f + alpha);
+        
+        b0 = ((1.0f - cosOmega) * 0.5f) * norm;
+        b1 = (1.0f - cosOmega) * norm;
+        b2 = ((1.0f - cosOmega) * 0.5f) * norm;
+        a1 = (-2.0f * cosOmega) * norm;
+        a2 = (1.0f - alpha) * norm;
+        
+        coefficientsNeedUpdate = false;
+    }
+    
+    double sampleRate = 44100.0;
+    float cutoffFreq = 1000.0f;
+    float resonanceQ = 1.0f;  // Lower default resonance
+    
+    float b0 = 1.0f, b1 = 0.0f, b2 = 0.0f;
+    float a1 = 0.0f, a2 = 0.0f;
+    
+    // Separate state for each channel (stereo)
+    float x1[2] = {0.0f, 0.0f}, x2[2] = {0.0f, 0.0f};
+    float y1[2] = {0.0f, 0.0f}, y2[2] = {0.0f, 0.0f};
+    
+    bool coefficientsNeedUpdate = true;
+};
+
 class SummonerXSerum2AudioProcessor : public juce::AudioProcessor
 {
 public:
@@ -247,6 +364,31 @@ public:
         updateOsc2Parameters();
     }
     int getOsc2VoiceCount() const { return osc2VoiceCount; }
+    
+    // Filter controls
+    void setFilterCutoff(float cutoff) {
+        filterCutoff = cutoff;
+        updateFilterParameters();
+    }
+    float getFilterCutoff() const { return filterCutoff; }
+    
+    void setFilterResonance(float resonance) {
+        filterResonance = resonance;
+        updateFilterParameters();
+    }
+    float getFilterResonance() const { return filterResonance; }
+    
+    void setOsc1FilterEnabled(bool enabled) {
+        osc1FilterEnabled = enabled;
+        updateFilterRouting();
+    }
+    bool getOsc1FilterEnabled() const { return osc1FilterEnabled; }
+    
+    void setOsc2FilterEnabled(bool enabled) {
+        osc2FilterEnabled = enabled;
+        updateFilterRouting();
+    }
+    bool getOsc2FilterEnabled() const { return osc2FilterEnabled; }
 
 private:
     std::map<std::string, int> parameterMap;
@@ -269,6 +411,8 @@ private:
     void updateOsc1Volume();
     void updateOsc2Parameters();
     void updateOsc2EnvelopeParameters();
+    void updateFilterParameters();
+    void updateFilterRouting();
 
     SettingsComponent settingsComponent;
     std::vector<std::map<std::string, std::string>> responses;
@@ -314,6 +458,18 @@ private:
     float osc2Decay = 0.2f;
     float osc2Sustain = 0.7f;
     float osc2Release = 0.3f;
+    
+    // Filter parameters
+    float filterCutoff = 1000.0f; // 20Hz to 20kHz
+    float filterResonance = 1.0f; // 0.5 to 4.0 (safer range)
+    bool osc1FilterEnabled = false; // OSC 1 filter disabled by default
+    bool osc2FilterEnabled = false; // OSC 2 filter disabled by default
+    LowPassFilter osc1Filter; // Separate filter instance for OSC1
+    LowPassFilter osc2Filter; // Separate filter instance for OSC2
+    
+    // Temporary buffers for separate oscillator processing
+    juce::AudioBuffer<float> osc1Buffer;
+    juce::AudioBuffer<float> osc2Buffer;
     
     struct SineWaveSound : public juce::SynthesiserSound
     {
@@ -552,6 +708,25 @@ private:
                     leftSample *= panLeftGain;
                     rightSample *= panRightGain;
                     
+                    // Apply filter to OSC1 if enabled
+                    if (osc1FilterEnabled && osc1FilterInstance != nullptr)
+                    {
+                        // Scale down input to prevent filter overdrive
+                        leftSample *= 0.7f;
+                        rightSample *= 0.7f;
+                        
+                        // Additional denormal protection before filtering
+                        if (std::abs(leftSample) < 1e-10f) leftSample = 0.0f;
+                        if (std::abs(rightSample) < 1e-10f) rightSample = 0.0f;
+                        
+                        leftSample = osc1FilterInstance->processSample(leftSample, 0);
+                        rightSample = osc1FilterInstance->processSample(rightSample, 1);
+                        
+                        // Gentle saturation instead of hard clipping
+                        leftSample = std::tanh(leftSample * 0.8f) * 1.25f;
+                        rightSample = std::tanh(rightSample * 0.8f) * 1.25f;
+                    }
+                    
                     // Add second oscillator if enabled with its own envelope and unison voices
                     if (osc2Enabled && osc2Volume > 0.0f && osc2AngleDelta != 0.0)
                     {
@@ -649,6 +824,25 @@ private:
                         
                         osc2LeftSample *= osc2PanLeftGain;
                         osc2RightSample *= osc2PanRightGain;
+                        
+                        // Apply filter to OSC2 if enabled
+                        if (osc2FilterEnabled && osc2FilterInstance != nullptr)
+                        {
+                            // Scale down input to prevent filter overdrive
+                            osc2LeftSample *= 0.7f;
+                            osc2RightSample *= 0.7f;
+                            
+                            // Additional denormal protection before filtering
+                            if (std::abs(osc2LeftSample) < 1e-10f) osc2LeftSample = 0.0f;
+                            if (std::abs(osc2RightSample) < 1e-10f) osc2RightSample = 0.0f;
+                            
+                            osc2LeftSample = osc2FilterInstance->processSample(osc2LeftSample, 0);
+                            osc2RightSample = osc2FilterInstance->processSample(osc2RightSample, 1);
+                            
+                            // Gentle saturation instead of hard clipping
+                            osc2LeftSample = std::tanh(osc2LeftSample * 0.8f) * 1.25f;
+                            osc2RightSample = std::tanh(osc2RightSample * 0.8f) * 1.25f;
+                        }
                         
                         // Add to main mix
                         leftSample += osc2LeftSample;
@@ -813,6 +1007,15 @@ private:
             osc2Phase = phase;
         }
         
+        void setFilterRouting(bool osc1ToFilter, bool osc2ToFilter, LowPassFilter* osc1FilterPtr, LowPassFilter* osc2FilterPtr)
+        {
+            osc1FilterEnabled = osc1ToFilter;
+            osc2FilterEnabled = osc2ToFilter;
+            osc1FilterInstance = osc1FilterPtr;
+            osc2FilterInstance = osc2FilterPtr;
+        }
+        
+        
     private:
         double currentAngle = 0.0, angleDelta = 0.0, level = 0.0;
         double frequency = 0.0;
@@ -865,6 +1068,12 @@ private:
         
         // Pink noise generation state (Paul Kellett's method)
         float pinkFilter[7] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+        
+        // Filter routing
+        bool osc1FilterEnabled = false;
+        bool osc2FilterEnabled = false;
+        LowPassFilter* osc1FilterInstance = nullptr;
+        LowPassFilter* osc2FilterInstance = nullptr;
     };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SummonerXSerum2AudioProcessor)

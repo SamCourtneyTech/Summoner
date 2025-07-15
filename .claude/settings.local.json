@@ -17,7 +17,10 @@
       "Bash(bash:*)",
       "Bash(clang++:*)",
       "mcp__gemini-cli__ask-gemini",
-      "Bash(c++:*)"
+      "Bash(c++:*)",
+      "Bash(\"/Users/samcourtney/Documents/JUCE NEW/JUCE/Projucer.app/Contents/MacOS/Projucer\" --resave \"Summoner.jucer\")",
+      "Bash(\"/Users/samcourtney/Documents/JUCE NEW/JUCE/Projucer.app/Contents/MacOS/Projucer\" --resave \"Summoner.jucer\" --verbose)",
+      "Bash(open:*)"
     ],
     "deny": []
   }

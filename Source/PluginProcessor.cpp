@@ -96,6 +96,22 @@ void SummonerXSerum2AudioProcessor::prepareToPlay(double sampleRate, int samples
     
     // Set sample rate
     synthesiser.setCurrentPlaybackSampleRate(sampleRate);
+    
+    // Initialize both filter instances
+    osc1Filter.setSampleRate(sampleRate);
+    osc1Filter.setCutoffFrequency(filterCutoff);
+    osc1Filter.setResonance(filterResonance);
+    
+    osc2Filter.setSampleRate(sampleRate);
+    osc2Filter.setCutoffFrequency(filterCutoff);
+    osc2Filter.setResonance(filterResonance);
+    
+    // Initialize temporary buffers for oscillator separation
+    osc1Buffer.setSize(2, samplesPerBlock);
+    osc2Buffer.setSize(2, samplesPerBlock);
+    
+    // Initialize filter routing for all voices
+    updateFilterRouting();
 }
 
 void SummonerXSerum2AudioProcessor::releaseResources()
@@ -131,8 +147,23 @@ void SummonerXSerum2AudioProcessor::processBlock(juce::AudioBuffer<float>& buffe
     for (auto i = 0; i < buffer.getNumChannels(); ++i)
         buffer.clear(i, 0, buffer.getNumSamples());
     
-    // Render the synthesizer
+    // Render the synthesizer (filtering happens inside voices)
     synthesiser.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+    
+    // Count active voices for polyphonic scaling
+    int activeVoices = 0;
+    for (int i = 0; i < synthesiser.getNumVoices(); ++i)
+    {
+        if (synthesiser.getVoice(i)->isVoiceActive())
+            activeVoices++;
+    }
+    
+    // Apply polyphonic scaling to prevent overload with multiple voices
+    if (activeVoices > 1)
+    {
+        float polyScale = 1.0f / std::sqrt((float)activeVoices);
+        buffer.applyGain(polyScale);
+    }
     
     // Apply volume control
     buffer.applyGain(synthVolume);
@@ -316,6 +347,26 @@ void SummonerXSerum2AudioProcessor::updateOsc2EnvelopeParameters()
         if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
         {
             voice->setOsc2EnvelopeParameters(osc2Attack, osc2Decay, osc2Sustain, osc2Release);
+        }
+    }
+}
+
+void SummonerXSerum2AudioProcessor::updateFilterParameters()
+{
+    osc1Filter.setCutoffFrequency(filterCutoff);
+    osc1Filter.setResonance(filterResonance);
+    osc2Filter.setCutoffFrequency(filterCutoff);
+    osc2Filter.setResonance(filterResonance);
+    updateFilterRouting();
+}
+
+void SummonerXSerum2AudioProcessor::updateFilterRouting()
+{
+    for (int i = 0; i < synthesiser.getNumVoices(); ++i)
+    {
+        if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
+        {
+            voice->setFilterRouting(osc1FilterEnabled, osc2FilterEnabled, &osc1Filter, &osc2Filter);
         }
     }
 }
