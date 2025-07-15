@@ -13,7 +13,8 @@ public:
         LOWPASS = 1,
         HIGHPASS = 2,
         BANDPASS = 3,
-        NOTCH = 4
+        NOTCH = 4,
+        COMB = 5
     };
     
     enum FilterSlope
@@ -70,6 +71,13 @@ public:
         z2 = 0.0f;
         z3 = 0.0f;
         z4 = 0.0f;
+        
+        // Clear comb filter delay line
+        if (!delayLine.empty())
+        {
+            std::fill(delayLine.begin(), delayLine.end(), 0.0f);
+            delayIndex = 0;
+        }
     }
     
     void processBlock(juce::AudioBuffer<float>& buffer)
@@ -84,6 +92,30 @@ public:
             
         // Apply input scaling to prevent numerical issues
         inputSample = juce::jlimit(-1.0f, 1.0f, inputSample);
+        
+        // Handle comb filter separately as it uses a different processing method
+        if (filterType == COMB)
+        {
+            if (delayLine.empty())
+                return inputSample;
+                
+            // Read delayed sample from delay line
+            float delayedSample = delayLine[delayIndex];
+            
+            // Comb filter output: input + feedback * delayed
+            float output = inputSample + feedbackGain * delayedSample;
+            
+            // Write new sample to delay line
+            delayLine[delayIndex] = inputSample;
+            
+            // Update delay index (circular buffer)
+            delayIndex = (delayIndex + 1) % delayLineSize;
+            
+            // Apply gentle saturation for stability
+            output = std::tanh(output * 0.8f) * 1.25f;
+            
+            return output;
+        }
         
         if (filterSlope == SLOPE_12DB)
         {
@@ -174,6 +206,36 @@ private:
             b1 = a1; // Same as a1 for notch
             b2 = (1.0f - cQ + cSq) * norm;
         }
+        else if (filterType == COMB)
+        {
+            // Comb filter setup - uses delay line instead of biquad coefficients
+            // Calculate delay time in samples based on cutoff frequency
+            float delayTimeMs = 1000.0f / cutoffFreq; // Convert frequency to period in ms
+            int newDelaySize = static_cast<int>(delayTimeMs * sampleRate / 1000.0f);
+            
+            // Clamp delay size to reasonable range (1ms to 50ms)
+            newDelaySize = juce::jlimit(static_cast<int>(sampleRate * 0.001f), 
+                                       static_cast<int>(sampleRate * 0.05f), 
+                                       newDelaySize);
+            
+            // Only resize if delay size changed
+            if (newDelaySize != delayLineSize)
+            {
+                delayLineSize = newDelaySize;
+                delayLine.resize(delayLineSize);
+                std::fill(delayLine.begin(), delayLine.end(), 0.0f);
+                delayIndex = 0;
+            }
+            
+            // Set feedback gain based on Q factor (resonance)
+            // Higher Q = more feedback = more resonance
+            feedbackGain = juce::jlimit(0.0f, 0.95f, (q - 0.707f) / 19.293f * 0.9f);
+            
+            // Clear biquad coefficients for comb filter
+            a0 = 1.0f; a1 = 0.0f; a2 = 0.0f;
+            b1 = 0.0f; b2 = 0.0f;
+            return;
+        }
         
         // Clamp coefficients to prevent instability
         a0 = juce::jlimit(-2.0f, 2.0f, a0);
@@ -195,6 +257,12 @@ private:
     
     // State variables (z3, z4 for 24dB filters)
     float z1 = 0.0f, z2 = 0.0f, z3 = 0.0f, z4 = 0.0f;
+    
+    // Comb filter delay line
+    std::vector<float> delayLine;
+    int delayLineSize = 0;
+    int delayIndex = 0;
+    float feedbackGain = 0.0f;
 };
 
 class SummonerXSerum2AudioProcessor : public juce::AudioProcessor
@@ -491,6 +559,12 @@ public:
     }
     bool getFilterNotchEnabled() const { return filterNotchEnabled; }
     
+    void setFilterCombEnabled(bool enabled) {
+        filterCombEnabled = enabled;
+        updateFilterParameters();
+    }
+    bool getFilterCombEnabled() const { return filterCombEnabled; }
+    
     void setFilter12dBEnabled(bool enabled) {
         filter12dBEnabled = enabled;
         updateFilterParameters();
@@ -586,6 +660,7 @@ private:
     bool filterHPEnabled = false; // HP filter disabled by default
     bool filterBPEnabled = false; // BP filter disabled by default
     bool filterNotchEnabled = false; // Notch filter disabled by default
+    bool filterCombEnabled = false; // Comb filter disabled by default
     bool filter12dBEnabled = true; // 12dB slope enabled by default
     bool filter24dBEnabled = false; // 24dB slope disabled by default
     bool osc1FilterEnabled = false; // OSC 1 filter disabled by default

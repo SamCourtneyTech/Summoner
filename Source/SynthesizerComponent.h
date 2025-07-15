@@ -563,6 +563,7 @@ private:
     juce::TextButton filterHPButton;
     juce::TextButton filterBPButton;
     juce::TextButton filterNotchButton;
+    juce::TextButton filterCombButton;
     juce::TextButton filter12dBButton;
     juce::TextButton filter24dBButton;
     
