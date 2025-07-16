@@ -312,6 +312,13 @@ public:
         lfoTriggerButton.addListener(this);
         addAndMakeVisible(lfoTriggerButton);
         
+        // Set up draw button
+        lfoDrawButton.setButtonText("DRAW");
+        lfoDrawButton.setClickingTogglesState(true);
+        lfoDrawButton.setToggleState(false, juce::dontSendNotification);
+        lfoDrawButton.addListener(this);
+        addAndMakeVisible(lfoDrawButton);
+        
         // Set up preset waveform buttons
         lfoSineButton.setButtonText("SIN");
         lfoSineButton.addListener(this);
@@ -353,6 +360,7 @@ public:
             lfoHzButton.setLookAndFeel(this->buttonLookAndFeel);
             lfoBpmButton.setLookAndFeel(this->buttonLookAndFeel);
             lfoTriggerButton.setLookAndFeel(this->buttonLookAndFeel);
+            lfoDrawButton.setLookAndFeel(this->buttonLookAndFeel);
             lfoSineButton.setLookAndFeel(this->buttonLookAndFeel);
             lfoSawButton.setLookAndFeel(this->buttonLookAndFeel);
             lfoSquareButton.setLookAndFeel(this->buttonLookAndFeel);
@@ -416,7 +424,7 @@ public:
         
         // Rate knob and controls - centered horizontally
         auto controlsArea = bounds.removeFromTop(70);
-        int totalControlsWidth = 60 + 10 + 60 + 10 + 80; // knob + gap + hz/bpm + gap + trigger
+        int totalControlsWidth = 60 + 10 + 60 + 10 + 80 + 10 + 60; // knob + gap + hz/bpm + gap + trigger + gap + draw
         int startX = (controlsArea.getWidth() - totalControlsWidth) / 2;
         
         // Rate knob
@@ -437,6 +445,10 @@ public:
         // Trigger button
         auto triggerArea = juce::Rectangle<int>(startX + 140, 15, 80, 30);
         lfoTriggerButton.setBounds(triggerArea);
+        
+        // Draw button
+        auto drawArea = juce::Rectangle<int>(startX + 230, 15, 60, 30);
+        lfoDrawButton.setBounds(drawArea);
     }
     
     // Slider listener
@@ -475,6 +487,13 @@ public:
             bool isTriggered = lfoTriggerButton.getToggleState();
             // TODO: Enable/disable trigger mode when implementation is added
         }
+        else if (button == &lfoDrawButton)
+        {
+            // Toggle draw mode
+            bool isDrawMode = lfoDrawButton.getToggleState();
+            // TODO: Enable/disable draw mode when implementation is added
+            // This could switch between different drawing behaviors
+        }
         else if (button == &lfoSineButton)
         {
             lfoWaveform.resetToSineWave();
@@ -512,6 +531,9 @@ private:
     
     // Trigger mode button
     juce::TextButton lfoTriggerButton;
+    
+    // Draw mode button
+    juce::TextButton lfoDrawButton;
     
     // Preset waveform buttons
     juce::TextButton lfoSineButton;
