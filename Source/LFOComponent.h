@@ -328,6 +328,10 @@ public:
         lfoTriangleButton.setButtonText("TRI");
         lfoTriangleButton.addListener(this);
         addAndMakeVisible(lfoTriangleButton);
+        
+        lfoChaosButton.setButtonText("CHAOS");
+        lfoChaosButton.addListener(this);
+        addAndMakeVisible(lfoChaosButton);
     }
     ~LFOModuleComponent() override {}
     
@@ -353,6 +357,7 @@ public:
             lfoSawButton.setLookAndFeel(this->buttonLookAndFeel);
             lfoSquareButton.setLookAndFeel(this->buttonLookAndFeel);
             lfoTriangleButton.setLookAndFeel(this->buttonLookAndFeel);
+            lfoChaosButton.setLookAndFeel(this->buttonLookAndFeel);
         }
     }
     
@@ -398,13 +403,14 @@ public:
         
         // Preset buttons row - centered
         auto presetButtonsArea = bounds.removeFromTop(30);
-        presetButtonsArea = presetButtonsArea.reduced(40, 0); // Center the buttons
-        int buttonWidth = presetButtonsArea.getWidth() / 4;
+        presetButtonsArea = presetButtonsArea.reduced(20, 0); // Center the buttons
+        int buttonWidth = presetButtonsArea.getWidth() / 5;
         
-        lfoSineButton.setBounds(presetButtonsArea.removeFromLeft(buttonWidth).reduced(3, 3));
-        lfoSawButton.setBounds(presetButtonsArea.removeFromLeft(buttonWidth).reduced(3, 3));
-        lfoSquareButton.setBounds(presetButtonsArea.removeFromLeft(buttonWidth).reduced(3, 3));
-        lfoTriangleButton.setBounds(presetButtonsArea.removeFromLeft(buttonWidth).reduced(3, 3));
+        lfoSineButton.setBounds(presetButtonsArea.removeFromLeft(buttonWidth).reduced(2, 2));
+        lfoSawButton.setBounds(presetButtonsArea.removeFromLeft(buttonWidth).reduced(2, 2));
+        lfoSquareButton.setBounds(presetButtonsArea.removeFromLeft(buttonWidth).reduced(2, 2));
+        lfoTriangleButton.setBounds(presetButtonsArea.removeFromLeft(buttonWidth).reduced(2, 2));
+        lfoChaosButton.setBounds(presetButtonsArea.removeFromLeft(buttonWidth).reduced(2, 2));
         
         bounds.removeFromTop(15); // Gap
         
@@ -485,6 +491,11 @@ public:
         {
             lfoWaveform.resetToTriangleWave();
         }
+        else if (button == &lfoChaosButton)
+        {
+            // TODO: Implement chaos LFO mode - for now just placeholder
+            // This could generate a random/chaotic waveform or enable the current smooth drawing behavior
+        }
     }
     
 private:
@@ -507,6 +518,7 @@ private:
     juce::TextButton lfoSawButton;
     juce::TextButton lfoSquareButton;
     juce::TextButton lfoTriangleButton;
+    juce::TextButton lfoChaosButton;
     
     // Title label
     juce::Label lfoTitleLabel;
