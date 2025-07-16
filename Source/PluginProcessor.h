@@ -14,7 +14,8 @@ public:
         HIGHPASS = 2,
         BANDPASS = 3,
         NOTCH = 4,
-        COMB = 5
+        COMB = 5,
+        FORMANT = 6
     };
     
     enum FilterSlope
@@ -78,6 +79,11 @@ public:
             std::fill(delayLine.begin(), delayLine.end(), 0.0f);
             delayIndex = 0;
         }
+        
+        // Clear formant filter state
+        formant1_z1 = 0.0f; formant1_z2 = 0.0f;
+        formant2_z1 = 0.0f; formant2_z2 = 0.0f;
+        formant3_z1 = 0.0f; formant3_z2 = 0.0f;
     }
     
     void processBlock(juce::AudioBuffer<float>& buffer)
@@ -110,6 +116,34 @@ public:
             
             // Update delay index (circular buffer)
             delayIndex = (delayIndex + 1) % delayLineSize;
+            
+            // Apply gentle saturation for stability
+            output = std::tanh(output * 0.8f) * 1.25f;
+            
+            return output;
+        }
+        
+        // Handle formant filter separately as it uses multiple parallel bandpass filters
+        if (filterType == FORMANT)
+        {
+            // Process through 3 parallel bandpass filters (formants)
+            // Formant 1
+            float f1_output = inputSample * formant1_a0 + formant1_z1;
+            formant1_z1 = inputSample * formant1_a1 + formant1_z2 - formant1_b1 * f1_output;
+            formant1_z2 = inputSample * formant1_a2 - formant1_b2 * f1_output;
+            
+            // Formant 2
+            float f2_output = inputSample * formant2_a0 + formant2_z1;
+            formant2_z1 = inputSample * formant2_a1 + formant2_z2 - formant2_b1 * f2_output;
+            formant2_z2 = inputSample * formant2_a2 - formant2_b2 * f2_output;
+            
+            // Formant 3
+            float f3_output = inputSample * formant3_a0 + formant3_z1;
+            formant3_z1 = inputSample * formant3_a1 + formant3_z2 - formant3_b1 * f3_output;
+            formant3_z2 = inputSample * formant3_a2 - formant3_b2 * f3_output;
+            
+            // Mix the three formants with emphasis on lower formants
+            float output = f1_output * 0.5f + f2_output * 0.35f + f3_output * 0.15f;
             
             // Apply gentle saturation for stability
             output = std::tanh(output * 0.8f) * 1.25f;
@@ -236,6 +270,89 @@ private:
             b1 = 0.0f; b2 = 0.0f;
             return;
         }
+        else if (filterType == FORMANT)
+        {
+            // Formant filter setup - 3 parallel bandpass filters for vowel simulation
+            // Cutoff frequency controls the vowel character by shifting formant frequencies
+            
+            // Base formant frequencies for /a/ vowel (can be modulated by cutoff)
+            float formantShift = cutoffFreq / 1000.0f; // Normalize around 1000Hz
+            float f1_freq = 730.0f * formantShift;  // First formant
+            float f2_freq = 1090.0f * formantShift; // Second formant
+            float f3_freq = 2440.0f * formantShift; // Third formant
+            
+            // Clamp formant frequencies to reasonable range
+            f1_freq = juce::jlimit(200.0f, static_cast<float>(sampleRate * 0.4f), f1_freq);
+            f2_freq = juce::jlimit(400.0f, static_cast<float>(sampleRate * 0.4f), f2_freq);
+            f3_freq = juce::jlimit(800.0f, static_cast<float>(sampleRate * 0.4f), f3_freq);
+            
+            // Calculate bandpass coefficients for each formant
+            // Using moderate Q for realistic vowel formants
+            float formantQ = 4.0f + (q - 0.707f) / 19.293f * 16.0f; // Q range: 4-20
+            
+            // Formant 1 coefficients
+            {
+                float omega = 2.0f * juce::MathConstants<float>::pi * f1_freq / static_cast<float>(sampleRate);
+                float c = 1.0f / std::tan(omega * 0.5f);
+                float cSq = c * c;
+                float cQ = c / formantQ;
+                float norm = 1.0f / (1.0f + cQ + cSq);
+                formant1_a0 = cQ * norm;
+                formant1_a1 = 0.0f;
+                formant1_a2 = -formant1_a0;
+                formant1_b1 = 2.0f * (1.0f - cSq) * norm;
+                formant1_b2 = (1.0f - cQ + cSq) * norm;
+            }
+            
+            // Formant 2 coefficients
+            {
+                float omega = 2.0f * juce::MathConstants<float>::pi * f2_freq / static_cast<float>(sampleRate);
+                float c = 1.0f / std::tan(omega * 0.5f);
+                float cSq = c * c;
+                float cQ = c / formantQ;
+                float norm = 1.0f / (1.0f + cQ + cSq);
+                formant2_a0 = cQ * norm;
+                formant2_a1 = 0.0f;
+                formant2_a2 = -formant2_a0;
+                formant2_b1 = 2.0f * (1.0f - cSq) * norm;
+                formant2_b2 = (1.0f - cQ + cSq) * norm;
+            }
+            
+            // Formant 3 coefficients
+            {
+                float omega = 2.0f * juce::MathConstants<float>::pi * f3_freq / static_cast<float>(sampleRate);
+                float c = 1.0f / std::tan(omega * 0.5f);
+                float cSq = c * c;
+                float cQ = c / formantQ;
+                float norm = 1.0f / (1.0f + cQ + cSq);
+                formant3_a0 = cQ * norm;
+                formant3_a1 = 0.0f;
+                formant3_a2 = -formant3_a0;
+                formant3_b1 = 2.0f * (1.0f - cSq) * norm;
+                formant3_b2 = (1.0f - cQ + cSq) * norm;
+            }
+            
+            // Clamp formant coefficients
+            formant1_a0 = juce::jlimit(-2.0f, 2.0f, formant1_a0);
+            formant1_a2 = juce::jlimit(-2.0f, 2.0f, formant1_a2);
+            formant1_b1 = juce::jlimit(-1.99f, 1.99f, formant1_b1);
+            formant1_b2 = juce::jlimit(-1.99f, 1.99f, formant1_b2);
+            
+            formant2_a0 = juce::jlimit(-2.0f, 2.0f, formant2_a0);
+            formant2_a2 = juce::jlimit(-2.0f, 2.0f, formant2_a2);
+            formant2_b1 = juce::jlimit(-1.99f, 1.99f, formant2_b1);
+            formant2_b2 = juce::jlimit(-1.99f, 1.99f, formant2_b2);
+            
+            formant3_a0 = juce::jlimit(-2.0f, 2.0f, formant3_a0);
+            formant3_a2 = juce::jlimit(-2.0f, 2.0f, formant3_a2);
+            formant3_b1 = juce::jlimit(-1.99f, 1.99f, formant3_b1);
+            formant3_b2 = juce::jlimit(-1.99f, 1.99f, formant3_b2);
+            
+            // Clear main biquad coefficients for formant filter
+            a0 = 1.0f; a1 = 0.0f; a2 = 0.0f;
+            b1 = 0.0f; b2 = 0.0f;
+            return;
+        }
         
         // Clamp coefficients to prevent instability
         a0 = juce::jlimit(-2.0f, 2.0f, a0);
@@ -263,6 +380,17 @@ private:
     int delayLineSize = 0;
     int delayIndex = 0;
     float feedbackGain = 0.0f;
+    
+    // Formant filter state (3 parallel bandpass filters for vowel formants)
+    float formant1_z1 = 0.0f, formant1_z2 = 0.0f;
+    float formant2_z1 = 0.0f, formant2_z2 = 0.0f;
+    float formant3_z1 = 0.0f, formant3_z2 = 0.0f;
+    float formant1_a0 = 1.0f, formant1_a1 = 0.0f, formant1_a2 = 0.0f;
+    float formant1_b1 = 0.0f, formant1_b2 = 0.0f;
+    float formant2_a0 = 1.0f, formant2_a1 = 0.0f, formant2_a2 = 0.0f;
+    float formant2_b1 = 0.0f, formant2_b2 = 0.0f;
+    float formant3_a0 = 1.0f, formant3_a1 = 0.0f, formant3_a2 = 0.0f;
+    float formant3_b1 = 0.0f, formant3_b2 = 0.0f;
 };
 
 class SummonerXSerum2AudioProcessor : public juce::AudioProcessor
@@ -565,6 +693,12 @@ public:
     }
     bool getFilterCombEnabled() const { return filterCombEnabled; }
     
+    void setFilterFormantEnabled(bool enabled) {
+        filterFormantEnabled = enabled;
+        updateFilterParameters();
+    }
+    bool getFilterFormantEnabled() const { return filterFormantEnabled; }
+    
     void setFilter12dBEnabled(bool enabled) {
         filter12dBEnabled = enabled;
         updateFilterParameters();
@@ -661,6 +795,7 @@ private:
     bool filterBPEnabled = false; // BP filter disabled by default
     bool filterNotchEnabled = false; // Notch filter disabled by default
     bool filterCombEnabled = false; // Comb filter disabled by default
+    bool filterFormantEnabled = false; // Formant filter disabled by default
     bool filter12dBEnabled = true; // 12dB slope enabled by default
     bool filter24dBEnabled = false; // 24dB slope disabled by default
     bool osc1FilterEnabled = false; // OSC 1 filter disabled by default

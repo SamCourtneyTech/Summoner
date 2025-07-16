@@ -110,6 +110,8 @@ void SummonerXSerum2AudioProcessor::prepareToPlay(double sampleRate, int samples
         initialFilterType = SimpleStableFilter::NOTCH;
     else if (filterCombEnabled)
         initialFilterType = SimpleStableFilter::COMB;
+    else if (filterFormantEnabled)
+        initialFilterType = SimpleStableFilter::FORMANT;
     
     // Determine initial filter slope
     SimpleStableFilter::FilterSlope initialFilterSlope = SimpleStableFilter::SLOPE_12DB;
@@ -391,6 +393,8 @@ void SummonerXSerum2AudioProcessor::updateFilterParameters()
         filterType = SimpleStableFilter::NOTCH;
     else if (filterCombEnabled)
         filterType = SimpleStableFilter::COMB;
+    else if (filterFormantEnabled)
+        filterType = SimpleStableFilter::FORMANT;
     
     // Determine filter slope
     SimpleStableFilter::FilterSlope filterSlope = SimpleStableFilter::SLOPE_12DB;

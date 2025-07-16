@@ -13,6 +13,10 @@
             file="Source/PluginEditor.cpp"/>
       <FILE id="tn80P0" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
+    <FILE id="LFOComp2" name="LFOComponent.h" compile="0" resource="0"
+          file="Source/LFOComponent.h"/>
+    <FILE id="LookAndFeel1" name="LookAndFeel.h" compile="0" resource="0"
+          file="Source/LookAndFeel.h"/>
     <FILE id="M59Cea" name="ChatBarComponent.cpp" compile="1" resource="0"
           file="Source/ChatBarComponent.cpp"/>
     <FILE id="AcoR0V" name="ChatBarComponent.h" compile="0" resource="0"

@@ -20,7 +20,8 @@
       "Bash(c++:*)",
       "Bash(\"/Users/samcourtney/Documents/JUCE NEW/JUCE/Projucer.app/Contents/MacOS/Projucer\" --resave \"Summoner.jucer\")",
       "Bash(\"/Users/samcourtney/Documents/JUCE NEW/JUCE/Projucer.app/Contents/MacOS/Projucer\" --resave \"Summoner.jucer\" --verbose)",
-      "Bash(open:*)"
+      "Bash(open:*)",
+      "Bash(make:*)"
     ],
     "deny": []
   }

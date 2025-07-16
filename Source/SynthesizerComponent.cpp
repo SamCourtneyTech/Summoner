@@ -756,6 +756,13 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     filterCombButton.addListener(this);
     addAndMakeVisible(filterCombButton);
     
+    filterFormantButton.setButtonText("FORMANT");
+    filterFormantButton.setClickingTogglesState(true);
+    filterFormantButton.setToggleState(false, juce::dontSendNotification); // FORMANT off by default
+    filterFormantButton.setLookAndFeel(&customWaveButtonLookAndFeel);
+    filterFormantButton.addListener(this);
+    addAndMakeVisible(filterFormantButton);
+    
     // Filter slope buttons (12dB and 24dB) - radio button behavior
     filter12dBButton.setButtonText("12dB");
     filter12dBButton.setClickingTogglesState(true);
@@ -776,6 +783,10 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     // OSCILLATOR 2 ADSR ENVELOPE VISUALIZER
     addAndMakeVisible(osc2AdsrEnvelopeVisualizer);
+    
+    // LFO MODULE
+    lfoModule.setLookAndFeel(&customKnobLookAndFeel, &customWaveButtonLookAndFeel, &ledLabelLookAndFeel);
+    addAndMakeVisible(lfoModule);
     
     // Initialize envelope display with default values
     updateEnvelopeDisplay();
@@ -1419,6 +1430,7 @@ void SynthesizerComponent::resized()
     layoutVolumeKnobs(bounds);
     layoutOctaveControls(bounds);
     layoutPhaseControls(bounds);
+    layoutLFOModule(bounds);
     layoutSecondOscillator(bounds);
 }
 
@@ -1912,16 +1924,18 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             return;
         }
         
-        // LP selected - deselect HP, BP, Notch, and Comb
+        // LP selected - deselect all other filters
         filterHPButton.setToggleState(false, juce::dontSendNotification);
         filterBPButton.setToggleState(false, juce::dontSendNotification);
         filterNotchButton.setToggleState(false, juce::dontSendNotification);
         filterCombButton.setToggleState(false, juce::dontSendNotification);
+        filterFormantButton.setToggleState(false, juce::dontSendNotification);
         audioProcessor.setFilterLPEnabled(true);
         audioProcessor.setFilterHPEnabled(false);
         audioProcessor.setFilterBPEnabled(false);
         audioProcessor.setFilterNotchEnabled(false);
         audioProcessor.setFilterCombEnabled(false);
+        audioProcessor.setFilterFormantEnabled(false);
     }
     else if (button == &filterHPButton)
     {
@@ -1933,16 +1947,18 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             return;
         }
         
-        // HP selected - deselect LP, BP, Notch, and Comb
+        // HP selected - deselect all other filters
         filterLPButton.setToggleState(false, juce::dontSendNotification);
         filterBPButton.setToggleState(false, juce::dontSendNotification);
         filterNotchButton.setToggleState(false, juce::dontSendNotification);
         filterCombButton.setToggleState(false, juce::dontSendNotification);
+        filterFormantButton.setToggleState(false, juce::dontSendNotification);
         audioProcessor.setFilterLPEnabled(false);
         audioProcessor.setFilterHPEnabled(true);
         audioProcessor.setFilterBPEnabled(false);
         audioProcessor.setFilterNotchEnabled(false);
         audioProcessor.setFilterCombEnabled(false);
+        audioProcessor.setFilterFormantEnabled(false);
     }
     else if (button == &filterBPButton)
     {
@@ -1954,16 +1970,18 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             return;
         }
         
-        // BP selected - deselect LP, HP, Notch, and Comb
+        // BP selected - deselect all other filters
         filterLPButton.setToggleState(false, juce::dontSendNotification);
         filterHPButton.setToggleState(false, juce::dontSendNotification);
         filterNotchButton.setToggleState(false, juce::dontSendNotification);
         filterCombButton.setToggleState(false, juce::dontSendNotification);
+        filterFormantButton.setToggleState(false, juce::dontSendNotification);
         audioProcessor.setFilterLPEnabled(false);
         audioProcessor.setFilterHPEnabled(false);
         audioProcessor.setFilterBPEnabled(true);
         audioProcessor.setFilterNotchEnabled(false);
         audioProcessor.setFilterCombEnabled(false);
+        audioProcessor.setFilterFormantEnabled(false);
     }
     else if (button == &filterNotchButton)
     {
@@ -1975,16 +1993,18 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             return;
         }
         
-        // Notch selected - deselect LP, HP, BP, and Comb
+        // Notch selected - deselect all other filters
         filterLPButton.setToggleState(false, juce::dontSendNotification);
         filterHPButton.setToggleState(false, juce::dontSendNotification);
         filterBPButton.setToggleState(false, juce::dontSendNotification);
         filterCombButton.setToggleState(false, juce::dontSendNotification);
+        filterFormantButton.setToggleState(false, juce::dontSendNotification);
         audioProcessor.setFilterLPEnabled(false);
         audioProcessor.setFilterHPEnabled(false);
         audioProcessor.setFilterBPEnabled(false);
         audioProcessor.setFilterNotchEnabled(true);
         audioProcessor.setFilterCombEnabled(false);
+        audioProcessor.setFilterFormantEnabled(false);
     }
     else if (button == &filterCombButton)
     {
@@ -1996,16 +2016,41 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             return;
         }
         
-        // Comb selected - deselect LP, HP, BP, and Notch
+        // Comb selected - deselect LP, HP, BP, Notch, and Formant
         filterLPButton.setToggleState(false, juce::dontSendNotification);
         filterHPButton.setToggleState(false, juce::dontSendNotification);
         filterBPButton.setToggleState(false, juce::dontSendNotification);
         filterNotchButton.setToggleState(false, juce::dontSendNotification);
+        filterFormantButton.setToggleState(false, juce::dontSendNotification);
         audioProcessor.setFilterLPEnabled(false);
         audioProcessor.setFilterHPEnabled(false);
         audioProcessor.setFilterBPEnabled(false);
         audioProcessor.setFilterNotchEnabled(false);
         audioProcessor.setFilterCombEnabled(true);
+        audioProcessor.setFilterFormantEnabled(false);
+    }
+    else if (button == &filterFormantButton)
+    {
+        // Radio button behavior - Formant cannot be unselected, only other filters can be selected instead
+        if (!filterFormantButton.getToggleState())
+        {
+            // Prevent deselection - keep Formant selected
+            filterFormantButton.setToggleState(true, juce::dontSendNotification);
+            return;
+        }
+        
+        // Formant selected - deselect all other filters
+        filterLPButton.setToggleState(false, juce::dontSendNotification);
+        filterHPButton.setToggleState(false, juce::dontSendNotification);
+        filterBPButton.setToggleState(false, juce::dontSendNotification);
+        filterNotchButton.setToggleState(false, juce::dontSendNotification);
+        filterCombButton.setToggleState(false, juce::dontSendNotification);
+        audioProcessor.setFilterLPEnabled(false);
+        audioProcessor.setFilterHPEnabled(false);
+        audioProcessor.setFilterBPEnabled(false);
+        audioProcessor.setFilterNotchEnabled(false);
+        audioProcessor.setFilterCombEnabled(false);
+        audioProcessor.setFilterFormantEnabled(true);
     }
     else if (button == &filter12dBButton)
     {
@@ -2456,6 +2501,16 @@ void SynthesizerComponent::layoutPhaseControls(juce::Rectangle<int>& bounds)
     phaseControlsPhaseKnob.setBounds(phaseKnobArea);
 }
 
+void SynthesizerComponent::layoutLFOModule(juce::Rectangle<int>& bounds)
+{
+    bounds.removeFromTop(20); // spacing
+    auto lfoRow = bounds.removeFromTop(260); // Taller area for LFO module
+    
+    // Position LFO module under oscillator 1 (left side)
+    auto lfoArea = lfoRow.removeFromLeft(400); // Width for LFO module
+    lfoModule.setBounds(lfoArea);
+}
+
 void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
 {
     // Move to top-right position - use a specific position instead of removing from bounds
@@ -2702,21 +2757,26 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto centerX = getWidth() / 2;
     auto filterSectionY = totalHeight - 200; // Position near bottom center
     
-    // Filter type buttons above the cutoff knob (5 buttons: LP, HP, BP, NOTCH, COMB)
-    auto filterLPButtonArea = juce::Rectangle<int>(centerX - 120, filterSectionY - 40, 40, 25);
+    // Filter type buttons above the cutoff knob (6 buttons in 2 rows: LP, HP, BP / NOTCH, COMB, FORMANT)
+    // Top row: LP, HP, BP
+    auto filterLPButtonArea = juce::Rectangle<int>(centerX - 75, filterSectionY - 55, 45, 25);
     filterLPButton.setBounds(filterLPButtonArea);
     
-    auto filterHPButtonArea = juce::Rectangle<int>(centerX - 75, filterSectionY - 40, 40, 25);
+    auto filterHPButtonArea = juce::Rectangle<int>(centerX - 25, filterSectionY - 55, 45, 25);
     filterHPButton.setBounds(filterHPButtonArea);
     
-    auto filterBPButtonArea = juce::Rectangle<int>(centerX - 30, filterSectionY - 40, 40, 25);
+    auto filterBPButtonArea = juce::Rectangle<int>(centerX + 25, filterSectionY - 55, 45, 25);
     filterBPButton.setBounds(filterBPButtonArea);
     
-    auto filterNotchButtonArea = juce::Rectangle<int>(centerX + 15, filterSectionY - 40, 50, 25);
+    // Bottom row: NOTCH, COMB, FORMANT
+    auto filterNotchButtonArea = juce::Rectangle<int>(centerX - 90, filterSectionY - 25, 55, 25);
     filterNotchButton.setBounds(filterNotchButtonArea);
     
-    auto filterCombButtonArea = juce::Rectangle<int>(centerX + 70, filterSectionY - 40, 50, 25);
+    auto filterCombButtonArea = juce::Rectangle<int>(centerX - 30, filterSectionY - 25, 55, 25);
     filterCombButton.setBounds(filterCombButtonArea);
+    
+    auto filterFormantButtonArea = juce::Rectangle<int>(centerX + 30, filterSectionY - 25, 65, 25);
+    filterFormantButton.setBounds(filterFormantButtonArea);
     
     // Filter slope buttons below the filter type buttons
     auto filter12dBButtonArea = juce::Rectangle<int>(centerX - 55, filterSectionY - 10, 50, 25);
