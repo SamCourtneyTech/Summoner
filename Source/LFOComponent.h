@@ -91,6 +91,17 @@ public:
             // Core bright white waveform
             g.setColour(juce::Colours::white);
             g.strokePath(waveformPath, juce::PathStrokeType(2.0f));
+            
+            // Draw control points as small circles when editing
+            if (isDragging)
+            {
+                g.setColour(juce::Colours::white.withAlpha(0.6f));
+                for (int i = 0; i < waveformPoints.size(); i += 8) // Show every 8th point
+                {
+                    auto point = getPointFromWaveformData(i);
+                    g.fillEllipse(point.x - 2, point.y - 2, 4, 4);
+                }
+            }
         }
     }
     
@@ -100,9 +111,32 @@ public:
     }
     
     // Mouse events for drawing the waveform
-    void mouseDown(const juce::MouseEvent& event) override {}
-    void mouseDrag(const juce::MouseEvent& event) override {}
-    void mouseUp(const juce::MouseEvent& event) override {}
+    void mouseDown(const juce::MouseEvent& event) override
+    {
+        if (!waveformArea.contains(event.getPosition()))
+            return;
+            
+        isDragging = true;
+        dragStartIndex = getWaveformIndexFromX(event.x);
+        updateWaveformPoint(event.x, event.y);
+        repaint();
+    }
+    
+    void mouseDrag(const juce::MouseEvent& event) override
+    {
+        if (!isDragging)
+            return;
+            
+        updateWaveformPoint(event.x, event.y);
+        repaint();
+    }
+    
+    void mouseUp(const juce::MouseEvent& event) override
+    {
+        isDragging = false;
+        dragStartIndex = -1;
+        repaint();
+    }
     
     // Get/set waveform data
     const std::vector<float>& getWaveformData() const { return waveformPoints; }
@@ -165,9 +199,53 @@ private:
     int dragStartIndex = -1;
     
     // Helper methods
-    void updateWaveformPoint(int x, int y) {}
-    int getWaveformIndexFromX(int x) const { return 0; }
-    float getWaveformValueFromY(int y) const { return 0.5f; }
+    void updateWaveformPoint(int x, int y)
+    {
+        if (waveformArea.getWidth() <= 0)
+            return;
+            
+        int index = getWaveformIndexFromX(x);
+        float value = getWaveformValueFromY(y);
+        
+        if (index >= 0 && index < waveformPoints.size())
+        {
+            waveformPoints[index] = value;
+            
+            // Smooth neighboring points for natural curves
+            int range = 3; // How many neighboring points to affect
+            for (int offset = -range; offset <= range; ++offset)
+            {
+                int neighborIndex = index + offset;
+                if (neighborIndex >= 0 && neighborIndex < waveformPoints.size() && neighborIndex != index)
+                {
+                    float distance = std::abs(offset) / float(range);
+                    float influence = 1.0f - (distance * distance); // Quadratic falloff
+                    float targetValue = waveformPoints[neighborIndex];
+                    waveformPoints[neighborIndex] = targetValue + (value - targetValue) * influence * 0.3f;
+                }
+            }
+        }
+    }
+    
+    int getWaveformIndexFromX(int x) const
+    {
+        if (waveformArea.getWidth() <= 0)
+            return 0;
+            
+        float normalizedX = (x - waveformArea.getX()) / float(waveformArea.getWidth());
+        normalizedX = juce::jlimit(0.0f, 1.0f, normalizedX);
+        return static_cast<int>(normalizedX * (waveformPoints.size() - 1));
+    }
+    
+    float getWaveformValueFromY(int y) const
+    {
+        if (waveformArea.getHeight() <= 0)
+            return 0.5f;
+            
+        float normalizedY = (y - waveformArea.getY()) / float(waveformArea.getHeight());
+        normalizedY = juce::jlimit(0.0f, 1.0f, normalizedY);
+        return 1.0f - normalizedY; // Invert Y axis (top = 1.0, bottom = 0.0)
+    }
     juce::Point<int> getPointFromWaveformData(int index) const 
     {
         if (index < 0 || index >= waveformPoints.size() || waveformArea.getWidth() <= 0)
@@ -359,7 +437,55 @@ public:
     void sliderValueChanged(juce::Slider* slider) override {}
     
     // Button listener
-    void buttonClicked(juce::Button* button) override {}
+    void buttonClicked(juce::Button* button) override
+    {
+        if (button == &lfoHzButton)
+        {
+            // Radio button behavior for Hz/BPM
+            if (!lfoHzButton.getToggleState())
+            {
+                lfoHzButton.setToggleState(true, juce::dontSendNotification);
+                return;
+            }
+            
+            lfoBpmButton.setToggleState(false, juce::dontSendNotification);
+            // TODO: Switch to Hz mode when implementation is added
+        }
+        else if (button == &lfoBpmButton)
+        {
+            // Radio button behavior for Hz/BPM
+            if (!lfoBpmButton.getToggleState())
+            {
+                lfoBpmButton.setToggleState(true, juce::dontSendNotification);
+                return;
+            }
+            
+            lfoHzButton.setToggleState(false, juce::dontSendNotification);
+            // TODO: Switch to BPM mode when implementation is added
+        }
+        else if (button == &lfoTriggerButton)
+        {
+            // Toggle trigger mode
+            bool isTriggered = lfoTriggerButton.getToggleState();
+            // TODO: Enable/disable trigger mode when implementation is added
+        }
+        else if (button == &lfoSineButton)
+        {
+            lfoWaveform.resetToSineWave();
+        }
+        else if (button == &lfoSawButton)
+        {
+            lfoWaveform.resetToSawWave();
+        }
+        else if (button == &lfoSquareButton)
+        {
+            lfoWaveform.resetToSquareWave();
+        }
+        else if (button == &lfoTriangleButton)
+        {
+            lfoWaveform.resetToTriangleWave();
+        }
+    }
     
 private:
     // LFO waveform drawing component
