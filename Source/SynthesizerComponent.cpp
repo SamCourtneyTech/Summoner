@@ -2539,9 +2539,14 @@ void SynthesizerComponent::layoutLFOModule(juce::Rectangle<int>& bounds)
 
 void SynthesizerComponent::layoutEffectsModule(juce::Rectangle<int>& bounds)
 {
-    // Position effects module in the center
+    // Position effects module directly in the center
     auto totalBounds = getLocalBounds();
-    auto effectsArea = juce::Rectangle<int>(500, totalBounds.getHeight() - 350, 400, 330); // Center area
+    int effectsWidth = 400;
+    int effectsHeight = 300;
+    int centerX = (totalBounds.getWidth() - effectsWidth) / 2;
+    int centerY = (totalBounds.getHeight() - effectsHeight) / 2;
+    
+    auto effectsArea = juce::Rectangle<int>(centerX, centerY, effectsWidth, effectsHeight);
     effectsModule.setBounds(effectsArea);
 }
 
