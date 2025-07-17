@@ -25,6 +25,24 @@ private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ADSREnvelopeComponent)
 };
 
+class PresetRecallComponent : public juce::Component, private juce::Button::Listener
+{
+public:
+    PresetRecallComponent();
+    ~PresetRecallComponent() override;
+
+    void paint(juce::Graphics& g) override;
+    void resized() override;
+    void buttonClicked(juce::Button* button) override;
+    
+private:
+    juce::Label presetNameLabel;
+    juce::TextButton prevPresetButton;
+    juce::TextButton nextPresetButton;
+    
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PresetRecallComponent)
+};
+
 class SynthesizerComponent : public juce::Component, private juce::Slider::Listener, private juce::Button::Listener
 {
 public:
@@ -127,6 +145,9 @@ private:
     // OSCILLATOR 2 ADSR ENVELOPE VISUALIZER
     ADSREnvelopeComponent osc2AdsrEnvelopeVisualizer;
     
+    // PRESET RECALL COMPONENT
+    PresetRecallComponent presetRecallComponent;
+    
     // LFO MODULE
     LFOModuleComponent lfoModule;
     
@@ -141,9 +162,26 @@ private:
         {
             auto bounds = getLocalBounds();
             
-            // Draw simple border around the effects module
-            g.setColour(juce::Colour(0xff404040)); // Medium gray border
-            g.drawRect(bounds, 2); // 2-pixel border width
+            // Draw realistic 3D metallic border around the effects module (even larger border)
+            // Outermost dark frame (thicker)
+            g.setColour(juce::Colour(0xff1a1a1a));
+            g.drawRect(bounds, 6);
+            
+            // Second layer - dark gray
+            g.setColour(juce::Colour(0xff303030));
+            g.drawRect(bounds.reduced(6), 3);
+            
+            // Third layer - medium gray
+            g.setColour(juce::Colour(0xff505050));
+            g.drawRect(bounds.reduced(9), 2);
+            
+            // Inner light highlight (metallic shine)
+            g.setColour(juce::Colour(0xff909090));
+            g.drawRect(bounds.reduced(11), 2);
+            
+            // Inner shadow
+            g.setColour(juce::Colour(0xff0a0a0a));
+            g.drawRect(bounds.reduced(13), 1);
         }
     };
     

@@ -270,7 +270,7 @@ public:
     {
         // Set up title label
         lfoTitleLabel.setText("LFO", juce::dontSendNotification);
-        lfoTitleLabel.setFont(juce::Font("Press Start 2P", 12.0f, juce::Font::plain));
+        lfoTitleLabel.setFont(juce::Font("Press Start 2P", 10.8f, juce::Font::plain)); // 12.0f * 0.9
         lfoTitleLabel.setColour(juce::Label::textColourId, juce::Colours::white);
         lfoTitleLabel.setJustificationType(juce::Justification::centred);
         addAndMakeVisible(lfoTitleLabel);
@@ -287,7 +287,7 @@ public:
         addAndMakeVisible(lfoRateKnob);
         
         lfoRateLabel.setText("RATE", juce::dontSendNotification);
-        lfoRateLabel.setFont(juce::Font("Press Start 2P", 8.0f, juce::Font::plain));
+        lfoRateLabel.setFont(juce::Font("Press Start 2P", 7.2f, juce::Font::plain)); // 8.0f * 0.9
         lfoRateLabel.setColour(juce::Label::textColourId, juce::Colours::white);
         lfoRateLabel.setJustificationType(juce::Justification::centred);
         addAndMakeVisible(lfoRateLabel);
@@ -394,24 +394,24 @@ public:
     
     void resized() override 
     {
-        auto bounds = getLocalBounds().reduced(15, 15);
+        auto bounds = getLocalBounds().reduced(14, 14); // 15*0.9 = 13.5, rounded to 14
         
-        // Title at the top - smaller
-        auto titleArea = bounds.removeFromTop(20);
+        // Title at the top - smaller (scaled down by 10%)
+        auto titleArea = bounds.removeFromTop(18); // 20*0.9 = 18
         lfoTitleLabel.setBounds(titleArea);
         
-        bounds.removeFromTop(8); // Small gap
+        bounds.removeFromTop(7); // 8*0.9 = 7.2, rounded to 7
         
-        // Main waveform display area - keep same size
-        auto waveformArea = bounds.removeFromTop(100);
-        waveformArea = waveformArea.reduced(15, 0);
+        // Main waveform display area - scaled down by 10%
+        auto waveformArea = bounds.removeFromTop(90); // 100*0.9 = 90
+        waveformArea = waveformArea.reduced(14, 0); // 15*0.9 = 13.5, rounded to 14
         lfoWaveform.setBounds(waveformArea);
         
-        bounds.removeFromTop(8); // Small gap
+        bounds.removeFromTop(7); // 8*0.9 = 7.2, rounded to 7
         
-        // Preset buttons row - make smaller
-        auto presetButtonsArea = bounds.removeFromTop(25);
-        presetButtonsArea = presetButtonsArea.reduced(10, 0);
+        // Preset buttons row - scaled down by 10%
+        auto presetButtonsArea = bounds.removeFromTop(23); // 25*0.9 = 22.5, rounded to 23
+        presetButtonsArea = presetButtonsArea.reduced(9, 0); // 10*0.9 = 9
         int buttonWidth = presetButtonsArea.getWidth() / 5;
         
         lfoSineButton.setBounds(presetButtonsArea.removeFromLeft(buttonWidth).reduced(1, 1));
@@ -420,41 +420,41 @@ public:
         lfoTriangleButton.setBounds(presetButtonsArea.removeFromLeft(buttonWidth).reduced(1, 1));
         lfoChaosButton.setBounds(presetButtonsArea.removeFromLeft(buttonWidth).reduced(1, 1));
         
-        bounds.removeFromTop(8); // Small gap
+        bounds.removeFromTop(7); // 8*0.9 = 7.2, rounded to 7
         
-        // Controls in two rows for better fit
-        auto controlsArea = bounds.removeFromTop(85);
+        // Controls in two rows for better fit - scaled down by 10%
+        auto controlsArea = bounds.removeFromTop(77); // 85*0.9 = 76.5, rounded to 77
         
-        // Top row: Rate knob and Hz/BPM buttons
-        auto topControlsArea = controlsArea.removeFromTop(55);
-        int topControlsWidth = 55 + 10 + 50; // knob + gap + hz/bpm
+        // Top row: Rate knob and Hz/BPM buttons - scaled down by 10%
+        auto topControlsArea = controlsArea.removeFromTop(50); // 55*0.9 = 49.5, rounded to 50
+        int topControlsWidth = 50 + 9 + 45; // knob + gap + hz/bpm (all scaled by 0.9)
         int topStartX = (topControlsArea.getWidth() - topControlsWidth) / 2;
         
-        // Rate knob - smaller
-        auto rateKnobArea = juce::Rectangle<int>(topStartX, 0, 55, 55);
-        auto rateLabelArea = rateKnobArea.removeFromBottom(15);
+        // Rate knob - scaled down by 10%
+        auto rateKnobArea = juce::Rectangle<int>(topStartX, 0, 50, 50); // 55*0.9 = 49.5, rounded to 50
+        auto rateLabelArea = rateKnobArea.removeFromBottom(14); // 15*0.9 = 13.5, rounded to 14
         lfoRateLabel.setBounds(rateLabelArea);
         lfoRateKnob.setBounds(rateKnobArea);
         
-        // Rate type buttons (Hz/BPM) - smaller and side by side
-        auto rateTypeArea = juce::Rectangle<int>(topStartX + 65, 15, 50, 25);
-        auto hzButtonArea = rateTypeArea.removeFromLeft(25);
+        // Rate type buttons (Hz/BPM) - scaled down by 10%
+        auto rateTypeArea = juce::Rectangle<int>(topStartX + 59, 14, 45, 23); // 65*0.9=58.5→59, 15*0.9=13.5→14, 50*0.9=45, 25*0.9=22.5→23
+        auto hzButtonArea = rateTypeArea.removeFromLeft(23); // 25*0.9 = 22.5, rounded to 23
         auto bpmButtonArea = rateTypeArea;
         
         lfoHzButton.setBounds(hzButtonArea);
         lfoBpmButton.setBounds(bpmButtonArea);
         
-        controlsArea.removeFromTop(5); // Small gap
+        controlsArea.removeFromTop(5); // Keep small gap
         
-        // Bottom row: Trigger and Draw buttons
-        auto bottomControlsArea = controlsArea.removeFromTop(25);
-        int bottomControlsWidth = 65 + 10 + 50; // trigger + gap + draw
+        // Bottom row: Trigger and Draw buttons - scaled down by 10%
+        auto bottomControlsArea = controlsArea.removeFromTop(23); // 25*0.9 = 22.5, rounded to 23
+        int bottomControlsWidth = 59 + 9 + 45; // trigger + gap + draw (all scaled by 0.9)
         int bottomStartX = (bottomControlsArea.getWidth() - bottomControlsWidth) / 2;
         
-        auto triggerArea = juce::Rectangle<int>(bottomStartX, 0, 65, 25);
+        auto triggerArea = juce::Rectangle<int>(bottomStartX, 0, 59, 23); // 65*0.9=58.5→59, 25*0.9=22.5→23
         lfoTriggerButton.setBounds(triggerArea);
         
-        auto drawArea = juce::Rectangle<int>(bottomStartX + 75, 0, 50, 25);
+        auto drawArea = juce::Rectangle<int>(bottomStartX + 68, 0, 45, 23); // 75*0.9=67.5→68, 50*0.9=45, 25*0.9=22.5→23
         lfoDrawButton.setBounds(drawArea);
     }
     
