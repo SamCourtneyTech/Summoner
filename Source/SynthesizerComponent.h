@@ -56,6 +56,7 @@ public:
     void layoutOctaveControls(juce::Rectangle<int>& bounds);
     void layoutPhaseControls(juce::Rectangle<int>& bounds);
     void layoutLFOModule(juce::Rectangle<int>& bounds);
+    void layoutEffectsModule(juce::Rectangle<int>& bounds);
     void layoutSecondOscillator(juce::Rectangle<int>& bounds);
     
     void drawWaveTypeButtonsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
@@ -89,6 +90,9 @@ private:
     
     // LFO MODULE
     LFOModuleComponent lfoModule;
+    
+    // EFFECTS MODULE
+    juce::TabbedComponent effectsModule;
     
     // Placeholder UI elements for the synthesizer
     juce::Label titleLabel;

@@ -124,7 +124,7 @@ void ADSREnvelopeComponent::updateEnvelope(float attack, float decay, float sust
 }
 
 SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& processor)
-    : audioProcessor(processor)
+    : audioProcessor(processor), effectsModule(juce::TabbedButtonBar::TabsAtTop)
 {
     
     // VOLUME CONTROLS GROUP - Row 4 (MOVEABLE)
@@ -788,6 +788,33 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     lfoModule.setLookAndFeel(&customKnobLookAndFeel, &customWaveButtonLookAndFeel, &ledLabelLookAndFeel);
     addAndMakeVisible(lfoModule);
     
+    // EFFECTS MODULE
+    effectsModule.setTabBarDepth(30);
+    effectsModule.setCurrentTabIndex(0);
+    
+    // Create placeholder components for each effect
+    auto chorusTab = new juce::Component();
+    auto compressorTab = new juce::Component();
+    auto delayTab = new juce::Component();
+    auto distortionTab = new juce::Component();
+    auto equalizerTab = new juce::Component();
+    auto filterTab = new juce::Component();
+    auto flangerTab = new juce::Component();
+    auto phaserTab = new juce::Component();
+    auto reverbTab = new juce::Component();
+    
+    effectsModule.addTab("CHORUS", juce::Colours::darkgrey, chorusTab, true);
+    effectsModule.addTab("COMP", juce::Colours::darkgrey, compressorTab, true);
+    effectsModule.addTab("DELAY", juce::Colours::darkgrey, delayTab, true);
+    effectsModule.addTab("DIST", juce::Colours::darkgrey, distortionTab, true);
+    effectsModule.addTab("EQ", juce::Colours::darkgrey, equalizerTab, true);
+    effectsModule.addTab("FILTER", juce::Colours::darkgrey, filterTab, true);
+    effectsModule.addTab("FLANGE", juce::Colours::darkgrey, flangerTab, true);
+    effectsModule.addTab("PHASE", juce::Colours::darkgrey, phaserTab, true);
+    effectsModule.addTab("REVERB", juce::Colours::darkgrey, reverbTab, true);
+    
+    addAndMakeVisible(effectsModule);
+    
     // Initialize envelope display with default values
     updateEnvelopeDisplay();
 }
@@ -1431,6 +1458,7 @@ void SynthesizerComponent::resized()
     layoutOctaveControls(bounds);
     layoutPhaseControls(bounds);
     layoutLFOModule(bounds);
+    layoutEffectsModule(bounds);
     layoutSecondOscillator(bounds);
 }
 
@@ -2507,6 +2535,14 @@ void SynthesizerComponent::layoutLFOModule(juce::Rectangle<int>& bounds)
     auto totalBounds = getLocalBounds();
     auto lfoArea = juce::Rectangle<int>(20, totalBounds.getHeight() - 320, 450, 300); // Bottom left, larger area
     lfoModule.setBounds(lfoArea);
+}
+
+void SynthesizerComponent::layoutEffectsModule(juce::Rectangle<int>& bounds)
+{
+    // Position effects module in the center
+    auto totalBounds = getLocalBounds();
+    auto effectsArea = juce::Rectangle<int>(500, totalBounds.getHeight() - 350, 400, 330); // Center area
+    effectsModule.setBounds(effectsArea);
 }
 
 void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
