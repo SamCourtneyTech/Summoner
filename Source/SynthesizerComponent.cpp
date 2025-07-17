@@ -788,11 +788,15 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     lfoModule.setLookAndFeel(&customKnobLookAndFeel, &customWaveButtonLookAndFeel, &ledLabelLookAndFeel);
     addAndMakeVisible(lfoModule);
     
-    // EFFECTS MODULE
-    effectsModule.setTabBarDepth(30);
+    // EFFECTS MODULE - Digital Screen Style
+    effectsModule.setTabBarDepth(29); // 32 * 0.9 = 28.8, rounded to 29
     effectsModule.setCurrentTabIndex(0);
     
-    // Create placeholder components for each effect
+    // Set digital screen colors
+    effectsModule.setColour(juce::TabbedComponent::backgroundColourId, juce::Colour(0xff000008)); // Very dark blue-black
+    effectsModule.setColour(juce::TabbedComponent::outlineColourId, juce::Colour(0xff00ff00).withAlpha(0.8f)); // Bright green outline
+    
+    // Create placeholder components for each effect with digital styling
     auto chorusTab = new juce::Component();
     auto compressorTab = new juce::Component();
     auto delayTab = new juce::Component();
@@ -803,15 +807,21 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     auto phaserTab = new juce::Component();
     auto reverbTab = new juce::Component();
     
-    effectsModule.addTab("CHORUS", juce::Colours::darkgrey, chorusTab, true);
-    effectsModule.addTab("COMP", juce::Colours::darkgrey, compressorTab, true);
-    effectsModule.addTab("DELAY", juce::Colours::darkgrey, delayTab, true);
-    effectsModule.addTab("DIST", juce::Colours::darkgrey, distortionTab, true);
-    effectsModule.addTab("EQ", juce::Colours::darkgrey, equalizerTab, true);
-    effectsModule.addTab("FILTER", juce::Colours::darkgrey, filterTab, true);
-    effectsModule.addTab("FLANGE", juce::Colours::darkgrey, flangerTab, true);
-    effectsModule.addTab("PHASE", juce::Colours::darkgrey, phaserTab, true);
-    effectsModule.addTab("REVERB", juce::Colours::darkgrey, reverbTab, true);
+    // Digital screen background color for tabs
+    juce::Colour digitalBg = juce::Colour(0xff001100); // Dark green tint
+    
+    effectsModule.addTab("CHORUS", digitalBg, chorusTab, true);
+    effectsModule.addTab("COMP", digitalBg, compressorTab, true);
+    effectsModule.addTab("DELAY", digitalBg, delayTab, true);
+    effectsModule.addTab("DIST", digitalBg, distortionTab, true);
+    effectsModule.addTab("EQ", digitalBg, equalizerTab, true);
+    effectsModule.addTab("FILTER", digitalBg, filterTab, true);
+    effectsModule.addTab("FLANGE", digitalBg, flangerTab, true);
+    effectsModule.addTab("PHASE", digitalBg, phaserTab, true);
+    effectsModule.addTab("REVERB", digitalBg, reverbTab, true);
+    
+    // Apply digital screen look and feel
+    effectsModule.setLookAndFeel(&digitalScreenLookAndFeel);
     
     addAndMakeVisible(effectsModule);
     
@@ -2539,10 +2549,10 @@ void SynthesizerComponent::layoutLFOModule(juce::Rectangle<int>& bounds)
 
 void SynthesizerComponent::layoutEffectsModule(juce::Rectangle<int>& bounds)
 {
-    // Position effects module directly in the center
+    // Position effects module directly in the center - 20% smaller total
     auto totalBounds = getLocalBounds();
-    int effectsWidth = 400;
-    int effectsHeight = 300;
+    int effectsWidth = 324;  // 360 * 0.9 = 324
+    int effectsHeight = 243; // 270 * 0.9 = 243
     int centerX = (totalBounds.getWidth() - effectsWidth) / 2;
     int centerY = (totalBounds.getHeight() - effectsHeight) / 2;
     
