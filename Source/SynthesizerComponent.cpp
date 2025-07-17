@@ -823,6 +823,8 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     // Apply digital screen look and feel
     effectsModule.setLookAndFeel(&digitalScreenLookAndFeel);
     
+    // Add border component behind effects module
+    addAndMakeVisible(effectsBorder);
     addAndMakeVisible(effectsModule);
     
     // Initialize envelope display with default values
@@ -2553,10 +2555,17 @@ void SynthesizerComponent::layoutEffectsModule(juce::Rectangle<int>& bounds)
     auto totalBounds = getLocalBounds();
     int effectsWidth = 324;  // 360 * 0.9 = 324
     int effectsHeight = 243; // 270 * 0.9 = 243
-    int centerX = (totalBounds.getWidth() - effectsWidth) / 2;
-    int centerY = (totalBounds.getHeight() - effectsHeight) / 2;
+    int borderPadding = 6; // Extra space for border
     
-    auto effectsArea = juce::Rectangle<int>(centerX, centerY, effectsWidth, effectsHeight);
+    int centerX = (totalBounds.getWidth() - effectsWidth - borderPadding * 2) / 2;
+    int centerY = (totalBounds.getHeight() - effectsHeight - borderPadding * 2) / 2;
+    
+    // Position border component (larger to encompass effects module)
+    auto borderArea = juce::Rectangle<int>(centerX, centerY, effectsWidth + borderPadding * 2, effectsHeight + borderPadding * 2);
+    effectsBorder.setBounds(borderArea);
+    
+    // Position effects module inside the border
+    auto effectsArea = juce::Rectangle<int>(centerX + borderPadding, centerY + borderPadding, effectsWidth, effectsHeight);
     effectsModule.setBounds(effectsArea);
 }
 

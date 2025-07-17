@@ -133,6 +133,22 @@ private:
     // EFFECTS MODULE
     juce::TabbedComponent effectsModule;
     
+    // Effects module border component
+    class EffectsBorderComponent : public juce::Component
+    {
+    public:
+        void paint(juce::Graphics& g) override
+        {
+            auto bounds = getLocalBounds();
+            
+            // Draw simple border around the effects module
+            g.setColour(juce::Colour(0xff404040)); // Medium gray border
+            g.drawRect(bounds, 2); // 2-pixel border width
+        }
+    };
+    
+    EffectsBorderComponent effectsBorder;
+    
     // Placeholder UI elements for the synthesizer
     juce::Label titleLabel;
     juce::Label placeholderLabel;
