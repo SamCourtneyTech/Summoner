@@ -2634,9 +2634,9 @@ void SynthesizerComponent::layoutPhaseControls(juce::Rectangle<int>& bounds)
 
 void SynthesizerComponent::layoutLFOModule(juce::Rectangle<int>& bounds)
 {
-    // Position LFO module in bottom left corner - width increased by 62px total
+    // Position LFO module in bottom left corner - height reduced by 2 pixels from bottom
     auto totalBounds = getLocalBounds();
-    auto lfoArea = juce::Rectangle<int>(20, totalBounds.getHeight() - 195, 409, 169); // Width: 347+62=409, Height: kept at 169
+    auto lfoArea = juce::Rectangle<int>(20, totalBounds.getHeight() - 162, 409, 142); // Width: 409, Height: 144-2=142, Y: -162
     lfoModule.setBounds(lfoArea);
 }
 

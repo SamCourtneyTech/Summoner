@@ -266,6 +266,32 @@ private:
 class LFOModuleComponent : public juce::Component, private juce::Slider::Listener, private juce::Button::Listener
 {
 public:
+    // Custom look and feel for smaller LFO buttons
+    class SmallLFOButtonLookAndFeel : public juce::LookAndFeel_V4
+    {
+    public:
+        void drawButtonText(juce::Graphics& g, juce::TextButton& button, bool, bool) override
+        {
+            auto font = juce::Font("Press Start 2P", 7.0f, juce::Font::plain); // Readable font size
+            g.setFont(font);
+            g.setColour(button.findColour(button.getToggleState() ? juce::TextButton::textColourOnId
+                                                                   : juce::TextButton::textColourOffId)
+                              .withMultipliedAlpha(button.isEnabled() ? 1.0f : 0.5f));
+
+            const int yIndent = juce::jmin(4, button.proportionOfHeight(0.3f));
+            const int cornerSize = juce::jmin(button.getHeight(), button.getWidth()) / 2;
+
+            const int fontHeight = juce::roundToInt(font.getHeight() * 0.6f);
+            const int leftIndent = juce::jmin(fontHeight, 2 + cornerSize / (button.isConnectedOnLeft() ? 4 : 2));
+            const int rightIndent = juce::jmin(fontHeight, 2 + cornerSize / (button.isConnectedOnRight() ? 4 : 2));
+
+            g.drawFittedText(button.getButtonText(),
+                           leftIndent, yIndent, button.getWidth() - leftIndent - rightIndent,
+                           button.getHeight() - yIndent * 2,
+                           juce::Justification::centred, 1);
+        }
+    };
+
     LFOModuleComponent() : knobLookAndFeel(nullptr), buttonLookAndFeel(nullptr), labelLookAndFeel(nullptr) 
     {
         // Set up title label
@@ -339,6 +365,17 @@ public:
         lfoChaosButton.setButtonText("CHAOS");
         lfoChaosButton.addListener(this);
         addAndMakeVisible(lfoChaosButton);
+        
+        // Apply smaller font look and feel to all buttons
+        lfoHzButton.setLookAndFeel(&smallButtonLookAndFeel);
+        lfoBpmButton.setLookAndFeel(&smallButtonLookAndFeel);
+        lfoTriggerButton.setLookAndFeel(&smallButtonLookAndFeel);
+        lfoDrawButton.setLookAndFeel(&smallButtonLookAndFeel);
+        lfoSineButton.setLookAndFeel(&smallButtonLookAndFeel);
+        lfoSawButton.setLookAndFeel(&smallButtonLookAndFeel);
+        lfoSquareButton.setLookAndFeel(&smallButtonLookAndFeel);
+        lfoTriangleButton.setLookAndFeel(&smallButtonLookAndFeel);
+        lfoChaosButton.setLookAndFeel(&smallButtonLookAndFeel);
     }
     ~LFOModuleComponent() override {}
     
@@ -394,68 +431,62 @@ public:
     
     void resized() override 
     {
-        auto bounds = getLocalBounds().reduced(14, 14); // 15*0.9 = 13.5, rounded to 14
+        auto bounds = getLocalBounds().reduced(14, 14);
         
-        // Title at the top - smaller (scaled down by 10%)
-        auto titleArea = bounds.removeFromTop(18); // 20*0.9 = 18
-        lfoTitleLabel.setBounds(titleArea);
+        // Top row: Buttons split to corners with title in center
+        auto topArea = bounds.removeFromTop(22);
         
-        bounds.removeFromTop(7); // 8*0.9 = 7.2, rounded to 7
+        // Left side buttons (preset waveforms)
+        auto leftButtonArea = topArea.removeFromLeft(160);
+        int leftButtonWidth = leftButtonArea.getWidth() / 3; // Only 3 buttons on left
         
-        // Main waveform display area - scaled down by 10%
-        auto waveformArea = bounds.removeFromTop(90); // 100*0.9 = 90
-        waveformArea = waveformArea.reduced(14, 0); // 15*0.9 = 13.5, rounded to 14
+        lfoSineButton.setBounds(leftButtonArea.removeFromLeft(leftButtonWidth).reduced(2, 1));
+        lfoSawButton.setBounds(leftButtonArea.removeFromLeft(leftButtonWidth).reduced(2, 1));
+        lfoSquareButton.setBounds(leftButtonArea.removeFromLeft(leftButtonWidth).reduced(2, 1));
+        
+        // Right side buttons (remaining presets + controls)
+        auto rightButtonArea = topArea.removeFromRight(160);
+        int rightButtonWidth = rightButtonArea.getWidth() / 4; // 4 buttons on right
+        
+        lfoSquareButton.setBounds(rightButtonArea.removeFromLeft(rightButtonWidth).reduced(2, 1));
+        lfoTriangleButton.setBounds(rightButtonArea.removeFromLeft(rightButtonWidth).reduced(2, 1));
+        lfoChaosButton.setBounds(rightButtonArea.removeFromLeft(rightButtonWidth).reduced(2, 1));
+        
+        // Hz/BPM in last spot on right
+        auto hzBpmArea = rightButtonArea.removeFromLeft(rightButtonWidth);
+        auto hzArea = hzBpmArea.removeFromTop(11);
+        auto bpmArea = hzBpmArea;
+        lfoHzButton.setBounds(hzArea.reduced(2, 0));
+        lfoBpmButton.setBounds(bpmArea.reduced(2, 0));
+        
+        // Center title area
+        lfoTitleLabel.setBounds(topArea);
+        
+        bounds.removeFromTop(5); // Small gap
+        
+        // Main waveform display area
+        auto waveformArea = bounds.removeFromTop(90);
+        waveformArea = waveformArea.reduced(14, 0);
         lfoWaveform.setBounds(waveformArea);
         
-        bounds.removeFromTop(7); // 8*0.9 = 7.2, rounded to 7
+        bounds.removeFromTop(5); // Small gap
         
-        // Preset buttons row - scaled down by 10%
-        auto presetButtonsArea = bounds.removeFromTop(23); // 25*0.9 = 22.5, rounded to 23
-        presetButtonsArea = presetButtonsArea.reduced(9, 0); // 10*0.9 = 9
-        int buttonWidth = presetButtonsArea.getWidth() / 5;
+        // Bottom controls: Rate knob and action buttons
+        auto bottomControlsArea = bounds.removeFromTop(40);
         
-        lfoSineButton.setBounds(presetButtonsArea.removeFromLeft(buttonWidth).reduced(1, 1));
-        lfoSawButton.setBounds(presetButtonsArea.removeFromLeft(buttonWidth).reduced(1, 1));
-        lfoSquareButton.setBounds(presetButtonsArea.removeFromLeft(buttonWidth).reduced(1, 1));
-        lfoTriangleButton.setBounds(presetButtonsArea.removeFromLeft(buttonWidth).reduced(1, 1));
-        lfoChaosButton.setBounds(presetButtonsArea.removeFromLeft(buttonWidth).reduced(1, 1));
-        
-        bounds.removeFromTop(7); // 8*0.9 = 7.2, rounded to 7
-        
-        // Controls in two rows for better fit - scaled down by 10%
-        auto controlsArea = bounds.removeFromTop(77); // 85*0.9 = 76.5, rounded to 77
-        
-        // Top row: Rate knob and Hz/BPM buttons - scaled down by 10%
-        auto topControlsArea = controlsArea.removeFromTop(50); // 55*0.9 = 49.5, rounded to 50
-        int topControlsWidth = 50 + 9 + 45; // knob + gap + hz/bpm (all scaled by 0.9)
-        int topStartX = (topControlsArea.getWidth() - topControlsWidth) / 2;
-        
-        // Rate knob - scaled down by 10%
-        auto rateKnobArea = juce::Rectangle<int>(topStartX, 0, 50, 50); // 55*0.9 = 49.5, rounded to 50
-        auto rateLabelArea = rateKnobArea.removeFromBottom(14); // 15*0.9 = 13.5, rounded to 14
+        // Rate knob on left
+        auto rateKnobArea = bottomControlsArea.removeFromLeft(50);
+        auto rateLabelArea = rateKnobArea.removeFromBottom(12);
         lfoRateLabel.setBounds(rateLabelArea);
         lfoRateKnob.setBounds(rateKnobArea);
         
-        // Rate type buttons (Hz/BPM) - scaled down by 10%
-        auto rateTypeArea = juce::Rectangle<int>(topStartX + 59, 14, 45, 23); // 65*0.9=58.5→59, 15*0.9=13.5→14, 50*0.9=45, 25*0.9=22.5→23
-        auto hzButtonArea = rateTypeArea.removeFromLeft(23); // 25*0.9 = 22.5, rounded to 23
-        auto bpmButtonArea = rateTypeArea;
+        // Action buttons on right - make them fit better
+        auto actionButtonsArea = bottomControlsArea.removeFromRight(100);
+        auto triggerArea = actionButtonsArea.removeFromLeft(50);
+        auto drawArea = actionButtonsArea.removeFromLeft(50);
         
-        lfoHzButton.setBounds(hzButtonArea);
-        lfoBpmButton.setBounds(bpmButtonArea);
-        
-        controlsArea.removeFromTop(5); // Keep small gap
-        
-        // Bottom row: Trigger and Draw buttons - scaled down by 10%
-        auto bottomControlsArea = controlsArea.removeFromTop(23); // 25*0.9 = 22.5, rounded to 23
-        int bottomControlsWidth = 59 + 9 + 45; // trigger + gap + draw (all scaled by 0.9)
-        int bottomStartX = (bottomControlsArea.getWidth() - bottomControlsWidth) / 2;
-        
-        auto triggerArea = juce::Rectangle<int>(bottomStartX, 0, 59, 23); // 65*0.9=58.5→59, 25*0.9=22.5→23
-        lfoTriggerButton.setBounds(triggerArea);
-        
-        auto drawArea = juce::Rectangle<int>(bottomStartX + 68, 0, 45, 23); // 75*0.9=67.5→68, 50*0.9=45, 25*0.9=22.5→23
-        lfoDrawButton.setBounds(drawArea);
+        lfoTriggerButton.setBounds(triggerArea.reduced(2, 8));
+        lfoDrawButton.setBounds(drawArea.reduced(2, 8));
     }
     
     // Slider listener
@@ -556,6 +587,9 @@ private:
     CustomKnobLookAndFeel* knobLookAndFeel;
     WaveButtonLookAndFeel* buttonLookAndFeel;
     LEDLabelLookAndFeel* labelLookAndFeel;
+    
+    // Custom small button look and feel (owned)
+    SmallLFOButtonLookAndFeel smallButtonLookAndFeel;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LFOModuleComponent)
 };
