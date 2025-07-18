@@ -346,21 +346,21 @@ public:
         addAndMakeVisible(lfoDrawButton);
         
         // Set up preset waveform buttons
-        lfoSineButton.setButtonText("SIN");
-        lfoSineButton.addListener(this);
-        addAndMakeVisible(lfoSineButton);
+        // lfoSineButton.setButtonText("SIN");
+        // lfoSineButton.addListener(this);
+        // addAndMakeVisible(lfoSineButton);
         
-        lfoSawButton.setButtonText("SAW");
-        lfoSawButton.addListener(this);
-        addAndMakeVisible(lfoSawButton);
+        // lfoSawButton.setButtonText("SAW");
+        // lfoSawButton.addListener(this);
+        // addAndMakeVisible(lfoSawButton);
         
-        lfoSquareButton.setButtonText("SQR");
-        lfoSquareButton.addListener(this);
-        addAndMakeVisible(lfoSquareButton);
+        // lfoSquareButton.setButtonText("SQR");
+        // lfoSquareButton.addListener(this);
+        // addAndMakeVisible(lfoSquareButton);
         
-        lfoTriangleButton.setButtonText("TRI");
-        lfoTriangleButton.addListener(this);
-        addAndMakeVisible(lfoTriangleButton);
+        // lfoTriangleButton.setButtonText("TRI");
+        // lfoTriangleButton.addListener(this);
+        // addAndMakeVisible(lfoTriangleButton);
         
         lfoChaosButton.setButtonText("CHAOS");
         lfoChaosButton.addListener(this);
@@ -371,10 +371,10 @@ public:
         lfoBpmButton.setLookAndFeel(&smallButtonLookAndFeel);
         lfoTriggerButton.setLookAndFeel(&smallButtonLookAndFeel);
         lfoDrawButton.setLookAndFeel(&smallButtonLookAndFeel);
-        lfoSineButton.setLookAndFeel(&smallButtonLookAndFeel);
-        lfoSawButton.setLookAndFeel(&smallButtonLookAndFeel);
-        lfoSquareButton.setLookAndFeel(&smallButtonLookAndFeel);
-        lfoTriangleButton.setLookAndFeel(&smallButtonLookAndFeel);
+        // lfoSineButton.setLookAndFeel(&smallButtonLookAndFeel);
+        // lfoSawButton.setLookAndFeel(&smallButtonLookAndFeel);
+        // lfoSquareButton.setLookAndFeel(&smallButtonLookAndFeel);
+        // lfoTriangleButton.setLookAndFeel(&smallButtonLookAndFeel);
         lfoChaosButton.setLookAndFeel(&smallButtonLookAndFeel);
     }
     ~LFOModuleComponent() override {}
@@ -408,25 +408,113 @@ public:
     
     void paint(juce::Graphics& g) override 
     {
-        auto bounds = getLocalBounds();
+        auto bounds = getLocalBounds().toFloat();
         
-        // Draw main background with metallic outline (matching other components)
-        g.setColour(juce::Colour(0xff0f0f0f));
-        g.fillRoundedRectangle(bounds.toFloat(), 8.0f);
+        // EXACT COPY of oscillator 1 background styling
         
-        // Inner metallic frame
-        auto metalBounds = bounds.toFloat().reduced(3.0f);
+        // Shadow layer (bottom-right offset for depth)
+        auto shadowBounds = bounds.translated(3.0f, 3.0f);
+        g.setColour(juce::Colours::black.withAlpha(0.4f));
+        g.fillRoundedRectangle(shadowBounds, 10.0f);
+
+        // Dark base layer (for depth)
         g.setColour(juce::Colour(0xff1a1a1a));
-        g.fillRoundedRectangle(metalBounds, 6.0f);
-        
-        // Metallic highlight
-        g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-        g.drawRoundedRectangle(metalBounds.reduced(1.0f), 5.0f, 1.0f);
-        
-        // Draw background inside the frames
-        auto innerBounds = bounds.toFloat().reduced(8.0f);
-        g.setColour(juce::Colour(0xff0f0f1f).withAlpha(0.7f));
-        g.fillRoundedRectangle(innerBounds, 4.0f);
+        g.fillRoundedRectangle(bounds, 10.0f);
+
+        // Main raised surface - metallic modular synth module look
+        auto raisedBounds = bounds.reduced(2.0f);
+
+        // Much darker metallic grey base
+        g.setColour(juce::Colour(0xff202020));
+        g.fillRoundedRectangle(raisedBounds, 8.0f);
+
+        // Add very dark metallic gradient for depth
+        juce::ColourGradient metallicGradient(juce::Colour(0xff2a2a2a), raisedBounds.getX(), raisedBounds.getY(),
+                                             juce::Colour(0xff151515), raisedBounds.getX(), raisedBounds.getBottom(), false);
+        g.setGradientFill(metallicGradient);
+        g.fillRoundedRectangle(raisedBounds, 8.0f);
+
+        // Add subtle metallic texture
+        juce::Random metallicRandom(42);
+        g.setColour(juce::Colour(0xff202020).withAlpha(0.3f));
+        for (int i = 0; i < 200; ++i)
+        {
+            auto x = raisedBounds.getX() + metallicRandom.nextFloat() * raisedBounds.getWidth();
+            auto y = raisedBounds.getY() + metallicRandom.nextFloat() * raisedBounds.getHeight();
+            g.fillRect(x, y, 1.0f, 1.0f);
+        }
+
+        // Add lighter metallic highlights
+        metallicRandom.setSeed(123);
+        g.setColour(juce::Colour(0xff606060).withAlpha(0.2f));
+        for (int i = 0; i < 150; ++i)
+        {
+            auto x = raisedBounds.getX() + metallicRandom.nextFloat() * raisedBounds.getWidth();
+            auto y = raisedBounds.getY() + metallicRandom.nextFloat() * raisedBounds.getHeight();
+            g.fillRect(x, y, 1.0f, 1.0f);
+        }
+
+        // Top and left highlights (simulating light from top-left)
+        g.setColour(juce::Colour(0xff707070).withAlpha(0.8f));
+        // Top highlight
+        g.drawLine(raisedBounds.getX() + 8, raisedBounds.getY() + 1, 
+                   raisedBounds.getRight() - 8, raisedBounds.getY() + 1, 2.0f);
+        // Left highlight  
+        g.drawLine(raisedBounds.getX() + 1, raisedBounds.getY() + 8, 
+                   raisedBounds.getX() + 1, raisedBounds.getBottom() - 8, 2.0f);
+
+        // Bottom and right shadows (simulating shadow from top-left light)
+        g.setColour(juce::Colour(0xff202020).withAlpha(0.9f));
+        // Bottom shadow
+        g.drawLine(raisedBounds.getX() + 8, raisedBounds.getBottom() - 1, 
+                   raisedBounds.getRight() - 8, raisedBounds.getBottom() - 1, 2.0f);
+        // Right shadow
+        g.drawLine(raisedBounds.getRight() - 1, raisedBounds.getY() + 8, 
+                   raisedBounds.getRight() - 1, raisedBounds.getBottom() - 8, 2.0f);
+
+        // Add corner screws for modular synth module look
+        auto screwRadius = 6.0f;
+        auto screwInset = 15.0f;
+
+        // Top-left screw
+        auto tlScrew = juce::Rectangle<float>(raisedBounds.getX() + screwInset, raisedBounds.getY() + screwInset, screwRadius * 2, screwRadius * 2);
+        g.setColour(juce::Colour(0xff404040));
+        g.fillEllipse(tlScrew);
+        g.setColour(juce::Colour(0xff808080));
+        g.drawEllipse(tlScrew, 1.0f);
+        // Screw slot
+        g.setColour(juce::Colour(0xff101010));
+        g.drawLine(tlScrew.getCentreX() - 3, tlScrew.getCentreY(), tlScrew.getCentreX() + 3, tlScrew.getCentreY(), 1.5f);
+
+        // Top-right screw
+        auto trScrew = juce::Rectangle<float>(raisedBounds.getRight() - screwInset - screwRadius * 2, raisedBounds.getY() + screwInset, screwRadius * 2, screwRadius * 2);
+        g.setColour(juce::Colour(0xff404040));
+        g.fillEllipse(trScrew);
+        g.setColour(juce::Colour(0xff808080));
+        g.drawEllipse(trScrew, 1.0f);
+        // Screw slot
+        g.setColour(juce::Colour(0xff101010));
+        g.drawLine(trScrew.getCentreX() - 3, trScrew.getCentreY(), trScrew.getCentreX() + 3, trScrew.getCentreY(), 1.5f);
+
+        // Bottom-left screw
+        auto blScrew = juce::Rectangle<float>(raisedBounds.getX() + screwInset, raisedBounds.getBottom() - screwInset - screwRadius * 2, screwRadius * 2, screwRadius * 2);
+        g.setColour(juce::Colour(0xff404040));
+        g.fillEllipse(blScrew);
+        g.setColour(juce::Colour(0xff808080));
+        g.drawEllipse(blScrew, 1.0f);
+        // Screw slot
+        g.setColour(juce::Colour(0xff101010));
+        g.drawLine(blScrew.getCentreX() - 3, blScrew.getCentreY(), blScrew.getCentreX() + 3, blScrew.getCentreY(), 1.5f);
+
+        // Bottom-right screw
+        auto brScrew = juce::Rectangle<float>(raisedBounds.getRight() - screwInset - screwRadius * 2, raisedBounds.getBottom() - screwInset - screwRadius * 2, screwRadius * 2, screwRadius * 2);
+        g.setColour(juce::Colour(0xff404040));
+        g.fillEllipse(brScrew);
+        g.setColour(juce::Colour(0xff808080));
+        g.drawEllipse(brScrew, 1.0f);
+        // Screw slot
+        g.setColour(juce::Colour(0xff101010));
+        g.drawLine(brScrew.getCentreX() - 3, brScrew.getCentreY(), brScrew.getCentreX() + 3, brScrew.getCentreY(), 1.5f);
     }
     
     void resized() override 
@@ -436,24 +524,23 @@ public:
         // Top row: Buttons split to corners with title in center
         auto topArea = bounds.removeFromTop(22);
         
-        // Left side buttons (preset waveforms)
-        auto leftButtonArea = topArea.removeFromLeft(160);
-        int leftButtonWidth = leftButtonArea.getWidth() / 3; // Only 3 buttons on left
+        // Left side buttons (preset waveforms) - commented out
+        // auto leftButtonArea = topArea.removeFromLeft(160);
+        // int leftButtonWidth = leftButtonArea.getWidth() / 3; // Only 3 buttons on left
         
-        lfoSineButton.setBounds(leftButtonArea.removeFromLeft(leftButtonWidth).reduced(2, 1));
-        lfoSawButton.setBounds(leftButtonArea.removeFromLeft(leftButtonWidth).reduced(2, 1));
-        lfoSquareButton.setBounds(leftButtonArea.removeFromLeft(leftButtonWidth).reduced(2, 1));
+        // lfoSineButton.setBounds(leftButtonArea.removeFromLeft(leftButtonWidth).reduced(2, 1));
+        // lfoSawButton.setBounds(leftButtonArea.removeFromLeft(leftButtonWidth).reduced(2, 1));
+        // lfoSquareButton.setBounds(leftButtonArea.removeFromLeft(leftButtonWidth).reduced(2, 1));
         
-        // Right side buttons (remaining presets + controls)
-        auto rightButtonArea = topArea.removeFromRight(160);
-        int rightButtonWidth = rightButtonArea.getWidth() / 4; // 4 buttons on right
+        // Right side buttons - CHAOS button and Hz/BPM controls
+        auto rightButtonArea = topArea.removeFromRight(120);
         
-        lfoSquareButton.setBounds(rightButtonArea.removeFromLeft(rightButtonWidth).reduced(2, 1));
-        lfoTriangleButton.setBounds(rightButtonArea.removeFromLeft(rightButtonWidth).reduced(2, 1));
-        lfoChaosButton.setBounds(rightButtonArea.removeFromLeft(rightButtonWidth).reduced(2, 1));
+        // CHAOS button on right
+        auto chaosArea = rightButtonArea.removeFromLeft(60);
+        lfoChaosButton.setBounds(chaosArea.reduced(2, 1));
         
-        // Hz/BPM in last spot on right
-        auto hzBpmArea = rightButtonArea.removeFromLeft(rightButtonWidth);
+        // Hz/BPM buttons stacked vertically
+        auto hzBpmArea = rightButtonArea.removeFromLeft(60);
         auto hzArea = hzBpmArea.removeFromTop(11);
         auto bpmArea = hzBpmArea;
         lfoHzButton.setBounds(hzArea.reduced(2, 0));
@@ -532,22 +619,22 @@ public:
             // TODO: Enable/disable draw mode when implementation is added
             // This could switch between different drawing behaviors
         }
-        else if (button == &lfoSineButton)
-        {
-            lfoWaveform.resetToSineWave();
-        }
-        else if (button == &lfoSawButton)
-        {
-            lfoWaveform.resetToSawWave();
-        }
-        else if (button == &lfoSquareButton)
-        {
-            lfoWaveform.resetToSquareWave();
-        }
-        else if (button == &lfoTriangleButton)
-        {
-            lfoWaveform.resetToTriangleWave();
-        }
+        // else if (button == &lfoSineButton)
+        // {
+        //     lfoWaveform.resetToSineWave();
+        // }
+        // else if (button == &lfoSawButton)
+        // {
+        //     lfoWaveform.resetToSawWave();
+        // }
+        // else if (button == &lfoSquareButton)
+        // {
+        //     lfoWaveform.resetToSquareWave();
+        // }
+        // else if (button == &lfoTriangleButton)
+        // {
+        //     lfoWaveform.resetToTriangleWave();
+        // }
         else if (button == &lfoChaosButton)
         {
             // TODO: Implement chaos LFO mode - for now just placeholder
