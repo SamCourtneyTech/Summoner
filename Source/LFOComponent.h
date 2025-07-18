@@ -471,22 +471,22 @@ public:
         
         bounds.removeFromTop(5); // Small gap
         
-        // Bottom controls: Rate knob and action buttons
+        // Bottom controls: Rate knob centered, action buttons spread out
         auto bottomControlsArea = bounds.removeFromTop(40);
         
-        // Rate knob on left
-        auto rateKnobArea = bottomControlsArea.removeFromLeft(50);
+        // Rate knob in center
+        auto rateKnobArea = juce::Rectangle<int>((bottomControlsArea.getWidth() - 40) / 2, 0, 40, 40);
         auto rateLabelArea = rateKnobArea.removeFromBottom(12);
         lfoRateLabel.setBounds(rateLabelArea);
         lfoRateKnob.setBounds(rateKnobArea);
         
-        // Action buttons on right - make them fit better
-        auto actionButtonsArea = bottomControlsArea.removeFromRight(100);
-        auto triggerArea = actionButtonsArea.removeFromLeft(50);
-        auto drawArea = actionButtonsArea.removeFromLeft(50);
+        // Trigger button on left
+        auto triggerArea = juce::Rectangle<int>(10, 10, 50, 20);
+        lfoTriggerButton.setBounds(triggerArea);
         
-        lfoTriggerButton.setBounds(triggerArea.reduced(2, 8));
-        lfoDrawButton.setBounds(drawArea.reduced(2, 8));
+        // Draw button on right
+        auto drawArea = juce::Rectangle<int>(bottomControlsArea.getWidth() - 60, 10, 50, 20);
+        lfoDrawButton.setBounds(drawArea);
     }
     
     // Slider listener
