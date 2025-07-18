@@ -1487,6 +1487,8 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     // drawOsc2PhaseControlsBackground(g, osc2PhaseControlsBounds); // Removed - was covering the knob
     
     // Precision alignment grid overlay - symmetrical and aligned to boundaries
+    // TEMPORARILY COMMENTED OUT
+    /*
     auto gridBounds = getLocalBounds().toFloat();
     auto centerX = gridBounds.getWidth() / 2.0f;
     auto centerY = gridBounds.getHeight() / 2.0f;
@@ -1532,6 +1534,7 @@ void SynthesizerComponent::paint(juce::Graphics& g)
         g.drawLine(0, centerY + offset, gridBounds.getWidth(), centerY + offset, 1.0f);
         g.drawLine(0, centerY - offset, gridBounds.getWidth(), centerY - offset, 1.0f);
     }
+    */
 
     // Main window border
     g.setColour(juce::Colour(0xff16213e));
