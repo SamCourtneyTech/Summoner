@@ -2905,61 +2905,91 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto matchingKnobArea = juce::Rectangle<int>(phaseKnobArea.getX(), phaseKnobArea.getY() + 33, 80, 60);
     osc2PhaseKnob.setBounds(matchingKnobArea);
     
-    // Filter section positioning - center of the page
-    auto centerX = getWidth() / 2;
-    auto filterSectionY = totalHeight - 200; // Position near bottom center
+    // Filter section positioning - under oscillator 2 in landscape format
+    auto filterSectionX = offsetOsc2Section.getX();
+    auto filterSectionY = offsetOsc2Section.getBottom() + 20; // 20px gap below oscillator 2
+    auto filterSectionWidth = offsetOsc2Section.getWidth();
     
-    // Filter type buttons above the cutoff knob (6 buttons in 2 rows: LP, HP, BP / NOTCH, COMB, FORMANT)
-    // Top row: LP, HP, BP
-    auto filterLPButtonArea = juce::Rectangle<int>(centerX - 75, filterSectionY - 55, 45, 25);
+    // Single row of filter type and slope buttons in landscape format
+    auto filterButtonHeight = 25;
+    auto filterButtonSpacing = 8;
+    
+    // Calculate button widths and positions for landscape layout
+    auto typeButtonWidth = 45;
+    auto slopeButtonWidth = 50;
+    auto totalButtonsWidth = (6 * typeButtonWidth) + (2 * slopeButtonWidth) + (7 * filterButtonSpacing);
+    auto buttonsStartX = filterSectionX + (filterSectionWidth - totalButtonsWidth) / 2;
+    
+    auto currentX = buttonsStartX;
+    
+    // Filter type buttons in single row: LP, HP, BP, NOTCH, COMB, FORMANT
+    auto filterLPButtonArea = juce::Rectangle<int>(currentX, filterSectionY, typeButtonWidth, filterButtonHeight);
     filterLPButton.setBounds(filterLPButtonArea);
+    currentX += typeButtonWidth + filterButtonSpacing;
     
-    auto filterHPButtonArea = juce::Rectangle<int>(centerX - 25, filterSectionY - 55, 45, 25);
+    auto filterHPButtonArea = juce::Rectangle<int>(currentX, filterSectionY, typeButtonWidth, filterButtonHeight);
     filterHPButton.setBounds(filterHPButtonArea);
+    currentX += typeButtonWidth + filterButtonSpacing;
     
-    auto filterBPButtonArea = juce::Rectangle<int>(centerX + 25, filterSectionY - 55, 45, 25);
+    auto filterBPButtonArea = juce::Rectangle<int>(currentX, filterSectionY, typeButtonWidth, filterButtonHeight);
     filterBPButton.setBounds(filterBPButtonArea);
+    currentX += typeButtonWidth + filterButtonSpacing;
     
-    // Bottom row: NOTCH, COMB, FORMANT
-    auto filterNotchButtonArea = juce::Rectangle<int>(centerX - 90, filterSectionY - 25, 55, 25);
+    auto filterNotchButtonArea = juce::Rectangle<int>(currentX, filterSectionY, typeButtonWidth, filterButtonHeight);
     filterNotchButton.setBounds(filterNotchButtonArea);
+    currentX += typeButtonWidth + filterButtonSpacing;
     
-    auto filterCombButtonArea = juce::Rectangle<int>(centerX - 30, filterSectionY - 25, 55, 25);
+    auto filterCombButtonArea = juce::Rectangle<int>(currentX, filterSectionY, typeButtonWidth, filterButtonHeight);
     filterCombButton.setBounds(filterCombButtonArea);
+    currentX += typeButtonWidth + filterButtonSpacing;
     
-    auto filterFormantButtonArea = juce::Rectangle<int>(centerX + 30, filterSectionY - 25, 65, 25);
+    auto filterFormantButtonArea = juce::Rectangle<int>(currentX, filterSectionY, typeButtonWidth, filterButtonHeight);
     filterFormantButton.setBounds(filterFormantButtonArea);
+    currentX += typeButtonWidth + filterButtonSpacing;
     
-    // Filter slope buttons below the filter type buttons
-    auto filter12dBButtonArea = juce::Rectangle<int>(centerX - 55, filterSectionY - 10, 50, 25);
+    // Filter slope buttons continue in same row
+    auto filter12dBButtonArea = juce::Rectangle<int>(currentX, filterSectionY, slopeButtonWidth, filterButtonHeight);
     filter12dBButton.setBounds(filter12dBButtonArea);
+    currentX += slopeButtonWidth + filterButtonSpacing;
     
-    auto filter24dBButtonArea = juce::Rectangle<int>(centerX + 5, filterSectionY - 10, 50, 25);
+    auto filter24dBButtonArea = juce::Rectangle<int>(currentX, filterSectionY, slopeButtonWidth, filterButtonHeight);
     filter24dBButton.setBounds(filter24dBButtonArea);
     
-    // Filter cutoff knob on the left (moved down further to make more space for slope buttons)
-    auto filterCutoffKnobArea = juce::Rectangle<int>(centerX - 80, filterSectionY + 45, 80, 60);
-    filterCutoffKnob.setBounds(filterCutoffKnobArea);
+    // Knobs row below buttons - landscape layout with OSC enable buttons
+    auto filterKnobRowY = filterSectionY + filterButtonHeight + 15;
+    auto filterKnobWidth = 80;
+    auto filterKnobHeight = 60;
+    auto filterKnobSpacing = 20;
+    auto oscButtonWidth = 60;
+    auto oscButtonHeight = 30;
     
-    auto filterCutoffLabelArea = juce::Rectangle<int>(filterCutoffKnobArea.getX(), filterCutoffKnobArea.getY() - 20, 80, 20);
-    filterCutoffLabel.setBounds(filterCutoffLabelArea);
+    // Calculate total width for knobs and osc buttons layout
+    auto filterTotalKnobsWidth = (2 * filterKnobWidth) + (2 * oscButtonWidth) + (3 * filterKnobSpacing);
+    auto filterKnobsStartX = filterSectionX + (filterSectionWidth - filterTotalKnobsWidth) / 2;
     
-    // Filter Resonance knob on the right (moved down further to make more space for slope buttons)
-    auto filterResonanceKnobArea = juce::Rectangle<int>(centerX + 10, filterSectionY + 45, 80, 60);
-    filterResonanceKnob.setBounds(filterResonanceKnobArea);
+    currentX = filterKnobsStartX;
     
-    auto filterResonanceLabelArea = juce::Rectangle<int>(filterResonanceKnobArea.getX(), filterResonanceKnobArea.getY() - 20, 80, 20);
-    filterResonanceLabel.setBounds(filterResonanceLabelArea);
-    
-    // OSC filter enable buttons - positioned on either side of the moved knobs
-    auto filterButtonWidth = 60;
-    auto filterButtonHeight = 30;
-    auto buttonY = filterSectionY + 115; // Below the moved knobs (adjusted for extra space)
-    
-    auto osc1FilterButtonArea = juce::Rectangle<int>(centerX - 80 - filterButtonWidth/2, buttonY, filterButtonWidth, filterButtonHeight);
+    // OSC1 Filter Enable button
+    auto osc1FilterButtonArea = juce::Rectangle<int>(currentX, filterKnobRowY + (filterKnobHeight - oscButtonHeight) / 2, oscButtonWidth, oscButtonHeight);
     osc1FilterEnableButton.setBounds(osc1FilterButtonArea);
+    currentX += oscButtonWidth + filterKnobSpacing;
     
-    auto osc2FilterButtonArea = juce::Rectangle<int>(centerX + 80 - filterButtonWidth/2, buttonY, filterButtonWidth, filterButtonHeight);
+    // Filter cutoff knob
+    auto filterCutoffKnobArea = juce::Rectangle<int>(currentX, filterKnobRowY, filterKnobWidth, filterKnobHeight);
+    filterCutoffKnob.setBounds(filterCutoffKnobArea);
+    auto filterCutoffLabelArea = juce::Rectangle<int>(filterCutoffKnobArea.getX(), filterCutoffKnobArea.getY() - 20, filterKnobWidth, 20);
+    filterCutoffLabel.setBounds(filterCutoffLabelArea);
+    currentX += filterKnobWidth + filterKnobSpacing;
+    
+    // Filter Resonance knob
+    auto filterResonanceKnobArea = juce::Rectangle<int>(currentX, filterKnobRowY, filterKnobWidth, filterKnobHeight);
+    filterResonanceKnob.setBounds(filterResonanceKnobArea);
+    auto filterResonanceLabelArea = juce::Rectangle<int>(filterResonanceKnobArea.getX(), filterResonanceKnobArea.getY() - 20, filterKnobWidth, 20);
+    filterResonanceLabel.setBounds(filterResonanceLabelArea);
+    currentX += filterKnobWidth + filterKnobSpacing;
+    
+    // OSC2 Filter Enable button
+    auto osc2FilterButtonArea = juce::Rectangle<int>(currentX, filterKnobRowY + (filterKnobHeight - oscButtonHeight) / 2, oscButtonWidth, oscButtonHeight);
     osc2FilterEnableButton.setBounds(osc2FilterButtonArea);
 }
 
