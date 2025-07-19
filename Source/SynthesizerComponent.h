@@ -86,6 +86,7 @@ public:
     void drawSecondOscillatorBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
     void drawOsc2PitchControlsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
     void drawOsc2PhaseControlsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
+    void drawFilterSectionBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
 
 private:
     SummonerXSerum2AudioProcessor& audioProcessor;
@@ -342,6 +343,7 @@ private:
     juce::Rectangle<int> secondOscillatorBounds;
     juce::Rectangle<int> osc2PitchControlsBounds;
     juce::Rectangle<int> osc2PhaseControlsBounds;
+    juce::Rectangle<int> filterSectionBounds;
     
     // MOVEABLE COMPONENT GROUPS - Offset controls for easy repositioning
     // Wave Type Buttons Group (Row 1 - Top row with SIN, SAW, SQR, TRI, WHT, PNK, RND PHASE)

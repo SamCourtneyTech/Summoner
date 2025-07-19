@@ -1486,6 +1486,9 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     // drawOsc2PitchControlsBackground(g, osc2PitchControlsBounds); // REMOVED - individual pitch control backgrounds
     // drawOsc2PhaseControlsBackground(g, osc2PhaseControlsBounds); // Removed - was covering the knob
     
+    // Filter section background
+    drawFilterSectionBackground(g, filterSectionBounds);
+    
     // Precision alignment grid overlay - symmetrical and aligned to boundaries
     // TEMPORARILY COMMENTED OUT
     /*
@@ -2909,6 +2912,10 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto filterSectionX = offsetOsc2Section.getX();
     auto filterSectionY = offsetOsc2Section.getBottom() + 20; // 20px gap below oscillator 2
     auto filterSectionWidth = offsetOsc2Section.getWidth();
+    auto filterSectionHeight = 120; // Height for buttons + knobs + spacing
+    
+    // Store bounds for background drawing
+    filterSectionBounds = juce::Rectangle<int>(filterSectionX, filterSectionY, filterSectionWidth, filterSectionHeight);
     
     // Single row of filter type and slope buttons in landscape format
     auto filterButtonHeight = 25;
@@ -3605,5 +3612,109 @@ void SynthesizerComponent::drawSecondOscillatorBackground(juce::Graphics& g, juc
     // g.drawRoundedRectangle(phaseArea.getCentreX() - 39, phaseArea.getCentreY() - 39, 78, 78, 3.0f, 2.0f);
     // g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
     // g.drawRoundedRectangle(phaseArea.getCentreX() - 37, phaseArea.getCentreY() - 37, 74, 74, 2.0f, 1.0f);
+}
+
+void SynthesizerComponent::drawFilterSectionBackground(juce::Graphics& g, juce::Rectangle<int> bounds)
+{
+    // Convert to float for precise drawing
+    auto masterOutlineBounds = bounds.toFloat();
+    
+    // Create 3D depth effect with multiple layers - same style as oscillator backgrounds
+    
+    // Shadow layer (bottom-right offset for depth)
+    auto shadowBounds = masterOutlineBounds.translated(3.0f, 3.0f);
+    g.setColour(juce::Colours::black.withAlpha(0.4f));
+    g.fillRoundedRectangle(shadowBounds, 10.0f);
+    
+    // Main background (dark gray)
+    g.setColour(juce::Colour(0xff1a1a1a));
+    g.fillRoundedRectangle(masterOutlineBounds, 10.0f);
+    
+    // Create raised effect with gradients
+    auto raisedBounds = masterOutlineBounds.reduced(4.0f);
+    
+    // Add very dark metallic gradient for depth
+    juce::ColourGradient metallicGradient(juce::Colour(0xff2a2a2a), raisedBounds.getX(), raisedBounds.getY(),
+                                         juce::Colour(0xff151515), raisedBounds.getX(), raisedBounds.getBottom(), false);
+    g.setGradientFill(metallicGradient);
+    g.fillRoundedRectangle(raisedBounds, 8.0f);
+    
+    // Top and left highlights (simulating light from top-left)
+    g.setColour(juce::Colour(0xff505050).withAlpha(0.7f));
+    // Top highlight
+    g.drawLine(raisedBounds.getX() + 8, raisedBounds.getY() + 1, 
+               raisedBounds.getRight() - 8, raisedBounds.getY() + 1, 2.0f);
+    // Left highlight  
+    g.drawLine(raisedBounds.getX() + 1, raisedBounds.getY() + 8, 
+               raisedBounds.getX() + 1, raisedBounds.getBottom() - 8, 2.0f);
+    
+    // Bottom and right shadows (simulating shadow from top-left light)
+    g.setColour(juce::Colour(0xff202020).withAlpha(0.9f));
+    // Bottom shadow
+    g.drawLine(raisedBounds.getX() + 8, raisedBounds.getBottom() - 1, 
+               raisedBounds.getRight() - 8, raisedBounds.getBottom() - 1, 2.0f);
+    // Right shadow
+    g.drawLine(raisedBounds.getRight() - 1, raisedBounds.getY() + 8, 
+               raisedBounds.getRight() - 1, raisedBounds.getBottom() - 8, 2.0f);
+    
+    // Add corner screws for modular synth module look
+    auto screwRadius = 6.0f;
+    auto screwInset = 15.0f;
+    
+    // Top-left screw
+    auto tlScrew = juce::Rectangle<float>(raisedBounds.getX() + screwInset, raisedBounds.getY() + screwInset, screwRadius * 2, screwRadius * 2);
+    g.setColour(juce::Colour(0xff404040));
+    g.fillEllipse(tlScrew);
+    g.setColour(juce::Colour(0xff808080));
+    g.drawEllipse(tlScrew, 1.0f);
+    // Screw slot
+    g.setColour(juce::Colour(0xff101010));
+    g.drawLine(tlScrew.getCentreX() - 3, tlScrew.getCentreY(), tlScrew.getCentreX() + 3, tlScrew.getCentreY(), 1.5f);
+    
+    // Top-right screw
+    auto trScrew = juce::Rectangle<float>(raisedBounds.getRight() - screwInset - screwRadius * 2, raisedBounds.getY() + screwInset, screwRadius * 2, screwRadius * 2);
+    g.setColour(juce::Colour(0xff404040));
+    g.fillEllipse(trScrew);
+    g.setColour(juce::Colour(0xff808080));
+    g.drawEllipse(trScrew, 1.0f);
+    // Screw slot
+    g.setColour(juce::Colour(0xff101010));
+    g.drawLine(trScrew.getCentreX() - 3, trScrew.getCentreY(), trScrew.getCentreX() + 3, trScrew.getCentreY(), 1.5f);
+    
+    // Bottom-left screw
+    auto blScrew = juce::Rectangle<float>(raisedBounds.getX() + screwInset, raisedBounds.getBottom() - screwInset - screwRadius * 2, screwRadius * 2, screwRadius * 2);
+    g.setColour(juce::Colour(0xff404040));
+    g.fillEllipse(blScrew);
+    g.setColour(juce::Colour(0xff808080));
+    g.drawEllipse(blScrew, 1.0f);
+    // Screw slot
+    g.setColour(juce::Colour(0xff101010));
+    g.drawLine(blScrew.getCentreX() - 3, blScrew.getCentreY(), blScrew.getCentreX() + 3, blScrew.getCentreY(), 1.5f);
+    
+    // Bottom-right screw
+    auto brScrew = juce::Rectangle<float>(raisedBounds.getRight() - screwInset - screwRadius * 2, raisedBounds.getBottom() - screwInset - screwRadius * 2, screwRadius * 2, screwRadius * 2);
+    g.setColour(juce::Colour(0xff404040));
+    g.fillEllipse(brScrew);
+    g.setColour(juce::Colour(0xff808080));
+    g.drawEllipse(brScrew, 1.0f);
+    // Screw slot
+    g.setColour(juce::Colour(0xff101010));
+    g.drawLine(brScrew.getCentreX() - 3, brScrew.getCentreY(), brScrew.getCentreX() + 3, brScrew.getCentreY(), 1.5f);
+    
+    // Add "Filter" label to top center of module
+    auto labelBounds = juce::Rectangle<float>(raisedBounds.getCentreX() - 30, raisedBounds.getY() + 5, 60, 20);
+    
+    // Slightly lighter metallic background for label
+    g.setColour(juce::Colour(0xff505050));
+    g.fillRoundedRectangle(labelBounds, 4.0f);
+    
+    // Darker border for depth
+    g.setColour(juce::Colour(0xff303030));
+    g.drawRoundedRectangle(labelBounds, 4.0f, 1.0f);
+    
+    // Label text
+    g.setColour(juce::Colours::white);
+    g.setFont(juce::Font("Arial", 12.0f, juce::Font::bold));
+    g.drawText("FILTER", labelBounds, juce::Justification::centred);
 }
 
