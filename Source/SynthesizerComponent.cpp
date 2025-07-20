@@ -2910,9 +2910,9 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     
     // Filter section positioning - under oscillator 2 in landscape format
     auto filterSectionX = offsetOsc2Section.getX();
-    auto filterSectionY = offsetOsc2Section.getBottom() + 20; // 20px gap below oscillator 2
+    auto filterSectionY = offsetOsc2Section.getBottom() - 5; // Overlap 5px with oscillator 2
     auto filterSectionWidth = offsetOsc2Section.getWidth();
-    auto filterSectionHeight = 120; // Height for buttons + knobs + spacing
+    auto filterSectionHeight = 141; // Height for buttons + knobs + spacing
     
     // Store bounds for background drawing
     filterSectionBounds = juce::Rectangle<int>(filterSectionX, filterSectionY, filterSectionWidth, filterSectionHeight);
