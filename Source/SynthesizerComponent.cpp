@@ -2942,8 +2942,8 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto linkButtonHeight = 25;
     auto linkButtonWidth = 100;
     auto linkButtonArea = juce::Rectangle<int>(
-        volumeKnobsBounds.getRight() - linkButtonWidth - 10, // 10px from right edge of oscillator 1
-        volumeKnobsBounds.getBottom() - linkButtonHeight - 5 + 155, // 155px lower than bottom edge of oscillator 1
+        volumeKnobsBounds.getRight() - linkButtonWidth - 40, // 40px from right edge of oscillator 1 (30px more left)
+        volumeKnobsBounds.getBottom() - linkButtonHeight - 5 + 170, // 170px lower than bottom edge of oscillator 1 (15px more down)
         linkButtonWidth,
         linkButtonHeight
     );
