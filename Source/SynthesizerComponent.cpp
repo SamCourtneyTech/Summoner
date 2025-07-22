@@ -741,7 +741,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     filterBPButton.addListener(this);
     addAndMakeVisible(filterBPButton);
     
-    filterNotchButton.setButtonText("NOTCH");
+    filterNotchButton.setButtonText("NTCH");
     filterNotchButton.setClickingTogglesState(true);
     filterNotchButton.setToggleState(false, juce::dontSendNotification); // NOTCH off by default
     filterNotchButton.setLookAndFeel(&customWaveButtonLookAndFeel);
@@ -755,7 +755,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     filterCombButton.addListener(this);
     addAndMakeVisible(filterCombButton);
     
-    filterFormantButton.setButtonText("FORMANT");
+    filterFormantButton.setButtonText("FMNT");
     filterFormantButton.setClickingTogglesState(true);
     filterFormantButton.setToggleState(false, juce::dontSendNotification); // FORMANT off by default
     filterFormantButton.setLookAndFeel(&customWaveButtonLookAndFeel);
@@ -3070,7 +3070,7 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     
     // Single row of filter type and slope buttons in landscape format
     auto filterButtonHeight = 25;
-    auto filterButtonSpacing = 8;
+    auto filterButtonSpacing = 3; // Even more reduced spacing for narrower row
     
     // Calculate button widths and positions for landscape layout
     auto typeButtonWidth = 45;
