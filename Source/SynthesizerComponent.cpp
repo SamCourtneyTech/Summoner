@@ -2770,11 +2770,11 @@ void SynthesizerComponent::layoutEffectsModule(juce::Rectangle<int>& bounds)
     // Position effects module with reduced width and increased height
     auto totalBounds = getLocalBounds();
     int effectsWidth = 300;  // Much narrower than oscillators
-    int effectsHeight = 480; // A little longer for even more content space
+    int effectsHeight = 530; // Added 50px more height for additional content space
     int borderPadding = 6; // Extra space for border
     
     int centerX = (totalBounds.getWidth() - effectsWidth - borderPadding * 2) / 2;
-    int centerY = (totalBounds.getHeight() - effectsHeight - borderPadding * 2) / 2 - 20; // Move up slightly for preset controls
+    int centerY = (totalBounds.getHeight() - effectsHeight - borderPadding * 2) / 2 - 50; // Move up 30px total for preset controls
     
     // Preset controls area above the effects module
     auto presetControlsHeight = 35;
@@ -2938,13 +2938,12 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     osc2ReleaseLabel.setBounds(releaseArea.removeFromTop(knobLabelHeight));
     osc2ReleaseKnob.setBounds(releaseArea);
     
-    // Position ADSR Link button outside the main row layout - centered on screen
+    // Position ADSR Link button at bottom right of oscillator 1
     auto linkButtonHeight = 25;
     auto linkButtonWidth = 100;
-    auto screenCenterX = totalWidth / 2;
     auto linkButtonArea = juce::Rectangle<int>(
-        screenCenterX - linkButtonWidth / 2, // centered horizontally on screen
-        offsetOsc2Section.getY() + 30, // 30px from top edge (below title)
+        volumeKnobsBounds.getRight() - linkButtonWidth - 10, // 10px from right edge of oscillator 1
+        volumeKnobsBounds.getBottom() - linkButtonHeight - 5 + 155, // 155px lower than bottom edge of oscillator 1
         linkButtonWidth,
         linkButtonHeight
     );
