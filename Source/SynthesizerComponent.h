@@ -25,23 +25,6 @@ private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ADSREnvelopeComponent)
 };
 
-class PresetRecallComponent : public juce::Component, private juce::Button::Listener
-{
-public:
-    PresetRecallComponent();
-    ~PresetRecallComponent() override;
-
-    void paint(juce::Graphics& g) override;
-    void resized() override;
-    void buttonClicked(juce::Button* button) override;
-    
-private:
-    juce::Label presetNameLabel;
-    juce::TextButton prevPresetButton;
-    juce::TextButton nextPresetButton;
-    
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PresetRecallComponent)
-};
 
 class SynthesizerComponent : public juce::Component, private juce::Slider::Listener, private juce::Button::Listener
 {
@@ -147,14 +130,18 @@ private:
     // OSCILLATOR 2 ADSR ENVELOPE VISUALIZER
     ADSREnvelopeComponent osc2AdsrEnvelopeVisualizer;
     
-    // PRESET RECALL COMPONENT
-    PresetRecallComponent presetRecallComponent;
-    
     // LFO MODULE
     LFOModuleComponent lfoModule;
     
     // EFFECTS MODULE
     juce::TabbedComponent effectsModule;
+    
+    // Effects preset controls
+    juce::TextButton effectsPresetPrevButton;
+    juce::TextButton effectsPresetNextButton;
+    juce::Label effectsPresetNameLabel;
+    juce::TextButton effectsPresetSaveButton;
+    juce::TextButton effectsPresetLoadButton;
     
     // Effects module border component
     class EffectsBorderComponent : public juce::Component

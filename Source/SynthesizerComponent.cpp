@@ -1,89 +1,6 @@
 #include "SynthesizerComponent.h"
 #include "PluginProcessor.h"
 
-PresetRecallComponent::PresetRecallComponent()
-{
-    // Setup preset name label
-    presetNameLabel.setText("preset", juce::dontSendNotification);
-    presetNameLabel.setFont(juce::Font("Press Start 2P", 12.0f, juce::Font::plain));
-    presetNameLabel.setColour(juce::Label::textColourId, juce::Colour(0xff0080ff));
-    presetNameLabel.setJustificationType(juce::Justification::centred);
-    addAndMakeVisible(presetNameLabel);
-    
-    // Setup previous preset button
-    prevPresetButton.setButtonText("<");
-    prevPresetButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff333333));
-    prevPresetButton.setColour(juce::TextButton::textColourOffId, juce::Colour(0xff0080ff));
-    prevPresetButton.addListener(this);
-    addAndMakeVisible(prevPresetButton);
-    
-    // Setup next preset button
-    nextPresetButton.setButtonText(">");
-    nextPresetButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff333333));
-    nextPresetButton.setColour(juce::TextButton::textColourOffId, juce::Colour(0xff0080ff));
-    nextPresetButton.addListener(this);
-    addAndMakeVisible(nextPresetButton);
-}
-
-PresetRecallComponent::~PresetRecallComponent()
-{
-}
-
-void PresetRecallComponent::paint(juce::Graphics& g)
-{
-    auto bounds = getLocalBounds();
-    
-    // Draw realistic 3D border
-    g.setColour(juce::Colour(0xff202020));
-    g.drawRect(bounds, 2);
-    
-    g.setColour(juce::Colour(0xff707070));
-    g.drawRect(bounds.reduced(2), 1);
-    
-    g.setColour(juce::Colour(0xff101010));
-    g.drawRect(bounds.reduced(3), 1);
-    
-    // Fill background with dark blue
-    g.setColour(juce::Colour(0xff001122));
-    g.fillRect(bounds.reduced(4));
-    
-    // Add scan lines for digital effect
-    for (int y = bounds.getY() + 4; y < bounds.getBottom() - 4; y += 3)
-    {
-        g.setColour(juce::Colour(0xff000000).withAlpha(0.3f));
-        g.drawHorizontalLine(y, bounds.getX() + 4, bounds.getRight() - 4);
-    }
-}
-
-void PresetRecallComponent::resized()
-{
-    auto bounds = getLocalBounds().reduced(10);
-    
-    // Layout buttons and label
-    auto buttonWidth = 30;
-    auto buttonHeight = bounds.getHeight() - 10;
-    
-    prevPresetButton.setBounds(bounds.getX(), bounds.getY() + 5, buttonWidth, buttonHeight);
-    nextPresetButton.setBounds(bounds.getRight() - buttonWidth, bounds.getY() + 5, buttonWidth, buttonHeight);
-    
-    presetNameLabel.setBounds(bounds.getX() + buttonWidth + 10, bounds.getY(), 
-                              bounds.getWidth() - (buttonWidth * 2) - 20, bounds.getHeight());
-}
-
-void PresetRecallComponent::buttonClicked(juce::Button* button)
-{
-    if (button == &prevPresetButton)
-    {
-        // TODO: Load previous preset
-        presetNameLabel.setText("preset", juce::dontSendNotification);
-    }
-    else if (button == &nextPresetButton)
-    {
-        // TODO: Load next preset
-        presetNameLabel.setText("preset", juce::dontSendNotification);
-    }
-}
-
 ADSREnvelopeComponent::ADSREnvelopeComponent()
 {
 }
@@ -209,9 +126,6 @@ void ADSREnvelopeComponent::updateEnvelope(float attack, float decay, float sust
 SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& processor)
     : audioProcessor(processor), effectsModule(juce::TabbedButtonBar::TabsAtTop)
 {
-    // PRESET RECALL COMPONENT
-    addAndMakeVisible(presetRecallComponent);
-    
     // VOLUME CONTROLS GROUP - Row 4 (MOVEABLE)
     volumeControlsVolumeLabel.setText("VOLUME", juce::dontSendNotification);
     volumeControlsVolumeLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
@@ -1013,6 +927,29 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     // Apply digital screen look and feel
     effectsModule.setLookAndFeel(&digitalScreenLookAndFeel);
     
+    // EFFECTS PRESET CONTROLS - Placeholder functionality
+    effectsPresetPrevButton.setButtonText("<");
+    effectsPresetPrevButton.setLookAndFeel(&customWaveButtonLookAndFeel);
+    addAndMakeVisible(effectsPresetPrevButton);
+    
+    effectsPresetNextButton.setButtonText(">");
+    effectsPresetNextButton.setLookAndFeel(&customWaveButtonLookAndFeel);
+    addAndMakeVisible(effectsPresetNextButton);
+    
+    effectsPresetNameLabel.setText("DEFAULT", juce::dontSendNotification);
+    effectsPresetNameLabel.setJustificationType(juce::Justification::centred);
+    effectsPresetNameLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
+    effectsPresetNameLabel.setColour(juce::Label::textColourId, juce::Colour(0xff00ff00));
+    addAndMakeVisible(effectsPresetNameLabel);
+    
+    effectsPresetSaveButton.setButtonText("SAVE");
+    effectsPresetSaveButton.setLookAndFeel(&customWaveButtonLookAndFeel);
+    addAndMakeVisible(effectsPresetSaveButton);
+    
+    effectsPresetLoadButton.setButtonText("LOAD");
+    effectsPresetLoadButton.setLookAndFeel(&customWaveButtonLookAndFeel);
+    addAndMakeVisible(effectsPresetLoadButton);
+    
     // Add border component behind effects module
     addAndMakeVisible(effectsBorder);
     addAndMakeVisible(effectsModule);
@@ -1116,6 +1053,12 @@ SynthesizerComponent::~SynthesizerComponent()
     macro6Knob.setLookAndFeel(nullptr);
     macro7Knob.setLookAndFeel(nullptr);
     macro8Knob.setLookAndFeel(nullptr);
+    
+    // Reset effects preset controls look and feel
+    effectsPresetPrevButton.setLookAndFeel(nullptr);
+    effectsPresetNextButton.setLookAndFeel(nullptr);
+    effectsPresetSaveButton.setLookAndFeel(nullptr);
+    effectsPresetLoadButton.setLookAndFeel(nullptr);
     
     // pulseWidthSlider.setLookAndFeel(nullptr); // commented out
 }
@@ -1665,10 +1608,6 @@ void SynthesizerComponent::paint(juce::Graphics& g)
 void SynthesizerComponent::resized()
 {
     auto bounds = getLocalBounds();
-    
-    // PRESET RECALL COMPONENT - Top center (independent positioning)
-    auto presetBounds = juce::Rectangle<int>(bounds.getWidth() / 3, 10, bounds.getWidth() / 3, 30); // Slightly wider
-    presetRecallComponent.setBounds(presetBounds);
     
     // Original oscillator bounds - unchanged!
     bounds.reduce(20, 20);
@@ -2828,14 +2767,47 @@ void SynthesizerComponent::layoutLFOModule(juce::Rectangle<int>& bounds)
 
 void SynthesizerComponent::layoutEffectsModule(juce::Rectangle<int>& bounds)
 {
-    // Position effects module directly in the center - 20% smaller total
+    // Position effects module with reduced width and increased height
     auto totalBounds = getLocalBounds();
-    int effectsWidth = 324;  // 360 * 0.9 = 324
-    int effectsHeight = 243; // 270 * 0.9 = 243
+    int effectsWidth = 300;  // Much narrower than oscillators
+    int effectsHeight = 480; // A little longer for even more content space
     int borderPadding = 6; // Extra space for border
     
     int centerX = (totalBounds.getWidth() - effectsWidth - borderPadding * 2) / 2;
-    int centerY = (totalBounds.getHeight() - effectsHeight - borderPadding * 2) / 2;
+    int centerY = (totalBounds.getHeight() - effectsHeight - borderPadding * 2) / 2 - 20; // Move up slightly for preset controls
+    
+    // Preset controls area above the effects module
+    auto presetControlsHeight = 35;
+    auto presetY = centerY - presetControlsHeight - 10; // 10px gap above effects module
+    
+    // Preset controls layout
+    auto buttonWidth = 40;
+    auto buttonHeight = 25;
+    auto labelWidth = 120;
+    auto spacing = 10;
+    
+    // Calculate positions for preset controls (centered above effects module)
+    auto totalPresetWidth = (4 * buttonWidth) + labelWidth + (4 * spacing);
+    auto presetStartX = centerX + borderPadding + (effectsWidth - totalPresetWidth) / 2;
+    
+    // Previous button
+    effectsPresetPrevButton.setBounds(presetStartX, presetY + 5, buttonWidth, buttonHeight);
+    presetStartX += buttonWidth + spacing;
+    
+    // Preset name label
+    effectsPresetNameLabel.setBounds(presetStartX, presetY, labelWidth, presetControlsHeight);
+    presetStartX += labelWidth + spacing;
+    
+    // Next button
+    effectsPresetNextButton.setBounds(presetStartX, presetY + 5, buttonWidth, buttonHeight);
+    presetStartX += buttonWidth + spacing;
+    
+    // Save button
+    effectsPresetSaveButton.setBounds(presetStartX, presetY + 5, buttonWidth, buttonHeight);
+    presetStartX += buttonWidth + spacing;
+    
+    // Load button
+    effectsPresetLoadButton.setBounds(presetStartX, presetY + 5, buttonWidth, buttonHeight);
     
     // Position border component (larger to encompass effects module)
     auto borderArea = juce::Rectangle<int>(centerX, centerY, effectsWidth + borderPadding * 2, effectsHeight + borderPadding * 2);
