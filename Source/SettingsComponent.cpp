@@ -112,12 +112,12 @@ SettingsComponent::SettingsComponent(SummonerXSerum2AudioProcessor& processor)
 
     // Default skin button
     defaultSkinButton.setLookAndFeel(&customSettingsButtons);
-    defaultSkinButton.setButtonText("Default");
+    defaultSkinButton.setButtonText("Particles");
     defaultSkinButton.setColour(juce::TextButton::buttonColourId, juce::Colours::whitesmoke);
     defaultSkinButton.setColour(juce::TextButton::textColourOnId, juce::Colours::darkgoldenrod);
     defaultSkinButton.setColour(juce::TextButton::textColourOffId, juce::Colours::black);
     defaultSkinButton.setClickingTogglesState(true);
-    defaultSkinButton.setToggleState(true, juce::dontSendNotification); // Start with default selected
+    defaultSkinButton.setToggleState(false, juce::dontSendNotification); // Start with particles unselected
     defaultSkinButton.onClick = [this]() {
         defaultSkinButton.setToggleState(true, juce::dontSendNotification);
         hackerSkinButton.setToggleState(false, juce::dontSendNotification);
@@ -135,6 +135,7 @@ SettingsComponent::SettingsComponent(SummonerXSerum2AudioProcessor& processor)
     hackerSkinButton.setColour(juce::TextButton::textColourOnId, juce::Colours::darkgoldenrod);
     hackerSkinButton.setColour(juce::TextButton::textColourOffId, juce::Colours::black);
     hackerSkinButton.setClickingTogglesState(true);
+    hackerSkinButton.setToggleState(true, juce::dontSendNotification); // Start with hacker selected as default
     hackerSkinButton.onClick = [this]() {
         hackerSkinButton.setToggleState(true, juce::dontSendNotification);
         defaultSkinButton.setToggleState(false, juce::dontSendNotification);

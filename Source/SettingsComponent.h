@@ -91,7 +91,7 @@ private:
     juce::Label skinLabel;
     juce::TextButton defaultSkinButton;
     juce::TextButton hackerSkinButton;
-    bool isHackerSkin = false;
+    bool isHackerSkin = true;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SettingsComponent)
 };

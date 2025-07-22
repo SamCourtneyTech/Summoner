@@ -66,7 +66,7 @@ private:
     void updateMatrixEffect();
     void initializeMatrixColumns();
     char getRandomMatrixCharacter();
-    bool isHackerSkin = false;
+    bool isHackerSkin = true;
     juce::Random random;
     // Custom Credits Modal
     class CreditsModalWindow : public juce::Component
