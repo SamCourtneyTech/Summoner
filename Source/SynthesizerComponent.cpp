@@ -664,7 +664,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     osc2ReleaseKnob.addListener(this);
     addAndMakeVisible(osc2ReleaseKnob);
     
-    osc2AdsrLinkButton.setButtonText("LINK ADSR");
+    osc2AdsrLinkButton.setButtonText("OSC1 ADSR");
     osc2AdsrLinkButton.setClickingTogglesState(true);
     osc2AdsrLinkButton.setToggleState(false, juce::dontSendNotification); // Off by default
     osc2AdsrLinkButton.setLookAndFeel(&customWaveButtonLookAndFeel);
@@ -893,8 +893,11 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     addAndMakeVisible(lfoModule);
     
     // EFFECTS MODULE - Digital Screen Style
-    effectsModule.setTabBarDepth(29); // 32 * 0.9 = 28.8, rounded to 29
+    effectsModule.setTabBarDepth(29); // Back to single row height
     effectsModule.setCurrentTabIndex(0);
+    
+    // Enable multiple rows for tabs - force tabs to wrap by setting a much smaller minimum scale
+    effectsModule.getTabbedButtonBar().setMinimumTabScaleFactor(0.3f); // Allow much smaller tabs to force wrapping
     
     // Set digital screen colors
     effectsModule.setColour(juce::TabbedComponent::backgroundColourId, juce::Colour(0xff000008)); // Very dark blue-black
@@ -906,7 +909,6 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     auto delayTab = new juce::Component();
     auto distortionTab = new juce::Component();
     auto equalizerTab = new juce::Component();
-    auto filterTab = new juce::Component();
     auto flangerTab = new juce::Component();
     auto phaserTab = new juce::Component();
     auto reverbTab = new juce::Component();
@@ -919,7 +921,6 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     effectsModule.addTab("DELAY", digitalBg, delayTab, true);
     effectsModule.addTab("DIST", digitalBg, distortionTab, true);
     effectsModule.addTab("EQ", digitalBg, equalizerTab, true);
-    effectsModule.addTab("FILTER", digitalBg, filterTab, true);
     effectsModule.addTab("FLANGE", digitalBg, flangerTab, true);
     effectsModule.addTab("PHASE", digitalBg, phaserTab, true);
     effectsModule.addTab("REVERB", digitalBg, reverbTab, true);
@@ -2942,8 +2943,8 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto linkButtonHeight = 25;
     auto linkButtonWidth = 100;
     auto linkButtonArea = juce::Rectangle<int>(
-        volumeKnobsBounds.getRight() - linkButtonWidth - 40, // 40px from right edge of oscillator 1 (30px more left)
-        volumeKnobsBounds.getBottom() - linkButtonHeight - 5 + 170, // 170px lower than bottom edge of oscillator 1 (15px more down)
+        volumeKnobsBounds.getRight() - linkButtonWidth - 40 + 760, // 760px to the right (5px left from 765)
+        volumeKnobsBounds.getBottom() - linkButtonHeight - 5 + 160, // 160px lower than bottom edge of oscillator 1 (10px higher)
         linkButtonWidth,
         linkButtonHeight
     );

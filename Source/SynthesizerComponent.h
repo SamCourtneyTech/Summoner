@@ -134,7 +134,7 @@ private:
     LFOModuleComponent lfoModule;
     
     // EFFECTS MODULE
-    juce::TabbedComponent effectsModule;
+    juce::TabbedComponent effectsModule { juce::TabbedButtonBar::TabsAtTop };
     
     // Effects preset controls
     juce::TextButton effectsPresetPrevButton;
