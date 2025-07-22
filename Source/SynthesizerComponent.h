@@ -87,6 +87,7 @@ public:
     void drawOsc2PitchControlsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
     void drawOsc2PhaseControlsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
     void drawFilterSectionBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
+    void drawMacroKnobsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
 
 private:
     SummonerXSerum2AudioProcessor& audioProcessor;
@@ -289,6 +290,24 @@ private:
     juce::TextButton filter12dBButton;
     juce::TextButton filter24dBButton;
     
+    // Macro controls
+    juce::Slider macro1Knob;
+    juce::Label macro1Label;
+    juce::Slider macro2Knob;
+    juce::Label macro2Label;
+    juce::Slider macro3Knob;
+    juce::Label macro3Label;
+    juce::Slider macro4Knob;
+    juce::Label macro4Label;
+    juce::Slider macro5Knob;
+    juce::Label macro5Label;
+    juce::Slider macro6Knob;
+    juce::Label macro6Label;
+    juce::Slider macro7Knob;
+    juce::Label macro7Label;
+    juce::Slider macro8Knob;
+    juce::Label macro8Label;
+    
     // Octave control state
     int octaveValue = 0;
     bool isDraggingOctave = false;
@@ -344,6 +363,7 @@ private:
     juce::Rectangle<int> osc2PitchControlsBounds;
     juce::Rectangle<int> osc2PhaseControlsBounds;
     juce::Rectangle<int> filterSectionBounds;
+    juce::Rectangle<int> macroKnobsBounds;
     
     // MOVEABLE COMPONENT GROUPS - Offset controls for easy repositioning
     // Wave Type Buttons Group (Row 1 - Top row with SIN, SAW, SQR, TRI, WHT, PNK, RND PHASE)

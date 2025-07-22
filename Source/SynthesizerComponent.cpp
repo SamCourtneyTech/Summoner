@@ -863,6 +863,111 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     filter24dBButton.addListener(this);
     addAndMakeVisible(filter24dBButton);
     
+    // MACRO CONTROLS - 4 placeholder knobs
+    macro1Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    macro1Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    macro1Knob.setRange(0.0, 1.0, 0.01);
+    macro1Knob.setValue(0.5);
+    macro1Knob.setLookAndFeel(&customKnobLookAndFeel);
+    addAndMakeVisible(macro1Knob);
+    
+    macro1Label.setText("MACRO 1", juce::dontSendNotification);
+    macro1Label.setJustificationType(juce::Justification::centred);
+    macro1Label.setFont(juce::Font("Press Start 2P", 7.0f, juce::Font::plain));
+    macro1Label.setColour(juce::Label::textColourId, juce::Colours::white);
+    addAndMakeVisible(macro1Label);
+    
+    macro2Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    macro2Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    macro2Knob.setRange(0.0, 1.0, 0.01);
+    macro2Knob.setValue(0.5);
+    macro2Knob.setLookAndFeel(&customKnobLookAndFeel);
+    addAndMakeVisible(macro2Knob);
+    
+    macro2Label.setText("MACRO 2", juce::dontSendNotification);
+    macro2Label.setJustificationType(juce::Justification::centred);
+    macro2Label.setFont(juce::Font("Press Start 2P", 7.0f, juce::Font::plain));
+    macro2Label.setColour(juce::Label::textColourId, juce::Colours::white);
+    addAndMakeVisible(macro2Label);
+    
+    macro3Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    macro3Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    macro3Knob.setRange(0.0, 1.0, 0.01);
+    macro3Knob.setValue(0.5);
+    macro3Knob.setLookAndFeel(&customKnobLookAndFeel);
+    addAndMakeVisible(macro3Knob);
+    
+    macro3Label.setText("MACRO 3", juce::dontSendNotification);
+    macro3Label.setJustificationType(juce::Justification::centred);
+    macro3Label.setFont(juce::Font("Press Start 2P", 7.0f, juce::Font::plain));
+    macro3Label.setColour(juce::Label::textColourId, juce::Colours::white);
+    addAndMakeVisible(macro3Label);
+    
+    macro4Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    macro4Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    macro4Knob.setRange(0.0, 1.0, 0.01);
+    macro4Knob.setValue(0.5);
+    macro4Knob.setLookAndFeel(&customKnobLookAndFeel);
+    addAndMakeVisible(macro4Knob);
+    
+    macro4Label.setText("MACRO 4", juce::dontSendNotification);
+    macro4Label.setJustificationType(juce::Justification::centred);
+    macro4Label.setFont(juce::Font("Press Start 2P", 7.0f, juce::Font::plain));
+    macro4Label.setColour(juce::Label::textColourId, juce::Colours::white);
+    addAndMakeVisible(macro4Label);
+    
+    macro5Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    macro5Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    macro5Knob.setRange(0.0, 1.0, 0.01);
+    macro5Knob.setValue(0.5);
+    macro5Knob.setLookAndFeel(&customKnobLookAndFeel);
+    addAndMakeVisible(macro5Knob);
+    
+    macro5Label.setText("MACRO 5", juce::dontSendNotification);
+    macro5Label.setJustificationType(juce::Justification::centred);
+    macro5Label.setFont(juce::Font("Press Start 2P", 7.0f, juce::Font::plain));
+    macro5Label.setColour(juce::Label::textColourId, juce::Colours::white);
+    addAndMakeVisible(macro5Label);
+    
+    macro6Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    macro6Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    macro6Knob.setRange(0.0, 1.0, 0.01);
+    macro6Knob.setValue(0.5);
+    macro6Knob.setLookAndFeel(&customKnobLookAndFeel);
+    addAndMakeVisible(macro6Knob);
+    
+    macro6Label.setText("MACRO 6", juce::dontSendNotification);
+    macro6Label.setJustificationType(juce::Justification::centred);
+    macro6Label.setFont(juce::Font("Press Start 2P", 7.0f, juce::Font::plain));
+    macro6Label.setColour(juce::Label::textColourId, juce::Colours::white);
+    addAndMakeVisible(macro6Label);
+    
+    macro7Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    macro7Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    macro7Knob.setRange(0.0, 1.0, 0.01);
+    macro7Knob.setValue(0.5);
+    macro7Knob.setLookAndFeel(&customKnobLookAndFeel);
+    addAndMakeVisible(macro7Knob);
+    
+    macro7Label.setText("MACRO 7", juce::dontSendNotification);
+    macro7Label.setJustificationType(juce::Justification::centred);
+    macro7Label.setFont(juce::Font("Press Start 2P", 7.0f, juce::Font::plain));
+    macro7Label.setColour(juce::Label::textColourId, juce::Colours::white);
+    addAndMakeVisible(macro7Label);
+    
+    macro8Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    macro8Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    macro8Knob.setRange(0.0, 1.0, 0.01);
+    macro8Knob.setValue(0.5);
+    macro8Knob.setLookAndFeel(&customKnobLookAndFeel);
+    addAndMakeVisible(macro8Knob);
+    
+    macro8Label.setText("MACRO 8", juce::dontSendNotification);
+    macro8Label.setJustificationType(juce::Justification::centred);
+    macro8Label.setFont(juce::Font("Press Start 2P", 7.0f, juce::Font::plain));
+    macro8Label.setColour(juce::Label::textColourId, juce::Colours::white);
+    addAndMakeVisible(macro8Label);
+    
     // ADSR ENVELOPE VISUALIZER GROUP - Row 2 (MOVEABLE)
     addAndMakeVisible(adsrEnvelopeVisualizer);
     
@@ -1001,6 +1106,16 @@ SynthesizerComponent::~SynthesizerComponent()
     osc2DetuneLabel.setLookAndFeel(nullptr);
     osc2StereoKnob.setLookAndFeel(nullptr);
     osc2StereoLabel.setLookAndFeel(nullptr);
+    
+    // Reset macro knobs look and feel
+    macro1Knob.setLookAndFeel(nullptr);
+    macro2Knob.setLookAndFeel(nullptr);
+    macro3Knob.setLookAndFeel(nullptr);
+    macro4Knob.setLookAndFeel(nullptr);
+    macro5Knob.setLookAndFeel(nullptr);
+    macro6Knob.setLookAndFeel(nullptr);
+    macro7Knob.setLookAndFeel(nullptr);
+    macro8Knob.setLookAndFeel(nullptr);
     
     // pulseWidthSlider.setLookAndFeel(nullptr); // commented out
 }
@@ -1489,6 +1604,9 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     // Filter section background
     drawFilterSectionBackground(g, filterSectionBounds);
     
+    // Macro knobs background
+    drawMacroKnobsBackground(g, macroKnobsBounds);
+    
     // Precision alignment grid overlay - symmetrical and aligned to boundaries
     // TEMPORARILY COMMENTED OUT
     /*
@@ -1569,6 +1687,68 @@ void SynthesizerComponent::resized()
     layoutLFOModule(bounds);
     layoutEffectsModule(bounds);
     layoutSecondOscillator(bounds);
+    
+    // MACRO KNOBS - Center bottom positioning (2 rows of 4 columns)
+    auto totalBounds = getLocalBounds();
+    auto macroKnobSize = 45; // 10% smaller than 50
+    auto macroLabelHeight = 15;
+    auto macroKnobSpacing = 18; // Slightly smaller spacing too
+    auto macroRowSpacing = 10;
+    auto totalMacroWidth = (4 * macroKnobSize) + (3 * macroKnobSpacing);
+    auto totalMacroHeight = (2 * (macroKnobSize + macroLabelHeight)) + macroRowSpacing;
+    
+    // Position at center bottom
+    auto macroStartX = (totalBounds.getWidth() - totalMacroWidth) / 2;
+    auto macroY = totalBounds.getHeight() - totalMacroHeight - 20; // 20px margin from bottom
+    
+    // Store bounds for background drawing (with some padding)
+    macroKnobsBounds = juce::Rectangle<int>(macroStartX - 60, macroY - 13, totalMacroWidth + 120, totalMacroHeight + 11);
+    
+    // Top row (Macro 1, 2, 3, 4)
+    auto topRowY = macroY;
+    
+    // Macro 1
+    auto macro1Area = juce::Rectangle<int>(macroStartX, topRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
+    macro1Label.setBounds(macro1Area.removeFromBottom(macroLabelHeight));
+    macro1Knob.setBounds(macro1Area);
+    
+    // Macro 2
+    auto macro2Area = juce::Rectangle<int>(macroStartX + macroKnobSize + macroKnobSpacing, topRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
+    macro2Label.setBounds(macro2Area.removeFromBottom(macroLabelHeight));
+    macro2Knob.setBounds(macro2Area);
+    
+    // Macro 3
+    auto macro3Area = juce::Rectangle<int>(macroStartX + 2 * (macroKnobSize + macroKnobSpacing), topRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
+    macro3Label.setBounds(macro3Area.removeFromBottom(macroLabelHeight));
+    macro3Knob.setBounds(macro3Area);
+    
+    // Macro 4
+    auto macro4Area = juce::Rectangle<int>(macroStartX + 3 * (macroKnobSize + macroKnobSpacing), topRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
+    macro4Label.setBounds(macro4Area.removeFromBottom(macroLabelHeight));
+    macro4Knob.setBounds(macro4Area);
+    
+    // Bottom row (Macro 5, 6, 7, 8)
+    auto bottomRowY = topRowY + macroKnobSize + macroLabelHeight + macroRowSpacing;
+    
+    // Macro 5
+    auto macro5Area = juce::Rectangle<int>(macroStartX, bottomRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
+    macro5Label.setBounds(macro5Area.removeFromBottom(macroLabelHeight));
+    macro5Knob.setBounds(macro5Area);
+    
+    // Macro 6
+    auto macro6Area = juce::Rectangle<int>(macroStartX + macroKnobSize + macroKnobSpacing, bottomRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
+    macro6Label.setBounds(macro6Area.removeFromBottom(macroLabelHeight));
+    macro6Knob.setBounds(macro6Area);
+    
+    // Macro 7
+    auto macro7Area = juce::Rectangle<int>(macroStartX + 2 * (macroKnobSize + macroKnobSpacing), bottomRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
+    macro7Label.setBounds(macro7Area.removeFromBottom(macroLabelHeight));
+    macro7Knob.setBounds(macro7Area);
+    
+    // Macro 8
+    auto macro8Area = juce::Rectangle<int>(macroStartX + 3 * (macroKnobSize + macroKnobSpacing), bottomRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
+    macro8Label.setBounds(macro8Area.removeFromBottom(macroLabelHeight));
+    macro8Knob.setBounds(macro8Area);
 }
 
 void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
@@ -3716,5 +3896,65 @@ void SynthesizerComponent::drawFilterSectionBackground(juce::Graphics& g, juce::
     g.setColour(juce::Colours::white);
     g.setFont(juce::Font("Arial", 12.0f, juce::Font::bold));
     g.drawText("FILTER", labelBounds, juce::Justification::centred);
+}
+
+void SynthesizerComponent::drawMacroKnobsBackground(juce::Graphics& g, juce::Rectangle<int> bounds)
+{
+    // Convert to float for precise drawing
+    auto masterOutlineBounds = bounds.toFloat();
+    
+    // Create 3D depth effect with multiple layers - same style as oscillator backgrounds but no screws
+    
+    // Shadow layer (bottom-right offset for depth)
+    auto shadowBounds = masterOutlineBounds.translated(3.0f, 3.0f);
+    g.setColour(juce::Colours::black.withAlpha(0.4f));
+    g.fillRoundedRectangle(shadowBounds, 10.0f);
+    
+    // Main background (dark gray)
+    g.setColour(juce::Colour(0xff1a1a1a));
+    g.fillRoundedRectangle(masterOutlineBounds, 10.0f);
+    
+    // Create raised effect with gradients
+    auto raisedBounds = masterOutlineBounds.reduced(4.0f);
+    
+    // Add very dark metallic gradient for depth
+    juce::ColourGradient metallicGradient(juce::Colour(0xff2a2a2a), raisedBounds.getX(), raisedBounds.getY(),
+                                         juce::Colour(0xff151515), raisedBounds.getX(), raisedBounds.getBottom(), false);
+    g.setGradientFill(metallicGradient);
+    g.fillRoundedRectangle(raisedBounds, 8.0f);
+    
+    // Top and left highlights (simulating light from top-left)
+    g.setColour(juce::Colour(0xff505050).withAlpha(0.7f));
+    // Top highlight
+    g.drawLine(raisedBounds.getX() + 8, raisedBounds.getY() + 1, 
+               raisedBounds.getRight() - 8, raisedBounds.getY() + 1, 2.0f);
+    // Left highlight  
+    g.drawLine(raisedBounds.getX() + 1, raisedBounds.getY() + 8, 
+               raisedBounds.getX() + 1, raisedBounds.getBottom() - 8, 2.0f);
+    
+    // Bottom and right shadows (simulating shadow from top-left light)
+    g.setColour(juce::Colour(0xff202020).withAlpha(0.9f));
+    // Bottom shadow
+    g.drawLine(raisedBounds.getX() + 8, raisedBounds.getBottom() - 1, 
+               raisedBounds.getRight() - 8, raisedBounds.getBottom() - 1, 2.0f);
+    // Right shadow
+    g.drawLine(raisedBounds.getRight() - 1, raisedBounds.getY() + 8, 
+               raisedBounds.getRight() - 1, raisedBounds.getBottom() - 8, 2.0f);
+    
+    // Add "MACRO" label to top center of module
+    auto labelBounds = juce::Rectangle<float>(raisedBounds.getCentreX() - 35, raisedBounds.getY() + 5, 70, 20);
+    
+    // Slightly lighter metallic background for label
+    g.setColour(juce::Colour(0xff505050));
+    g.fillRoundedRectangle(labelBounds, 4.0f);
+    
+    // Darker border for depth
+    g.setColour(juce::Colour(0xff303030));
+    g.drawRoundedRectangle(labelBounds, 4.0f, 1.0f);
+    
+    // Label text
+    g.setColour(juce::Colours::white);
+    g.setFont(juce::Font("Arial", 12.0f, juce::Font::bold));
+    g.drawText("MACRO", labelBounds, juce::Justification::centred);
 }
 
