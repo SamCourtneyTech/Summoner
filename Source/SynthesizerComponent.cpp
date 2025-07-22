@@ -1640,8 +1640,8 @@ void SynthesizerComponent::resized()
     auto macroStartX = (totalBounds.getWidth() - totalMacroWidth) / 2;
     auto macroY = totalBounds.getHeight() - totalMacroHeight - 20; // 20px margin from bottom
     
-    // Store bounds for background drawing (with some padding)
-    macroKnobsBounds = juce::Rectangle<int>(macroStartX - 60, macroY - 13, totalMacroWidth + 120, totalMacroHeight + 11);
+    // Store bounds for background drawing (with reduced padding for less width)
+    macroKnobsBounds = juce::Rectangle<int>(macroStartX - 40, macroY - 13, totalMacroWidth + 80, totalMacroHeight + 11);
     
     // Top row (Macro 1, 2, 3, 4)
     auto topRowY = macroY;
@@ -3080,41 +3080,42 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     
     auto currentX = buttonsStartX;
     
-    // Filter type buttons in single row: LP, HP, BP, NOTCH, COMB, FORMANT
-    auto filterLPButtonArea = juce::Rectangle<int>(currentX, filterSectionY, typeButtonWidth, filterButtonHeight);
+    // Filter type buttons in single row: LP, HP, BP, NOTCH, COMB, FORMANT (lowered by 40px)
+    auto filterButtonsY = filterSectionY + 40;
+    auto filterLPButtonArea = juce::Rectangle<int>(currentX, filterButtonsY, typeButtonWidth, filterButtonHeight);
     filterLPButton.setBounds(filterLPButtonArea);
     currentX += typeButtonWidth + filterButtonSpacing;
     
-    auto filterHPButtonArea = juce::Rectangle<int>(currentX, filterSectionY, typeButtonWidth, filterButtonHeight);
+    auto filterHPButtonArea = juce::Rectangle<int>(currentX, filterButtonsY, typeButtonWidth, filterButtonHeight);
     filterHPButton.setBounds(filterHPButtonArea);
     currentX += typeButtonWidth + filterButtonSpacing;
     
-    auto filterBPButtonArea = juce::Rectangle<int>(currentX, filterSectionY, typeButtonWidth, filterButtonHeight);
+    auto filterBPButtonArea = juce::Rectangle<int>(currentX, filterButtonsY, typeButtonWidth, filterButtonHeight);
     filterBPButton.setBounds(filterBPButtonArea);
     currentX += typeButtonWidth + filterButtonSpacing;
     
-    auto filterNotchButtonArea = juce::Rectangle<int>(currentX, filterSectionY, typeButtonWidth, filterButtonHeight);
+    auto filterNotchButtonArea = juce::Rectangle<int>(currentX, filterButtonsY, typeButtonWidth, filterButtonHeight);
     filterNotchButton.setBounds(filterNotchButtonArea);
     currentX += typeButtonWidth + filterButtonSpacing;
     
-    auto filterCombButtonArea = juce::Rectangle<int>(currentX, filterSectionY, typeButtonWidth, filterButtonHeight);
+    auto filterCombButtonArea = juce::Rectangle<int>(currentX, filterButtonsY, typeButtonWidth, filterButtonHeight);
     filterCombButton.setBounds(filterCombButtonArea);
     currentX += typeButtonWidth + filterButtonSpacing;
     
-    auto filterFormantButtonArea = juce::Rectangle<int>(currentX, filterSectionY, typeButtonWidth, filterButtonHeight);
+    auto filterFormantButtonArea = juce::Rectangle<int>(currentX, filterButtonsY, typeButtonWidth, filterButtonHeight);
     filterFormantButton.setBounds(filterFormantButtonArea);
     currentX += typeButtonWidth + filterButtonSpacing;
     
     // Filter slope buttons continue in same row
-    auto filter12dBButtonArea = juce::Rectangle<int>(currentX, filterSectionY, slopeButtonWidth, filterButtonHeight);
+    auto filter12dBButtonArea = juce::Rectangle<int>(currentX, filterButtonsY, slopeButtonWidth, filterButtonHeight);
     filter12dBButton.setBounds(filter12dBButtonArea);
     currentX += slopeButtonWidth + filterButtonSpacing;
     
-    auto filter24dBButtonArea = juce::Rectangle<int>(currentX, filterSectionY, slopeButtonWidth, filterButtonHeight);
+    auto filter24dBButtonArea = juce::Rectangle<int>(currentX, filterButtonsY, slopeButtonWidth, filterButtonHeight);
     filter24dBButton.setBounds(filter24dBButtonArea);
     
     // Knobs row below buttons - landscape layout with OSC enable buttons
-    auto filterKnobRowY = filterSectionY + filterButtonHeight + 15;
+    auto filterKnobRowY = filterButtonsY + filterButtonHeight + 15;
     auto filterKnobWidth = 80;
     auto filterKnobHeight = 60;
     auto filterKnobSpacing = 20;
