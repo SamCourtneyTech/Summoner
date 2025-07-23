@@ -673,18 +673,17 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     // FILTER CONTROLS
     filterCutoffLabel.setText("CUTOFF", juce::dontSendNotification);
-    filterCutoffLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    filterCutoffLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    filterCutoffLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
     filterCutoffLabel.setJustificationType(juce::Justification::centred);
-    filterCutoffLabel.setLookAndFeel(&ledLabelLookAndFeel);
+    filterCutoffLabel.setLookAndFeel(&engravedLabelLookAndFeel);
     addAndMakeVisible(filterCutoffLabel);
     
     filterCutoffKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     filterCutoffKnob.setRange(20.0, 20000.0, 1.0);
     filterCutoffKnob.setValue(1000.0);
     filterCutoffKnob.setSkewFactorFromMidPoint(1000.0);
-    filterCutoffKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    filterCutoffKnob.setLookAndFeel(&customKnobLookAndFeel);
+    filterCutoffKnob.setTextBoxStyle(juce::Slider::TextBoxRight, false, 80, 20);
+    filterCutoffKnob.setLookAndFeel(&digitalFilterKnobLookAndFeel);
     filterCutoffKnob.addListener(this);
     addAndMakeVisible(filterCutoffKnob);
     
@@ -692,16 +691,16 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     filterResonanceKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     filterResonanceKnob.setRange(0.0, 1.0, 0.01);
     filterResonanceKnob.setValue(0.0);
-    filterResonanceKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    filterResonanceKnob.setLookAndFeel(&customKnobLookAndFeel);
+    filterResonanceKnob.setTextBoxStyle(juce::Slider::TextBoxRight, false, 80, 20);
+    filterResonanceKnob.setLookAndFeel(&digitalFilterKnobLookAndFeel);
     filterResonanceKnob.addListener(this);
     addAndMakeVisible(filterResonanceKnob);
     
     // Filter Resonance label
     filterResonanceLabel.setText("RES", juce::dontSendNotification);
-    filterResonanceLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    filterResonanceLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
     filterResonanceLabel.setJustificationType(juce::Justification::centred);
-    filterResonanceLabel.setLookAndFeel(&ledLabelLookAndFeel);
+    filterResonanceLabel.setLookAndFeel(&engravedLabelLookAndFeel);
     addAndMakeVisible(filterResonanceLabel);
     
     // OSC filter enable buttons

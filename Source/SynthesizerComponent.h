@@ -216,6 +216,46 @@ private:
     // Simple knob look and feel instance for macro knobs
     SimpleKnobLookAndFeel simpleKnobLookAndFeel;
     
+    // Digital filter knob look and feel with glow text
+    class DigitalFilterKnobLookAndFeel : public SimpleKnobLookAndFeel
+    {
+    public:        
+        void drawLabel(juce::Graphics& g, juce::Label& label) override
+        {
+            auto bounds = label.getLocalBounds().toFloat();
+            auto text = label.getText();
+            auto font = label.getFont();
+            auto justification = label.getJustificationType();
+            
+            g.setFont(font);
+            
+            // Text glow effect (same as oscillator knobs)
+            // Outer glow for text
+            for (float i = 2.5f; i >= 1.0f; i -= 0.5f)
+            {
+                auto alpha = 0.04f + (0.08f * (3.0f - i) / 2.0f);
+                g.setColour(juce::Colours::white.withAlpha(alpha));
+                g.drawText(text, bounds.translated(-i, 0), justification, true);
+                g.drawText(text, bounds.translated(i, 0), justification, true);
+                g.drawText(text, bounds.translated(0, -i), justification, true);
+                g.drawText(text, bounds.translated(0, i), justification, true);
+            }
+            
+            // Inner glow for text
+            g.setColour(juce::Colours::white.withAlpha(0.3f));
+            g.drawText(text, bounds.translated(-1, 0), justification, true);
+            g.drawText(text, bounds.translated(1, 0), justification, true);
+            g.drawText(text, bounds.translated(0, -1), justification, true);
+            g.drawText(text, bounds.translated(0, 1), justification, true);
+            
+            // Core bright white text
+            g.setColour(juce::Colours::white);
+            g.drawText(text, bounds, justification, true);
+        }
+    };
+    
+    DigitalFilterKnobLookAndFeel digitalFilterKnobLookAndFeel;
+    
     // Engraved label look and feel for macro knobs
     class EngravedLabelLookAndFeel : public juce::LookAndFeel_V4
     {

@@ -411,8 +411,8 @@ public:
         // Set up title label with engraved effect
         lfoTitleLabel.setText("LFO", juce::dontSendNotification);
         lfoTitleLabel.setFont(juce::Font("Times New Roman", 11.0f, juce::Font::bold));
-        lfoTitleLabel.setLookAndFeel(&engravedLabelLookAndFeel);
         lfoTitleLabel.setJustificationType(juce::Justification::centred);
+        lfoTitleLabel.setLookAndFeel(&engravedLabelLookAndFeel);
         addAndMakeVisible(lfoTitleLabel);
         
         // Set up LFO waveform drawing area
