@@ -787,9 +787,8 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     macro1Label.setText("MACRO 1", juce::dontSendNotification);
     macro1Label.setJustificationType(juce::Justification::centred);
-    macro1Label.setFont(juce::Font("Press Start 2P", 8.0f, juce::Font::plain));
-    macro1Label.setColour(juce::Label::textColourId, juce::Colour(0xff888888));
-    macro1Label.setColour(juce::Label::outlineColourId, juce::Colours::black.withAlpha(0.8f));
+    macro1Label.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
+    macro1Label.setLookAndFeel(&engravedLabelLookAndFeel);
     addAndMakeVisible(macro1Label);
     
     macro2Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -801,9 +800,8 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     macro2Label.setText("MACRO 2", juce::dontSendNotification);
     macro2Label.setJustificationType(juce::Justification::centred);
-    macro2Label.setFont(juce::Font("Press Start 2P", 8.0f, juce::Font::plain));
-    macro2Label.setColour(juce::Label::textColourId, juce::Colour(0xff888888));
-    macro2Label.setColour(juce::Label::outlineColourId, juce::Colours::black.withAlpha(0.8f));
+    macro2Label.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
+    macro2Label.setLookAndFeel(&engravedLabelLookAndFeel);
     addAndMakeVisible(macro2Label);
     
     macro3Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -815,9 +813,8 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     macro3Label.setText("MACRO 3", juce::dontSendNotification);
     macro3Label.setJustificationType(juce::Justification::centred);
-    macro3Label.setFont(juce::Font("Press Start 2P", 8.0f, juce::Font::plain));
-    macro3Label.setColour(juce::Label::textColourId, juce::Colour(0xff888888));
-    macro3Label.setColour(juce::Label::outlineColourId, juce::Colours::black.withAlpha(0.8f));
+    macro3Label.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
+    macro3Label.setLookAndFeel(&engravedLabelLookAndFeel);
     addAndMakeVisible(macro3Label);
     
     macro4Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -829,9 +826,8 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     macro4Label.setText("MACRO 4", juce::dontSendNotification);
     macro4Label.setJustificationType(juce::Justification::centred);
-    macro4Label.setFont(juce::Font("Press Start 2P", 8.0f, juce::Font::plain));
-    macro4Label.setColour(juce::Label::textColourId, juce::Colour(0xff888888));
-    macro4Label.setColour(juce::Label::outlineColourId, juce::Colours::black.withAlpha(0.8f));
+    macro4Label.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
+    macro4Label.setLookAndFeel(&engravedLabelLookAndFeel);
     addAndMakeVisible(macro4Label);
     
     macro5Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -843,9 +839,8 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     macro5Label.setText("MACRO 5", juce::dontSendNotification);
     macro5Label.setJustificationType(juce::Justification::centred);
-    macro5Label.setFont(juce::Font("Press Start 2P", 8.0f, juce::Font::plain));
-    macro5Label.setColour(juce::Label::textColourId, juce::Colour(0xff888888));
-    macro5Label.setColour(juce::Label::outlineColourId, juce::Colours::black.withAlpha(0.8f));
+    macro5Label.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
+    macro5Label.setLookAndFeel(&engravedLabelLookAndFeel);
     addAndMakeVisible(macro5Label);
     
     macro6Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -857,9 +852,8 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     macro6Label.setText("MACRO 6", juce::dontSendNotification);
     macro6Label.setJustificationType(juce::Justification::centred);
-    macro6Label.setFont(juce::Font("Press Start 2P", 8.0f, juce::Font::plain));
-    macro6Label.setColour(juce::Label::textColourId, juce::Colour(0xff888888));
-    macro6Label.setColour(juce::Label::outlineColourId, juce::Colours::black.withAlpha(0.8f));
+    macro6Label.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
+    macro6Label.setLookAndFeel(&engravedLabelLookAndFeel);
     addAndMakeVisible(macro6Label);
     
     macro7Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -871,9 +865,8 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     macro7Label.setText("MACRO 7", juce::dontSendNotification);
     macro7Label.setJustificationType(juce::Justification::centred);
-    macro7Label.setFont(juce::Font("Press Start 2P", 8.0f, juce::Font::plain));
-    macro7Label.setColour(juce::Label::textColourId, juce::Colour(0xff888888));
-    macro7Label.setColour(juce::Label::outlineColourId, juce::Colours::black.withAlpha(0.8f));
+    macro7Label.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
+    macro7Label.setLookAndFeel(&engravedLabelLookAndFeel);
     addAndMakeVisible(macro7Label);
     
     macro8Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -885,9 +878,8 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     macro8Label.setText("MACRO 8", juce::dontSendNotification);
     macro8Label.setJustificationType(juce::Justification::centred);
-    macro8Label.setFont(juce::Font("Press Start 2P", 8.0f, juce::Font::plain));
-    macro8Label.setColour(juce::Label::textColourId, juce::Colour(0xff888888));
-    macro8Label.setColour(juce::Label::outlineColourId, juce::Colours::black.withAlpha(0.8f));
+    macro8Label.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
+    macro8Label.setLookAndFeel(&engravedLabelLookAndFeel);
     addAndMakeVisible(macro8Label);
     
     // ADSR ENVELOPE VISUALIZER GROUP - Row 2 (MOVEABLE)
@@ -3882,10 +3874,26 @@ void SynthesizerComponent::drawFilterSectionBackground(juce::Graphics& g, juce::
     g.setColour(juce::Colour(0xff303030));
     g.drawRoundedRectangle(labelBounds, 4.0f, 1.0f);
     
-    // Label text
-    g.setColour(juce::Colours::white);
-    g.setFont(juce::Font("Arial", 12.0f, juce::Font::bold));
-    g.drawText("FILTER", labelBounds, juce::Justification::centred);
+    // Light highlight on top for metallic effect
+    g.setColour(juce::Colour(0xff707070));
+    g.drawLine(labelBounds.getX() + 4, labelBounds.getY() + 1, 
+               labelBounds.getRight() - 4, labelBounds.getY() + 1, 1.0f);
+    
+    // Engraved 3D text effect - same as oscillator
+    auto textBounds = labelBounds.toNearestInt();
+    g.setFont(juce::Font("Arial", 11.0f, juce::Font::bold));
+    
+    // Dark shadow below and right for engraved effect
+    g.setColour(juce::Colour(0xff303030));
+    g.drawText("FILTER", textBounds.translated(1, 1), juce::Justification::centred, true);
+    
+    // Light highlight above and left for engraved effect
+    g.setColour(juce::Colour(0xff808080));
+    g.drawText("FILTER", textBounds.translated(-1, -1), juce::Justification::centred, true);
+    
+    // Main text
+    g.setColour(juce::Colour(0xff606060));
+    g.drawText("FILTER", textBounds, juce::Justification::centred, true);
 }
 
 void SynthesizerComponent::drawMacroKnobsBackground(juce::Graphics& g, juce::Rectangle<int> bounds)
@@ -3942,9 +3950,25 @@ void SynthesizerComponent::drawMacroKnobsBackground(juce::Graphics& g, juce::Rec
     g.setColour(juce::Colour(0xff303030));
     g.drawRoundedRectangle(labelBounds, 4.0f, 1.0f);
     
-    // Label text
-    g.setColour(juce::Colours::white);
-    g.setFont(juce::Font("Arial", 12.0f, juce::Font::bold));
-    g.drawText("MACRO", labelBounds, juce::Justification::centred);
+    // Light highlight on top for metallic effect
+    g.setColour(juce::Colour(0xff707070));
+    g.drawLine(labelBounds.getX() + 4, labelBounds.getY() + 1, 
+               labelBounds.getRight() - 4, labelBounds.getY() + 1, 1.0f);
+    
+    // Engraved 3D text effect - same as oscillator
+    auto textBounds = labelBounds.toNearestInt();
+    g.setFont(juce::Font("Arial", 11.0f, juce::Font::bold));
+    
+    // Dark shadow below and right for engraved effect
+    g.setColour(juce::Colour(0xff303030));
+    g.drawText("MACRO", textBounds.translated(1, 1), juce::Justification::centred, true);
+    
+    // Light highlight above and left for engraved effect
+    g.setColour(juce::Colour(0xff808080));
+    g.drawText("MACRO", textBounds.translated(-1, -1), juce::Justification::centred, true);
+    
+    // Main text
+    g.setColour(juce::Colour(0xff606060));
+    g.drawText("MACRO", textBounds, juce::Justification::centred, true);
 }
 

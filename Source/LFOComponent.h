@@ -380,13 +380,38 @@ public:
                            juce::Justification::centred, 1);
         }
     };
+    
+    // Engraved label look and feel for LFO title
+    class EngravedLabelLookAndFeel : public juce::LookAndFeel_V4
+    {
+    public:
+        void drawLabel(juce::Graphics& g, juce::Label& label) override
+        {
+            auto bounds = label.getLocalBounds().toFloat();
+            auto text = label.getText();
+            auto font = label.getFont();
+            
+            // Draw inset shadow (darker text offset down and right)
+            g.setColour(juce::Colours::black.withAlpha(0.8f));
+            g.setFont(font);
+            g.drawText(text, bounds.translated(1.0f, 1.0f), label.getJustificationType());
+            
+            // Draw highlight (lighter text offset up and left)
+            g.setColour(juce::Colour(0xff909090).withAlpha(0.6f));
+            g.drawText(text, bounds.translated(-0.5f, -0.5f), label.getJustificationType());
+            
+            // Draw main text (medium dark gray)
+            g.setColour(juce::Colour(0xff505050));
+            g.drawText(text, bounds, label.getJustificationType());
+        }
+    };
 
     LFOModuleComponent() : knobLookAndFeel(nullptr), buttonLookAndFeel(nullptr), labelLookAndFeel(nullptr) 
     {
-        // Set up title label
+        // Set up title label with engraved effect
         lfoTitleLabel.setText("LFO", juce::dontSendNotification);
-        lfoTitleLabel.setFont(juce::Font("Press Start 2P", 10.8f, juce::Font::plain)); // 12.0f * 0.9
-        lfoTitleLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+        lfoTitleLabel.setFont(juce::Font("Times New Roman", 11.0f, juce::Font::bold));
+        lfoTitleLabel.setLookAndFeel(&engravedLabelLookAndFeel);
         lfoTitleLabel.setJustificationType(juce::Justification::centred);
         addAndMakeVisible(lfoTitleLabel);
         
@@ -769,6 +794,9 @@ private:
     
     // Simple knob look and feel for rate knob (owned)
     SimpleKnobLookAndFeel simpleKnobLookAndFeel;
+    
+    // Engraved label look and feel for LFO title (owned)
+    EngravedLabelLookAndFeel engravedLabelLookAndFeel;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LFOModuleComponent)
 };
