@@ -782,104 +782,112 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     macro1Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     macro1Knob.setRange(0.0, 1.0, 0.01);
     macro1Knob.setValue(0.5);
-    macro1Knob.setLookAndFeel(&customKnobLookAndFeel);
+    macro1Knob.setLookAndFeel(&simpleKnobLookAndFeel);
     addAndMakeVisible(macro1Knob);
     
     macro1Label.setText("MACRO 1", juce::dontSendNotification);
     macro1Label.setJustificationType(juce::Justification::centred);
-    macro1Label.setFont(juce::Font("Press Start 2P", 7.0f, juce::Font::plain));
-    macro1Label.setColour(juce::Label::textColourId, juce::Colours::white);
+    macro1Label.setFont(juce::Font("Press Start 2P", 8.0f, juce::Font::plain));
+    macro1Label.setColour(juce::Label::textColourId, juce::Colour(0xff888888));
+    macro1Label.setColour(juce::Label::outlineColourId, juce::Colours::black.withAlpha(0.8f));
     addAndMakeVisible(macro1Label);
     
     macro2Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     macro2Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     macro2Knob.setRange(0.0, 1.0, 0.01);
     macro2Knob.setValue(0.5);
-    macro2Knob.setLookAndFeel(&customKnobLookAndFeel);
+    macro2Knob.setLookAndFeel(&simpleKnobLookAndFeel);
     addAndMakeVisible(macro2Knob);
     
     macro2Label.setText("MACRO 2", juce::dontSendNotification);
     macro2Label.setJustificationType(juce::Justification::centred);
-    macro2Label.setFont(juce::Font("Press Start 2P", 7.0f, juce::Font::plain));
-    macro2Label.setColour(juce::Label::textColourId, juce::Colours::white);
+    macro2Label.setFont(juce::Font("Press Start 2P", 8.0f, juce::Font::plain));
+    macro2Label.setColour(juce::Label::textColourId, juce::Colour(0xff888888));
+    macro2Label.setColour(juce::Label::outlineColourId, juce::Colours::black.withAlpha(0.8f));
     addAndMakeVisible(macro2Label);
     
     macro3Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     macro3Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     macro3Knob.setRange(0.0, 1.0, 0.01);
     macro3Knob.setValue(0.5);
-    macro3Knob.setLookAndFeel(&customKnobLookAndFeel);
+    macro3Knob.setLookAndFeel(&simpleKnobLookAndFeel);
     addAndMakeVisible(macro3Knob);
     
     macro3Label.setText("MACRO 3", juce::dontSendNotification);
     macro3Label.setJustificationType(juce::Justification::centred);
-    macro3Label.setFont(juce::Font("Press Start 2P", 7.0f, juce::Font::plain));
-    macro3Label.setColour(juce::Label::textColourId, juce::Colours::white);
+    macro3Label.setFont(juce::Font("Press Start 2P", 8.0f, juce::Font::plain));
+    macro3Label.setColour(juce::Label::textColourId, juce::Colour(0xff888888));
+    macro3Label.setColour(juce::Label::outlineColourId, juce::Colours::black.withAlpha(0.8f));
     addAndMakeVisible(macro3Label);
     
     macro4Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     macro4Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     macro4Knob.setRange(0.0, 1.0, 0.01);
     macro4Knob.setValue(0.5);
-    macro4Knob.setLookAndFeel(&customKnobLookAndFeel);
+    macro4Knob.setLookAndFeel(&simpleKnobLookAndFeel);
     addAndMakeVisible(macro4Knob);
     
     macro4Label.setText("MACRO 4", juce::dontSendNotification);
     macro4Label.setJustificationType(juce::Justification::centred);
-    macro4Label.setFont(juce::Font("Press Start 2P", 7.0f, juce::Font::plain));
-    macro4Label.setColour(juce::Label::textColourId, juce::Colours::white);
+    macro4Label.setFont(juce::Font("Press Start 2P", 8.0f, juce::Font::plain));
+    macro4Label.setColour(juce::Label::textColourId, juce::Colour(0xff888888));
+    macro4Label.setColour(juce::Label::outlineColourId, juce::Colours::black.withAlpha(0.8f));
     addAndMakeVisible(macro4Label);
     
     macro5Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     macro5Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     macro5Knob.setRange(0.0, 1.0, 0.01);
     macro5Knob.setValue(0.5);
-    macro5Knob.setLookAndFeel(&customKnobLookAndFeel);
+    macro5Knob.setLookAndFeel(&simpleKnobLookAndFeel);
     addAndMakeVisible(macro5Knob);
     
     macro5Label.setText("MACRO 5", juce::dontSendNotification);
     macro5Label.setJustificationType(juce::Justification::centred);
-    macro5Label.setFont(juce::Font("Press Start 2P", 7.0f, juce::Font::plain));
-    macro5Label.setColour(juce::Label::textColourId, juce::Colours::white);
+    macro5Label.setFont(juce::Font("Press Start 2P", 8.0f, juce::Font::plain));
+    macro5Label.setColour(juce::Label::textColourId, juce::Colour(0xff888888));
+    macro5Label.setColour(juce::Label::outlineColourId, juce::Colours::black.withAlpha(0.8f));
     addAndMakeVisible(macro5Label);
     
     macro6Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     macro6Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     macro6Knob.setRange(0.0, 1.0, 0.01);
     macro6Knob.setValue(0.5);
-    macro6Knob.setLookAndFeel(&customKnobLookAndFeel);
+    macro6Knob.setLookAndFeel(&simpleKnobLookAndFeel);
     addAndMakeVisible(macro6Knob);
     
     macro6Label.setText("MACRO 6", juce::dontSendNotification);
     macro6Label.setJustificationType(juce::Justification::centred);
-    macro6Label.setFont(juce::Font("Press Start 2P", 7.0f, juce::Font::plain));
-    macro6Label.setColour(juce::Label::textColourId, juce::Colours::white);
+    macro6Label.setFont(juce::Font("Press Start 2P", 8.0f, juce::Font::plain));
+    macro6Label.setColour(juce::Label::textColourId, juce::Colour(0xff888888));
+    macro6Label.setColour(juce::Label::outlineColourId, juce::Colours::black.withAlpha(0.8f));
     addAndMakeVisible(macro6Label);
     
     macro7Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     macro7Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     macro7Knob.setRange(0.0, 1.0, 0.01);
     macro7Knob.setValue(0.5);
-    macro7Knob.setLookAndFeel(&customKnobLookAndFeel);
+    macro7Knob.setLookAndFeel(&simpleKnobLookAndFeel);
     addAndMakeVisible(macro7Knob);
     
     macro7Label.setText("MACRO 7", juce::dontSendNotification);
     macro7Label.setJustificationType(juce::Justification::centred);
-    macro7Label.setFont(juce::Font("Press Start 2P", 7.0f, juce::Font::plain));
-    macro7Label.setColour(juce::Label::textColourId, juce::Colours::white);
+    macro7Label.setFont(juce::Font("Press Start 2P", 8.0f, juce::Font::plain));
+    macro7Label.setColour(juce::Label::textColourId, juce::Colour(0xff888888));
+    macro7Label.setColour(juce::Label::outlineColourId, juce::Colours::black.withAlpha(0.8f));
     addAndMakeVisible(macro7Label);
     
     macro8Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     macro8Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     macro8Knob.setRange(0.0, 1.0, 0.01);
     macro8Knob.setValue(0.5);
-    macro8Knob.setLookAndFeel(&customKnobLookAndFeel);
+    macro8Knob.setLookAndFeel(&simpleKnobLookAndFeel);
     addAndMakeVisible(macro8Knob);
     
     macro8Label.setText("MACRO 8", juce::dontSendNotification);
     macro8Label.setJustificationType(juce::Justification::centred);
-    macro8Label.setFont(juce::Font("Press Start 2P", 7.0f, juce::Font::plain));
-    macro8Label.setColour(juce::Label::textColourId, juce::Colours::white);
+    macro8Label.setFont(juce::Font("Press Start 2P", 8.0f, juce::Font::plain));
+    macro8Label.setColour(juce::Label::textColourId, juce::Colour(0xff888888));
+    macro8Label.setColour(juce::Label::outlineColourId, juce::Colours::black.withAlpha(0.8f));
     addAndMakeVisible(macro8Label);
     
     // ADSR ENVELOPE VISUALIZER GROUP - Row 2 (MOVEABLE)
@@ -1639,56 +1647,65 @@ void SynthesizerComponent::resized()
     
     // Position at center bottom
     auto macroStartX = (totalBounds.getWidth() - totalMacroWidth) / 2;
-    auto macroY = totalBounds.getHeight() - totalMacroHeight - 20; // 20px margin from bottom
+    auto macroY = totalBounds.getHeight() - totalMacroHeight - 12; // 12px margin from bottom (moved down 3px)
     
-    // Store bounds for background drawing (with reduced padding for less width)
-    macroKnobsBounds = juce::Rectangle<int>(macroStartX - 40, macroY - 13, totalMacroWidth + 80, totalMacroHeight + 11);
+    // Store bounds for background drawing (with reduced padding for less width) - keep background at original position
+    auto backgroundY = totalBounds.getHeight() - totalMacroHeight - 20; // Original background position
+    macroKnobsBounds = juce::Rectangle<int>(macroStartX - 40, backgroundY - 13, totalMacroWidth + 80, totalMacroHeight + 11);
     
     // Top row (Macro 1, 2, 3, 4)
     auto topRowY = macroY;
     
     // Macro 1
     auto macro1Area = juce::Rectangle<int>(macroStartX, topRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
-    macro1Label.setBounds(macro1Area.removeFromBottom(macroLabelHeight));
-    macro1Knob.setBounds(macro1Area);
+    auto macro1LabelArea = juce::Rectangle<int>(macroStartX - 7, topRowY + macroKnobSize - 6, macroKnobSize + 15, macroLabelHeight);
+    macro1Label.setBounds(macro1LabelArea);
+    macro1Knob.setBounds(macro1Area.removeFromTop(macroKnobSize));
     
     // Macro 2
     auto macro2Area = juce::Rectangle<int>(macroStartX + macroKnobSize + macroKnobSpacing, topRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
-    macro2Label.setBounds(macro2Area.removeFromBottom(macroLabelHeight));
-    macro2Knob.setBounds(macro2Area);
+    auto macro2LabelArea = juce::Rectangle<int>(macroStartX + macroKnobSize + macroKnobSpacing - 7, topRowY + macroKnobSize - 6, macroKnobSize + 15, macroLabelHeight);
+    macro2Label.setBounds(macro2LabelArea);
+    macro2Knob.setBounds(macro2Area.removeFromTop(macroKnobSize));
     
     // Macro 3
     auto macro3Area = juce::Rectangle<int>(macroStartX + 2 * (macroKnobSize + macroKnobSpacing), topRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
-    macro3Label.setBounds(macro3Area.removeFromBottom(macroLabelHeight));
-    macro3Knob.setBounds(macro3Area);
+    auto macro3LabelArea = juce::Rectangle<int>(macroStartX + 2 * (macroKnobSize + macroKnobSpacing) - 7, topRowY + macroKnobSize - 6, macroKnobSize + 15, macroLabelHeight);
+    macro3Label.setBounds(macro3LabelArea);
+    macro3Knob.setBounds(macro3Area.removeFromTop(macroKnobSize));
     
     // Macro 4
     auto macro4Area = juce::Rectangle<int>(macroStartX + 3 * (macroKnobSize + macroKnobSpacing), topRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
-    macro4Label.setBounds(macro4Area.removeFromBottom(macroLabelHeight));
-    macro4Knob.setBounds(macro4Area);
+    auto macro4LabelArea = juce::Rectangle<int>(macroStartX + 3 * (macroKnobSize + macroKnobSpacing) - 7, topRowY + macroKnobSize - 6, macroKnobSize + 15, macroLabelHeight);
+    macro4Label.setBounds(macro4LabelArea);
+    macro4Knob.setBounds(macro4Area.removeFromTop(macroKnobSize));
     
     // Bottom row (Macro 5, 6, 7, 8)
-    auto bottomRowY = topRowY + macroKnobSize + macroLabelHeight + macroRowSpacing;
+    auto bottomRowY = topRowY + macroKnobSize + macroLabelHeight + macroRowSpacing - 20;
     
     // Macro 5
     auto macro5Area = juce::Rectangle<int>(macroStartX, bottomRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
-    macro5Label.setBounds(macro5Area.removeFromBottom(macroLabelHeight));
-    macro5Knob.setBounds(macro5Area);
+    auto macro5LabelArea = juce::Rectangle<int>(macroStartX - 7, bottomRowY + macroKnobSize - 6, macroKnobSize + 15, macroLabelHeight);
+    macro5Label.setBounds(macro5LabelArea);
+    macro5Knob.setBounds(macro5Area.removeFromTop(macroKnobSize));
     
     // Macro 6
     auto macro6Area = juce::Rectangle<int>(macroStartX + macroKnobSize + macroKnobSpacing, bottomRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
-    macro6Label.setBounds(macro6Area.removeFromBottom(macroLabelHeight));
-    macro6Knob.setBounds(macro6Area);
+    auto macro6LabelArea = juce::Rectangle<int>(macroStartX + macroKnobSize + macroKnobSpacing - 7, bottomRowY + macroKnobSize - 6, macroKnobSize + 15, macroLabelHeight);
+    macro6Label.setBounds(macro6LabelArea);
+    macro6Knob.setBounds(macro6Area.removeFromTop(macroKnobSize));
     
     // Macro 7
     auto macro7Area = juce::Rectangle<int>(macroStartX + 2 * (macroKnobSize + macroKnobSpacing), bottomRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
-    macro7Label.setBounds(macro7Area.removeFromBottom(macroLabelHeight));
-    macro7Knob.setBounds(macro7Area);
+    auto macro7LabelArea = juce::Rectangle<int>(macroStartX + 2 * (macroKnobSize + macroKnobSpacing) - 7, bottomRowY + macroKnobSize - 6, macroKnobSize + 15, macroLabelHeight);
+    macro7Label.setBounds(macro7LabelArea);
+    macro7Knob.setBounds(macro7Area.removeFromTop(macroKnobSize));
     
     // Macro 8
     auto macro8Area = juce::Rectangle<int>(macroStartX + 3 * (macroKnobSize + macroKnobSpacing), bottomRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
-    macro8Label.setBounds(macro8Area.removeFromBottom(macroLabelHeight));
-    macro8Knob.setBounds(macro8Area);
+    auto macro8LabelArea = juce::Rectangle<int>(macroStartX + 3 * (macroKnobSize + macroKnobSpacing) - 7, bottomRowY + macroKnobSize - 6, macroKnobSize + 15, macroLabelHeight);
+    macro8Label.setBounds(macro8LabelArea);
+    macro8Knob.setBounds(macro8Area.removeFromTop(macroKnobSize));
 }
 
 void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
