@@ -3090,7 +3090,7 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     auto currentX = buttonsStartX;
     
     // Filter type buttons in single row: LP, HP, BP, NOTCH, COMB, FORMANT (lowered by 40px)
-    auto filterButtonsY = filterSectionY + 40;
+    auto filterButtonsY = filterSectionY + 43;
     auto filterLPButtonArea = juce::Rectangle<int>(currentX, filterButtonsY, typeButtonWidth, filterButtonHeight);
     filterLPButton.setBounds(filterLPButtonArea);
     currentX += typeButtonWidth + filterButtonSpacing;
@@ -3124,7 +3124,7 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     filter24dBButton.setBounds(filter24dBButtonArea);
     
     // Knobs row below buttons - landscape layout with OSC enable buttons
-    auto filterKnobRowY = filterButtonsY + filterButtonHeight + 15;
+    auto filterKnobRowY = filterButtonsY + filterButtonHeight - 2;
     auto filterKnobWidth = 80;
     auto filterKnobHeight = 60;
     auto filterKnobSpacing = 20;
