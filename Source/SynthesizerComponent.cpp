@@ -927,6 +927,98 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     // Apply digital screen look and feel
     effectsModule.setLookAndFeel(&digitalScreenLookAndFeel);
     
+    // CHORUS EFFECT CONTROLS
+    // Rate knob
+    chorusRateKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    chorusRateKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    chorusRateKnob.setRange(0.1, 10.0, 0.1);
+    chorusRateKnob.setValue(2.0);
+    chorusRateKnob.setLookAndFeel(&simpleKnobLookAndFeel);
+    chorusTab->addAndMakeVisible(chorusRateKnob);
+    
+    chorusRateLabel.setText("RATE", juce::dontSendNotification);
+    chorusRateLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    chorusRateLabel.setJustificationType(juce::Justification::centred);
+    chorusRateLabel.setLookAndFeel(&engravedLabelLookAndFeel);
+    chorusTab->addAndMakeVisible(chorusRateLabel);
+    
+    // Delay knob
+    chorusDelayKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    chorusDelayKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    chorusDelayKnob.setRange(1.0, 50.0, 1.0);
+    chorusDelayKnob.setValue(20.0);
+    chorusDelayKnob.setLookAndFeel(&simpleKnobLookAndFeel);
+    chorusTab->addAndMakeVisible(chorusDelayKnob);
+    
+    chorusDelayLabel.setText("DELAY", juce::dontSendNotification);
+    chorusDelayLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    chorusDelayLabel.setJustificationType(juce::Justification::centred);
+    chorusDelayLabel.setLookAndFeel(&engravedLabelLookAndFeel);
+    chorusTab->addAndMakeVisible(chorusDelayLabel);
+    
+    // Depth knob
+    chorusDepthKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    chorusDepthKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    chorusDepthKnob.setRange(0.0, 1.0, 0.01);
+    chorusDepthKnob.setValue(0.5);
+    chorusDepthKnob.setLookAndFeel(&simpleKnobLookAndFeel);
+    chorusTab->addAndMakeVisible(chorusDepthKnob);
+    
+    chorusDepthLabel.setText("DEPTH", juce::dontSendNotification);
+    chorusDepthLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    chorusDepthLabel.setJustificationType(juce::Justification::centred);
+    chorusDepthLabel.setLookAndFeel(&engravedLabelLookAndFeel);
+    chorusTab->addAndMakeVisible(chorusDepthLabel);
+    
+    // Feed knob
+    chorusFeedKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    chorusFeedKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    chorusFeedKnob.setRange(0.0, 0.9, 0.01);
+    chorusFeedKnob.setValue(0.3);
+    chorusFeedKnob.setLookAndFeel(&simpleKnobLookAndFeel);
+    chorusTab->addAndMakeVisible(chorusFeedKnob);
+    
+    chorusFeedLabel.setText("FEED", juce::dontSendNotification);
+    chorusFeedLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    chorusFeedLabel.setJustificationType(juce::Justification::centred);
+    chorusFeedLabel.setLookAndFeel(&engravedLabelLookAndFeel);
+    chorusTab->addAndMakeVisible(chorusFeedLabel);
+    
+    // LPF knob
+    chorusLpfKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    chorusLpfKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    chorusLpfKnob.setRange(200.0, 20000.0, 100.0);
+    chorusLpfKnob.setValue(8000.0);
+    chorusLpfKnob.setLookAndFeel(&simpleKnobLookAndFeel);
+    chorusTab->addAndMakeVisible(chorusLpfKnob);
+    
+    chorusLpfLabel.setText("LPF", juce::dontSendNotification);
+    chorusLpfLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    chorusLpfLabel.setJustificationType(juce::Justification::centred);
+    chorusLpfLabel.setLookAndFeel(&engravedLabelLookAndFeel);
+    chorusTab->addAndMakeVisible(chorusLpfLabel);
+    
+    // Mix knob
+    chorusMixKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    chorusMixKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    chorusMixKnob.setRange(0.0, 1.0, 0.01);
+    chorusMixKnob.setValue(0.5);
+    chorusMixKnob.setLookAndFeel(&simpleKnobLookAndFeel);
+    chorusTab->addAndMakeVisible(chorusMixKnob);
+    
+    chorusMixLabel.setText("MIX", juce::dontSendNotification);
+    chorusMixLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    chorusMixLabel.setJustificationType(juce::Justification::centred);
+    chorusMixLabel.setLookAndFeel(&engravedLabelLookAndFeel);
+    chorusTab->addAndMakeVisible(chorusMixLabel);
+    
+    // Power button
+    chorusPowerButton.setButtonText("POWER");
+    chorusPowerButton.setClickingTogglesState(true);
+    chorusPowerButton.setToggleState(false, juce::dontSendNotification);
+    chorusPowerButton.setLookAndFeel(&customWaveButtonLookAndFeel);
+    chorusTab->addAndMakeVisible(chorusPowerButton);
+    
     // EFFECTS PRESET CONTROLS - Placeholder functionality
     effectsPresetPrevButton.setButtonText("<");
     effectsPresetPrevButton.setLookAndFeel(&customWaveButtonLookAndFeel);
@@ -2825,6 +2917,63 @@ void SynthesizerComponent::layoutEffectsModule(juce::Rectangle<int>& bounds)
     // Position effects module inside the border
     auto effectsArea = juce::Rectangle<int>(centerX + borderPadding, centerY + borderPadding, effectsWidth, effectsHeight);
     effectsModule.setBounds(effectsArea);
+    
+    // Layout chorus controls within the tab content area
+    auto tabContentArea = effectsArea.reduced(8, 35); // Account for tab bar and borders
+    layoutChorusControls(tabContentArea);
+}
+
+void SynthesizerComponent::layoutChorusControls(juce::Rectangle<int>& bounds)
+{
+    // Layout knobs in 2 rows of 3, with power button at bottom
+    auto knobSize = 50;
+    auto labelHeight = 20;
+    auto knobSpacing = 20;
+    auto rowSpacing = 15;
+    
+    // Calculate positions for a 2x3 grid of knobs
+    auto totalKnobWidth = (3 * knobSize) + (2 * knobSpacing);
+    auto startX = (bounds.getWidth() - totalKnobWidth) / 2;
+    auto startY = 20; // Top margin
+    
+    // First row: Rate, Delay, Depth
+    auto row1Y = startY;
+    
+    // Rate knob and label
+    chorusRateKnob.setBounds(startX, row1Y, knobSize, knobSize);
+    chorusRateLabel.setBounds(startX, row1Y + knobSize + 2, knobSize, labelHeight);
+    
+    // Delay knob and label
+    auto delay_x = startX + knobSize + knobSpacing;
+    chorusDelayKnob.setBounds(delay_x, row1Y, knobSize, knobSize);
+    chorusDelayLabel.setBounds(delay_x, row1Y + knobSize + 2, knobSize, labelHeight);
+    
+    // Depth knob and label
+    auto depth_x = startX + 2 * (knobSize + knobSpacing);
+    chorusDepthKnob.setBounds(depth_x, row1Y, knobSize, knobSize);
+    chorusDepthLabel.setBounds(depth_x, row1Y + knobSize + 2, knobSize, labelHeight);
+    
+    // Second row: Feed, LPF, Mix
+    auto row2Y = row1Y + knobSize + labelHeight + rowSpacing;
+    
+    // Feed knob and label
+    chorusFeedKnob.setBounds(startX, row2Y, knobSize, knobSize);
+    chorusFeedLabel.setBounds(startX, row2Y + knobSize + 2, knobSize, labelHeight);
+    
+    // LPF knob and label
+    chorusLpfKnob.setBounds(delay_x, row2Y, knobSize, knobSize);
+    chorusLpfLabel.setBounds(delay_x, row2Y + knobSize + 2, knobSize, labelHeight);
+    
+    // Mix knob and label
+    chorusMixKnob.setBounds(depth_x, row2Y, knobSize, knobSize);
+    chorusMixLabel.setBounds(depth_x, row2Y + knobSize + 2, knobSize, labelHeight);
+    
+    // Power button at bottom center
+    auto buttonWidth = 80;
+    auto buttonHeight = 25;
+    auto buttonX = (bounds.getWidth() - buttonWidth) / 2;
+    auto buttonY = row2Y + knobSize + labelHeight + 20;
+    chorusPowerButton.setBounds(buttonX, buttonY, buttonWidth, buttonHeight);
 }
 
 void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)

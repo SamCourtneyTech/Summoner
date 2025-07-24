@@ -58,6 +58,7 @@ public:
     void layoutPhaseControls(juce::Rectangle<int>& bounds);
     void layoutLFOModule(juce::Rectangle<int>& bounds);
     void layoutEffectsModule(juce::Rectangle<int>& bounds);
+    void layoutChorusControls(juce::Rectangle<int>& bounds);
     void layoutSecondOscillator(juce::Rectangle<int>& bounds);
     
     void drawWaveTypeButtonsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
@@ -490,6 +491,21 @@ private:
     juce::Label macro7Label;
     juce::Slider macro8Knob;
     juce::Label macro8Label;
+    
+    // Chorus effect controls
+    juce::Slider chorusRateKnob;
+    juce::Label chorusRateLabel;
+    juce::Slider chorusDelayKnob;
+    juce::Label chorusDelayLabel;
+    juce::Slider chorusDepthKnob;
+    juce::Label chorusDepthLabel;
+    juce::Slider chorusFeedKnob;
+    juce::Label chorusFeedLabel;
+    juce::Slider chorusLpfKnob;
+    juce::Label chorusLpfLabel;
+    juce::Slider chorusMixKnob;
+    juce::Label chorusMixLabel;
+    juce::TextButton chorusPowerButton;
     
     // Octave control state
     int octaveValue = 0;
