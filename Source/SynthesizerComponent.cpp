@@ -673,7 +673,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     // FILTER CONTROLS
     filterCutoffLabel.setText("CUTOFF", juce::dontSendNotification);
-    filterCutoffLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    filterCutoffLabel.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
     filterCutoffLabel.setJustificationType(juce::Justification::centred);
     filterCutoffLabel.setLookAndFeel(&engravedLabelLookAndFeel);
     addAndMakeVisible(filterCutoffLabel);
@@ -698,7 +698,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     // Filter Resonance label
     filterResonanceLabel.setText("RES", juce::dontSendNotification);
-    filterResonanceLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    filterResonanceLabel.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
     filterResonanceLabel.setJustificationType(juce::Justification::centred);
     filterResonanceLabel.setLookAndFeel(&engravedLabelLookAndFeel);
     addAndMakeVisible(filterResonanceLabel);
@@ -3145,14 +3145,14 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     // Filter cutoff knob
     auto filterCutoffKnobArea = juce::Rectangle<int>(currentX, filterKnobRowY, filterKnobWidth, filterKnobHeight);
     filterCutoffKnob.setBounds(filterCutoffKnobArea);
-    auto filterCutoffLabelArea = juce::Rectangle<int>(filterCutoffKnobArea.getX(), filterCutoffKnobArea.getY() - 20, filterKnobWidth, 20);
+    auto filterCutoffLabelArea = juce::Rectangle<int>(filterCutoffKnobArea.getX() - 15, filterCutoffKnobArea.getY() + 2, filterKnobWidth, 20);
     filterCutoffLabel.setBounds(filterCutoffLabelArea);
     currentX += filterKnobWidth + filterKnobSpacing;
     
     // Filter Resonance knob
     auto filterResonanceKnobArea = juce::Rectangle<int>(currentX, filterKnobRowY, filterKnobWidth, filterKnobHeight);
     filterResonanceKnob.setBounds(filterResonanceKnobArea);
-    auto filterResonanceLabelArea = juce::Rectangle<int>(filterResonanceKnobArea.getX(), filterResonanceKnobArea.getY() - 20, filterKnobWidth, 20);
+    auto filterResonanceLabelArea = juce::Rectangle<int>(filterResonanceKnobArea.getX() - 21, filterResonanceKnobArea.getY() + 2, filterKnobWidth, 20);
     filterResonanceLabel.setBounds(filterResonanceLabelArea);
     currentX += filterKnobWidth + filterKnobSpacing;
     
