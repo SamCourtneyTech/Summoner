@@ -942,19 +942,33 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     chorusRateLabel.setLookAndFeel(&engravedLabelLookAndFeel);
     chorusTab->addAndMakeVisible(chorusRateLabel);
     
-    // Delay knob
-    chorusDelayKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    chorusDelayKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    chorusDelayKnob.setRange(1.0, 50.0, 1.0);
-    chorusDelayKnob.setValue(20.0);
-    chorusDelayKnob.setLookAndFeel(&simpleKnobLookAndFeel);
-    chorusTab->addAndMakeVisible(chorusDelayKnob);
+    // Delay 1 knob
+    chorusDelay1Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    chorusDelay1Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    chorusDelay1Knob.setRange(1.0, 50.0, 1.0);
+    chorusDelay1Knob.setValue(20.0);
+    chorusDelay1Knob.setLookAndFeel(&simpleKnobLookAndFeel);
+    chorusTab->addAndMakeVisible(chorusDelay1Knob);
     
-    chorusDelayLabel.setText("DELAY", juce::dontSendNotification);
-    chorusDelayLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    chorusDelayLabel.setJustificationType(juce::Justification::centred);
-    chorusDelayLabel.setLookAndFeel(&engravedLabelLookAndFeel);
-    chorusTab->addAndMakeVisible(chorusDelayLabel);
+    chorusDelay1Label.setText("DELAY 1", juce::dontSendNotification);
+    chorusDelay1Label.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    chorusDelay1Label.setJustificationType(juce::Justification::centred);
+    chorusDelay1Label.setLookAndFeel(&engravedLabelLookAndFeel);
+    chorusTab->addAndMakeVisible(chorusDelay1Label);
+    
+    // Delay 2 knob
+    chorusDelay2Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    chorusDelay2Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    chorusDelay2Knob.setRange(1.0, 50.0, 1.0);
+    chorusDelay2Knob.setValue(30.0);
+    chorusDelay2Knob.setLookAndFeel(&simpleKnobLookAndFeel);
+    chorusTab->addAndMakeVisible(chorusDelay2Knob);
+    
+    chorusDelay2Label.setText("DELAY 2", juce::dontSendNotification);
+    chorusDelay2Label.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    chorusDelay2Label.setJustificationType(juce::Justification::centred);
+    chorusDelay2Label.setLookAndFeel(&engravedLabelLookAndFeel);
+    chorusTab->addAndMakeVisible(chorusDelay2Label);
     
     // Depth knob
     chorusDepthKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -2925,54 +2939,61 @@ void SynthesizerComponent::layoutEffectsModule(juce::Rectangle<int>& bounds)
 
 void SynthesizerComponent::layoutChorusControls(juce::Rectangle<int>& bounds)
 {
-    // Layout knobs in 2 rows of 3, with power button at bottom
-    auto knobSize = 50;
-    auto labelHeight = 20;
-    auto knobSpacing = 20;
-    auto rowSpacing = 15;
+    // Layout knobs in 3 rows, with power button at bottom
+    auto knobSize = 45;  // Slightly smaller to fit more
+    auto labelHeight = 18;
+    auto knobSpacing = 18;
+    auto rowSpacing = 12;
     
-    // Calculate positions for a 2x3 grid of knobs
+    // Calculate positions for a flexible grid
     auto totalKnobWidth = (3 * knobSize) + (2 * knobSpacing);
     auto startX = (bounds.getWidth() - totalKnobWidth) / 2;
-    auto startY = 20; // Top margin
+    auto startY = 15; // Top margin
     
-    // First row: Rate, Delay, Depth
+    // First row: Rate, Delay 1, Delay 2
     auto row1Y = startY;
     
     // Rate knob and label
     chorusRateKnob.setBounds(startX, row1Y, knobSize, knobSize);
     chorusRateLabel.setBounds(startX, row1Y + knobSize + 2, knobSize, labelHeight);
     
-    // Delay knob and label
-    auto delay_x = startX + knobSize + knobSpacing;
-    chorusDelayKnob.setBounds(delay_x, row1Y, knobSize, knobSize);
-    chorusDelayLabel.setBounds(delay_x, row1Y + knobSize + 2, knobSize, labelHeight);
+    // Delay 1 knob and label
+    auto delay1_x = startX + knobSize + knobSpacing;
+    chorusDelay1Knob.setBounds(delay1_x, row1Y, knobSize, knobSize);
+    chorusDelay1Label.setBounds(delay1_x, row1Y + knobSize + 2, knobSize, labelHeight);
     
-    // Depth knob and label
-    auto depth_x = startX + 2 * (knobSize + knobSpacing);
-    chorusDepthKnob.setBounds(depth_x, row1Y, knobSize, knobSize);
-    chorusDepthLabel.setBounds(depth_x, row1Y + knobSize + 2, knobSize, labelHeight);
+    // Delay 2 knob and label
+    auto delay2_x = startX + 2 * (knobSize + knobSpacing);
+    chorusDelay2Knob.setBounds(delay2_x, row1Y, knobSize, knobSize);
+    chorusDelay2Label.setBounds(delay2_x, row1Y + knobSize + 2, knobSize, labelHeight);
     
-    // Second row: Feed, LPF, Mix
+    // Second row: Depth, Feed, LPF
     auto row2Y = row1Y + knobSize + labelHeight + rowSpacing;
     
+    // Depth knob and label
+    chorusDepthKnob.setBounds(startX, row2Y, knobSize, knobSize);
+    chorusDepthLabel.setBounds(startX, row2Y + knobSize + 2, knobSize, labelHeight);
+    
     // Feed knob and label
-    chorusFeedKnob.setBounds(startX, row2Y, knobSize, knobSize);
-    chorusFeedLabel.setBounds(startX, row2Y + knobSize + 2, knobSize, labelHeight);
+    chorusFeedKnob.setBounds(delay1_x, row2Y, knobSize, knobSize);
+    chorusFeedLabel.setBounds(delay1_x, row2Y + knobSize + 2, knobSize, labelHeight);
     
     // LPF knob and label
-    chorusLpfKnob.setBounds(delay_x, row2Y, knobSize, knobSize);
-    chorusLpfLabel.setBounds(delay_x, row2Y + knobSize + 2, knobSize, labelHeight);
+    chorusLpfKnob.setBounds(delay2_x, row2Y, knobSize, knobSize);
+    chorusLpfLabel.setBounds(delay2_x, row2Y + knobSize + 2, knobSize, labelHeight);
     
-    // Mix knob and label
-    chorusMixKnob.setBounds(depth_x, row2Y, knobSize, knobSize);
-    chorusMixLabel.setBounds(depth_x, row2Y + knobSize + 2, knobSize, labelHeight);
+    // Third row: Mix (centered)
+    auto row3Y = row2Y + knobSize + labelHeight + rowSpacing;
+    auto mix_x = startX + knobSize + knobSpacing; // Center position
+    
+    chorusMixKnob.setBounds(mix_x, row3Y, knobSize, knobSize);
+    chorusMixLabel.setBounds(mix_x, row3Y + knobSize + 2, knobSize, labelHeight);
     
     // Power button at bottom center
-    auto buttonWidth = 80;
-    auto buttonHeight = 25;
+    auto buttonWidth = 70;
+    auto buttonHeight = 22;
     auto buttonX = (bounds.getWidth() - buttonWidth) / 2;
-    auto buttonY = row2Y + knobSize + labelHeight + 20;
+    auto buttonY = row3Y + knobSize + labelHeight + 15;
     chorusPowerButton.setBounds(buttonX, buttonY, buttonWidth, buttonHeight);
 }
 

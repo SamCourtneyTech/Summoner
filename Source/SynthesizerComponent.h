@@ -495,8 +495,10 @@ private:
     // Chorus effect controls
     juce::Slider chorusRateKnob;
     juce::Label chorusRateLabel;
-    juce::Slider chorusDelayKnob;
-    juce::Label chorusDelayLabel;
+    juce::Slider chorusDelay1Knob;
+    juce::Label chorusDelay1Label;
+    juce::Slider chorusDelay2Knob;
+    juce::Label chorusDelay2Label;
     juce::Slider chorusDepthKnob;
     juce::Label chorusDepthLabel;
     juce::Slider chorusFeedKnob;
