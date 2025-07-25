@@ -214,6 +214,426 @@ private:
     
     DigitalScreenLookAndFeel digitalScreenLookAndFeel;
     
+    // Digital button look and feel for smooth digital display appearance
+    class DigitalButtonLookAndFeel : public juce::LookAndFeel_V4
+    {
+    public:
+        void drawButtonText(juce::Graphics& g, juce::TextButton& button,
+            bool isMouseOverButton, bool isButtonDown) override
+        {
+            auto font = juce::Font(juce::Font::getDefaultMonospacedFontName(), 9.0f, juce::Font::bold);
+            g.setFont(font);
+            auto bounds = button.getLocalBounds().toFloat();
+            auto text = button.getButtonText();
+            
+            // Digital display text styling
+            if (button.getToggleState())
+            {
+                // Active state - bright cyan glow
+                juce::Colour textColour = juce::Colour(0xff00ffff);
+                
+                // Subtle outer glow
+                for (float i = 1.5f; i >= 0.5f; i -= 0.5f)
+                {
+                    auto alpha = 0.1f + (0.1f * (2.0f - i) / 1.5f);
+                    g.setColour(textColour.withAlpha(alpha));
+                    g.drawText(text, bounds.translated(-i, 0), juce::Justification::centred, true);
+                    g.drawText(text, bounds.translated(i, 0), juce::Justification::centred, true);
+                    g.drawText(text, bounds.translated(0, -i), juce::Justification::centred, true);
+                    g.drawText(text, bounds.translated(0, i), juce::Justification::centred, true);
+                }
+                
+                // Core bright text
+                g.setColour(textColour);
+                g.drawText(text, bounds, juce::Justification::centred, true);
+            }
+            else
+            {
+                // Inactive state - dim display
+                juce::Colour dimColour = juce::Colour(0xff404040);
+                if (isMouseOverButton)
+                    dimColour = juce::Colour(0xff606060);
+                if (isButtonDown)
+                    dimColour = juce::Colour(0xff808080);
+                    
+                g.setColour(dimColour);
+                g.drawText(text, bounds, juce::Justification::centred, true);
+            }
+        }
+        
+        void drawButtonBackground(juce::Graphics& g, juce::Button& button,
+            const juce::Colour& backgroundColour,
+            bool isMouseOverButton, bool isButtonDown) override
+        {
+            auto bounds = button.getLocalBounds().toFloat();
+            auto* textButton = dynamic_cast<juce::TextButton*>(&button);
+            bool isToggled = textButton && textButton->getToggleState();
+            
+            // Digital display panel styling
+            float cornerRadius = 2.0f;
+            
+            if (isToggled)
+            {
+                // Active state - bright digital panel
+                // Outer dark bezel
+                g.setColour(juce::Colour(0xff000000));
+                g.fillRoundedRectangle(bounds, cornerRadius);
+                
+                // Inner screen glow
+                auto screenBounds = bounds.reduced(1.5f);
+                juce::ColourGradient screenGradient(
+                    juce::Colour(0xff003333), screenBounds.getCentreX(), screenBounds.getY(),
+                    juce::Colour(0xff001a1a), screenBounds.getCentreX(), screenBounds.getBottom(),
+                    false
+                );
+                g.setGradientFill(screenGradient);
+                g.fillRoundedRectangle(screenBounds, cornerRadius - 1.0f);
+                
+                // Screen highlight
+                g.setColour(juce::Colour(0xff00ffff).withAlpha(0.1f));
+                g.fillRoundedRectangle(screenBounds.reduced(0.5f), cornerRadius - 1.5f);
+                
+                // Scan lines effect
+                for (int y = (int)screenBounds.getY(); y < (int)screenBounds.getBottom(); y += 2)
+                {
+                    g.setColour(juce::Colour(0xff000000).withAlpha(0.15f));
+                    g.drawHorizontalLine(y, screenBounds.getX(), screenBounds.getRight());
+                }
+            }
+            else
+            {
+                // Inactive state - dark digital panel
+                juce::Colour baseColour = isButtonDown ? juce::Colour(0xff0a0a0a)
+                    : isMouseOverButton ? juce::Colour(0xff151515)
+                    : juce::Colour(0xff101010);
+                
+                // Outer bezel
+                g.setColour(juce::Colour(0xff000000));
+                g.fillRoundedRectangle(bounds, cornerRadius);
+                
+                // Inner panel
+                auto panelBounds = bounds.reduced(1.5f);
+                g.setColour(baseColour);
+                g.fillRoundedRectangle(panelBounds, cornerRadius - 1.0f);
+                
+                // Subtle inner border
+                g.setColour(juce::Colour(0xff303030).withAlpha(0.3f));
+                g.drawRoundedRectangle(panelBounds.reduced(0.5f), cornerRadius - 1.5f, 0.5f);
+                
+                // Dim scan lines
+                for (int y = (int)panelBounds.getY(); y < (int)panelBounds.getBottom(); y += 2)
+                {
+                    g.setColour(juce::Colour(0xff000000).withAlpha(0.1f));
+                    g.drawHorizontalLine(y, panelBounds.getX(), panelBounds.getRight());
+                }
+            }
+        }
+    };
+    
+    DigitalButtonLookAndFeel digitalButtonLookAndFeel;
+    
+    // Digital knob look and feel for chorus module
+    class DigitalKnobLookAndFeel : public juce::LookAndFeel_V4
+    {
+    public:
+        void drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height,
+                            float sliderPos, float rotaryStartAngle, float rotaryEndAngle,
+                            juce::Slider& slider) override
+        {
+            auto bounds = juce::Rectangle<float>(x, y, width, height);
+            auto centreX = bounds.getCentreX();
+            auto centreY = bounds.getCentreY();
+            
+            // Digital knob with smaller radius for more compact appearance
+            auto radius = 8.0f;
+            auto knobBounds = juce::Rectangle<float>(centreX - radius, centreY - radius, radius * 2.0f, radius * 2.0f);
+            
+            // Outer digital bezel
+            g.setColour(juce::Colour(0xff000000));
+            g.fillEllipse(knobBounds.expanded(2.0f));
+            
+            // Inner digital panel with gradient
+            juce::ColourGradient digitalGradient(
+                juce::Colour(0xff1a2a2a), centreX, centreY - radius,
+                juce::Colour(0xff0d1515), centreX, centreY + radius,
+                false
+            );
+            digitalGradient.addColour(0.3, juce::Colour(0xff152020));
+            digitalGradient.addColour(0.7, juce::Colour(0xff0a1010));
+            g.setGradientFill(digitalGradient);
+            g.fillEllipse(knobBounds);
+            
+            // Digital rim with cyan tint
+            g.setColour(juce::Colour(0xff003030));
+            g.drawEllipse(knobBounds, 1.5f);
+            
+            // Inner digital highlight
+            g.setColour(juce::Colour(0xff004040).withAlpha(0.6f));
+            g.drawEllipse(knobBounds.reduced(1.0f), 1.0f);
+            
+            // Digital position indicator - cyan glow line
+            auto angle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
+            auto lineLength = radius * 0.7f;
+            auto lineStartRadius = radius * 0.2f;
+            
+            juce::Point<float> lineStart(centreX + lineStartRadius * std::cos(angle - juce::MathConstants<float>::halfPi),
+                                       centreY + lineStartRadius * std::sin(angle - juce::MathConstants<float>::halfPi));
+            juce::Point<float> lineEnd(centreX + lineLength * std::cos(angle - juce::MathConstants<float>::halfPi),
+                                     centreY + lineLength * std::sin(angle - juce::MathConstants<float>::halfPi));
+            
+            // Glow effect for the indicator line
+            for (float i = 3.0f; i >= 1.0f; i -= 0.5f)
+            {
+                auto alpha = 0.1f + (0.2f * (4.0f - i) / 3.0f);
+                g.setColour(juce::Colour(0xff00ffff).withAlpha(alpha));
+                g.drawLine(lineStart.x, lineStart.y, lineEnd.x, lineEnd.y, i);
+            }
+            
+            // Core bright cyan indicator
+            g.setColour(juce::Colour(0xff00ffff));
+            g.drawLine(lineStart.x, lineStart.y, lineEnd.x, lineEnd.y, 1.5f);
+        }
+        
+        void drawLabel(juce::Graphics& g, juce::Label& label) override
+        {
+            auto bounds = label.getLocalBounds().toFloat();
+            auto text = label.getText();
+            auto font = juce::Font(juce::Font::getDefaultMonospacedFontName(), label.getFont().getHeight(), juce::Font::bold);
+            
+            g.setFont(font);
+            
+            // Digital text with cyan glow
+            juce::Colour textColour = juce::Colour(0xff00cccc);
+            
+            // Subtle outer glow
+            for (float i = 1.5f; i >= 0.5f; i -= 0.5f)
+            {
+                auto alpha = 0.08f + (0.1f * (2.0f - i) / 1.5f);
+                g.setColour(textColour.withAlpha(alpha));
+                g.drawText(text, bounds.translated(-i, 0), label.getJustificationType(), true);
+                g.drawText(text, bounds.translated(i, 0), label.getJustificationType(), true);
+                g.drawText(text, bounds.translated(0, -i), label.getJustificationType(), true);
+                g.drawText(text, bounds.translated(0, i), label.getJustificationType(), true);
+            }
+            
+            // Core bright text
+            g.setColour(textColour);
+            g.drawText(text, bounds, label.getJustificationType(), true);
+        }
+    };
+    
+    DigitalKnobLookAndFeel digitalKnobLookAndFeel;
+    
+    // Green digital knob look and feel for chorus module
+    class GreenDigitalKnobLookAndFeel : public juce::LookAndFeel_V4
+    {
+    public:
+        void drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height,
+                            float sliderPos, float rotaryStartAngle, float rotaryEndAngle,
+                            juce::Slider& slider) override
+        {
+            auto bounds = juce::Rectangle<float>(x, y, width, height);
+            auto centreX = bounds.getCentreX();
+            auto centreY = bounds.getCentreY();
+            
+            // Digital knob with larger radius for more prominent appearance
+            auto radius = 12.0f;
+            auto knobBounds = juce::Rectangle<float>(centreX - radius, centreY - radius, radius * 2.0f, radius * 2.0f);
+            
+            // Outer digital bezel
+            g.setColour(juce::Colour(0xff000000));
+            g.fillEllipse(knobBounds.expanded(2.5f));
+            
+            // Inner digital panel with green gradient
+            juce::ColourGradient digitalGradient(
+                juce::Colour(0xff1a2a1a), centreX, centreY - radius,
+                juce::Colour(0xff0d150d), centreX, centreY + radius,
+                false
+            );
+            digitalGradient.addColour(0.3, juce::Colour(0xff152015));
+            digitalGradient.addColour(0.7, juce::Colour(0xff0a100a));
+            g.setGradientFill(digitalGradient);
+            g.fillEllipse(knobBounds);
+            
+            // Digital rim with bright green tint
+            g.setColour(juce::Colour(0xff003000));
+            g.drawEllipse(knobBounds, 2.0f);
+            
+            // Inner digital highlight
+            g.setColour(juce::Colour(0xff004000).withAlpha(0.6f));
+            g.drawEllipse(knobBounds.reduced(1.5f), 1.5f);
+            
+            // Digital position indicator - bright green glow line
+            auto angle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
+            auto lineLength = radius * 0.7f;
+            auto lineStartRadius = radius * 0.2f;
+            
+            juce::Point<float> lineStart(centreX + lineStartRadius * std::cos(angle - juce::MathConstants<float>::halfPi),
+                                       centreY + lineStartRadius * std::sin(angle - juce::MathConstants<float>::halfPi));
+            juce::Point<float> lineEnd(centreX + lineLength * std::cos(angle - juce::MathConstants<float>::halfPi),
+                                     centreY + lineLength * std::sin(angle - juce::MathConstants<float>::halfPi));
+            
+            // Glow effect for the indicator line
+            for (float i = 4.0f; i >= 1.0f; i -= 0.5f)
+            {
+                auto alpha = 0.1f + (0.3f * (5.0f - i) / 4.0f);
+                g.setColour(juce::Colour(0xff00ff00).withAlpha(alpha));
+                g.drawLine(lineStart.x, lineStart.y, lineEnd.x, lineEnd.y, i);
+            }
+            
+            // Core bright green indicator
+            g.setColour(juce::Colour(0xff00ff00));
+            g.drawLine(lineStart.x, lineStart.y, lineEnd.x, lineEnd.y, 2.0f);
+        }
+        
+        void drawLabel(juce::Graphics& g, juce::Label& label) override
+        {
+            auto bounds = label.getLocalBounds().toFloat();
+            auto text = label.getText();
+            auto font = juce::Font(juce::Font::getDefaultMonospacedFontName(), label.getFont().getHeight() * 1.1f, juce::Font::bold);
+            
+            g.setFont(font);
+            
+            // Digital text with green glow
+            juce::Colour textColour = juce::Colour(0xff00cc00);
+            
+            // Subtle outer glow
+            for (float i = 2.0f; i >= 0.5f; i -= 0.5f)
+            {
+                auto alpha = 0.08f + (0.15f * (2.5f - i) / 2.0f);
+                g.setColour(textColour.withAlpha(alpha));
+                g.drawText(text, bounds.translated(-i, 0), label.getJustificationType(), true);
+                g.drawText(text, bounds.translated(i, 0), label.getJustificationType(), true);
+                g.drawText(text, bounds.translated(0, -i), label.getJustificationType(), true);
+                g.drawText(text, bounds.translated(0, i), label.getJustificationType(), true);
+            }
+            
+            // Core bright text
+            g.setColour(textColour);
+            g.drawText(text, bounds, label.getJustificationType(), true);
+        }
+    };
+    
+    GreenDigitalKnobLookAndFeel greenDigitalKnobLookAndFeel;
+    
+    // Green digital button look and feel for chorus module
+    class GreenDigitalButtonLookAndFeel : public juce::LookAndFeel_V4
+    {
+    public:
+        void drawButtonText(juce::Graphics& g, juce::TextButton& button,
+            bool isMouseOverButton, bool isButtonDown) override
+        {
+            auto font = juce::Font(juce::Font::getDefaultMonospacedFontName(), 10.0f, juce::Font::bold);
+            g.setFont(font);
+            auto bounds = button.getLocalBounds().toFloat();
+            auto text = button.getButtonText();
+            
+            // Digital display text styling
+            if (button.getToggleState())
+            {
+                // Active state - bright green glow
+                juce::Colour textColour = juce::Colour(0xff00ff00);
+                
+                // Subtle outer glow
+                for (float i = 2.0f; i >= 0.5f; i -= 0.5f)
+                {
+                    auto alpha = 0.1f + (0.15f * (2.5f - i) / 2.0f);
+                    g.setColour(textColour.withAlpha(alpha));
+                    g.drawText(text, bounds.translated(-i, 0), juce::Justification::centred, true);
+                    g.drawText(text, bounds.translated(i, 0), juce::Justification::centred, true);
+                    g.drawText(text, bounds.translated(0, -i), juce::Justification::centred, true);
+                    g.drawText(text, bounds.translated(0, i), juce::Justification::centred, true);
+                }
+                
+                // Core bright text
+                g.setColour(textColour);
+                g.drawText(text, bounds, juce::Justification::centred, true);
+            }
+            else
+            {
+                // Inactive state - dim display
+                juce::Colour dimColour = juce::Colour(0xff404040);
+                if (isMouseOverButton)
+                    dimColour = juce::Colour(0xff606060);
+                if (isButtonDown)
+                    dimColour = juce::Colour(0xff808080);
+                    
+                g.setColour(dimColour);
+                g.drawText(text, bounds, juce::Justification::centred, true);
+            }
+        }
+        
+        void drawButtonBackground(juce::Graphics& g, juce::Button& button,
+            const juce::Colour& backgroundColour,
+            bool isMouseOverButton, bool isButtonDown) override
+        {
+            auto bounds = button.getLocalBounds().toFloat();
+            auto* textButton = dynamic_cast<juce::TextButton*>(&button);
+            bool isToggled = textButton && textButton->getToggleState();
+            
+            // Digital display panel styling
+            float cornerRadius = 3.0f;
+            
+            if (isToggled)
+            {
+                // Active state - bright green digital panel
+                // Outer dark bezel
+                g.setColour(juce::Colour(0xff000000));
+                g.fillRoundedRectangle(bounds, cornerRadius);
+                
+                // Inner screen glow
+                auto screenBounds = bounds.reduced(2.0f);
+                juce::ColourGradient screenGradient(
+                    juce::Colour(0xff003300), screenBounds.getCentreX(), screenBounds.getY(),
+                    juce::Colour(0xff001a00), screenBounds.getCentreX(), screenBounds.getBottom(),
+                    false
+                );
+                g.setGradientFill(screenGradient);
+                g.fillRoundedRectangle(screenBounds, cornerRadius - 1.0f);
+                
+                // Screen highlight
+                g.setColour(juce::Colour(0xff00ff00).withAlpha(0.15f));
+                g.fillRoundedRectangle(screenBounds.reduced(1.0f), cornerRadius - 2.0f);
+                
+                // Scan lines effect
+                for (int y = (int)screenBounds.getY(); y < (int)screenBounds.getBottom(); y += 3)
+                {
+                    g.setColour(juce::Colour(0xff000000).withAlpha(0.2f));
+                    g.drawHorizontalLine(y, screenBounds.getX(), screenBounds.getRight());
+                }
+            }
+            else
+            {
+                // Inactive state - dark digital panel
+                juce::Colour baseColour = isButtonDown ? juce::Colour(0xff0a0a0a)
+                    : isMouseOverButton ? juce::Colour(0xff151515)
+                    : juce::Colour(0xff101010);
+                
+                // Outer bezel
+                g.setColour(juce::Colour(0xff000000));
+                g.fillRoundedRectangle(bounds, cornerRadius);
+                
+                // Inner panel
+                auto panelBounds = bounds.reduced(2.0f);
+                g.setColour(baseColour);
+                g.fillRoundedRectangle(panelBounds, cornerRadius - 1.0f);
+                
+                // Subtle inner border
+                g.setColour(juce::Colour(0xff303030).withAlpha(0.3f));
+                g.drawRoundedRectangle(panelBounds.reduced(0.5f), cornerRadius - 1.5f, 0.5f);
+                
+                // Dim scan lines
+                for (int y = (int)panelBounds.getY(); y < (int)panelBounds.getBottom(); y += 3)
+                {
+                    g.setColour(juce::Colour(0xff000000).withAlpha(0.15f));
+                    g.drawHorizontalLine(y, panelBounds.getX(), panelBounds.getRight());
+                }
+            }
+        }
+    };
+    
+    GreenDigitalButtonLookAndFeel greenDigitalButtonLookAndFeel;
+    
     // Simple knob look and feel instance for macro knobs
     SimpleKnobLookAndFeel simpleKnobLookAndFeel;
     
