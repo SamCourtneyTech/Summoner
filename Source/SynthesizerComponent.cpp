@@ -1280,6 +1280,58 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     delayPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     delayTab->addAndMakeVisible(delayPowerButton);
     
+    // DISTORTION EFFECT CONTROLS
+    // Type label
+    distortionTypeLabel.setText("TYPE", juce::dontSendNotification);
+    distortionTypeLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    distortionTypeLabel.setJustificationType(juce::Justification::centred);
+    distortionTypeLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    distortionTab->addAndMakeVisible(distortionTypeLabel);
+    
+    // Type value label (interactive)
+    distortionTypeValueLabel.setText("TUBE", juce::dontSendNotification);
+    distortionTypeValueLabel.setJustificationType(juce::Justification::centred);
+    distortionTypeValueLabel.setLookAndFeel(&greenLEDNumberLookAndFeel);
+    distortionTypeValueLabel.setInterceptsMouseClicks(true, true); // Enable mouse interaction for self and children
+    distortionTypeValueLabel.setEditable(false, false, false); // Make it respond to mouse but not editable
+    distortionTypeValueLabel.addMouseListener(this, true); // Add mouse listener with childEvents = true
+    distortionTab->addAndMakeVisible(distortionTypeValueLabel);
+    
+    // Drive knob
+    distortionDriveKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    distortionDriveKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    distortionDriveKnob.setRange(0.0, 100.0, 0.1);
+    distortionDriveKnob.setValue(50.0);
+    distortionDriveKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    distortionTab->addAndMakeVisible(distortionDriveKnob);
+    
+    distortionDriveLabel.setText("DRIVE", juce::dontSendNotification);
+    distortionDriveLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    distortionDriveLabel.setJustificationType(juce::Justification::centred);
+    distortionDriveLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    distortionTab->addAndMakeVisible(distortionDriveLabel);
+    
+    // Mix knob
+    distortionMixKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    distortionMixKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    distortionMixKnob.setRange(0.0, 1.0, 0.01);
+    distortionMixKnob.setValue(1.0);
+    distortionMixKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    distortionTab->addAndMakeVisible(distortionMixKnob);
+    
+    distortionMixLabel.setText("MIX", juce::dontSendNotification);
+    distortionMixLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    distortionMixLabel.setJustificationType(juce::Justification::centred);
+    distortionMixLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    distortionTab->addAndMakeVisible(distortionMixLabel);
+    
+    // Power button
+    distortionPowerButton.setButtonText("POWER");
+    distortionPowerButton.setClickingTogglesState(true);
+    distortionPowerButton.setToggleState(false, juce::dontSendNotification);
+    distortionPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    distortionTab->addAndMakeVisible(distortionPowerButton);
+    
     // EFFECTS PRESET CONTROLS - Placeholder functionality
     effectsPresetPrevButton.setButtonText("<");
     effectsPresetPrevButton.setLookAndFeel(&customWaveButtonLookAndFeel);
@@ -2753,6 +2805,29 @@ void SynthesizerComponent::mouseDown(const juce::MouseEvent& event)
         dragStartY = event.getScreenPosition().y;
         dragStartOsc2VoiceCount = osc2VoiceCountValue;
     }
+    else if (event.eventComponent == &distortionTypeValueLabel)
+    {
+        // Handle click to cycle through distortion types
+        distortionTypeValue++;
+        if (distortionTypeValue > 16)
+            distortionTypeValue = 1;
+            
+        // Update text based on type value
+        juce::StringArray typeNames = {
+            "TUBE", "SOFTCLIP", "HARDCLIP", "DIODE 1", "DIODE 2", 
+            "LINEAR FOLD", "SINE FOLD", "ZERO-SQUARE", "DOWNSAMPLE", 
+            "ASYMMETRIC", "RECTIFY", "SINE SHAPER", "STOMP BOX", 
+            "TAPE SAT", "OVERDRIVE", "SOFT SAT"
+        };
+        
+        distortionTypeValueLabel.setText(typeNames[distortionTypeValue - 1], juce::dontSendNotification);
+        
+        // Still set up drag state in case drag events work
+        isDraggingDistortionType = true;
+        dragStartY = event.getScreenPosition().y;
+        dragStartDistortionType = distortionTypeValue;
+        juce::Logger::writeToLog("Distortion type mouseDown triggered - new type: " + typeNames[distortionTypeValue - 1]); // Debug output
+    }
 }
 
 void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
@@ -2878,6 +2953,30 @@ void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
             audioProcessor.setOsc2VoiceCount(osc2VoiceCountValue);
         }
     }
+    else if (isDraggingDistortionType)
+    {
+        int deltaY = dragStartY - event.getScreenPosition().y; // Inverted: up = positive
+        int newType = dragStartDistortionType + (deltaY / 10); // 10 pixels per type
+        
+        // Clamp to valid range (1 to 16 types)
+        newType = juce::jlimit(1, 16, newType);
+        
+        if (newType != distortionTypeValue)
+        {
+            distortionTypeValue = newType;
+            
+            // Update text based on type value
+            juce::StringArray typeNames = {
+                "TUBE", "SOFTCLIP", "HARDCLIP", "DIODE 1", "DIODE 2", 
+                "LINEAR FOLD", "SINE FOLD", "ZERO-SQUARE", "DOWNSAMPLE", 
+                "ASYMMETRIC", "RECTIFY", "SINE SHAPER", "STOMP BOX", 
+                "TAPE SAT", "OVERDRIVE", "SOFT SAT"
+            };
+            
+            distortionTypeValueLabel.setText(typeNames[distortionTypeValue - 1], juce::dontSendNotification);
+            // audioProcessor.setDistortionType(distortionTypeValue); // Add this when audio processor supports it
+        }
+    }
 }
 
 void SynthesizerComponent::mouseUp(const juce::MouseEvent& event)
@@ -2891,6 +2990,7 @@ void SynthesizerComponent::mouseUp(const juce::MouseEvent& event)
     isDraggingOsc2Semitone = false;
     isDraggingOsc2FineTune = false;
     isDraggingOsc2VoiceCount = false;
+    isDraggingDistortionType = false;
 }
 
 void SynthesizerComponent::updateEnvelopeDisplay()
@@ -3184,6 +3284,7 @@ void SynthesizerComponent::layoutEffectsModule(juce::Rectangle<int>& bounds)
     layoutChorusControls(tabContentArea);
     layoutCompressorControls(tabContentArea);
     layoutDelayControls(tabContentArea);
+    layoutDistortionControls(tabContentArea);
 }
 
 void SynthesizerComponent::layoutChorusControls(juce::Rectangle<int>& bounds)
@@ -3392,6 +3493,46 @@ void SynthesizerComponent::layoutDelayControls(juce::Rectangle<int>& bounds)
     auto buttonY = row4Y + (knobSize - 2 * buttonHeight - 5) / 2;
     delayNormalButton.setBounds(normalX, buttonY, buttonWidth, buttonHeight);
     delayPingPongButton.setBounds(normalX, buttonY + buttonHeight + 5, buttonWidth, buttonHeight);
+}
+
+void SynthesizerComponent::layoutDistortionControls(juce::Rectangle<int>& bounds)
+{
+    // Layout with same large knobs and green styling as other effects
+    auto knobSize = 62; // Same size as other effects for consistency
+    auto labelHeight = 22; // Same as other effects
+    auto knobSpacing = 30; // More spacing for cleaner look with fewer controls
+    auto buttonWidth = 80; // Standard button width
+    auto buttonHeight = 32; // Same height as other power buttons
+    auto typeBoxWidth = 120; // Width for distortion type selector
+    auto typeBoxHeight = 35; // Height for distortion type selector
+    
+    // Calculate positions for layout with type selector and 2 knobs
+    auto totalWidth = typeBoxWidth + knobSpacing + (2 * knobSize) + knobSpacing;
+    auto startX = (bounds.getWidth() - totalWidth) / 2;
+    auto startY = 50; // Higher positioning for better balance with fewer controls
+    
+    // Top row: Power button (centered)
+    auto topRowY = startY;
+    auto powerButtonX = (bounds.getWidth() - buttonWidth) / 2; // Center the power button
+    distortionPowerButton.setBounds(powerButtonX, topRowY, buttonWidth, buttonHeight);
+    
+    // Main row: Type selector, Drive, Mix (perfectly centered)
+    auto row1Y = topRowY + buttonHeight + 30; // Space after power button
+    
+    // Type selector area
+    auto typeY = row1Y + (knobSize - typeBoxHeight) / 2; // Center with knobs
+    distortionTypeValueLabel.setBounds(startX, typeY, typeBoxWidth, typeBoxHeight);
+    distortionTypeLabel.setBounds(startX, typeY + typeBoxHeight + 3, typeBoxWidth, labelHeight);
+    
+    // Drive knob and label
+    auto drive_x = startX + typeBoxWidth + knobSpacing;
+    distortionDriveKnob.setBounds(drive_x, row1Y, knobSize, knobSize);
+    distortionDriveLabel.setBounds(drive_x, row1Y + knobSize + 3, knobSize, labelHeight);
+    
+    // Mix knob and label
+    auto mix_x = drive_x + knobSize + knobSpacing;
+    distortionMixKnob.setBounds(mix_x, row1Y, knobSize, knobSize);
+    distortionMixLabel.setBounds(mix_x, row1Y + knobSize + 3, knobSize, labelHeight);
 }
 
 void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
