@@ -1033,6 +1033,105 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     chorusPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     chorusTab->addAndMakeVisible(chorusPowerButton);
     
+    // COMPRESSOR EFFECT CONTROLS
+    // Threshold knob
+    compressorThresholdKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    compressorThresholdKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    compressorThresholdKnob.setRange(-60.0, 0.0, 0.1);
+    compressorThresholdKnob.setValue(-20.0);
+    compressorThresholdKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    compressorTab->addAndMakeVisible(compressorThresholdKnob);
+    
+    compressorThresholdLabel.setText("THRESH", juce::dontSendNotification);
+    compressorThresholdLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    compressorThresholdLabel.setJustificationType(juce::Justification::centred);
+    compressorThresholdLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    compressorTab->addAndMakeVisible(compressorThresholdLabel);
+    
+    // Ratio knob
+    compressorRatioKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    compressorRatioKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    compressorRatioKnob.setRange(1.0, 20.0, 0.1);
+    compressorRatioKnob.setValue(4.0);
+    compressorRatioKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    compressorTab->addAndMakeVisible(compressorRatioKnob);
+    
+    compressorRatioLabel.setText("RATIO", juce::dontSendNotification);
+    compressorRatioLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    compressorRatioLabel.setJustificationType(juce::Justification::centred);
+    compressorRatioLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    compressorTab->addAndMakeVisible(compressorRatioLabel);
+    
+    // Attack knob
+    compressorAttackKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    compressorAttackKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    compressorAttackKnob.setRange(0.1, 100.0, 0.1);
+    compressorAttackKnob.setValue(5.0);
+    compressorAttackKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    compressorTab->addAndMakeVisible(compressorAttackKnob);
+    
+    compressorAttackLabel.setText("ATTACK", juce::dontSendNotification);
+    compressorAttackLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    compressorAttackLabel.setJustificationType(juce::Justification::centred);
+    compressorAttackLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    compressorTab->addAndMakeVisible(compressorAttackLabel);
+    
+    // Release knob
+    compressorReleaseKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    compressorReleaseKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    compressorReleaseKnob.setRange(10.0, 1000.0, 1.0);
+    compressorReleaseKnob.setValue(100.0);
+    compressorReleaseKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    compressorTab->addAndMakeVisible(compressorReleaseKnob);
+    
+    compressorReleaseLabel.setText("RELEASE", juce::dontSendNotification);
+    compressorReleaseLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    compressorReleaseLabel.setJustificationType(juce::Justification::centred);
+    compressorReleaseLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    compressorTab->addAndMakeVisible(compressorReleaseLabel);
+    
+    // Gain knob
+    compressorGainKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    compressorGainKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    compressorGainKnob.setRange(0.0, 30.0, 0.1);
+    compressorGainKnob.setValue(0.0);
+    compressorGainKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    compressorTab->addAndMakeVisible(compressorGainKnob);
+    
+    compressorGainLabel.setText("GAIN", juce::dontSendNotification);
+    compressorGainLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    compressorGainLabel.setJustificationType(juce::Justification::centred);
+    compressorGainLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    compressorTab->addAndMakeVisible(compressorGainLabel);
+    
+    // Multiband button
+    compressorMultibandButton.setButtonText("MULTIBAND");
+    compressorMultibandButton.setClickingTogglesState(true);
+    compressorMultibandButton.setToggleState(false, juce::dontSendNotification);
+    compressorMultibandButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    compressorTab->addAndMakeVisible(compressorMultibandButton);
+    
+    // Mix knob
+    compressorMixKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    compressorMixKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    compressorMixKnob.setRange(0.0, 1.0, 0.01);
+    compressorMixKnob.setValue(1.0);
+    compressorMixKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    compressorTab->addAndMakeVisible(compressorMixKnob);
+    
+    compressorMixLabel.setText("MIX", juce::dontSendNotification);
+    compressorMixLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    compressorMixLabel.setJustificationType(juce::Justification::centred);
+    compressorMixLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    compressorTab->addAndMakeVisible(compressorMixLabel);
+    
+    // Power button
+    compressorPowerButton.setButtonText("POWER");
+    compressorPowerButton.setClickingTogglesState(true);
+    compressorPowerButton.setToggleState(false, juce::dontSendNotification);
+    compressorPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    compressorTab->addAndMakeVisible(compressorPowerButton);
+    
     // EFFECTS PRESET CONTROLS - Placeholder functionality
     effectsPresetPrevButton.setButtonText("<");
     effectsPresetPrevButton.setLookAndFeel(&customWaveButtonLookAndFeel);
@@ -2932,33 +3031,46 @@ void SynthesizerComponent::layoutEffectsModule(juce::Rectangle<int>& bounds)
     auto effectsArea = juce::Rectangle<int>(centerX + borderPadding, centerY + borderPadding, effectsWidth, effectsHeight);
     effectsModule.setBounds(effectsArea);
     
-    // Layout chorus controls within the tab content area
+    // Layout effects controls within the tab content area
     auto tabContentArea = effectsArea.reduced(8, 35); // Account for tab bar and borders
     layoutChorusControls(tabContentArea);
+    layoutCompressorControls(tabContentArea);
 }
 
 void SynthesizerComponent::layoutChorusControls(juce::Rectangle<int>& bounds)
 {
-    // Layout with larger knobs and more symmetrical spacing to match FX unit style
-    auto knobSize = 55; // Increased from 45 for more prominence
-    auto labelHeight = 20; // Slightly increased for better proportion
-    auto knobSpacing = 22; // Increased spacing for better symmetry
-    auto rowSpacing = 15; // Increased row spacing
-    auto buttonWidth = 80; // Larger power button
-    auto buttonHeight = 28; // Taller power button to match knob prominence
+    // Layout with even larger knobs and more symmetrical spacing to match FX unit style
+    auto knobSize = 62; // Further increased from 55 for even more prominence
+    auto labelHeight = 22; // Increased for better proportion with larger knobs
+    auto knobSpacing = 25; // Increased spacing for better symmetry
+    auto rowSpacing = 18; // Increased row spacing
+    auto buttonWidth = 80; // Power button width
+    auto buttonHeight = 32; // Taller power button to match larger knobs
     
     // Calculate positions for perfectly centered layout
     auto totalKnobWidth = (3 * knobSize) + (2 * knobSpacing);
     auto startX = (bounds.getWidth() - totalKnobWidth) / 2;
-    auto startY = 8; // Optimized top margin
+    auto startY = 35; // Moved down a bit more for better spacing
     
-    // Top row: Power button centered above everything
+    // Top row: Power button and Mix knob closer together
     auto topRowY = startY;
-    auto powerButtonX = (bounds.getWidth() - buttonWidth) / 2; // Center the power button
+    
+    // Calculate closer positioning for power button and mix knob
+    auto topRowWidth = buttonWidth + 40 + knobSize; // Button + gap + knob
+    auto topRowStartX = (bounds.getWidth() - topRowWidth) / 2; // Center the top row
+    
+    // Power button (positioned closer to center)
+    auto powerButtonX = topRowStartX;
     chorusPowerButton.setBounds(powerButtonX, topRowY, buttonWidth, buttonHeight);
     
+    // Mix knob (positioned closer to power button)
+    auto mixX = topRowStartX + buttonWidth + 40; // 40px gap instead of full width
+    auto mixKnobY = topRowY + (buttonHeight - knobSize) / 2; // Center with power button
+    chorusMixKnob.setBounds(mixX, mixKnobY, knobSize, knobSize);
+    chorusMixLabel.setBounds(mixX, mixKnobY + knobSize + 3, knobSize, labelHeight);
+    
     // First knob row: Rate, Delay 1, Delay 2 (perfectly centered)
-    auto row1Y = topRowY + buttonHeight + 20; // Space after power button
+    auto row1Y = topRowY + std::max(buttonHeight, knobSize) + 25; // Space after top row
     
     // Rate knob and label
     chorusRateKnob.setBounds(startX, row1Y, knobSize, knobSize);
@@ -2988,12 +3100,67 @@ void SynthesizerComponent::layoutChorusControls(juce::Rectangle<int>& bounds)
     // LPF knob and label
     chorusLpfKnob.setBounds(delay2_x, row2Y, knobSize, knobSize);
     chorusLpfLabel.setBounds(delay2_x, row2Y + knobSize + 3, knobSize, labelHeight);
+}
+
+void SynthesizerComponent::layoutCompressorControls(juce::Rectangle<int>& bounds)
+{
+    // Layout with same large knobs and symmetrical spacing as chorus
+    auto knobSize = 62; // Same size as chorus for consistency
+    auto labelHeight = 22; // Same as chorus
+    auto knobSpacing = 25; // Same spacing as chorus
+    auto rowSpacing = 18; // Same row spacing as chorus
+    auto buttonWidth = 100; // Wider button for "MULTIBAND" text
+    auto buttonHeight = 32; // Same height as chorus power button
     
-    // Mix knob centered at bottom for perfect symmetry
-    auto row3Y = row2Y + knobSize + labelHeight + rowSpacing;
-    auto mixX = (bounds.getWidth() - knobSize) / 2; // Center the mix knob
-    chorusMixKnob.setBounds(mixX, row3Y, knobSize, knobSize);
-    chorusMixLabel.setBounds(mixX, row3Y + knobSize + 3, knobSize, labelHeight);
+    // Calculate positions for perfectly centered layout
+    auto totalKnobWidth = (3 * knobSize) + (2 * knobSpacing);
+    auto startX = (bounds.getWidth() - totalKnobWidth) / 2;
+    auto startY = 35; // Same positioning as chorus
+    
+    // Top row: Power button (left) and Mix knob (right)
+    auto topRowY = startY;
+    
+    // Power button (positioned on left side)
+    auto powerButtonX = startX;
+    compressorPowerButton.setBounds(powerButtonX, topRowY, buttonWidth, buttonHeight);
+    
+    // Mix knob (positioned on right side, aligned with power button)
+    auto mixX = startX + 2 * (knobSize + knobSpacing); // Right side position
+    auto mixKnobY = topRowY + (buttonHeight - knobSize) / 2; // Center with power button
+    compressorMixKnob.setBounds(mixX, mixKnobY, knobSize, knobSize);
+    compressorMixLabel.setBounds(mixX, mixKnobY + knobSize + 3, knobSize, labelHeight);
+    
+    // First knob row: Threshold, Ratio, Attack (perfectly centered)
+    auto row1Y = topRowY + std::max(buttonHeight, knobSize) + 25; // Space after top row
+    
+    // Threshold knob and label
+    compressorThresholdKnob.setBounds(startX, row1Y, knobSize, knobSize);
+    compressorThresholdLabel.setBounds(startX, row1Y + knobSize + 3, knobSize, labelHeight);
+    
+    // Ratio knob and label
+    auto ratio_x = startX + knobSize + knobSpacing;
+    compressorRatioKnob.setBounds(ratio_x, row1Y, knobSize, knobSize);
+    compressorRatioLabel.setBounds(ratio_x, row1Y + knobSize + 3, knobSize, labelHeight);
+    
+    // Attack knob and label
+    auto attack_x = startX + 2 * (knobSize + knobSpacing);
+    compressorAttackKnob.setBounds(attack_x, row1Y, knobSize, knobSize);
+    compressorAttackLabel.setBounds(attack_x, row1Y + knobSize + 3, knobSize, labelHeight);
+    
+    // Second knob row: Release, Gain, and Multiband button (perfectly aligned)
+    auto row2Y = row1Y + knobSize + labelHeight + rowSpacing;
+    
+    // Release knob and label
+    compressorReleaseKnob.setBounds(startX, row2Y, knobSize, knobSize);
+    compressorReleaseLabel.setBounds(startX, row2Y + knobSize + 3, knobSize, labelHeight);
+    
+    // Gain knob and label
+    compressorGainKnob.setBounds(ratio_x, row2Y, knobSize, knobSize);
+    compressorGainLabel.setBounds(ratio_x, row2Y + knobSize + 3, knobSize, labelHeight);
+    
+    // Multiband button (right side, centered vertically with knobs)
+    auto multibandY = row2Y + (knobSize - buttonHeight) / 2; // Center with knobs
+    compressorMultibandButton.setBounds(attack_x, multibandY, buttonWidth, buttonHeight);
 }
 
 void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)

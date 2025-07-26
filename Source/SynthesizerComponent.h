@@ -59,6 +59,7 @@ public:
     void layoutLFOModule(juce::Rectangle<int>& bounds);
     void layoutEffectsModule(juce::Rectangle<int>& bounds);
     void layoutChorusControls(juce::Rectangle<int>& bounds);
+    void layoutCompressorControls(juce::Rectangle<int>& bounds);
     void layoutSecondOscillator(juce::Rectangle<int>& bounds);
     
     void drawWaveTypeButtonsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
@@ -436,8 +437,8 @@ private:
             auto centreX = bounds.getCentreX();
             auto centreY = bounds.getCentreY();
             
-            // Digital knob with larger radius for more prominent appearance
-            auto radius = 12.0f;
+            // Digital knob with even larger radius for maximum prominence
+            auto radius = 15.0f;
             auto knobBounds = juce::Rectangle<float>(centreX - radius, centreY - radius, radius * 2.0f, radius * 2.0f);
             
             // Outer digital bezel
@@ -490,7 +491,7 @@ private:
         {
             auto bounds = label.getLocalBounds().toFloat();
             auto text = label.getText();
-            auto font = juce::Font(juce::Font::getDefaultMonospacedFontName(), label.getFont().getHeight() * 1.1f, juce::Font::bold);
+            auto font = juce::Font(juce::Font::getDefaultMonospacedFontName(), label.getFont().getHeight() * 1.3f, juce::Font::bold);
             
             g.setFont(font);
             
@@ -523,7 +524,7 @@ private:
         void drawButtonText(juce::Graphics& g, juce::TextButton& button,
             bool isMouseOverButton, bool isButtonDown) override
         {
-            auto font = juce::Font(juce::Font::getDefaultMonospacedFontName(), 10.0f, juce::Font::bold);
+            auto font = juce::Font(juce::Font::getDefaultMonospacedFontName(), 11.0f, juce::Font::bold);
             g.setFont(font);
             auto bounds = button.getLocalBounds().toFloat();
             auto text = button.getButtonText();
@@ -928,6 +929,22 @@ private:
     juce::Slider chorusMixKnob;
     juce::Label chorusMixLabel;
     juce::TextButton chorusPowerButton;
+    
+    // Compressor effect controls
+    juce::Slider compressorThresholdKnob;
+    juce::Label compressorThresholdLabel;
+    juce::Slider compressorRatioKnob;
+    juce::Label compressorRatioLabel;
+    juce::Slider compressorAttackKnob;
+    juce::Label compressorAttackLabel;
+    juce::Slider compressorReleaseKnob;
+    juce::Label compressorReleaseLabel;
+    juce::Slider compressorGainKnob;
+    juce::Label compressorGainLabel;
+    juce::TextButton compressorMultibandButton;
+    juce::Slider compressorMixKnob;
+    juce::Label compressorMixLabel;
+    juce::TextButton compressorPowerButton;
     
     // Octave control state
     int octaveValue = 0;
