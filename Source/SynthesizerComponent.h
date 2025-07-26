@@ -1031,6 +1031,18 @@ private:
     juce::Label distortionMixLabel;
     juce::TextButton distortionPowerButton;
     
+    // Distortion filter controls
+    juce::TextButton distortionFilterOffButton;
+    juce::TextButton distortionFilterPreButton;
+    juce::TextButton distortionFilterPostButton;
+    juce::TextButton distortionFilterLPButton;
+    juce::TextButton distortionFilterBPButton;
+    juce::TextButton distortionFilterHPButton;
+    juce::Slider distortionFilterFreqKnob;
+    juce::Label distortionFilterFreqLabel;
+    juce::Slider distortionFilterQKnob;
+    juce::Label distortionFilterQLabel;
+    
     // Octave control state
     int octaveValue = 0;
     bool isDraggingOctave = false;

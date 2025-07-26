@@ -1332,6 +1332,73 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     distortionPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     distortionTab->addAndMakeVisible(distortionPowerButton);
     
+    // DISTORTION FILTER CONTROLS
+    // Filter mode buttons (Off/Pre/Post)
+    distortionFilterOffButton.setButtonText("OFF");
+    distortionFilterOffButton.setClickingTogglesState(true);
+    distortionFilterOffButton.setToggleState(true, juce::dontSendNotification);
+    distortionFilterOffButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    distortionTab->addAndMakeVisible(distortionFilterOffButton);
+    
+    distortionFilterPreButton.setButtonText("PRE");
+    distortionFilterPreButton.setClickingTogglesState(true);
+    distortionFilterPreButton.setToggleState(false, juce::dontSendNotification);
+    distortionFilterPreButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    distortionTab->addAndMakeVisible(distortionFilterPreButton);
+    
+    distortionFilterPostButton.setButtonText("POST");
+    distortionFilterPostButton.setClickingTogglesState(true);
+    distortionFilterPostButton.setToggleState(false, juce::dontSendNotification);
+    distortionFilterPostButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    distortionTab->addAndMakeVisible(distortionFilterPostButton);
+    
+    // Filter type buttons (LP/BP/HP)
+    distortionFilterLPButton.setButtonText("LP");
+    distortionFilterLPButton.setClickingTogglesState(true);
+    distortionFilterLPButton.setToggleState(true, juce::dontSendNotification);
+    distortionFilterLPButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    distortionTab->addAndMakeVisible(distortionFilterLPButton);
+    
+    distortionFilterBPButton.setButtonText("BP");
+    distortionFilterBPButton.setClickingTogglesState(true);
+    distortionFilterBPButton.setToggleState(false, juce::dontSendNotification);
+    distortionFilterBPButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    distortionTab->addAndMakeVisible(distortionFilterBPButton);
+    
+    distortionFilterHPButton.setButtonText("HP");
+    distortionFilterHPButton.setClickingTogglesState(true);
+    distortionFilterHPButton.setToggleState(false, juce::dontSendNotification);
+    distortionFilterHPButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    distortionTab->addAndMakeVisible(distortionFilterHPButton);
+    
+    // Filter frequency knob
+    distortionFilterFreqKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    distortionFilterFreqKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    distortionFilterFreqKnob.setRange(20.0, 20000.0, 1.0);
+    distortionFilterFreqKnob.setValue(1000.0);
+    distortionFilterFreqKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    distortionTab->addAndMakeVisible(distortionFilterFreqKnob);
+    
+    distortionFilterFreqLabel.setText("FREQ", juce::dontSendNotification);
+    distortionFilterFreqLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    distortionFilterFreqLabel.setJustificationType(juce::Justification::centred);
+    distortionFilterFreqLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    distortionTab->addAndMakeVisible(distortionFilterFreqLabel);
+    
+    // Filter Q knob
+    distortionFilterQKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    distortionFilterQKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    distortionFilterQKnob.setRange(0.1, 10.0, 0.1);
+    distortionFilterQKnob.setValue(1.0);
+    distortionFilterQKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    distortionTab->addAndMakeVisible(distortionFilterQKnob);
+    
+    distortionFilterQLabel.setText("Q", juce::dontSendNotification);
+    distortionFilterQLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    distortionFilterQLabel.setJustificationType(juce::Justification::centred);
+    distortionFilterQLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    distortionTab->addAndMakeVisible(distortionFilterQLabel);
+    
     // EFFECTS PRESET CONTROLS - Placeholder functionality
     effectsPresetPrevButton.setButtonText("<");
     effectsPresetPrevButton.setLookAndFeel(&customWaveButtonLookAndFeel);
@@ -3500,39 +3567,64 @@ void SynthesizerComponent::layoutDistortionControls(juce::Rectangle<int>& bounds
     // Layout with same large knobs and green styling as other effects
     auto knobSize = 62; // Same size as other effects for consistency
     auto labelHeight = 22; // Same as other effects
-    auto knobSpacing = 30; // More spacing for cleaner look with fewer controls
-    auto buttonWidth = 80; // Standard button width
-    auto buttonHeight = 32; // Same height as other power buttons
+    auto knobSpacing = 25; // Tighter spacing due to more controls
+    auto buttonWidth = 65; // Smaller buttons to fit more
+    auto buttonHeight = 28; // Standard button height
     auto typeBoxWidth = 120; // Width for distortion type selector
     auto typeBoxHeight = 35; // Height for distortion type selector
+    auto smallButtonWidth = 45; // For LP/BP/HP buttons
     
-    // Calculate positions for layout with type selector and 2 knobs
-    auto totalWidth = typeBoxWidth + knobSpacing + (2 * knobSize) + knobSpacing;
-    auto startX = (bounds.getWidth() - totalWidth) / 2;
-    auto startY = 50; // Higher positioning for better balance with fewer controls
+    auto startY = 25; // Higher positioning for more rows
     
-    // Top row: Power button (centered)
-    auto topRowY = startY;
-    auto powerButtonX = (bounds.getWidth() - buttonWidth) / 2; // Center the power button
-    distortionPowerButton.setBounds(powerButtonX, topRowY, buttonWidth, buttonHeight);
+    // Row 1: Power button (centered)
+    auto row1Y = startY;
+    auto powerButtonX = (bounds.getWidth() - buttonWidth) / 2;
+    distortionPowerButton.setBounds(powerButtonX, row1Y, buttonWidth, buttonHeight);
     
-    // Main row: Type selector, Drive, Mix (perfectly centered)
-    auto row1Y = topRowY + buttonHeight + 30; // Space after power button
+    // Row 2: Type selector, Drive, Mix (main controls)
+    auto row2Y = row1Y + buttonHeight + 20;
+    auto totalMainWidth = typeBoxWidth + knobSpacing + (2 * knobSize) + knobSpacing;
+    auto mainStartX = (bounds.getWidth() - totalMainWidth) / 2;
     
     // Type selector area
-    auto typeY = row1Y + (knobSize - typeBoxHeight) / 2; // Center with knobs
-    distortionTypeValueLabel.setBounds(startX, typeY, typeBoxWidth, typeBoxHeight);
-    distortionTypeLabel.setBounds(startX, typeY + typeBoxHeight + 3, typeBoxWidth, labelHeight);
+    auto typeY = row2Y + (knobSize - typeBoxHeight) / 2;
+    distortionTypeValueLabel.setBounds(mainStartX, typeY, typeBoxWidth, typeBoxHeight);
+    distortionTypeLabel.setBounds(mainStartX, typeY + typeBoxHeight + 3, typeBoxWidth, labelHeight);
     
     // Drive knob and label
-    auto drive_x = startX + typeBoxWidth + knobSpacing;
-    distortionDriveKnob.setBounds(drive_x, row1Y, knobSize, knobSize);
-    distortionDriveLabel.setBounds(drive_x, row1Y + knobSize + 3, knobSize, labelHeight);
+    auto drive_x = mainStartX + typeBoxWidth + knobSpacing;
+    distortionDriveKnob.setBounds(drive_x, row2Y, knobSize, knobSize);
+    distortionDriveLabel.setBounds(drive_x, row2Y + knobSize + 3, knobSize, labelHeight);
     
     // Mix knob and label
     auto mix_x = drive_x + knobSize + knobSpacing;
-    distortionMixKnob.setBounds(mix_x, row1Y, knobSize, knobSize);
-    distortionMixLabel.setBounds(mix_x, row1Y + knobSize + 3, knobSize, labelHeight);
+    distortionMixKnob.setBounds(mix_x, row2Y, knobSize, knobSize);
+    distortionMixLabel.setBounds(mix_x, row2Y + knobSize + 3, knobSize, labelHeight);
+    
+    // Row 3: Filter controls
+    auto row3Y = row2Y + knobSize + labelHeight + 20;
+    
+    // Filter mode buttons (Off/Pre/Post) - left side
+    auto filterModeStartX = 30;
+    distortionFilterOffButton.setBounds(filterModeStartX, row3Y, smallButtonWidth, buttonHeight);
+    distortionFilterPreButton.setBounds(filterModeStartX + smallButtonWidth + 5, row3Y, smallButtonWidth, buttonHeight);
+    distortionFilterPostButton.setBounds(filterModeStartX + 2 * (smallButtonWidth + 5), row3Y, smallButtonWidth, buttonHeight);
+    
+    // Filter type buttons (LP/BP/HP) - center
+    auto filterTypeStartX = filterModeStartX + 3 * (smallButtonWidth + 5) + 20;
+    distortionFilterLPButton.setBounds(filterTypeStartX, row3Y, smallButtonWidth, buttonHeight);
+    distortionFilterBPButton.setBounds(filterTypeStartX + smallButtonWidth + 5, row3Y, smallButtonWidth, buttonHeight);
+    distortionFilterHPButton.setBounds(filterTypeStartX + 2 * (smallButtonWidth + 5), row3Y, smallButtonWidth, buttonHeight);
+    
+    // Filter knobs (Freq, Q) - right side
+    auto filterKnobStartX = bounds.getWidth() - (2 * knobSize) - knobSpacing - 30;
+    auto filterKnobY = row3Y - (knobSize - buttonHeight) / 2; // Align with buttons
+    
+    distortionFilterFreqKnob.setBounds(filterKnobStartX, filterKnobY, knobSize, knobSize);
+    distortionFilterFreqLabel.setBounds(filterKnobStartX, filterKnobY + knobSize + 3, knobSize, labelHeight);
+    
+    distortionFilterQKnob.setBounds(filterKnobStartX + knobSize + knobSpacing, filterKnobY, knobSize, knobSize);
+    distortionFilterQLabel.setBounds(filterKnobStartX + knobSize + knobSpacing, filterKnobY + knobSize + 3, knobSize, labelHeight);
 }
 
 void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
