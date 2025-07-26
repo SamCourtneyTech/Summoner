@@ -60,6 +60,7 @@ public:
     void layoutEffectsModule(juce::Rectangle<int>& bounds);
     void layoutChorusControls(juce::Rectangle<int>& bounds);
     void layoutCompressorControls(juce::Rectangle<int>& bounds);
+    void layoutDelayControls(juce::Rectangle<int>& bounds);
     void layoutSecondOscillator(juce::Rectangle<int>& bounds);
     
     void drawWaveTypeButtonsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
@@ -945,6 +946,29 @@ private:
     juce::Slider compressorMixKnob;
     juce::Label compressorMixLabel;
     juce::TextButton compressorPowerButton;
+    
+    // Delay effect controls
+    juce::Slider delayFeedbackKnob;
+    juce::Label delayFeedbackLabel;
+    juce::TextButton delayBpmButton;
+    juce::TextButton delayLinkButton;
+    juce::Slider delayLeftTimeSlider;
+    juce::Label delayLeftTimeLabel;
+    juce::Slider delayRightTimeSlider;
+    juce::Label delayRightTimeLabel;
+    juce::TextButton delayLeftTripletButton;
+    juce::TextButton delayLeftDotButton;
+    juce::TextButton delayRightTripletButton;
+    juce::TextButton delayRightDotButton;
+    juce::Slider delayFilterFreqKnob;
+    juce::Label delayFilterFreqLabel;
+    juce::Slider delayFilterQKnob;
+    juce::Label delayFilterQLabel;
+    juce::TextButton delayNormalButton;
+    juce::TextButton delayPingPongButton;
+    juce::Slider delayMixKnob;
+    juce::Label delayMixLabel;
+    juce::TextButton delayPowerButton;
     
     // Octave control state
     int octaveValue = 0;

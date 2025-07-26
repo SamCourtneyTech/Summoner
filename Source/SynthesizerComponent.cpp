@@ -1132,6 +1132,154 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     compressorPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     compressorTab->addAndMakeVisible(compressorPowerButton);
     
+    // DELAY EFFECT CONTROLS
+    // Feedback knob
+    delayFeedbackKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    delayFeedbackKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    delayFeedbackKnob.setRange(0.0, 0.95, 0.01);
+    delayFeedbackKnob.setValue(0.3);
+    delayFeedbackKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    delayTab->addAndMakeVisible(delayFeedbackKnob);
+    
+    delayFeedbackLabel.setText("FEEDBACK", juce::dontSendNotification);
+    delayFeedbackLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    delayFeedbackLabel.setJustificationType(juce::Justification::centred);
+    delayFeedbackLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    delayTab->addAndMakeVisible(delayFeedbackLabel);
+    
+    // BPM button
+    delayBpmButton.setButtonText("BPM");
+    delayBpmButton.setClickingTogglesState(true);
+    delayBpmButton.setToggleState(true, juce::dontSendNotification);
+    delayBpmButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    delayTab->addAndMakeVisible(delayBpmButton);
+    
+    // Link button
+    delayLinkButton.setButtonText("LINK");
+    delayLinkButton.setClickingTogglesState(true);
+    delayLinkButton.setToggleState(true, juce::dontSendNotification);
+    delayLinkButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    delayTab->addAndMakeVisible(delayLinkButton);
+    
+    // Left delay time slider
+    delayLeftTimeSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    delayLeftTimeSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    delayLeftTimeSlider.setRange(1.0, 2000.0, 1.0);
+    delayLeftTimeSlider.setValue(250.0);
+    delayLeftTimeSlider.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    delayTab->addAndMakeVisible(delayLeftTimeSlider);
+    
+    delayLeftTimeLabel.setText("L TIME", juce::dontSendNotification);
+    delayLeftTimeLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    delayLeftTimeLabel.setJustificationType(juce::Justification::centred);
+    delayLeftTimeLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    delayTab->addAndMakeVisible(delayLeftTimeLabel);
+    
+    // Right delay time slider
+    delayRightTimeSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    delayRightTimeSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    delayRightTimeSlider.setRange(1.0, 2000.0, 1.0);
+    delayRightTimeSlider.setValue(375.0);
+    delayRightTimeSlider.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    delayTab->addAndMakeVisible(delayRightTimeSlider);
+    
+    delayRightTimeLabel.setText("R TIME", juce::dontSendNotification);
+    delayRightTimeLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    delayRightTimeLabel.setJustificationType(juce::Justification::centred);
+    delayRightTimeLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    delayTab->addAndMakeVisible(delayRightTimeLabel);
+    
+    // Left triplet button
+    delayLeftTripletButton.setButtonText("L 3");
+    delayLeftTripletButton.setClickingTogglesState(true);
+    delayLeftTripletButton.setToggleState(false, juce::dontSendNotification);
+    delayLeftTripletButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    delayTab->addAndMakeVisible(delayLeftTripletButton);
+    
+    // Left dot timing button
+    delayLeftDotButton.setButtonText("L .");
+    delayLeftDotButton.setClickingTogglesState(true);
+    delayLeftDotButton.setToggleState(false, juce::dontSendNotification);
+    delayLeftDotButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    delayTab->addAndMakeVisible(delayLeftDotButton);
+    
+    // Right triplet button
+    delayRightTripletButton.setButtonText("R 3");
+    delayRightTripletButton.setClickingTogglesState(true);
+    delayRightTripletButton.setToggleState(false, juce::dontSendNotification);
+    delayRightTripletButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    delayTab->addAndMakeVisible(delayRightTripletButton);
+    
+    // Right dot timing button
+    delayRightDotButton.setButtonText("R .");
+    delayRightDotButton.setClickingTogglesState(true);
+    delayRightDotButton.setToggleState(false, juce::dontSendNotification);
+    delayRightDotButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    delayTab->addAndMakeVisible(delayRightDotButton);
+    
+    // Filter frequency knob
+    delayFilterFreqKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    delayFilterFreqKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    delayFilterFreqKnob.setRange(20.0, 20000.0, 1.0);
+    delayFilterFreqKnob.setValue(8000.0);
+    delayFilterFreqKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    delayTab->addAndMakeVisible(delayFilterFreqKnob);
+    
+    delayFilterFreqLabel.setText("FREQ", juce::dontSendNotification);
+    delayFilterFreqLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    delayFilterFreqLabel.setJustificationType(juce::Justification::centred);
+    delayFilterFreqLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    delayTab->addAndMakeVisible(delayFilterFreqLabel);
+    
+    // Filter Q knob
+    delayFilterQKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    delayFilterQKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    delayFilterQKnob.setRange(0.1, 10.0, 0.1);
+    delayFilterQKnob.setValue(1.0);
+    delayFilterQKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    delayTab->addAndMakeVisible(delayFilterQKnob);
+    
+    delayFilterQLabel.setText("Q", juce::dontSendNotification);
+    delayFilterQLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    delayFilterQLabel.setJustificationType(juce::Justification::centred);
+    delayFilterQLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    delayTab->addAndMakeVisible(delayFilterQLabel);
+    
+    // Normal button
+    delayNormalButton.setButtonText("NORMAL");
+    delayNormalButton.setClickingTogglesState(true);
+    delayNormalButton.setToggleState(true, juce::dontSendNotification);
+    delayNormalButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    delayTab->addAndMakeVisible(delayNormalButton);
+    
+    // Ping-pong button
+    delayPingPongButton.setButtonText("PING-PONG");
+    delayPingPongButton.setClickingTogglesState(true);
+    delayPingPongButton.setToggleState(false, juce::dontSendNotification);
+    delayPingPongButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    delayTab->addAndMakeVisible(delayPingPongButton);
+    
+    // Mix knob
+    delayMixKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    delayMixKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    delayMixKnob.setRange(0.0, 1.0, 0.01);
+    delayMixKnob.setValue(0.25);
+    delayMixKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    delayTab->addAndMakeVisible(delayMixKnob);
+    
+    delayMixLabel.setText("MIX", juce::dontSendNotification);
+    delayMixLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    delayMixLabel.setJustificationType(juce::Justification::centred);
+    delayMixLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    delayTab->addAndMakeVisible(delayMixLabel);
+    
+    // Power button
+    delayPowerButton.setButtonText("POWER");
+    delayPowerButton.setClickingTogglesState(true);
+    delayPowerButton.setToggleState(false, juce::dontSendNotification);
+    delayPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    delayTab->addAndMakeVisible(delayPowerButton);
+    
     // EFFECTS PRESET CONTROLS - Placeholder functionality
     effectsPresetPrevButton.setButtonText("<");
     effectsPresetPrevButton.setLookAndFeel(&customWaveButtonLookAndFeel);
@@ -3035,6 +3183,7 @@ void SynthesizerComponent::layoutEffectsModule(juce::Rectangle<int>& bounds)
     auto tabContentArea = effectsArea.reduced(8, 35); // Account for tab bar and borders
     layoutChorusControls(tabContentArea);
     layoutCompressorControls(tabContentArea);
+    layoutDelayControls(tabContentArea);
 }
 
 void SynthesizerComponent::layoutChorusControls(juce::Rectangle<int>& bounds)
@@ -3161,6 +3310,88 @@ void SynthesizerComponent::layoutCompressorControls(juce::Rectangle<int>& bounds
     // Multiband button (right side, centered vertically with knobs)
     auto multibandY = row2Y + (knobSize - buttonHeight) / 2; // Center with knobs
     compressorMultibandButton.setBounds(attack_x, multibandY, buttonWidth, buttonHeight);
+}
+
+void SynthesizerComponent::layoutDelayControls(juce::Rectangle<int>& bounds)
+{
+    // Layout with same large knobs and green styling as other effects
+    auto knobSize = 62; // Same size as other effects for consistency
+    auto labelHeight = 22; // Same as other effects
+    auto knobSpacing = 20; // Slightly tighter spacing due to more controls
+    auto rowSpacing = 15; // Tighter row spacing
+    auto buttonWidth = 70; // Standard button width
+    auto buttonHeight = 28; // Standard button height
+    auto smallButtonWidth = 35; // For triplet/dot buttons
+    
+    // Calculate positions for layout
+    auto startY = 25; // Same as other effects but slightly higher due to more rows
+    
+    // Row 1: Power button (left), BPM and LINK buttons (center), Mix knob (right)
+    auto row1Y = startY;
+    auto powerX = 20;
+    delayPowerButton.setBounds(powerX, row1Y, buttonWidth, buttonHeight);
+    
+    auto bpmX = bounds.getWidth() / 2 - buttonWidth - 10;
+    delayBpmButton.setBounds(bpmX, row1Y, buttonWidth, buttonHeight);
+    
+    auto linkX = bounds.getWidth() / 2 + 10;
+    delayLinkButton.setBounds(linkX, row1Y, buttonWidth, buttonHeight);
+    
+    auto mixX = bounds.getWidth() - knobSize - 20;
+    auto mixY = row1Y + (buttonHeight - knobSize) / 2;
+    delayMixKnob.setBounds(mixX, mixY, knobSize, knobSize);
+    delayMixLabel.setBounds(mixX, mixY + knobSize + 3, knobSize, labelHeight);
+    
+    // Row 2: Left Time, Feedback, Right Time knobs
+    auto row2Y = row1Y + std::max(buttonHeight, knobSize) + 20;
+    auto totalKnobWidth = (3 * knobSize) + (2 * knobSpacing);
+    auto knobStartX = (bounds.getWidth() - totalKnobWidth) / 2;
+    
+    // Left time
+    delayLeftTimeSlider.setBounds(knobStartX, row2Y, knobSize, knobSize);
+    delayLeftTimeLabel.setBounds(knobStartX, row2Y + knobSize + 3, knobSize, labelHeight);
+    
+    // Feedback (center)
+    auto feedbackX = knobStartX + knobSize + knobSpacing;
+    delayFeedbackKnob.setBounds(feedbackX, row2Y, knobSize, knobSize);
+    delayFeedbackLabel.setBounds(feedbackX, row2Y + knobSize + 3, knobSize, labelHeight);
+    
+    // Right time
+    auto rightTimeX = knobStartX + 2 * (knobSize + knobSpacing);
+    delayRightTimeSlider.setBounds(rightTimeX, row2Y, knobSize, knobSize);
+    delayRightTimeLabel.setBounds(rightTimeX, row2Y + knobSize + 3, knobSize, labelHeight);
+    
+    // Row 3: Triplet and dot buttons under time knobs
+    auto row3Y = row2Y + knobSize + labelHeight + 10;
+    
+    // Left triplet and dot buttons (under left time)
+    auto leftTripletX = knobStartX + (knobSize - 2 * smallButtonWidth - 5) / 2;
+    delayLeftTripletButton.setBounds(leftTripletX, row3Y, smallButtonWidth, buttonHeight);
+    delayLeftDotButton.setBounds(leftTripletX + smallButtonWidth + 5, row3Y, smallButtonWidth, buttonHeight);
+    
+    // Right triplet and dot buttons (under right time)
+    auto rightTripletX = rightTimeX + (knobSize - 2 * smallButtonWidth - 5) / 2;
+    delayRightTripletButton.setBounds(rightTripletX, row3Y, smallButtonWidth, buttonHeight);
+    delayRightDotButton.setBounds(rightTripletX + smallButtonWidth + 5, row3Y, smallButtonWidth, buttonHeight);
+    
+    // Row 4: Filter Freq, Filter Q knobs and Normal/Ping-Pong buttons
+    auto row4Y = row3Y + buttonHeight + 15;
+    
+    // Filter frequency knob (left)
+    auto filterStartX = (bounds.getWidth() - (2 * knobSize + knobSpacing + 2 * buttonWidth + 20)) / 2;
+    delayFilterFreqKnob.setBounds(filterStartX, row4Y, knobSize, knobSize);
+    delayFilterFreqLabel.setBounds(filterStartX, row4Y + knobSize + 3, knobSize, labelHeight);
+    
+    // Filter Q knob
+    auto filterQX = filterStartX + knobSize + knobSpacing;
+    delayFilterQKnob.setBounds(filterQX, row4Y, knobSize, knobSize);
+    delayFilterQLabel.setBounds(filterQX, row4Y + knobSize + 3, knobSize, labelHeight);
+    
+    // Normal and Ping-Pong buttons (right side)
+    auto normalX = filterQX + knobSize + 30;
+    auto buttonY = row4Y + (knobSize - 2 * buttonHeight - 5) / 2;
+    delayNormalButton.setBounds(normalX, buttonY, buttonWidth, buttonHeight);
+    delayPingPongButton.setBounds(normalX, buttonY + buttonHeight + 5, buttonWidth, buttonHeight);
 }
 
 void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
