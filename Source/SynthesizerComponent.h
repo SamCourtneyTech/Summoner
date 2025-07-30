@@ -1164,8 +1164,8 @@ private:
     juce::TextButton reverbPowerButton;
     juce::Slider reverbMixKnob;
     juce::Label reverbMixLabel;
-    juce::Slider reverbTypeSlider;
     juce::Label reverbTypeLabel;
+    juce::Label reverbTypeValueLabel;
     juce::Slider reverbLowCutKnob;
     juce::Label reverbLowCutLabel;
     juce::Slider reverbHighCutKnob;
@@ -1226,6 +1226,7 @@ private:
     // Distortion type control state
     int distortionTypeValue = 1; // 1-16 for different distortion types
     bool isDraggingDistortionType = false;
+    int reverbTypeValue = 2; // 1-5 for different reverb types (1=Plate, 2=Hall, 3=Vintage, 4=Room, 5=Ambience)
     int dragStartDistortionType = 0;
     
     // Cached bounds for each section to share between resized() and paint()

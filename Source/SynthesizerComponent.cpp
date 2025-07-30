@@ -1588,23 +1588,25 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbMixLabel.setBounds(130, 47, 40, 12);
     reverbTab->addAndMakeVisible(reverbMixLabel);
     
-    // Row 2: Reverb Type Slider
-    reverbTypeSlider.setSliderStyle(juce::Slider::LinearHorizontal);
-    reverbTypeSlider.setTextBoxStyle(juce::Slider::TextBoxRight, false, 60, 20);
-    reverbTypeSlider.setRange(0, 4, 1); // 5 types: Plate, Hall, Vintage, Room, Ambience
-    reverbTypeSlider.setValue(1); // Default to Hall
-    reverbTypeSlider.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    reverbTypeSlider.setVisible(true);
-    reverbTypeSlider.setBounds(30, 70, 200, 25);
-    reverbTab->addAndMakeVisible(reverbTypeSlider);
-    
-    reverbTypeLabel.setText("TYPE: HALL", juce::dontSendNotification);
+    // Row 2: Reverb Type (clickable label like distortion)
+    reverbTypeLabel.setText("TYPE", juce::dontSendNotification);
     reverbTypeLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
     reverbTypeLabel.setJustificationType(juce::Justification::centred);
     reverbTypeLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbTypeLabel.setVisible(true);
-    reverbTypeLabel.setBounds(30, 100, 200, 15);
+    reverbTypeLabel.setBounds(30, 70, 200, 15);
     reverbTab->addAndMakeVisible(reverbTypeLabel);
+    
+    // Type value label (interactive)
+    reverbTypeValueLabel.setText("HALL", juce::dontSendNotification);
+    reverbTypeValueLabel.setJustificationType(juce::Justification::centred);
+    reverbTypeValueLabel.setLookAndFeel(&greenLEDNumberLookAndFeel);
+    reverbTypeValueLabel.setInterceptsMouseClicks(true, true); // Enable mouse interaction for self and children
+    reverbTypeValueLabel.setEditable(false, false, false); // Make it respond to mouse but not editable
+    reverbTypeValueLabel.addMouseListener(this, true); // Add mouse listener with childEvents = true
+    reverbTypeValueLabel.setVisible(true);
+    reverbTypeValueLabel.setBounds(30, 90, 200, 20);
+    reverbTab->addAndMakeVisible(reverbTypeValueLabel);
     
     // Row 3: Low Cut and High Cut
     reverbLowCutKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -3938,6 +3940,22 @@ void SynthesizerComponent::mouseDown(const juce::MouseEvent& event)
         dragStartY = event.getScreenPosition().y;
         dragStartDistortionType = distortionTypeValue;
         juce::Logger::writeToLog("Distortion type mouseDown triggered - new type: " + typeNames[distortionTypeValue - 1]); // Debug output
+    }
+    else if (event.eventComponent == &reverbTypeValueLabel)
+    {
+        // Handle click to cycle through reverb types
+        reverbTypeValue++;
+        if (reverbTypeValue > 5)
+            reverbTypeValue = 1;
+            
+        // Update text based on type value
+        juce::StringArray reverbTypeNames = {
+            "PLATE", "HALL", "VINTAGE", "ROOM", "AMBIENCE"
+        };
+        
+        reverbTypeValueLabel.setText(reverbTypeNames[reverbTypeValue - 1], juce::dontSendNotification);
+        
+        juce::Logger::writeToLog("Reverb type mouseDown triggered - new type: " + reverbTypeNames[reverbTypeValue - 1]); // Debug output
     }
 }
 
