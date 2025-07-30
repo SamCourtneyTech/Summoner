@@ -1455,14 +1455,13 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     phaserBpmButton.setBounds(90, 85, 70, 25);
     phaserTab->addAndMakeVisible(phaserBpmButton);
     
-    phaserPolesSlider.setSliderStyle(juce::Slider::LinearHorizontal);
-    phaserPolesSlider.setTextBoxStyle(juce::Slider::TextBoxRight, false, 30, 20);
-    phaserPolesSlider.setRange(1, 16, 1);
-    phaserPolesSlider.setValue(4);
-    phaserPolesSlider.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    phaserPolesSlider.setVisible(true);
-    phaserPolesSlider.setBounds(180, 85, 100, 25);
-    phaserTab->addAndMakeVisible(phaserPolesSlider);
+    phaserPolesValueLabel.setText("4 POLES", juce::dontSendNotification);
+    phaserPolesValueLabel.setLookAndFeel(&greenLEDNumberLookAndFeel);
+    phaserPolesValueLabel.setInterceptsMouseClicks(true, true);
+    phaserPolesValueLabel.addMouseListener(this, true);
+    phaserPolesValueLabel.setVisible(true);
+    phaserPolesValueLabel.setBounds(180, 85, 100, 25);
+    phaserTab->addAndMakeVisible(phaserPolesValueLabel);
     
     phaserPolesLabel.setText("POLES", juce::dontSendNotification);
     phaserPolesLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
@@ -3962,6 +3961,23 @@ void SynthesizerComponent::mouseDown(const juce::MouseEvent& event)
         
         juce::Logger::writeToLog("Reverb type mouseDown triggered - new type: " + reverbTypeNames[reverbTypeValue - 1]); // Debug output
     }
+    else if (event.eventComponent == &phaserPolesValueLabel)
+    {
+        // Handle click to cycle through phaser poles
+        phaserPolesValue++;
+        if (phaserPolesValue > 16)
+            phaserPolesValue = 1;
+            
+        // Update text based on poles value
+        phaserPolesValueLabel.setText(juce::String(phaserPolesValue) + " POLES", juce::dontSendNotification);
+        
+        // Set up drag state for drag functionality
+        isDraggingPhaserPoles = true;
+        dragStartY = event.getScreenPosition().y;
+        dragStartPhaserPoles = phaserPolesValue;
+        
+        juce::Logger::writeToLog("Phaser poles mouseDown triggered - new poles: " + juce::String(phaserPolesValue)); // Debug output
+    }
 }
 
 void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
@@ -4129,6 +4145,23 @@ void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
             // audioProcessor.setReverbType(reverbTypeValue); // Add this when audio processor supports it
         }
     }
+    else if (isDraggingPhaserPoles)
+    {
+        int deltaY = dragStartY - event.getScreenPosition().y; // Inverted: up = positive
+        int newPoles = dragStartPhaserPoles + (deltaY / 8); // 8 pixels per pole
+        
+        // Clamp to valid range (1 to 16 poles)
+        newPoles = juce::jlimit(1, 16, newPoles);
+        
+        if (newPoles != phaserPolesValue)
+        {
+            phaserPolesValue = newPoles;
+            
+            // Update text based on poles value
+            phaserPolesValueLabel.setText(juce::String(phaserPolesValue) + " POLES", juce::dontSendNotification);
+            // audioProcessor.setPhaserPoles(phaserPolesValue); // Add this when audio processor supports it
+        }
+    }
 }
 
 void SynthesizerComponent::mouseUp(const juce::MouseEvent& event)
@@ -4144,6 +4177,7 @@ void SynthesizerComponent::mouseUp(const juce::MouseEvent& event)
     isDraggingOsc2VoiceCount = false;
     isDraggingDistortionType = false;
     isDraggingReverbType = false;
+    isDraggingPhaserPoles = false;
 }
 
 void SynthesizerComponent::updateEnvelopeDisplay()

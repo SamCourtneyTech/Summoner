@@ -1147,7 +1147,7 @@ private:
     juce::Slider phaserRateKnob;
     juce::Label phaserRateLabel;
     juce::TextButton phaserBpmButton;
-    juce::Slider phaserPolesSlider;
+    juce::Label phaserPolesValueLabel;
     juce::Label phaserPolesLabel;
     juce::Slider phaserDepth1Knob;
     juce::Label phaserDepth1Label;
@@ -1228,8 +1228,11 @@ private:
     bool isDraggingDistortionType = false;
     int reverbTypeValue = 2; // 1-5 for different reverb types (1=Plate, 2=Hall, 3=Vintage, 4=Room, 5=Ambience)
     bool isDraggingReverbType = false;
+    int phaserPolesValue = 4; // 1-16 for number of poles
+    bool isDraggingPhaserPoles = false;
     int dragStartDistortionType = 0;
     int dragStartReverbType = 0;
+    int dragStartPhaserPoles = 0;
     
     // Cached bounds for each section to share between resized() and paint()
     juce::Rectangle<int> waveButtonsBounds;
