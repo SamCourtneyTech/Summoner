@@ -1127,6 +1127,10 @@ private:
     juce::Slider eq2GainKnob;
     juce::Label eq2GainLabel;
     
+    // EQ Point labels
+    juce::Label eq1PointLabel;
+    juce::Label eq2PointLabel;
+    
     // Flanger effect controls
     juce::TextButton flangerPowerButton;
     juce::Slider flangerMixKnob;

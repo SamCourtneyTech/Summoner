@@ -1280,18 +1280,18 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     parametricEQ.setVisible(true);
     equalizerTab->addAndMakeVisible(parametricEQ);
     
-    // Set initial bounds to fill the tab (will be properly laid out in resized())
-    parametricEQ.setBounds(0, 0, 300, 200);
-    
-    // Initialize EQ on/off button
+    // Initialize EQ on/off button - positioned above the EQ graph
     eqOnOffButton.setButtonText("EQ ON");
     eqOnOffButton.setClickingTogglesState(true);
     eqOnOffButton.setToggleState(false, juce::dontSendNotification); // EQ disabled by default
     eqOnOffButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eqOnOffButton.addListener(this);
     eqOnOffButton.setVisible(true);
-    eqOnOffButton.setBounds(180, 5, 60, 25); // Above EQ graph, moved left 20px
+    eqOnOffButton.setBounds(120, 10, 60, 25); // Centered above EQ graph
     equalizerTab->addAndMakeVisible(eqOnOffButton);
+    
+    // Set initial bounds with space for button above (will be properly laid out in resized())
+    parametricEQ.setBounds(0, 45, 300, 200);
     
     auto flangerTab = new juce::Component();
     
@@ -2207,7 +2207,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq1ShelfButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq1ShelfButton.addListener(this);
     eq1ShelfButton.setVisible(true);
-    eq1ShelfButton.setBounds(17, 230, 40, 22);
+    eq1ShelfButton.setBounds(17, 290, 40, 22);
     equalizerTab->addAndMakeVisible(eq1ShelfButton);
     
     eq1PeakButton.setButtonText("PEAK");
@@ -2216,7 +2216,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq1PeakButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq1PeakButton.addListener(this);
     eq1PeakButton.setVisible(true);
-    eq1PeakButton.setBounds(62, 230, 40, 22);
+    eq1PeakButton.setBounds(62, 290, 40, 22);
     equalizerTab->addAndMakeVisible(eq1PeakButton);
     
     eq1PassButton.setButtonText("HIPASS");
@@ -2225,7 +2225,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq1PassButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq1PassButton.addListener(this);
     eq1PassButton.setVisible(true);
-    eq1PassButton.setBounds(107, 230, 40, 22);
+    eq1PassButton.setBounds(107, 290, 40, 22);
     equalizerTab->addAndMakeVisible(eq1PassButton);
     
     // Band 1 knobs
@@ -2278,7 +2278,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq2ShelfButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq2ShelfButton.addListener(this);
     eq2ShelfButton.setVisible(true);
-    eq2ShelfButton.setBounds(152, 230, 40, 22);
+    eq2ShelfButton.setBounds(152, 290, 40, 22);
     equalizerTab->addAndMakeVisible(eq2ShelfButton);
     
     eq2PeakButton.setButtonText("PEAK");
@@ -2287,7 +2287,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq2PeakButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq2PeakButton.addListener(this);
     eq2PeakButton.setVisible(true);
-    eq2PeakButton.setBounds(197, 230, 40, 22);
+    eq2PeakButton.setBounds(197, 290, 40, 22);
     equalizerTab->addAndMakeVisible(eq2PeakButton);
     
     eq2PassButton.setButtonText("LOPASS");
@@ -2296,7 +2296,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq2PassButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq2PassButton.addListener(this);
     eq2PassButton.setVisible(true);
-    eq2PassButton.setBounds(242, 230, 40, 22);
+    eq2PassButton.setBounds(242, 290, 40, 22);
     equalizerTab->addAndMakeVisible(eq2PassButton);
     
     // Band 2 knobs
@@ -2341,6 +2341,21 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq2GainLabel.setJustificationType(juce::Justification::centred);
     eq2GainLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     equalizerTab->addAndMakeVisible(eq2GainLabel);
+    
+    // EQ Point labels - positioned above buttons (bracket lines will be painted separately)
+    eq1PointLabel.setText("POINT 1", juce::dontSendNotification);
+    eq1PointLabel.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
+    eq1PointLabel.setJustificationType(juce::Justification::centred);
+    eq1PointLabel.setColour(juce::Label::textColourId, juce::Colours::blue);
+    eq1PointLabel.setBounds(40, 270, 70, 15);
+    equalizerTab->addAndMakeVisible(eq1PointLabel);
+    
+    eq2PointLabel.setText("POINT 2", juce::dontSendNotification);
+    eq2PointLabel.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
+    eq2PointLabel.setJustificationType(juce::Justification::centred);
+    eq2PointLabel.setColour(juce::Label::textColourId, juce::Colours::red);
+    eq2PointLabel.setBounds(175, 270, 70, 15);
+    equalizerTab->addAndMakeVisible(eq2PointLabel);
     
     // EFFECTS PRESET CONTROLS - Placeholder functionality
     effectsPresetPrevButton.setButtonText("<");
