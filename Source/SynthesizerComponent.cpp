@@ -336,15 +336,21 @@ void ParametricEQComponent::drawFrequencyResponse(juce::Graphics& g)
                 
                 if (isHighShelf)
                 {
-                    // High shelf
-                    float response = 1.0f / (1.0f + std::pow(1.0f / ratio, q * 2.0f));
-                    bandGain = gain * response;
+                    // High shelf - boost/cut frequencies above the center frequency
+                    float s = q; // Use Q parameter to control shelf slope (higher Q = steeper transition)
+                    float A = std::pow(10.0f, gain / 40.0f); // Convert dB to linear scale
+                    float w = ratio;
+                    float response = ((A + 1.0f) + (A - 1.0f) * std::tanh((std::log(w)) * s)) / 2.0f;
+                    bandGain = 20.0f * std::log10(std::max(0.001f, response)); // Convert back to dB, avoid log(0)
                 }
                 else
                 {
-                    // Low shelf
-                    float response = 1.0f / (1.0f + std::pow(ratio, q * 2.0f));
-                    bandGain = gain * response;
+                    // Low shelf - boost/cut frequencies below the center frequency  
+                    float s = q; // Use Q parameter to control shelf slope
+                    float A = std::pow(10.0f, gain / 40.0f); // Convert dB to linear scale
+                    float w = ratio;
+                    float response = ((A + 1.0f) - (A - 1.0f) * std::tanh((std::log(w)) * s)) / 2.0f;
+                    bandGain = 20.0f * std::log10(std::max(0.001f, response)); // Convert back to dB, avoid log(0)
                 }
             }
             else if (bands[band].filterType == Pass)
@@ -355,17 +361,37 @@ void ParametricEQComponent::drawFrequencyResponse(juce::Graphics& g)
                 
                 if (isHighPass)
                 {
-                    // High pass filter
-                    float order = q * 2.0f; // Q affects rolloff steepness
-                    float response = std::pow(ratio, order) / (1.0f + std::pow(ratio, order));
-                    bandGain = gain * response - gain; // Invert for highpass characteristic
+                    // High pass filter - steepness controlled by Q
+                    float rolloffRate = 6.0f + (q * 6.0f); // 6-60 dB/octave based on Q (0.1-10)
+                    if (ratio < 1.0f)
+                    {
+                        // Below cutoff - calculate rolloff
+                        float octaves = std::log2(ratio);
+                        bandGain = octaves * rolloffRate; // Negative gain below cutoff
+                        bandGain = std::max(bandGain, -60.0f); // Limit minimum to -60dB
+                    }
+                    else
+                    {
+                        // Above cutoff - flat response
+                        bandGain = 0.0f;
+                    }
                 }
                 else
                 {
-                    // Low pass filter
-                    float order = q * 2.0f; // Q affects rolloff steepness
-                    float response = 1.0f / (1.0f + std::pow(ratio, order));
-                    bandGain = gain * response - gain; // Invert for lowpass characteristic
+                    // Low pass filter - steepness controlled by Q
+                    float rolloffRate = 6.0f + (q * 6.0f); // 6-60 dB/octave based on Q (0.1-10)
+                    if (ratio > 1.0f)
+                    {
+                        // Above cutoff - calculate rolloff
+                        float octaves = std::log2(ratio);
+                        bandGain = -octaves * rolloffRate; // Negative gain above cutoff
+                        bandGain = std::max(bandGain, -60.0f); // Limit minimum to -60dB
+                    }
+                    else
+                    {
+                        // Below cutoff - flat response
+                        bandGain = 0.0f;
+                    }
                 }
             }
             
@@ -1749,26 +1775,32 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     // EQ EFFECT CONTROLS
     // Band 1 (Left) filter type buttons
-    eq1ShelfButton.setButtonText("SHELF");
+    eq1ShelfButton.setButtonText("LOW SHELF");
     eq1ShelfButton.setClickingTogglesState(true);
     eq1ShelfButton.setToggleState(false, juce::dontSendNotification);
     eq1ShelfButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq1ShelfButton.addListener(this);
-    addAndMakeVisible(eq1ShelfButton);
+    eq1ShelfButton.setVisible(true);
+    eq1ShelfButton.setBounds(10, 10, 80, 25); // Debug bounds
+    equalizerTab->addAndMakeVisible(eq1ShelfButton);
     
     eq1PeakButton.setButtonText("PEAK");
     eq1PeakButton.setClickingTogglesState(true);
     eq1PeakButton.setToggleState(true, juce::dontSendNotification);
     eq1PeakButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq1PeakButton.addListener(this);
-    addAndMakeVisible(eq1PeakButton);
+    eq1PeakButton.setVisible(true);
+    eq1PeakButton.setBounds(100, 10, 80, 25); // Debug bounds
+    equalizerTab->addAndMakeVisible(eq1PeakButton);
     
-    eq1PassButton.setButtonText("PASS");
+    eq1PassButton.setButtonText("HIPASS");
     eq1PassButton.setClickingTogglesState(true);
     eq1PassButton.setToggleState(false, juce::dontSendNotification);
     eq1PassButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq1PassButton.addListener(this);
-    addAndMakeVisible(eq1PassButton);
+    eq1PassButton.setVisible(true);
+    eq1PassButton.setBounds(190, 10, 80, 25); // Debug bounds
+    equalizerTab->addAndMakeVisible(eq1PassButton);
     
     // Band 1 knobs
     eq1FreqKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -1777,13 +1809,13 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq1FreqKnob.setValue(400.0);
     eq1FreqKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     eq1FreqKnob.addListener(this);
-    addAndMakeVisible(eq1FreqKnob);
+    equalizerTab->addAndMakeVisible(eq1FreqKnob);
     
     eq1FreqLabel.setText("FREQ", juce::dontSendNotification);
     eq1FreqLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
     eq1FreqLabel.setJustificationType(juce::Justification::centred);
     eq1FreqLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    addAndMakeVisible(eq1FreqLabel);
+    equalizerTab->addAndMakeVisible(eq1FreqLabel);
     
     eq1QKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     eq1QKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -1791,13 +1823,13 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq1QKnob.setValue(1.0);
     eq1QKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     eq1QKnob.addListener(this);
-    addAndMakeVisible(eq1QKnob);
+    equalizerTab->addAndMakeVisible(eq1QKnob);
     
     eq1QLabel.setText("Q", juce::dontSendNotification);
     eq1QLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
     eq1QLabel.setJustificationType(juce::Justification::centred);
     eq1QLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    addAndMakeVisible(eq1QLabel);
+    equalizerTab->addAndMakeVisible(eq1QLabel);
     
     eq1GainKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     eq1GainKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -1805,35 +1837,41 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq1GainKnob.setValue(0.0);
     eq1GainKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     eq1GainKnob.addListener(this);
-    addAndMakeVisible(eq1GainKnob);
+    equalizerTab->addAndMakeVisible(eq1GainKnob);
     
     eq1GainLabel.setText("GAIN", juce::dontSendNotification);
     eq1GainLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
     eq1GainLabel.setJustificationType(juce::Justification::centred);
     eq1GainLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    addAndMakeVisible(eq1GainLabel);
+    equalizerTab->addAndMakeVisible(eq1GainLabel);
     
     // Band 2 (Right) filter type buttons
-    eq2ShelfButton.setButtonText("SHELF");
+    eq2ShelfButton.setButtonText("HI SHELF");
     eq2ShelfButton.setClickingTogglesState(true);
     eq2ShelfButton.setToggleState(false, juce::dontSendNotification);
     eq2ShelfButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq2ShelfButton.addListener(this);
-    addAndMakeVisible(eq2ShelfButton);
+    eq2ShelfButton.setVisible(true);
+    eq2ShelfButton.setBounds(10, 40, 80, 25); // Debug bounds
+    equalizerTab->addAndMakeVisible(eq2ShelfButton);
     
     eq2PeakButton.setButtonText("PEAK");
     eq2PeakButton.setClickingTogglesState(true);
     eq2PeakButton.setToggleState(true, juce::dontSendNotification);
     eq2PeakButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq2PeakButton.addListener(this);
-    addAndMakeVisible(eq2PeakButton);
+    eq2PeakButton.setVisible(true);
+    eq2PeakButton.setBounds(100, 40, 80, 25); // Debug bounds
+    equalizerTab->addAndMakeVisible(eq2PeakButton);
     
-    eq2PassButton.setButtonText("PASS");
+    eq2PassButton.setButtonText("LOPASS");
     eq2PassButton.setClickingTogglesState(true);
     eq2PassButton.setToggleState(false, juce::dontSendNotification);
     eq2PassButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq2PassButton.addListener(this);
-    addAndMakeVisible(eq2PassButton);
+    eq2PassButton.setVisible(true);
+    eq2PassButton.setBounds(190, 40, 80, 25); // Debug bounds
+    equalizerTab->addAndMakeVisible(eq2PassButton);
     
     // Band 2 knobs
     eq2FreqKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -1842,13 +1880,13 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq2FreqKnob.setValue(4000.0);
     eq2FreqKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     eq2FreqKnob.addListener(this);
-    addAndMakeVisible(eq2FreqKnob);
+    equalizerTab->addAndMakeVisible(eq2FreqKnob);
     
     eq2FreqLabel.setText("FREQ", juce::dontSendNotification);
     eq2FreqLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
     eq2FreqLabel.setJustificationType(juce::Justification::centred);
     eq2FreqLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    addAndMakeVisible(eq2FreqLabel);
+    equalizerTab->addAndMakeVisible(eq2FreqLabel);
     
     eq2QKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     eq2QKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -1856,13 +1894,13 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq2QKnob.setValue(1.0);
     eq2QKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     eq2QKnob.addListener(this);
-    addAndMakeVisible(eq2QKnob);
+    equalizerTab->addAndMakeVisible(eq2QKnob);
     
     eq2QLabel.setText("Q", juce::dontSendNotification);
     eq2QLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
     eq2QLabel.setJustificationType(juce::Justification::centred);
     eq2QLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    addAndMakeVisible(eq2QLabel);
+    equalizerTab->addAndMakeVisible(eq2QLabel);
     
     eq2GainKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     eq2GainKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -1870,13 +1908,13 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq2GainKnob.setValue(0.0);
     eq2GainKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     eq2GainKnob.addListener(this);
-    addAndMakeVisible(eq2GainKnob);
+    equalizerTab->addAndMakeVisible(eq2GainKnob);
     
     eq2GainLabel.setText("GAIN", juce::dontSendNotification);
     eq2GainLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
     eq2GainLabel.setJustificationType(juce::Justification::centred);
     eq2GainLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    addAndMakeVisible(eq2GainLabel);
+    equalizerTab->addAndMakeVisible(eq2GainLabel);
     
     // EFFECTS PRESET CONTROLS - Placeholder functionality
     effectsPresetPrevButton.setButtonText("<");
@@ -3297,6 +3335,92 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
         filter12dBButton.setToggleState(false, juce::dontSendNotification);
         audioProcessor.setFilter12dBEnabled(false);
         audioProcessor.setFilter24dBEnabled(true);
+    }
+    // EQ Band 1 buttons
+    else if (button == &eq1PeakButton)
+    {
+        if (eq1PeakButton.getToggleState())
+        {
+            eq1ShelfButton.setToggleState(false, juce::dontSendNotification);
+            eq1PassButton.setToggleState(false, juce::dontSendNotification);
+            parametricEQ.setBandFilterType(0, ParametricEQComponent::FilterType::Peak); 
+            parametricEQ.repaint();
+        }
+        else
+        {
+            eq1PeakButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
+        }
+    }
+    else if (button == &eq1ShelfButton)
+    {
+        if (eq1ShelfButton.getToggleState())
+        {
+            eq1PeakButton.setToggleState(false, juce::dontSendNotification);
+            eq1PassButton.setToggleState(false, juce::dontSendNotification);
+            parametricEQ.setBandFilterType(0, ParametricEQComponent::FilterType::Shelf);
+            parametricEQ.repaint();
+        }
+        else
+        {
+            eq1ShelfButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
+        }
+    }
+    else if (button == &eq1PassButton)
+    {
+        if (eq1PassButton.getToggleState())
+        {
+            eq1PeakButton.setToggleState(false, juce::dontSendNotification);
+            eq1ShelfButton.setToggleState(false, juce::dontSendNotification);
+            parametricEQ.setBandFilterType(0, ParametricEQComponent::FilterType::Pass);
+            parametricEQ.repaint();
+        }
+        else
+        {
+            eq1PassButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
+        }
+    }
+    // EQ Band 2 buttons
+    else if (button == &eq2PeakButton)
+    {
+        if (eq2PeakButton.getToggleState())
+        {
+            eq2ShelfButton.setToggleState(false, juce::dontSendNotification);
+            eq2PassButton.setToggleState(false, juce::dontSendNotification);
+            parametricEQ.setBandFilterType(1, ParametricEQComponent::FilterType::Peak);
+            parametricEQ.repaint();
+        }
+        else
+        {
+            eq2PeakButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
+        }
+    }
+    else if (button == &eq2ShelfButton)
+    {
+        if (eq2ShelfButton.getToggleState())
+        {
+            eq2PeakButton.setToggleState(false, juce::dontSendNotification);
+            eq2PassButton.setToggleState(false, juce::dontSendNotification);
+            parametricEQ.setBandFilterType(1, ParametricEQComponent::FilterType::Shelf);
+            parametricEQ.repaint();
+        }
+        else
+        {
+            eq2ShelfButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
+        }
+    }
+    else if (button == &eq2PassButton)
+    {
+        if (eq2PassButton.getToggleState())
+        {
+            eq2PeakButton.setToggleState(false, juce::dontSendNotification);
+            eq2ShelfButton.setToggleState(false, juce::dontSendNotification);
+            parametricEQ.setBandFilterType(1, ParametricEQComponent::FilterType::Pass);
+            parametricEQ.repaint();
+        }
+        else
+        {
+            eq2PassButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
+        }
     }
 }
 
