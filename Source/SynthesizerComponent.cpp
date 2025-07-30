@@ -1282,6 +1282,17 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     // Set initial bounds to fill the tab (will be properly laid out in resized())
     parametricEQ.setBounds(0, 0, 300, 200);
+    
+    // Initialize EQ on/off button
+    eqOnOffButton.setButtonText("EQ ON");
+    eqOnOffButton.setClickingTogglesState(true);
+    eqOnOffButton.setToggleState(true, juce::dontSendNotification); // EQ enabled by default
+    eqOnOffButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    eqOnOffButton.addListener(this);
+    eqOnOffButton.setVisible(true);
+    eqOnOffButton.setBounds(200, 5, 60, 25); // Top of EQ tab
+    equalizerTab->addAndMakeVisible(eqOnOffButton);
+    
     auto flangerTab = new juce::Component();
     auto phaserTab = new juce::Component();
     auto reverbTab = new juce::Component();
@@ -3335,6 +3346,22 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
         filter12dBButton.setToggleState(false, juce::dontSendNotification);
         audioProcessor.setFilter12dBEnabled(false);
         audioProcessor.setFilter24dBEnabled(true);
+    }
+    // EQ On/Off button
+    else if (button == &eqOnOffButton)
+    {
+        if (eqOnOffButton.getToggleState())
+        {
+            eqOnOffButton.setButtonText("EQ ON");
+            // Enable EQ processing here if needed
+            parametricEQ.setVisible(true);
+        }
+        else
+        {
+            eqOnOffButton.setButtonText("EQ OFF");
+            // Disable EQ processing here if needed
+        }
+        parametricEQ.repaint();
     }
     // EQ Band 1 buttons
     else if (button == &eq1PeakButton)

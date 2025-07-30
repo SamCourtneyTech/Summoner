@@ -1102,6 +1102,7 @@ private:
     
     // EQ effect controls
     ParametricEQComponent parametricEQ;
+    juce::TextButton eqOnOffButton;
     
     // Band 1 (Left) controls
     juce::TextButton eq1ShelfButton;
