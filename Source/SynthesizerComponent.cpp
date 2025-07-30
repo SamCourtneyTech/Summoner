@@ -1294,6 +1294,112 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     equalizerTab->addAndMakeVisible(eqOnOffButton);
     
     auto flangerTab = new juce::Component();
+    
+    // Initialize flanger controls
+    // Row 1: Power and Mix controls
+    flangerPowerButton.setButtonText("FLANGER ON");
+    flangerPowerButton.setClickingTogglesState(true);
+    flangerPowerButton.setToggleState(true, juce::dontSendNotification);
+    flangerPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    flangerPowerButton.setVisible(true);
+    flangerPowerButton.setBounds(30, 10, 80, 25);
+    flangerTab->addAndMakeVisible(flangerPowerButton);
+    
+    flangerMixKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    flangerMixKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    flangerMixKnob.setRange(0.0, 100.0, 1.0);
+    flangerMixKnob.setValue(50.0);
+    flangerMixKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    flangerMixKnob.setVisible(true);
+    flangerMixKnob.setBounds(130, 5, 40, 40);
+    flangerTab->addAndMakeVisible(flangerMixKnob);
+    
+    flangerMixLabel.setText("MIX", juce::dontSendNotification);
+    flangerMixLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    flangerMixLabel.setJustificationType(juce::Justification::centred);
+    flangerMixLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    flangerMixLabel.setVisible(true);
+    flangerMixLabel.setBounds(130, 47, 40, 12);
+    flangerTab->addAndMakeVisible(flangerMixLabel);
+    
+    // Row 2: Rate, BPM Sync, and Depth
+    flangerRateKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    flangerRateKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    flangerRateKnob.setRange(0.1, 10.0, 0.1);
+    flangerRateKnob.setValue(1.0);
+    flangerRateKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    flangerRateKnob.setVisible(true);
+    flangerRateKnob.setBounds(30, 70, 50, 50);
+    flangerTab->addAndMakeVisible(flangerRateKnob);
+    
+    flangerRateLabel.setText("RATE", juce::dontSendNotification);
+    flangerRateLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    flangerRateLabel.setJustificationType(juce::Justification::centred);
+    flangerRateLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    flangerRateLabel.setVisible(true);
+    flangerRateLabel.setBounds(30, 125, 50, 15);
+    flangerTab->addAndMakeVisible(flangerRateLabel);
+    
+    flangerBpmButton.setButtonText("BPM SYNC");
+    flangerBpmButton.setClickingTogglesState(true);
+    flangerBpmButton.setToggleState(false, juce::dontSendNotification);
+    flangerBpmButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    flangerBpmButton.setVisible(true);
+    flangerBpmButton.setBounds(90, 85, 70, 25);
+    flangerTab->addAndMakeVisible(flangerBpmButton);
+    
+    flangerDepthKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    flangerDepthKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    flangerDepthKnob.setRange(0.0, 100.0, 1.0);
+    flangerDepthKnob.setValue(50.0);
+    flangerDepthKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    flangerDepthKnob.setVisible(true);
+    flangerDepthKnob.setBounds(180, 70, 50, 50);
+    flangerTab->addAndMakeVisible(flangerDepthKnob);
+    
+    flangerDepthLabel.setText("DEPTH", juce::dontSendNotification);
+    flangerDepthLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    flangerDepthLabel.setJustificationType(juce::Justification::centred);
+    flangerDepthLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    flangerDepthLabel.setVisible(true);
+    flangerDepthLabel.setBounds(180, 125, 50, 15);
+    flangerTab->addAndMakeVisible(flangerDepthLabel);
+    
+    // Row 3: Feedback and Phase
+    flangerFeedbackKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    flangerFeedbackKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    flangerFeedbackKnob.setRange(0.0, 100.0, 1.0);
+    flangerFeedbackKnob.setValue(25.0);
+    flangerFeedbackKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    flangerFeedbackKnob.setVisible(true);
+    flangerFeedbackKnob.setBounds(30, 150, 50, 50);
+    flangerTab->addAndMakeVisible(flangerFeedbackKnob);
+    
+    flangerFeedbackLabel.setText("FEEDBACK", juce::dontSendNotification);
+    flangerFeedbackLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    flangerFeedbackLabel.setJustificationType(juce::Justification::centred);
+    flangerFeedbackLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    flangerFeedbackLabel.setVisible(true);
+    flangerFeedbackLabel.setBounds(30, 205, 50, 15);
+    flangerTab->addAndMakeVisible(flangerFeedbackLabel);
+    
+    flangerPhaseKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    flangerPhaseKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    flangerPhaseKnob.setRange(0.0, 360.0, 1.0);
+    flangerPhaseKnob.setValue(0.0);
+    flangerPhaseKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    flangerPhaseKnob.setVisible(true);
+    flangerPhaseKnob.setBounds(100, 150, 50, 50);
+    flangerTab->addAndMakeVisible(flangerPhaseKnob);
+    
+    flangerPhaseLabel.setText("PHASE", juce::dontSendNotification);
+    flangerPhaseLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    flangerPhaseLabel.setJustificationType(juce::Justification::centred);
+    flangerPhaseLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    flangerPhaseLabel.setVisible(true);
+    flangerPhaseLabel.setBounds(100, 205, 50, 15);
+    flangerTab->addAndMakeVisible(flangerPhaseLabel);
+    
     auto phaserTab = new juce::Component();
     auto reverbTab = new juce::Component();
     

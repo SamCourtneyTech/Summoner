@@ -1126,6 +1126,20 @@ private:
     juce::Slider eq2GainKnob;
     juce::Label eq2GainLabel;
     
+    // Flanger effect controls
+    juce::TextButton flangerPowerButton;
+    juce::Slider flangerMixKnob;
+    juce::Label flangerMixLabel;
+    juce::Slider flangerRateKnob;
+    juce::Label flangerRateLabel;
+    juce::TextButton flangerBpmButton;
+    juce::Slider flangerDepthKnob;
+    juce::Label flangerDepthLabel;
+    juce::Slider flangerFeedbackKnob;
+    juce::Label flangerFeedbackLabel;
+    juce::Slider flangerPhaseKnob;
+    juce::Label flangerPhaseLabel;
+    
     // Octave control state
     int octaveValue = 0;
     bool isDraggingOctave = false;
