@@ -3955,6 +3955,11 @@ void SynthesizerComponent::mouseDown(const juce::MouseEvent& event)
         
         reverbTypeValueLabel.setText(reverbTypeNames[reverbTypeValue - 1], juce::dontSendNotification);
         
+        // Set up drag state for drag functionality
+        isDraggingReverbType = true;
+        dragStartY = event.getScreenPosition().y;
+        dragStartReverbType = reverbTypeValue;
+        
         juce::Logger::writeToLog("Reverb type mouseDown triggered - new type: " + reverbTypeNames[reverbTypeValue - 1]); // Debug output
     }
 }
@@ -4106,6 +4111,24 @@ void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
             // audioProcessor.setDistortionType(distortionTypeValue); // Add this when audio processor supports it
         }
     }
+    else if (isDraggingReverbType)
+    {
+        int deltaY = dragStartY - event.getScreenPosition().y; // Inverted: up = positive
+        int newType = dragStartReverbType + (deltaY / 10); // 10 pixels per type
+        
+        // Clamp to valid range (1 to 5 types)
+        newType = juce::jlimit(1, 5, newType);
+        
+        if (newType != reverbTypeValue)
+        {
+            reverbTypeValue = newType;
+            
+            // Update text based on type value
+            juce::StringArray reverbTypeNames = {"PLATE", "HALL", "VINTAGE", "ROOM", "AMBIENCE"};
+            reverbTypeValueLabel.setText(reverbTypeNames[reverbTypeValue - 1], juce::dontSendNotification);
+            // audioProcessor.setReverbType(reverbTypeValue); // Add this when audio processor supports it
+        }
+    }
 }
 
 void SynthesizerComponent::mouseUp(const juce::MouseEvent& event)
@@ -4120,6 +4143,7 @@ void SynthesizerComponent::mouseUp(const juce::MouseEvent& event)
     isDraggingOsc2FineTune = false;
     isDraggingOsc2VoiceCount = false;
     isDraggingDistortionType = false;
+    isDraggingReverbType = false;
 }
 
 void SynthesizerComponent::updateEnvelopeDisplay()

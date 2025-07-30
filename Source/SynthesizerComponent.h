@@ -1227,7 +1227,9 @@ private:
     int distortionTypeValue = 1; // 1-16 for different distortion types
     bool isDraggingDistortionType = false;
     int reverbTypeValue = 2; // 1-5 for different reverb types (1=Plate, 2=Hall, 3=Vintage, 4=Room, 5=Ambience)
+    bool isDraggingReverbType = false;
     int dragStartDistortionType = 0;
+    int dragStartReverbType = 0;
     
     // Cached bounds for each section to share between resized() and paint()
     juce::Rectangle<int> waveButtonsBounds;
