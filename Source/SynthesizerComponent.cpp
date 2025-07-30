@@ -1302,7 +1302,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     flangerPowerButton.setToggleState(false, juce::dontSendNotification);
     flangerPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     flangerPowerButton.setVisible(true);
-    flangerPowerButton.setBounds(66, 130, 80, 25);
+    flangerPowerButton.setBounds(68, 130, 80, 25);
     flangerTab->addAndMakeVisible(flangerPowerButton);
     
     flangerMixKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -1311,7 +1311,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     flangerMixKnob.setValue(50.0);
     flangerMixKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     flangerMixKnob.setVisible(true);
-    flangerMixKnob.setBounds(166, 125, 40, 40);
+    flangerMixKnob.setBounds(168, 125, 40, 40);
     flangerTab->addAndMakeVisible(flangerMixKnob);
     
     flangerMixLabel.setText("MIX", juce::dontSendNotification);
@@ -1319,7 +1319,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     flangerMixLabel.setJustificationType(juce::Justification::centred);
     flangerMixLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     flangerMixLabel.setVisible(true);
-    flangerMixLabel.setBounds(166, 167, 40, 12);
+    flangerMixLabel.setBounds(168, 167, 40, 12);
     flangerTab->addAndMakeVisible(flangerMixLabel);
     
     // Row 2: Rate, BPM Sync, and Depth
@@ -1329,7 +1329,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     flangerRateKnob.setValue(1.0);
     flangerRateKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     flangerRateKnob.setVisible(true);
-    flangerRateKnob.setBounds(82, 190, 50, 50);
+    flangerRateKnob.setBounds(86, 190, 50, 50);
     flangerTab->addAndMakeVisible(flangerRateKnob);
     
     flangerRateLabel.setText("RATE", juce::dontSendNotification);
@@ -1337,7 +1337,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     flangerRateLabel.setJustificationType(juce::Justification::centred);
     flangerRateLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     flangerRateLabel.setVisible(true);
-    flangerRateLabel.setBounds(82, 245, 50, 15);
+    flangerRateLabel.setBounds(86, 245, 50, 15);
     flangerTab->addAndMakeVisible(flangerRateLabel);
     
     flangerBpmButton.setButtonText("BPM SYNC");
@@ -1345,7 +1345,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     flangerBpmButton.setToggleState(false, juce::dontSendNotification);
     flangerBpmButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     flangerBpmButton.setVisible(true);
-    flangerBpmButton.setBounds(142, 205, 70, 25);
+    flangerBpmButton.setBounds(146, 205, 70, 25);
     flangerTab->addAndMakeVisible(flangerBpmButton);
     
     flangerDepthKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -1354,7 +1354,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     flangerDepthKnob.setValue(50.0);
     flangerDepthKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     flangerDepthKnob.setVisible(true);
-    flangerDepthKnob.setBounds(205, 270, 50, 50);
+    flangerDepthKnob.setBounds(195, 270, 50, 50);
     flangerTab->addAndMakeVisible(flangerDepthKnob);
     
     flangerDepthLabel.setText("DEPTH", juce::dontSendNotification);
@@ -1362,7 +1362,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     flangerDepthLabel.setJustificationType(juce::Justification::centred);
     flangerDepthLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     flangerDepthLabel.setVisible(true);
-    flangerDepthLabel.setBounds(205, 325, 50, 15);
+    flangerDepthLabel.setBounds(195, 325, 50, 15);
     flangerTab->addAndMakeVisible(flangerDepthLabel);
     
     // Row 3: Feedback and Phase
@@ -1372,7 +1372,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     flangerFeedbackKnob.setValue(25.0);
     flangerFeedbackKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     flangerFeedbackKnob.setVisible(true);
-    flangerFeedbackKnob.setBounds(65, 270, 50, 50);
+    flangerFeedbackKnob.setBounds(51, 270, 50, 50);
     flangerTab->addAndMakeVisible(flangerFeedbackKnob);
     
     flangerFeedbackLabel.setText("FEEDBACK", juce::dontSendNotification);
@@ -1380,7 +1380,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     flangerFeedbackLabel.setJustificationType(juce::Justification::centred);
     flangerFeedbackLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     flangerFeedbackLabel.setVisible(true);
-    flangerFeedbackLabel.setBounds(65, 325, 50, 15);
+    flangerFeedbackLabel.setBounds(51, 325, 50, 15);
     flangerTab->addAndMakeVisible(flangerFeedbackLabel);
     
     flangerPhaseKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -1389,7 +1389,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     flangerPhaseKnob.setValue(0.0);
     flangerPhaseKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     flangerPhaseKnob.setVisible(true);
-    flangerPhaseKnob.setBounds(135, 270, 50, 50);
+    flangerPhaseKnob.setBounds(125, 270, 50, 50);
     flangerTab->addAndMakeVisible(flangerPhaseKnob);
     
     flangerPhaseLabel.setText("PHASE", juce::dontSendNotification);
@@ -1397,7 +1397,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     flangerPhaseLabel.setJustificationType(juce::Justification::centred);
     flangerPhaseLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     flangerPhaseLabel.setVisible(true);
-    flangerPhaseLabel.setBounds(135, 325, 50, 15);
+    flangerPhaseLabel.setBounds(125, 325, 50, 15);
     flangerTab->addAndMakeVisible(flangerPhaseLabel);
     
     auto phaserTab = new juce::Component();
