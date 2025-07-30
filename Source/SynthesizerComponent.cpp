@@ -1781,7 +1781,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq1ShelfButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq1ShelfButton.addListener(this);
     eq1ShelfButton.setVisible(true);
-    eq1ShelfButton.setBounds(10, 10, 80, 25); // Debug bounds
+    eq1ShelfButton.setBounds(10, 210, 70, 25);
     equalizerTab->addAndMakeVisible(eq1ShelfButton);
     
     eq1PeakButton.setButtonText("PEAK");
@@ -1790,7 +1790,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq1PeakButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq1PeakButton.addListener(this);
     eq1PeakButton.setVisible(true);
-    eq1PeakButton.setBounds(100, 10, 80, 25); // Debug bounds
+    eq1PeakButton.setBounds(90, 210, 70, 25);
     equalizerTab->addAndMakeVisible(eq1PeakButton);
     
     eq1PassButton.setButtonText("HIPASS");
@@ -1799,7 +1799,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq1PassButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq1PassButton.addListener(this);
     eq1PassButton.setVisible(true);
-    eq1PassButton.setBounds(190, 10, 80, 25); // Debug bounds
+    eq1PassButton.setBounds(170, 210, 70, 25);
     equalizerTab->addAndMakeVisible(eq1PassButton);
     
     // Band 1 knobs
@@ -1852,7 +1852,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq2ShelfButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq2ShelfButton.addListener(this);
     eq2ShelfButton.setVisible(true);
-    eq2ShelfButton.setBounds(10, 40, 80, 25); // Debug bounds
+    eq2ShelfButton.setBounds(250, 210, 70, 25);
     equalizerTab->addAndMakeVisible(eq2ShelfButton);
     
     eq2PeakButton.setButtonText("PEAK");
@@ -1861,7 +1861,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq2PeakButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq2PeakButton.addListener(this);
     eq2PeakButton.setVisible(true);
-    eq2PeakButton.setBounds(100, 40, 80, 25); // Debug bounds
+    eq2PeakButton.setBounds(330, 210, 70, 25);
     equalizerTab->addAndMakeVisible(eq2PeakButton);
     
     eq2PassButton.setButtonText("LOPASS");
@@ -1870,7 +1870,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq2PassButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq2PassButton.addListener(this);
     eq2PassButton.setVisible(true);
-    eq2PassButton.setBounds(190, 40, 80, 25); // Debug bounds
+    eq2PassButton.setBounds(410, 210, 70, 25);
     equalizerTab->addAndMakeVisible(eq2PassButton);
     
     // Band 2 knobs
