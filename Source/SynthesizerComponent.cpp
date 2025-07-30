@@ -123,6 +123,345 @@ void ADSREnvelopeComponent::updateEnvelope(float attack, float decay, float sust
     repaint();
 }
 
+// ParametricEQComponent Implementation
+ParametricEQComponent::ParametricEQComponent()
+{
+    // Initialize bands
+    bands[0].frequency = 400.0f;  // Left band (low freq)
+    bands[0].gain = 0.0f;
+    bands[0].q = 1.0f;
+    bands[0].filterType = Peak;
+    bands[0].isLeftBand = true;
+    
+    bands[1].frequency = 4000.0f; // Right band (high freq)
+    bands[1].gain = 0.0f;
+    bands[1].q = 1.0f;
+    bands[1].filterType = Peak;
+    bands[1].isLeftBand = false;
+}
+
+void ParametricEQComponent::paint(juce::Graphics& g)
+{
+    auto bounds = getLocalBounds().toFloat();
+    
+    // Draw debug background first to ensure visibility
+    g.setColour(juce::Colours::red);
+    g.fillRect(bounds);
+    
+    // Draw digital screen background
+    g.setColour(juce::Colour(0xff000008)); // Very dark blue-black
+    g.fillRoundedRectangle(bounds, 4.0f);
+    
+    // Draw green outline
+    g.setColour(juce::Colour(0xff00ff00).withAlpha(0.6f));
+    g.drawRoundedRectangle(bounds, 4.0f, 2.0f);
+    
+    // Set graph area (leave margin for borders and labels)
+    graphArea = bounds.reduced(20.0f, 20.0f);
+    
+    // Draw frequency grid
+    g.setColour(juce::Colour(0xff003300).withAlpha(0.3f));
+    
+    // Vertical frequency lines (20Hz, 200Hz, 2kHz, 20kHz)
+    std::vector<float> frequencies = {20.0f, 200.0f, 2000.0f, 20000.0f};
+    for (auto freq : frequencies)
+    {
+        float x = frequencyToX(freq);
+        g.drawVerticalLine(int(x), graphArea.getY(), graphArea.getBottom());
+    }
+    
+    // Horizontal gain lines (-12dB, -6dB, 0dB, +6dB, +12dB)
+    std::vector<float> gains = {-12.0f, -6.0f, 0.0f, 6.0f, 12.0f};
+    for (auto gain : gains)
+    {
+        float y = gainToY(gain);
+        g.drawHorizontalLine(int(y), graphArea.getX(), graphArea.getRight());
+        
+        // Draw 0dB line thicker
+        if (gain == 0.0f)
+        {
+            g.setColour(juce::Colour(0xff00ff00).withAlpha(0.8f));
+            g.drawHorizontalLine(int(y), graphArea.getX(), graphArea.getRight());
+            g.drawHorizontalLine(int(y) + 1, graphArea.getX(), graphArea.getRight());
+            g.setColour(juce::Colour(0xff003300).withAlpha(0.3f));
+        }
+    }
+    
+    // Draw frequency response curve
+    drawFrequencyResponse(g);
+    
+    // Draw band handles
+    for (int i = 0; i < 2; ++i)
+    {
+        drawBandHandle(g, bands[i], i);
+    }
+    
+    // Draw frequency labels
+    g.setColour(juce::Colour(0xff00cc00));
+    g.setFont(juce::Font(juce::Font::getDefaultMonospacedFontName(), 8.0f, juce::Font::bold));
+    
+    for (auto freq : frequencies)
+    {
+        float x = frequencyToX(freq);
+        juce::String label = freq < 1000.0f ? juce::String(int(freq)) + "Hz" 
+                                            : juce::String(freq / 1000.0f, 1) + "k";
+        g.drawText(label, x - 15, graphArea.getBottom() + 2, 30, 12, juce::Justification::centred);
+    }
+    
+    // Draw gain labels
+    for (auto gain : gains)
+    {
+        float y = gainToY(gain);
+        juce::String label = (gain > 0 ? "+" : "") + juce::String(int(gain)) + "dB";
+        g.drawText(label, 2, y - 6, 16, 12, juce::Justification::centred);
+    }
+}
+
+void ParametricEQComponent::resized()
+{
+    auto bounds = getLocalBounds().toFloat();
+    graphArea = bounds.reduced(20.0f, 20.0f);
+    
+    // Update band positions based on current frequency/gain
+    for (int i = 0; i < 2; ++i)
+    {
+        bands[i].graphPosition.x = frequencyToX(bands[i].frequency);
+        bands[i].graphPosition.y = gainToY(bands[i].gain);
+    }
+    
+    repaint();
+}
+
+void ParametricEQComponent::mouseDown(const juce::MouseEvent& event)
+{
+    draggedBand = getBandAtPoint(event.position);
+}
+
+void ParametricEQComponent::mouseDrag(const juce::MouseEvent& event)
+{
+    if (draggedBand >= 0 && draggedBand < 2)
+    {
+        auto& band = bands[draggedBand];
+        
+        // Update frequency and gain from mouse position
+        float clampedX = juce::jlimit(graphArea.getX(), graphArea.getRight(), event.position.x);
+        float clampedY = juce::jlimit(graphArea.getY(), graphArea.getBottom(), event.position.y);
+        
+        band.frequency = xToFrequency(clampedX);
+        band.gain = yToGain(clampedY);
+        band.graphPosition = juce::Point<float>(clampedX, clampedY);
+        
+        // Update corresponding knobs
+        updateKnobsFromBand(draggedBand);
+        
+        repaint();
+    }
+}
+
+void ParametricEQComponent::mouseUp(const juce::MouseEvent& event)
+{
+    draggedBand = -1;
+}
+
+float ParametricEQComponent::frequencyToX(float frequency) const
+{
+    float logMin = std::log10(20.0f);
+    float logMax = std::log10(20000.0f);
+    float logFreq = std::log10(frequency);
+    
+    float normalized = (logFreq - logMin) / (logMax - logMin);
+    return graphArea.getX() + normalized * graphArea.getWidth();
+}
+
+float ParametricEQComponent::xToFrequency(float x) const
+{
+    float normalized = (x - graphArea.getX()) / graphArea.getWidth();
+    float logMin = std::log10(20.0f);
+    float logMax = std::log10(20000.0f);
+    float logFreq = logMin + normalized * (logMax - logMin);
+    
+    return std::pow(10.0f, logFreq);
+}
+
+float ParametricEQComponent::gainToY(float gain) const
+{
+    float normalized = (gain + 15.0f) / 30.0f; // -15dB to +15dB range
+    return graphArea.getBottom() - normalized * graphArea.getHeight();
+}
+
+float ParametricEQComponent::yToGain(float y) const
+{
+    float normalized = (graphArea.getBottom() - y) / graphArea.getHeight();
+    return normalized * 30.0f - 15.0f; // -15dB to +15dB range
+}
+
+void ParametricEQComponent::drawFrequencyResponse(juce::Graphics& g)
+{
+    juce::Path responseCurve;
+    
+    int numPoints = 200;
+    float startX = graphArea.getX();
+    float width = graphArea.getWidth();
+    
+    for (int i = 0; i < numPoints; ++i)
+    {
+        float x = startX + (i / float(numPoints - 1)) * width;
+        float freq = xToFrequency(x);
+        
+        // Calculate combined response from both bands
+        float totalGain = 0.0f;
+        
+        for (int band = 0; band < 2; ++band)
+        {
+            float bandGain = 0.0f;
+            float centerFreq = bands[band].frequency;
+            float q = bands[band].q;
+            float gain = bands[band].gain;
+            
+            // Calculate filter response based on type
+            if (bands[band].filterType == Peak)
+            {
+                // Peak/notch filter response
+                float ratio = freq / centerFreq;
+                float logRatio = std::log10(ratio);
+                float bandwidth = 1.0f / q;
+                float response = 1.0f / (1.0f + std::pow(logRatio / bandwidth, 2.0f) * 4.0f);
+                bandGain = gain * response;
+            }
+            else if (bands[band].filterType == Shelf)
+            {
+                // Shelf filter response
+                bool isHighShelf = bands[band].isLeftBand ? false : true; // Left=low shelf, Right=high shelf
+                float ratio = freq / centerFreq;
+                
+                if (isHighShelf)
+                {
+                    // High shelf
+                    float response = 1.0f / (1.0f + std::pow(1.0f / ratio, q * 2.0f));
+                    bandGain = gain * response;
+                }
+                else
+                {
+                    // Low shelf
+                    float response = 1.0f / (1.0f + std::pow(ratio, q * 2.0f));
+                    bandGain = gain * response;
+                }
+            }
+            else if (bands[band].filterType == Pass)
+            {
+                // Pass filter response (highpass for left, lowpass for right)
+                bool isHighPass = bands[band].isLeftBand; // Left=highpass, Right=lowpass
+                float ratio = freq / centerFreq;
+                
+                if (isHighPass)
+                {
+                    // High pass filter
+                    float order = q * 2.0f; // Q affects rolloff steepness
+                    float response = std::pow(ratio, order) / (1.0f + std::pow(ratio, order));
+                    bandGain = gain * response - gain; // Invert for highpass characteristic
+                }
+                else
+                {
+                    // Low pass filter
+                    float order = q * 2.0f; // Q affects rolloff steepness
+                    float response = 1.0f / (1.0f + std::pow(ratio, order));
+                    bandGain = gain * response - gain; // Invert for lowpass characteristic
+                }
+            }
+            
+            totalGain += bandGain;
+        }
+        
+        float y = gainToY(totalGain);
+        
+        if (i == 0)
+            responseCurve.startNewSubPath(x, y);
+        else
+            responseCurve.lineTo(x, y);
+    }
+    
+    // Draw the response curve
+    g.setColour(juce::Colour(0xff00ff00).withAlpha(0.8f));
+    g.strokePath(responseCurve, juce::PathStrokeType(2.0f));
+}
+
+void ParametricEQComponent::drawBandHandle(juce::Graphics& g, const EQBand& band, int bandIndex)
+{
+    float x = frequencyToX(band.frequency);
+    float y = gainToY(band.gain);
+    
+    // Different colors for left and right bands
+    juce::Colour handleColor = band.isLeftBand ? juce::Colour(0xff00ccff) : juce::Colour(0xffff6600);
+    
+    // Draw handle circle
+    float radius = 8.0f;
+    g.setColour(handleColor.withAlpha(0.8f));
+    g.fillEllipse(x - radius, y - radius, radius * 2.0f, radius * 2.0f);
+    
+    // Draw handle border
+    g.setColour(handleColor);
+    g.drawEllipse(x - radius, y - radius, radius * 2.0f, radius * 2.0f, 2.0f);
+    
+    // Draw center dot
+    g.setColour(juce::Colours::white);
+    g.fillEllipse(x - 2.0f, y - 2.0f, 4.0f, 4.0f);
+}
+
+int ParametricEQComponent::getBandAtPoint(juce::Point<float> point)
+{
+    for (int i = 0; i < 2; ++i)
+    {
+        float x = frequencyToX(bands[i].frequency);
+        float y = gainToY(bands[i].gain);
+        
+        float distance = std::sqrt(std::pow(point.x - x, 2.0f) + std::pow(point.y - y, 2.0f));
+        
+        if (distance <= 12.0f) // Hit tolerance
+            return i;
+    }
+    
+    return -1;
+}
+
+void ParametricEQComponent::updateBandFromKnobs(int bandIndex)
+{
+    // This will be called when knobs are changed
+    if (bandIndex >= 0 && bandIndex < 2)
+    {
+        Component::repaint();
+    }
+}
+
+void ParametricEQComponent::updateKnobsFromBand(int bandIndex)
+{
+    // This will be called when graph is dragged to update the knobs
+    if (bandIndex < 0 || bandIndex >= 2 || !parentSynthesizer) return;
+    
+    if (bandIndex == 0)
+    {
+        // Update Band 1 knobs
+        parentSynthesizer->eq1FreqKnob.setValue(bands[0].frequency, juce::dontSendNotification);
+        parentSynthesizer->eq1QKnob.setValue(bands[0].q, juce::dontSendNotification);
+        parentSynthesizer->eq1GainKnob.setValue(bands[0].gain, juce::dontSendNotification);
+    }
+    else if (bandIndex == 1)
+    {
+        // Update Band 2 knobs
+        parentSynthesizer->eq2FreqKnob.setValue(bands[1].frequency, juce::dontSendNotification);
+        parentSynthesizer->eq2QKnob.setValue(bands[1].q, juce::dontSendNotification);
+        parentSynthesizer->eq2GainKnob.setValue(bands[1].gain, juce::dontSendNotification);
+    }
+}
+
+void ParametricEQComponent::setBandFilterType(int bandIndex, FilterType type)
+{
+    if (bandIndex >= 0 && bandIndex < 2)
+    {
+        bands[bandIndex].filterType = type;
+        Component::repaint();
+    }
+}
+
 SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& processor)
     : audioProcessor(processor), effectsModule(juce::TabbedButtonBar::TabsAtTop)
 {
@@ -893,7 +1232,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     // EFFECTS MODULE - Digital Screen Style
     effectsModule.setTabBarDepth(29); // Back to single row height
-    effectsModule.setCurrentTabIndex(0);
+    effectsModule.setCurrentTabIndex(4); // Set to EQ tab for testing
     
     // Enable multiple rows for tabs - force tabs to wrap by setting a much smaller minimum scale
     effectsModule.getTabbedButtonBar().setMinimumTabScaleFactor(0.3f); // Allow much smaller tabs to force wrapping
@@ -908,6 +1247,15 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     auto delayTab = new juce::Component();
     auto distortionTab = new juce::Component();
     auto equalizerTab = new juce::Component();
+    equalizerTab->setVisible(true);
+    
+    // Initialize parametric EQ component
+    parametricEQ.setParentSynthesizer(this);
+    parametricEQ.setVisible(true);
+    equalizerTab->addAndMakeVisible(parametricEQ);
+    
+    // Set initial bounds to fill the tab (will be properly laid out in resized())
+    parametricEQ.setBounds(0, 0, 300, 200);
     auto flangerTab = new juce::Component();
     auto phaserTab = new juce::Component();
     auto reverbTab = new juce::Component();
@@ -1398,6 +1746,137 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     distortionFilterQLabel.setJustificationType(juce::Justification::centred);
     distortionFilterQLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     distortionTab->addAndMakeVisible(distortionFilterQLabel);
+    
+    // EQ EFFECT CONTROLS
+    // Band 1 (Left) filter type buttons
+    eq1ShelfButton.setButtonText("SHELF");
+    eq1ShelfButton.setClickingTogglesState(true);
+    eq1ShelfButton.setToggleState(false, juce::dontSendNotification);
+    eq1ShelfButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    eq1ShelfButton.addListener(this);
+    addAndMakeVisible(eq1ShelfButton);
+    
+    eq1PeakButton.setButtonText("PEAK");
+    eq1PeakButton.setClickingTogglesState(true);
+    eq1PeakButton.setToggleState(true, juce::dontSendNotification);
+    eq1PeakButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    eq1PeakButton.addListener(this);
+    addAndMakeVisible(eq1PeakButton);
+    
+    eq1PassButton.setButtonText("PASS");
+    eq1PassButton.setClickingTogglesState(true);
+    eq1PassButton.setToggleState(false, juce::dontSendNotification);
+    eq1PassButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    eq1PassButton.addListener(this);
+    addAndMakeVisible(eq1PassButton);
+    
+    // Band 1 knobs
+    eq1FreqKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    eq1FreqKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    eq1FreqKnob.setRange(20.0, 20000.0, 1.0);
+    eq1FreqKnob.setValue(400.0);
+    eq1FreqKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    eq1FreqKnob.addListener(this);
+    addAndMakeVisible(eq1FreqKnob);
+    
+    eq1FreqLabel.setText("FREQ", juce::dontSendNotification);
+    eq1FreqLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    eq1FreqLabel.setJustificationType(juce::Justification::centred);
+    eq1FreqLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    addAndMakeVisible(eq1FreqLabel);
+    
+    eq1QKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    eq1QKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    eq1QKnob.setRange(0.1, 10.0, 0.1);
+    eq1QKnob.setValue(1.0);
+    eq1QKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    eq1QKnob.addListener(this);
+    addAndMakeVisible(eq1QKnob);
+    
+    eq1QLabel.setText("Q", juce::dontSendNotification);
+    eq1QLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    eq1QLabel.setJustificationType(juce::Justification::centred);
+    eq1QLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    addAndMakeVisible(eq1QLabel);
+    
+    eq1GainKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    eq1GainKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    eq1GainKnob.setRange(-15.0, 15.0, 0.1);
+    eq1GainKnob.setValue(0.0);
+    eq1GainKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    eq1GainKnob.addListener(this);
+    addAndMakeVisible(eq1GainKnob);
+    
+    eq1GainLabel.setText("GAIN", juce::dontSendNotification);
+    eq1GainLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    eq1GainLabel.setJustificationType(juce::Justification::centred);
+    eq1GainLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    addAndMakeVisible(eq1GainLabel);
+    
+    // Band 2 (Right) filter type buttons
+    eq2ShelfButton.setButtonText("SHELF");
+    eq2ShelfButton.setClickingTogglesState(true);
+    eq2ShelfButton.setToggleState(false, juce::dontSendNotification);
+    eq2ShelfButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    eq2ShelfButton.addListener(this);
+    addAndMakeVisible(eq2ShelfButton);
+    
+    eq2PeakButton.setButtonText("PEAK");
+    eq2PeakButton.setClickingTogglesState(true);
+    eq2PeakButton.setToggleState(true, juce::dontSendNotification);
+    eq2PeakButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    eq2PeakButton.addListener(this);
+    addAndMakeVisible(eq2PeakButton);
+    
+    eq2PassButton.setButtonText("PASS");
+    eq2PassButton.setClickingTogglesState(true);
+    eq2PassButton.setToggleState(false, juce::dontSendNotification);
+    eq2PassButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    eq2PassButton.addListener(this);
+    addAndMakeVisible(eq2PassButton);
+    
+    // Band 2 knobs
+    eq2FreqKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    eq2FreqKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    eq2FreqKnob.setRange(20.0, 20000.0, 1.0);
+    eq2FreqKnob.setValue(4000.0);
+    eq2FreqKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    eq2FreqKnob.addListener(this);
+    addAndMakeVisible(eq2FreqKnob);
+    
+    eq2FreqLabel.setText("FREQ", juce::dontSendNotification);
+    eq2FreqLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    eq2FreqLabel.setJustificationType(juce::Justification::centred);
+    eq2FreqLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    addAndMakeVisible(eq2FreqLabel);
+    
+    eq2QKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    eq2QKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    eq2QKnob.setRange(0.1, 10.0, 0.1);
+    eq2QKnob.setValue(1.0);
+    eq2QKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    eq2QKnob.addListener(this);
+    addAndMakeVisible(eq2QKnob);
+    
+    eq2QLabel.setText("Q", juce::dontSendNotification);
+    eq2QLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    eq2QLabel.setJustificationType(juce::Justification::centred);
+    eq2QLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    addAndMakeVisible(eq2QLabel);
+    
+    eq2GainKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    eq2GainKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    eq2GainKnob.setRange(-15.0, 15.0, 0.1);
+    eq2GainKnob.setValue(0.0);
+    eq2GainKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    eq2GainKnob.addListener(this);
+    addAndMakeVisible(eq2GainKnob);
+    
+    eq2GainLabel.setText("GAIN", juce::dontSendNotification);
+    eq2GainLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    eq2GainLabel.setJustificationType(juce::Justification::centred);
+    eq2GainLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    addAndMakeVisible(eq2GainLabel);
     
     // EFFECTS PRESET CONTROLS - Placeholder functionality
     effectsPresetPrevButton.setButtonText("<");
