@@ -1409,7 +1409,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     phaserPowerButton.setToggleState(false, juce::dontSendNotification);
     phaserPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     phaserPowerButton.setVisible(true);
-    phaserPowerButton.setBounds(30, 10, 80, 25);
+    phaserPowerButton.setBounds(69, 65, 80, 25);
     phaserTab->addAndMakeVisible(phaserPowerButton);
     
     phaserMixKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -1418,7 +1418,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     phaserMixKnob.setValue(50.0);
     phaserMixKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     phaserMixKnob.setVisible(true);
-    phaserMixKnob.setBounds(130, 5, 40, 40);
+    phaserMixKnob.setBounds(169, 60, 40, 40);
     phaserTab->addAndMakeVisible(phaserMixKnob);
     
     phaserMixLabel.setText("MIX", juce::dontSendNotification);
@@ -1426,7 +1426,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     phaserMixLabel.setJustificationType(juce::Justification::centred);
     phaserMixLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     phaserMixLabel.setVisible(true);
-    phaserMixLabel.setBounds(130, 47, 40, 12);
+    phaserMixLabel.setBounds(169, 102, 40, 12);
     phaserTab->addAndMakeVisible(phaserMixLabel);
     
     // Row 2: Rate, BPM Sync, and Poles
@@ -1436,7 +1436,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     phaserRateKnob.setValue(1.0);
     phaserRateKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     phaserRateKnob.setVisible(true);
-    phaserRateKnob.setBounds(30, 70, 50, 50);
+    phaserRateKnob.setBounds(83, 125, 50, 50);
     phaserTab->addAndMakeVisible(phaserRateKnob);
     
     phaserRateLabel.setText("RATE", juce::dontSendNotification);
@@ -1444,7 +1444,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     phaserRateLabel.setJustificationType(juce::Justification::centred);
     phaserRateLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     phaserRateLabel.setVisible(true);
-    phaserRateLabel.setBounds(30, 125, 50, 15);
+    phaserRateLabel.setBounds(83, 180, 50, 15);
     phaserTab->addAndMakeVisible(phaserRateLabel);
     
     phaserBpmButton.setButtonText("BPM SYNC");
@@ -1452,7 +1452,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     phaserBpmButton.setToggleState(false, juce::dontSendNotification);
     phaserBpmButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     phaserBpmButton.setVisible(true);
-    phaserBpmButton.setBounds(90, 85, 70, 25);
+    phaserBpmButton.setBounds(153, 140, 70, 25);
     phaserTab->addAndMakeVisible(phaserBpmButton);
     
     phaserPolesValueLabel.setText("4 POLES", juce::dontSendNotification);
@@ -1460,7 +1460,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     phaserPolesValueLabel.setInterceptsMouseClicks(true, true);
     phaserPolesValueLabel.addMouseListener(this, true);
     phaserPolesValueLabel.setVisible(true);
-    phaserPolesValueLabel.setBounds(180, 85, 100, 25);
+    phaserPolesValueLabel.setBounds(98, 200, 100, 25);
     phaserTab->addAndMakeVisible(phaserPolesValueLabel);
     
     phaserPolesLabel.setText("POLES", juce::dontSendNotification);
@@ -1468,7 +1468,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     phaserPolesLabel.setJustificationType(juce::Justification::centred);
     phaserPolesLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     phaserPolesLabel.setVisible(true);
-    phaserPolesLabel.setBounds(180, 115, 100, 15);
+    phaserPolesLabel.setBounds(98, 230, 100, 15);
     phaserTab->addAndMakeVisible(phaserPolesLabel);
     
     // Row 3: Depth 1 and Depth 2
@@ -1478,7 +1478,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     phaserDepth1Knob.setValue(50.0);
     phaserDepth1Knob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     phaserDepth1Knob.setVisible(true);
-    phaserDepth1Knob.setBounds(30, 150, 50, 50);
+    phaserDepth1Knob.setBounds(89, 260, 50, 50);
     phaserTab->addAndMakeVisible(phaserDepth1Knob);
     
     phaserDepth1Label.setText("DEPTH 1", juce::dontSendNotification);
@@ -1486,7 +1486,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     phaserDepth1Label.setJustificationType(juce::Justification::centred);
     phaserDepth1Label.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     phaserDepth1Label.setVisible(true);
-    phaserDepth1Label.setBounds(30, 205, 50, 15);
+    phaserDepth1Label.setBounds(89, 315, 50, 15);
     phaserTab->addAndMakeVisible(phaserDepth1Label);
     
     phaserDepth2Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -1495,7 +1495,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     phaserDepth2Knob.setValue(30.0);
     phaserDepth2Knob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     phaserDepth2Knob.setVisible(true);
-    phaserDepth2Knob.setBounds(100, 150, 50, 50);
+    phaserDepth2Knob.setBounds(159, 260, 50, 50);
     phaserTab->addAndMakeVisible(phaserDepth2Knob);
     
     phaserDepth2Label.setText("DEPTH 2", juce::dontSendNotification);
@@ -1503,7 +1503,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     phaserDepth2Label.setJustificationType(juce::Justification::centred);
     phaserDepth2Label.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     phaserDepth2Label.setVisible(true);
-    phaserDepth2Label.setBounds(100, 205, 50, 15);
+    phaserDepth2Label.setBounds(159, 315, 50, 15);
     phaserTab->addAndMakeVisible(phaserDepth2Label);
     
     // Row 4: Frequency, Feedback, and Phase
@@ -1513,7 +1513,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     phaserFrequencyKnob.setValue(500.0);
     phaserFrequencyKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     phaserFrequencyKnob.setVisible(true);
-    phaserFrequencyKnob.setBounds(30, 230, 50, 50);
+    phaserFrequencyKnob.setBounds(54, 340, 50, 50);
     phaserTab->addAndMakeVisible(phaserFrequencyKnob);
     
     phaserFrequencyLabel.setText("FREQ", juce::dontSendNotification);
@@ -1521,7 +1521,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     phaserFrequencyLabel.setJustificationType(juce::Justification::centred);
     phaserFrequencyLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     phaserFrequencyLabel.setVisible(true);
-    phaserFrequencyLabel.setBounds(30, 285, 50, 15);
+    phaserFrequencyLabel.setBounds(54, 395, 50, 15);
     phaserTab->addAndMakeVisible(phaserFrequencyLabel);
     
     phaserFeedbackKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -1530,7 +1530,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     phaserFeedbackKnob.setValue(25.0);
     phaserFeedbackKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     phaserFeedbackKnob.setVisible(true);
-    phaserFeedbackKnob.setBounds(100, 230, 50, 50);
+    phaserFeedbackKnob.setBounds(124, 340, 50, 50);
     phaserTab->addAndMakeVisible(phaserFeedbackKnob);
     
     phaserFeedbackLabel.setText("FEEDBACK", juce::dontSendNotification);
@@ -1538,7 +1538,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     phaserFeedbackLabel.setJustificationType(juce::Justification::centred);
     phaserFeedbackLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     phaserFeedbackLabel.setVisible(true);
-    phaserFeedbackLabel.setBounds(100, 285, 50, 15);
+    phaserFeedbackLabel.setBounds(124, 395, 50, 15);
     phaserTab->addAndMakeVisible(phaserFeedbackLabel);
     
     phaserPhaseKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -1547,7 +1547,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     phaserPhaseKnob.setValue(0.0);
     phaserPhaseKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     phaserPhaseKnob.setVisible(true);
-    phaserPhaseKnob.setBounds(170, 230, 50, 50);
+    phaserPhaseKnob.setBounds(194, 340, 50, 50);
     phaserTab->addAndMakeVisible(phaserPhaseKnob);
     
     phaserPhaseLabel.setText("PHASE", juce::dontSendNotification);
@@ -1555,7 +1555,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     phaserPhaseLabel.setJustificationType(juce::Justification::centred);
     phaserPhaseLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     phaserPhaseLabel.setVisible(true);
-    phaserPhaseLabel.setBounds(170, 285, 50, 15);
+    phaserPhaseLabel.setBounds(194, 395, 50, 15);
     phaserTab->addAndMakeVisible(phaserPhaseLabel);
     
     auto reverbTab = new juce::Component();
@@ -1567,7 +1567,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbPowerButton.setToggleState(false, juce::dontSendNotification);
     reverbPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     reverbPowerButton.setVisible(true);
-    reverbPowerButton.setBounds(67, 25, 80, 25);
+    reverbPowerButton.setBounds(68, 25, 80, 25);
     reverbTab->addAndMakeVisible(reverbPowerButton);
     
     reverbMixKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -1576,7 +1576,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbMixKnob.setValue(30.0);
     reverbMixKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbMixKnob.setVisible(true);
-    reverbMixKnob.setBounds(167, 20, 40, 40);
+    reverbMixKnob.setBounds(168, 20, 40, 40);
     reverbTab->addAndMakeVisible(reverbMixKnob);
     
     reverbMixLabel.setText("MIX", juce::dontSendNotification);
@@ -1584,7 +1584,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbMixLabel.setJustificationType(juce::Justification::centred);
     reverbMixLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbMixLabel.setVisible(true);
-    reverbMixLabel.setBounds(167, 62, 40, 12);
+    reverbMixLabel.setBounds(168, 62, 40, 12);
     reverbTab->addAndMakeVisible(reverbMixLabel);
     
     // Row 2: Reverb Type (clickable label like distortion)
