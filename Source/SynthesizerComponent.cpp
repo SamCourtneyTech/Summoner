@@ -1567,7 +1567,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbPowerButton.setToggleState(false, juce::dontSendNotification);
     reverbPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     reverbPowerButton.setVisible(true);
-    reverbPowerButton.setBounds(60, 25, 80, 25);
+    reverbPowerButton.setBounds(80, 25, 80, 25);
     reverbTab->addAndMakeVisible(reverbPowerButton);
     
     reverbMixKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -1576,7 +1576,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbMixKnob.setValue(30.0);
     reverbMixKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbMixKnob.setVisible(true);
-    reverbMixKnob.setBounds(160, 20, 40, 40);
+    reverbMixKnob.setBounds(180, 20, 40, 40);
     reverbTab->addAndMakeVisible(reverbMixKnob);
     
     reverbMixLabel.setText("MIX", juce::dontSendNotification);
@@ -1584,7 +1584,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbMixLabel.setJustificationType(juce::Justification::centred);
     reverbMixLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbMixLabel.setVisible(true);
-    reverbMixLabel.setBounds(160, 62, 40, 12);
+    reverbMixLabel.setBounds(180, 62, 40, 12);
     reverbTab->addAndMakeVisible(reverbMixLabel);
     
     // Row 2: Reverb Type (clickable label like distortion)
@@ -1593,7 +1593,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbTypeLabel.setJustificationType(juce::Justification::centred);
     reverbTypeLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbTypeLabel.setVisible(true);
-    reverbTypeLabel.setBounds(60, 85, 200, 15);
+    reverbTypeLabel.setBounds(40, 85, 200, 15);
     reverbTab->addAndMakeVisible(reverbTypeLabel);
     
     // Type value label (interactive)
@@ -1604,7 +1604,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbTypeValueLabel.setEditable(false, false, false); // Make it respond to mouse but not editable
     reverbTypeValueLabel.addMouseListener(this, true); // Add mouse listener with childEvents = true
     reverbTypeValueLabel.setVisible(true);
-    reverbTypeValueLabel.setBounds(60, 105, 200, 20);
+    reverbTypeValueLabel.setBounds(40, 105, 200, 20);
     reverbTab->addAndMakeVisible(reverbTypeValueLabel);
     
     // Row 3: Low Cut and High Cut
@@ -1614,7 +1614,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbLowCutKnob.setValue(80.0);
     reverbLowCutKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbLowCutKnob.setVisible(true);
-    reverbLowCutKnob.setBounds(60, 145, 50, 50);
+    reverbLowCutKnob.setBounds(80, 145, 50, 50);
     reverbTab->addAndMakeVisible(reverbLowCutKnob);
     
     reverbLowCutLabel.setText("LOW CUT", juce::dontSendNotification);
@@ -1622,7 +1622,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbLowCutLabel.setJustificationType(juce::Justification::centred);
     reverbLowCutLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbLowCutLabel.setVisible(true);
-    reverbLowCutLabel.setBounds(60, 200, 50, 15);
+    reverbLowCutLabel.setBounds(80, 200, 50, 15);
     reverbTab->addAndMakeVisible(reverbLowCutLabel);
     
     reverbHighCutKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -1631,7 +1631,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbHighCutKnob.setValue(8000.0);
     reverbHighCutKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbHighCutKnob.setVisible(true);
-    reverbHighCutKnob.setBounds(130, 145, 50, 50);
+    reverbHighCutKnob.setBounds(150, 145, 50, 50);
     reverbTab->addAndMakeVisible(reverbHighCutKnob);
     
     reverbHighCutLabel.setText("HIGH CUT", juce::dontSendNotification);
@@ -1639,7 +1639,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbHighCutLabel.setJustificationType(juce::Justification::centred);
     reverbHighCutLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbHighCutLabel.setVisible(true);
-    reverbHighCutLabel.setBounds(130, 200, 50, 15);
+    reverbHighCutLabel.setBounds(150, 200, 50, 15);
     reverbTab->addAndMakeVisible(reverbHighCutLabel);
     
     // Row 4: Size and Pre Delay
@@ -1649,7 +1649,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbSizeKnob.setValue(50.0);
     reverbSizeKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbSizeKnob.setVisible(true);
-    reverbSizeKnob.setBounds(60, 225, 50, 50);
+    reverbSizeKnob.setBounds(80, 225, 50, 50);
     reverbTab->addAndMakeVisible(reverbSizeKnob);
     
     reverbSizeLabel.setText("SIZE", juce::dontSendNotification);
@@ -1657,7 +1657,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbSizeLabel.setJustificationType(juce::Justification::centred);
     reverbSizeLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbSizeLabel.setVisible(true);
-    reverbSizeLabel.setBounds(60, 280, 50, 15);
+    reverbSizeLabel.setBounds(80, 280, 50, 15);
     reverbTab->addAndMakeVisible(reverbSizeLabel);
     
     reverbPreDelayKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -1666,7 +1666,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbPreDelayKnob.setValue(20.0);
     reverbPreDelayKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbPreDelayKnob.setVisible(true);
-    reverbPreDelayKnob.setBounds(130, 225, 50, 50);
+    reverbPreDelayKnob.setBounds(150, 225, 50, 50);
     reverbTab->addAndMakeVisible(reverbPreDelayKnob);
     
     reverbPreDelayLabel.setText("PRE DELAY", juce::dontSendNotification);
@@ -1674,7 +1674,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbPreDelayLabel.setJustificationType(juce::Justification::centred);
     reverbPreDelayLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbPreDelayLabel.setVisible(true);
-    reverbPreDelayLabel.setBounds(130, 280, 50, 15);
+    reverbPreDelayLabel.setBounds(150, 280, 50, 15);
     reverbTab->addAndMakeVisible(reverbPreDelayLabel);
     
     // Row 5: Damp and Width
@@ -1684,7 +1684,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbDampKnob.setValue(50.0);
     reverbDampKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbDampKnob.setVisible(true);
-    reverbDampKnob.setBounds(60, 305, 50, 50);
+    reverbDampKnob.setBounds(80, 305, 50, 50);
     reverbTab->addAndMakeVisible(reverbDampKnob);
     
     reverbDampLabel.setText("DAMP", juce::dontSendNotification);
@@ -1692,7 +1692,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbDampLabel.setJustificationType(juce::Justification::centred);
     reverbDampLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbDampLabel.setVisible(true);
-    reverbDampLabel.setBounds(60, 360, 50, 15);
+    reverbDampLabel.setBounds(80, 360, 50, 15);
     reverbTab->addAndMakeVisible(reverbDampLabel);
     
     reverbWidthKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -1701,7 +1701,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbWidthKnob.setValue(80.0);
     reverbWidthKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbWidthKnob.setVisible(true);
-    reverbWidthKnob.setBounds(130, 305, 50, 50);
+    reverbWidthKnob.setBounds(150, 305, 50, 50);
     reverbTab->addAndMakeVisible(reverbWidthKnob);
     
     reverbWidthLabel.setText("WIDTH", juce::dontSendNotification);
@@ -1709,7 +1709,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbWidthLabel.setJustificationType(juce::Justification::centred);
     reverbWidthLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbWidthLabel.setVisible(true);
-    reverbWidthLabel.setBounds(130, 360, 50, 15);
+    reverbWidthLabel.setBounds(150, 360, 50, 15);
     reverbTab->addAndMakeVisible(reverbWidthLabel);
     
     // Digital screen background color for tabs
@@ -2965,9 +2965,15 @@ void SynthesizerComponent::paint(juce::Graphics& g)
     // Macro knobs background
     drawMacroKnobsBackground(g, macroKnobsBounds);
     
+    // Main window border
+    g.setColour(juce::Colour(0xff16213e));
+    g.drawRect(getLocalBounds(), 2);
+}
+
+void SynthesizerComponent::paintOverChildren(juce::Graphics& g)
+{
     // Precision alignment grid overlay - symmetrical and aligned to boundaries
-    // TEMPORARILY COMMENTED OUT
-    /*
+    // ENABLED FOR ALIGNMENT - DRAWN OVER ALL CHILD COMPONENTS
     auto gridBounds = getLocalBounds().toFloat();
     auto centerX = gridBounds.getWidth() / 2.0f;
     auto centerY = gridBounds.getHeight() / 2.0f;
@@ -3013,11 +3019,6 @@ void SynthesizerComponent::paint(juce::Graphics& g)
         g.drawLine(0, centerY + offset, gridBounds.getWidth(), centerY + offset, 1.0f);
         g.drawLine(0, centerY - offset, gridBounds.getWidth(), centerY - offset, 1.0f);
     }
-    */
-
-    // Main window border
-    g.setColour(juce::Colour(0xff16213e));
-    g.drawRect(getLocalBounds(), 2);
 }
 
 void SynthesizerComponent::resized()
