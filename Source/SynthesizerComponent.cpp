@@ -2207,7 +2207,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq1ShelfButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq1ShelfButton.addListener(this);
     eq1ShelfButton.setVisible(true);
-    eq1ShelfButton.setBounds(17, 340, 40, 22);
+    eq1ShelfButton.setBounds(17, 342, 40, 22);
     equalizerTab->addAndMakeVisible(eq1ShelfButton);
     
     eq1PeakButton.setButtonText("PEAK");
@@ -2216,7 +2216,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq1PeakButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq1PeakButton.addListener(this);
     eq1PeakButton.setVisible(true);
-    eq1PeakButton.setBounds(62, 340, 40, 22);
+    eq1PeakButton.setBounds(62, 342, 40, 22);
     equalizerTab->addAndMakeVisible(eq1PeakButton);
     
     eq1PassButton.setButtonText("HIPASS");
@@ -2225,7 +2225,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq1PassButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq1PassButton.addListener(this);
     eq1PassButton.setVisible(true);
-    eq1PassButton.setBounds(107, 340, 40, 22);
+    eq1PassButton.setBounds(107, 342, 40, 22);
     equalizerTab->addAndMakeVisible(eq1PassButton);
     
     // Band 1 knobs
@@ -2278,7 +2278,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq2ShelfButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq2ShelfButton.addListener(this);
     eq2ShelfButton.setVisible(true);
-    eq2ShelfButton.setBounds(152, 340, 40, 22);
+    eq2ShelfButton.setBounds(152, 342, 40, 22);
     equalizerTab->addAndMakeVisible(eq2ShelfButton);
     
     eq2PeakButton.setButtonText("PEAK");
@@ -2287,7 +2287,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq2PeakButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq2PeakButton.addListener(this);
     eq2PeakButton.setVisible(true);
-    eq2PeakButton.setBounds(197, 340, 40, 22);
+    eq2PeakButton.setBounds(197, 342, 40, 22);
     equalizerTab->addAndMakeVisible(eq2PeakButton);
     
     eq2PassButton.setButtonText("LOPASS");
@@ -2296,7 +2296,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq2PassButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq2PassButton.addListener(this);
     eq2PassButton.setVisible(true);
-    eq2PassButton.setBounds(242, 340, 40, 22);
+    eq2PassButton.setBounds(242, 342, 40, 22);
     equalizerTab->addAndMakeVisible(eq2PassButton);
     
     // Band 2 knobs
@@ -2347,14 +2347,14 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq1PointLabel.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
     eq1PointLabel.setJustificationType(juce::Justification::centred);
     eq1PointLabel.setColour(juce::Label::textColourId, juce::Colours::blue);
-    eq1PointLabel.setBounds(40, 320, 70, 15);
+    eq1PointLabel.setBounds(45, 314, 70, 15);
     equalizerTab->addAndMakeVisible(eq1PointLabel);
     
     eq2PointLabel.setText("BAND 2", juce::dontSendNotification);
     eq2PointLabel.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
     eq2PointLabel.setJustificationType(juce::Justification::centred);
     eq2PointLabel.setColour(juce::Label::textColourId, juce::Colours::red);
-    eq2PointLabel.setBounds(175, 320, 70, 15);
+    eq2PointLabel.setBounds(183, 314, 70, 15);
     equalizerTab->addAndMakeVisible(eq2PointLabel);
     
     // EFFECTS PRESET CONTROLS - Placeholder functionality
@@ -3038,32 +3038,38 @@ void SynthesizerComponent::paintOverChildren(juce::Graphics& g)
     // Draw white bracket lines for EQ bands (only if we're in the effects module tab)
     if (effectsModule.getCurrentTabIndex() == 4) // EQ tab index
     {
-        g.setColour(juce::Colours::white);
+        g.setColour(juce::Colours::lime); // Using named color lime
         
         // Get the effects module bounds to calculate relative positions
         auto effectsBounds = effectsModule.getBounds();
         
-        // Band 1 bracket lines (upside-down brackets around left group)
-        // Top horizontal line
-        g.drawLine(effectsBounds.getX() + 17, effectsBounds.getY() + 315, 
-                   effectsBounds.getX() + 147, effectsBounds.getY() + 315, 1.0f);
+        // Band 1 bracket lines (upside-down brackets around left group with symmetric gap for label)
+        // Top horizontal line - left part (equal length segments with gap for "BAND 1" label)
+        g.drawLine(effectsBounds.getX() + 31, effectsBounds.getY() + 350, 
+                   effectsBounds.getX() + 61, effectsBounds.getY() + 350, 1.0f);
+        // Top horizontal line - right part (same length as left part)
+        g.drawLine(effectsBounds.getX() + 101, effectsBounds.getY() + 350, 
+                   effectsBounds.getX() + 131, effectsBounds.getY() + 350, 1.0f);
         // Left vertical line
-        g.drawLine(effectsBounds.getX() + 17, effectsBounds.getY() + 315, 
-                   effectsBounds.getX() + 17, effectsBounds.getY() + 335, 1.0f);
+        g.drawLine(effectsBounds.getX() + 31, effectsBounds.getY() + 350, 
+                   effectsBounds.getX() + 31, effectsBounds.getY() + 365, 1.0f);
         // Right vertical line  
-        g.drawLine(effectsBounds.getX() + 147, effectsBounds.getY() + 315, 
-                   effectsBounds.getX() + 147, effectsBounds.getY() + 335, 1.0f);
+        g.drawLine(effectsBounds.getX() + 131, effectsBounds.getY() + 350, 
+                   effectsBounds.getX() + 131, effectsBounds.getY() + 365, 1.0f);
         
-        // Band 2 bracket lines (upside-down brackets around right group)
-        // Top horizontal line
-        g.drawLine(effectsBounds.getX() + 152, effectsBounds.getY() + 315, 
-                   effectsBounds.getX() + 282, effectsBounds.getY() + 315, 1.0f);
+        // Band 2 bracket lines (upside-down brackets around right group with symmetric gap for label)
+        // Top horizontal line - left part (equal length segments with gap for "BAND 2" label)
+        g.drawLine(effectsBounds.getX() + 169, effectsBounds.getY() + 350, 
+                   effectsBounds.getX() + 199, effectsBounds.getY() + 350, 1.0f);
+        // Top horizontal line - right part (same length as left part)
+        g.drawLine(effectsBounds.getX() + 239, effectsBounds.getY() + 350, 
+                   effectsBounds.getX() + 269, effectsBounds.getY() + 350, 1.0f);
         // Left vertical line
-        g.drawLine(effectsBounds.getX() + 152, effectsBounds.getY() + 315, 
-                   effectsBounds.getX() + 152, effectsBounds.getY() + 335, 1.0f);
+        g.drawLine(effectsBounds.getX() + 169, effectsBounds.getY() + 350, 
+                   effectsBounds.getX() + 169, effectsBounds.getY() + 365, 1.0f);
         // Right vertical line
-        g.drawLine(effectsBounds.getX() + 282, effectsBounds.getY() + 315, 
-                   effectsBounds.getX() + 282, effectsBounds.getY() + 335, 1.0f);
+        g.drawLine(effectsBounds.getX() + 269, effectsBounds.getY() + 350, 
+                   effectsBounds.getX() + 269, effectsBounds.getY() + 365, 1.0f);
     }
 }
 
