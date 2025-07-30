@@ -1290,7 +1290,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eqOnOffButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eqOnOffButton.addListener(this);
     eqOnOffButton.setVisible(true);
-    eqOnOffButton.setBounds(200, 5, 60, 25); // Top of EQ tab
+    eqOnOffButton.setBounds(180, 5, 60, 25); // Above EQ graph, moved left 20px
     equalizerTab->addAndMakeVisible(eqOnOffButton);
     
     auto flangerTab = new juce::Component();
@@ -2201,13 +2201,13 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     // EQ EFFECT CONTROLS
     // Band 1 (Left) filter type buttons
-    eq1ShelfButton.setButtonText("LOW SHELF");
+    eq1ShelfButton.setButtonText("SHELF"); // Low shelf - for later implementation
     eq1ShelfButton.setClickingTogglesState(true);
     eq1ShelfButton.setToggleState(false, juce::dontSendNotification);
     eq1ShelfButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq1ShelfButton.addListener(this);
     eq1ShelfButton.setVisible(true);
-    eq1ShelfButton.setBounds(15, 210, 45, 25);
+    eq1ShelfButton.setBounds(17, 230, 40, 22);
     equalizerTab->addAndMakeVisible(eq1ShelfButton);
     
     eq1PeakButton.setButtonText("PEAK");
@@ -2216,7 +2216,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq1PeakButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq1PeakButton.addListener(this);
     eq1PeakButton.setVisible(true);
-    eq1PeakButton.setBounds(65, 210, 45, 25);
+    eq1PeakButton.setBounds(62, 230, 40, 22);
     equalizerTab->addAndMakeVisible(eq1PeakButton);
     
     eq1PassButton.setButtonText("HIPASS");
@@ -2225,7 +2225,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq1PassButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq1PassButton.addListener(this);
     eq1PassButton.setVisible(true);
-    eq1PassButton.setBounds(115, 210, 45, 25);
+    eq1PassButton.setBounds(107, 230, 40, 22);
     equalizerTab->addAndMakeVisible(eq1PassButton);
     
     // Band 1 knobs
@@ -2272,13 +2272,13 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     equalizerTab->addAndMakeVisible(eq1GainLabel);
     
     // Band 2 (Right) filter type buttons
-    eq2ShelfButton.setButtonText("HI SHELF");
+    eq2ShelfButton.setButtonText("SHELF"); // High shelf - for later implementation
     eq2ShelfButton.setClickingTogglesState(true);
     eq2ShelfButton.setToggleState(false, juce::dontSendNotification);
     eq2ShelfButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq2ShelfButton.addListener(this);
     eq2ShelfButton.setVisible(true);
-    eq2ShelfButton.setBounds(165, 210, 45, 25);
+    eq2ShelfButton.setBounds(152, 230, 40, 22);
     equalizerTab->addAndMakeVisible(eq2ShelfButton);
     
     eq2PeakButton.setButtonText("PEAK");
@@ -2287,7 +2287,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq2PeakButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq2PeakButton.addListener(this);
     eq2PeakButton.setVisible(true);
-    eq2PeakButton.setBounds(215, 210, 45, 25);
+    eq2PeakButton.setBounds(197, 230, 40, 22);
     equalizerTab->addAndMakeVisible(eq2PeakButton);
     
     eq2PassButton.setButtonText("LOPASS");
@@ -2296,7 +2296,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq2PassButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eq2PassButton.addListener(this);
     eq2PassButton.setVisible(true);
-    eq2PassButton.setBounds(265, 210, 45, 25);
+    eq2PassButton.setBounds(242, 230, 40, 22);
     equalizerTab->addAndMakeVisible(eq2PassButton);
     
     // Band 2 knobs
