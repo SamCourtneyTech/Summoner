@@ -1160,6 +1160,25 @@ private:
     juce::Slider phaserPhaseKnob;
     juce::Label phaserPhaseLabel;
     
+    // Reverb effect controls
+    juce::TextButton reverbPowerButton;
+    juce::Slider reverbMixKnob;
+    juce::Label reverbMixLabel;
+    juce::Slider reverbTypeSlider;
+    juce::Label reverbTypeLabel;
+    juce::Slider reverbLowCutKnob;
+    juce::Label reverbLowCutLabel;
+    juce::Slider reverbHighCutKnob;
+    juce::Label reverbHighCutLabel;
+    juce::Slider reverbSizeKnob;
+    juce::Label reverbSizeLabel;
+    juce::Slider reverbPreDelayKnob;
+    juce::Label reverbPreDelayLabel;
+    juce::Slider reverbDampKnob;
+    juce::Label reverbDampLabel;
+    juce::Slider reverbWidthKnob;
+    juce::Label reverbWidthLabel;
+    
     // Octave control state
     int octaveValue = 0;
     bool isDraggingOctave = false;

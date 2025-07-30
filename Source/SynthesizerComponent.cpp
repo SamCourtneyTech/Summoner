@@ -1561,6 +1561,156 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     auto reverbTab = new juce::Component();
     
+    // Initialize reverb controls
+    // Row 1: Power and Mix controls
+    reverbPowerButton.setButtonText("REVERB ON");
+    reverbPowerButton.setClickingTogglesState(true);
+    reverbPowerButton.setToggleState(true, juce::dontSendNotification);
+    reverbPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    reverbPowerButton.setVisible(true);
+    reverbPowerButton.setBounds(30, 10, 80, 25);
+    reverbTab->addAndMakeVisible(reverbPowerButton);
+    
+    reverbMixKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    reverbMixKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    reverbMixKnob.setRange(0.0, 100.0, 1.0);
+    reverbMixKnob.setValue(30.0);
+    reverbMixKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    reverbMixKnob.setVisible(true);
+    reverbMixKnob.setBounds(130, 5, 40, 40);
+    reverbTab->addAndMakeVisible(reverbMixKnob);
+    
+    reverbMixLabel.setText("MIX", juce::dontSendNotification);
+    reverbMixLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    reverbMixLabel.setJustificationType(juce::Justification::centred);
+    reverbMixLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    reverbMixLabel.setVisible(true);
+    reverbMixLabel.setBounds(130, 47, 40, 12);
+    reverbTab->addAndMakeVisible(reverbMixLabel);
+    
+    // Row 2: Reverb Type Slider
+    reverbTypeSlider.setSliderStyle(juce::Slider::LinearHorizontal);
+    reverbTypeSlider.setTextBoxStyle(juce::Slider::TextBoxRight, false, 60, 20);
+    reverbTypeSlider.setRange(0, 4, 1); // 5 types: Plate, Hall, Vintage, Room, Ambience
+    reverbTypeSlider.setValue(1); // Default to Hall
+    reverbTypeSlider.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    reverbTypeSlider.setVisible(true);
+    reverbTypeSlider.setBounds(30, 70, 200, 25);
+    reverbTab->addAndMakeVisible(reverbTypeSlider);
+    
+    reverbTypeLabel.setText("TYPE: HALL", juce::dontSendNotification);
+    reverbTypeLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    reverbTypeLabel.setJustificationType(juce::Justification::centred);
+    reverbTypeLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    reverbTypeLabel.setVisible(true);
+    reverbTypeLabel.setBounds(30, 100, 200, 15);
+    reverbTab->addAndMakeVisible(reverbTypeLabel);
+    
+    // Row 3: Low Cut and High Cut
+    reverbLowCutKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    reverbLowCutKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    reverbLowCutKnob.setRange(20.0, 1000.0, 1.0);
+    reverbLowCutKnob.setValue(80.0);
+    reverbLowCutKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    reverbLowCutKnob.setVisible(true);
+    reverbLowCutKnob.setBounds(30, 130, 50, 50);
+    reverbTab->addAndMakeVisible(reverbLowCutKnob);
+    
+    reverbLowCutLabel.setText("LOW CUT", juce::dontSendNotification);
+    reverbLowCutLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    reverbLowCutLabel.setJustificationType(juce::Justification::centred);
+    reverbLowCutLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    reverbLowCutLabel.setVisible(true);
+    reverbLowCutLabel.setBounds(30, 185, 50, 15);
+    reverbTab->addAndMakeVisible(reverbLowCutLabel);
+    
+    reverbHighCutKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    reverbHighCutKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    reverbHighCutKnob.setRange(1000.0, 20000.0, 10.0);
+    reverbHighCutKnob.setValue(8000.0);
+    reverbHighCutKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    reverbHighCutKnob.setVisible(true);
+    reverbHighCutKnob.setBounds(100, 130, 50, 50);
+    reverbTab->addAndMakeVisible(reverbHighCutKnob);
+    
+    reverbHighCutLabel.setText("HIGH CUT", juce::dontSendNotification);
+    reverbHighCutLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    reverbHighCutLabel.setJustificationType(juce::Justification::centred);
+    reverbHighCutLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    reverbHighCutLabel.setVisible(true);
+    reverbHighCutLabel.setBounds(100, 185, 50, 15);
+    reverbTab->addAndMakeVisible(reverbHighCutLabel);
+    
+    // Row 4: Size and Pre Delay
+    reverbSizeKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    reverbSizeKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    reverbSizeKnob.setRange(0.0, 100.0, 1.0);
+    reverbSizeKnob.setValue(50.0);
+    reverbSizeKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    reverbSizeKnob.setVisible(true);
+    reverbSizeKnob.setBounds(30, 210, 50, 50);
+    reverbTab->addAndMakeVisible(reverbSizeKnob);
+    
+    reverbSizeLabel.setText("SIZE", juce::dontSendNotification);
+    reverbSizeLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    reverbSizeLabel.setJustificationType(juce::Justification::centred);
+    reverbSizeLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    reverbSizeLabel.setVisible(true);
+    reverbSizeLabel.setBounds(30, 265, 50, 15);
+    reverbTab->addAndMakeVisible(reverbSizeLabel);
+    
+    reverbPreDelayKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    reverbPreDelayKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    reverbPreDelayKnob.setRange(0.0, 200.0, 1.0);
+    reverbPreDelayKnob.setValue(20.0);
+    reverbPreDelayKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    reverbPreDelayKnob.setVisible(true);
+    reverbPreDelayKnob.setBounds(100, 210, 50, 50);
+    reverbTab->addAndMakeVisible(reverbPreDelayKnob);
+    
+    reverbPreDelayLabel.setText("PRE DELAY", juce::dontSendNotification);
+    reverbPreDelayLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    reverbPreDelayLabel.setJustificationType(juce::Justification::centred);
+    reverbPreDelayLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    reverbPreDelayLabel.setVisible(true);
+    reverbPreDelayLabel.setBounds(100, 265, 50, 15);
+    reverbTab->addAndMakeVisible(reverbPreDelayLabel);
+    
+    // Row 5: Damp and Width
+    reverbDampKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    reverbDampKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    reverbDampKnob.setRange(0.0, 100.0, 1.0);
+    reverbDampKnob.setValue(50.0);
+    reverbDampKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    reverbDampKnob.setVisible(true);
+    reverbDampKnob.setBounds(30, 290, 50, 50);
+    reverbTab->addAndMakeVisible(reverbDampKnob);
+    
+    reverbDampLabel.setText("DAMP", juce::dontSendNotification);
+    reverbDampLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    reverbDampLabel.setJustificationType(juce::Justification::centred);
+    reverbDampLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    reverbDampLabel.setVisible(true);
+    reverbDampLabel.setBounds(30, 345, 50, 15);
+    reverbTab->addAndMakeVisible(reverbDampLabel);
+    
+    reverbWidthKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    reverbWidthKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    reverbWidthKnob.setRange(0.0, 100.0, 1.0);
+    reverbWidthKnob.setValue(80.0);
+    reverbWidthKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    reverbWidthKnob.setVisible(true);
+    reverbWidthKnob.setBounds(100, 290, 50, 50);
+    reverbTab->addAndMakeVisible(reverbWidthKnob);
+    
+    reverbWidthLabel.setText("WIDTH", juce::dontSendNotification);
+    reverbWidthLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    reverbWidthLabel.setJustificationType(juce::Justification::centred);
+    reverbWidthLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    reverbWidthLabel.setVisible(true);
+    reverbWidthLabel.setBounds(100, 345, 50, 15);
+    reverbTab->addAndMakeVisible(reverbWidthLabel);
+    
     // Digital screen background color for tabs
     juce::Colour digitalBg = juce::Colour(0xff001100); // Dark green tint
     
