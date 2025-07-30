@@ -1140,6 +1140,26 @@ private:
     juce::Slider flangerPhaseKnob;
     juce::Label flangerPhaseLabel;
     
+    // Phaser effect controls
+    juce::TextButton phaserPowerButton;
+    juce::Slider phaserMixKnob;
+    juce::Label phaserMixLabel;
+    juce::Slider phaserRateKnob;
+    juce::Label phaserRateLabel;
+    juce::TextButton phaserBpmButton;
+    juce::Slider phaserPolesSlider;
+    juce::Label phaserPolesLabel;
+    juce::Slider phaserDepth1Knob;
+    juce::Label phaserDepth1Label;
+    juce::Slider phaserDepth2Knob;
+    juce::Label phaserDepth2Label;
+    juce::Slider phaserFrequencyKnob;
+    juce::Label phaserFrequencyLabel;
+    juce::Slider phaserFeedbackKnob;
+    juce::Label phaserFeedbackLabel;
+    juce::Slider phaserPhaseKnob;
+    juce::Label phaserPhaseLabel;
+    
     // Octave control state
     int octaveValue = 0;
     bool isDraggingOctave = false;

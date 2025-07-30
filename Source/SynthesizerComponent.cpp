@@ -1401,6 +1401,164 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     flangerTab->addAndMakeVisible(flangerPhaseLabel);
     
     auto phaserTab = new juce::Component();
+    
+    // Initialize phaser controls
+    // Row 1: Power and Mix controls
+    phaserPowerButton.setButtonText("PHASER ON");
+    phaserPowerButton.setClickingTogglesState(true);
+    phaserPowerButton.setToggleState(true, juce::dontSendNotification);
+    phaserPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    phaserPowerButton.setVisible(true);
+    phaserPowerButton.setBounds(30, 10, 80, 25);
+    phaserTab->addAndMakeVisible(phaserPowerButton);
+    
+    phaserMixKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    phaserMixKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    phaserMixKnob.setRange(0.0, 100.0, 1.0);
+    phaserMixKnob.setValue(50.0);
+    phaserMixKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    phaserMixKnob.setVisible(true);
+    phaserMixKnob.setBounds(130, 5, 40, 40);
+    phaserTab->addAndMakeVisible(phaserMixKnob);
+    
+    phaserMixLabel.setText("MIX", juce::dontSendNotification);
+    phaserMixLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    phaserMixLabel.setJustificationType(juce::Justification::centred);
+    phaserMixLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    phaserMixLabel.setVisible(true);
+    phaserMixLabel.setBounds(130, 47, 40, 12);
+    phaserTab->addAndMakeVisible(phaserMixLabel);
+    
+    // Row 2: Rate, BPM Sync, and Poles
+    phaserRateKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    phaserRateKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    phaserRateKnob.setRange(0.1, 10.0, 0.1);
+    phaserRateKnob.setValue(1.0);
+    phaserRateKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    phaserRateKnob.setVisible(true);
+    phaserRateKnob.setBounds(30, 70, 50, 50);
+    phaserTab->addAndMakeVisible(phaserRateKnob);
+    
+    phaserRateLabel.setText("RATE", juce::dontSendNotification);
+    phaserRateLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    phaserRateLabel.setJustificationType(juce::Justification::centred);
+    phaserRateLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    phaserRateLabel.setVisible(true);
+    phaserRateLabel.setBounds(30, 125, 50, 15);
+    phaserTab->addAndMakeVisible(phaserRateLabel);
+    
+    phaserBpmButton.setButtonText("BPM SYNC");
+    phaserBpmButton.setClickingTogglesState(true);
+    phaserBpmButton.setToggleState(false, juce::dontSendNotification);
+    phaserBpmButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    phaserBpmButton.setVisible(true);
+    phaserBpmButton.setBounds(90, 85, 70, 25);
+    phaserTab->addAndMakeVisible(phaserBpmButton);
+    
+    phaserPolesSlider.setSliderStyle(juce::Slider::LinearHorizontal);
+    phaserPolesSlider.setTextBoxStyle(juce::Slider::TextBoxRight, false, 30, 20);
+    phaserPolesSlider.setRange(1, 16, 1);
+    phaserPolesSlider.setValue(4);
+    phaserPolesSlider.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    phaserPolesSlider.setVisible(true);
+    phaserPolesSlider.setBounds(180, 85, 100, 25);
+    phaserTab->addAndMakeVisible(phaserPolesSlider);
+    
+    phaserPolesLabel.setText("POLES", juce::dontSendNotification);
+    phaserPolesLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    phaserPolesLabel.setJustificationType(juce::Justification::centred);
+    phaserPolesLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    phaserPolesLabel.setVisible(true);
+    phaserPolesLabel.setBounds(180, 115, 100, 15);
+    phaserTab->addAndMakeVisible(phaserPolesLabel);
+    
+    // Row 3: Depth 1 and Depth 2
+    phaserDepth1Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    phaserDepth1Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    phaserDepth1Knob.setRange(0.0, 100.0, 1.0);
+    phaserDepth1Knob.setValue(50.0);
+    phaserDepth1Knob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    phaserDepth1Knob.setVisible(true);
+    phaserDepth1Knob.setBounds(30, 150, 50, 50);
+    phaserTab->addAndMakeVisible(phaserDepth1Knob);
+    
+    phaserDepth1Label.setText("DEPTH 1", juce::dontSendNotification);
+    phaserDepth1Label.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    phaserDepth1Label.setJustificationType(juce::Justification::centred);
+    phaserDepth1Label.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    phaserDepth1Label.setVisible(true);
+    phaserDepth1Label.setBounds(30, 205, 50, 15);
+    phaserTab->addAndMakeVisible(phaserDepth1Label);
+    
+    phaserDepth2Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    phaserDepth2Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    phaserDepth2Knob.setRange(0.0, 100.0, 1.0);
+    phaserDepth2Knob.setValue(30.0);
+    phaserDepth2Knob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    phaserDepth2Knob.setVisible(true);
+    phaserDepth2Knob.setBounds(100, 150, 50, 50);
+    phaserTab->addAndMakeVisible(phaserDepth2Knob);
+    
+    phaserDepth2Label.setText("DEPTH 2", juce::dontSendNotification);
+    phaserDepth2Label.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    phaserDepth2Label.setJustificationType(juce::Justification::centred);
+    phaserDepth2Label.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    phaserDepth2Label.setVisible(true);
+    phaserDepth2Label.setBounds(100, 205, 50, 15);
+    phaserTab->addAndMakeVisible(phaserDepth2Label);
+    
+    // Row 4: Frequency, Feedback, and Phase
+    phaserFrequencyKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    phaserFrequencyKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    phaserFrequencyKnob.setRange(20.0, 2000.0, 1.0);
+    phaserFrequencyKnob.setValue(500.0);
+    phaserFrequencyKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    phaserFrequencyKnob.setVisible(true);
+    phaserFrequencyKnob.setBounds(30, 230, 50, 50);
+    phaserTab->addAndMakeVisible(phaserFrequencyKnob);
+    
+    phaserFrequencyLabel.setText("FREQ", juce::dontSendNotification);
+    phaserFrequencyLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    phaserFrequencyLabel.setJustificationType(juce::Justification::centred);
+    phaserFrequencyLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    phaserFrequencyLabel.setVisible(true);
+    phaserFrequencyLabel.setBounds(30, 285, 50, 15);
+    phaserTab->addAndMakeVisible(phaserFrequencyLabel);
+    
+    phaserFeedbackKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    phaserFeedbackKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    phaserFeedbackKnob.setRange(0.0, 100.0, 1.0);
+    phaserFeedbackKnob.setValue(25.0);
+    phaserFeedbackKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    phaserFeedbackKnob.setVisible(true);
+    phaserFeedbackKnob.setBounds(100, 230, 50, 50);
+    phaserTab->addAndMakeVisible(phaserFeedbackKnob);
+    
+    phaserFeedbackLabel.setText("FEEDBACK", juce::dontSendNotification);
+    phaserFeedbackLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    phaserFeedbackLabel.setJustificationType(juce::Justification::centred);
+    phaserFeedbackLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    phaserFeedbackLabel.setVisible(true);
+    phaserFeedbackLabel.setBounds(100, 285, 50, 15);
+    phaserTab->addAndMakeVisible(phaserFeedbackLabel);
+    
+    phaserPhaseKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    phaserPhaseKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    phaserPhaseKnob.setRange(0.0, 360.0, 1.0);
+    phaserPhaseKnob.setValue(0.0);
+    phaserPhaseKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    phaserPhaseKnob.setVisible(true);
+    phaserPhaseKnob.setBounds(170, 230, 50, 50);
+    phaserTab->addAndMakeVisible(phaserPhaseKnob);
+    
+    phaserPhaseLabel.setText("PHASE", juce::dontSendNotification);
+    phaserPhaseLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    phaserPhaseLabel.setJustificationType(juce::Justification::centred);
+    phaserPhaseLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    phaserPhaseLabel.setVisible(true);
+    phaserPhaseLabel.setBounds(170, 285, 50, 15);
+    phaserTab->addAndMakeVisible(phaserPhaseLabel);
+    
     auto reverbTab = new juce::Component();
     
     // Digital screen background color for tabs
