@@ -1286,7 +1286,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     // Initialize EQ on/off button
     eqOnOffButton.setButtonText("EQ ON");
     eqOnOffButton.setClickingTogglesState(true);
-    eqOnOffButton.setToggleState(true, juce::dontSendNotification); // EQ enabled by default
+    eqOnOffButton.setToggleState(false, juce::dontSendNotification); // EQ disabled by default
     eqOnOffButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     eqOnOffButton.addListener(this);
     eqOnOffButton.setVisible(true);
@@ -1299,7 +1299,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     // Row 1: Power and Mix controls
     flangerPowerButton.setButtonText("FLANGER ON");
     flangerPowerButton.setClickingTogglesState(true);
-    flangerPowerButton.setToggleState(true, juce::dontSendNotification);
+    flangerPowerButton.setToggleState(false, juce::dontSendNotification);
     flangerPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     flangerPowerButton.setVisible(true);
     flangerPowerButton.setBounds(30, 10, 80, 25);
@@ -1406,7 +1406,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     // Row 1: Power and Mix controls
     phaserPowerButton.setButtonText("PHASER ON");
     phaserPowerButton.setClickingTogglesState(true);
-    phaserPowerButton.setToggleState(true, juce::dontSendNotification);
+    phaserPowerButton.setToggleState(false, juce::dontSendNotification);
     phaserPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     phaserPowerButton.setVisible(true);
     phaserPowerButton.setBounds(30, 10, 80, 25);
@@ -1564,10 +1564,10 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     // Row 1: Power and Mix controls
     reverbPowerButton.setButtonText("REVERB ON");
     reverbPowerButton.setClickingTogglesState(true);
-    reverbPowerButton.setToggleState(true, juce::dontSendNotification);
+    reverbPowerButton.setToggleState(false, juce::dontSendNotification);
     reverbPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     reverbPowerButton.setVisible(true);
-    reverbPowerButton.setBounds(30, 10, 80, 25);
+    reverbPowerButton.setBounds(60, 25, 80, 25);
     reverbTab->addAndMakeVisible(reverbPowerButton);
     
     reverbMixKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -1576,7 +1576,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbMixKnob.setValue(30.0);
     reverbMixKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbMixKnob.setVisible(true);
-    reverbMixKnob.setBounds(130, 5, 40, 40);
+    reverbMixKnob.setBounds(160, 20, 40, 40);
     reverbTab->addAndMakeVisible(reverbMixKnob);
     
     reverbMixLabel.setText("MIX", juce::dontSendNotification);
@@ -1584,7 +1584,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbMixLabel.setJustificationType(juce::Justification::centred);
     reverbMixLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbMixLabel.setVisible(true);
-    reverbMixLabel.setBounds(130, 47, 40, 12);
+    reverbMixLabel.setBounds(160, 62, 40, 12);
     reverbTab->addAndMakeVisible(reverbMixLabel);
     
     // Row 2: Reverb Type (clickable label like distortion)
@@ -1593,7 +1593,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbTypeLabel.setJustificationType(juce::Justification::centred);
     reverbTypeLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbTypeLabel.setVisible(true);
-    reverbTypeLabel.setBounds(30, 70, 200, 15);
+    reverbTypeLabel.setBounds(60, 85, 200, 15);
     reverbTab->addAndMakeVisible(reverbTypeLabel);
     
     // Type value label (interactive)
@@ -1604,7 +1604,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbTypeValueLabel.setEditable(false, false, false); // Make it respond to mouse but not editable
     reverbTypeValueLabel.addMouseListener(this, true); // Add mouse listener with childEvents = true
     reverbTypeValueLabel.setVisible(true);
-    reverbTypeValueLabel.setBounds(30, 90, 200, 20);
+    reverbTypeValueLabel.setBounds(60, 105, 200, 20);
     reverbTab->addAndMakeVisible(reverbTypeValueLabel);
     
     // Row 3: Low Cut and High Cut
@@ -1614,7 +1614,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbLowCutKnob.setValue(80.0);
     reverbLowCutKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbLowCutKnob.setVisible(true);
-    reverbLowCutKnob.setBounds(30, 130, 50, 50);
+    reverbLowCutKnob.setBounds(60, 145, 50, 50);
     reverbTab->addAndMakeVisible(reverbLowCutKnob);
     
     reverbLowCutLabel.setText("LOW CUT", juce::dontSendNotification);
@@ -1622,7 +1622,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbLowCutLabel.setJustificationType(juce::Justification::centred);
     reverbLowCutLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbLowCutLabel.setVisible(true);
-    reverbLowCutLabel.setBounds(30, 185, 50, 15);
+    reverbLowCutLabel.setBounds(60, 200, 50, 15);
     reverbTab->addAndMakeVisible(reverbLowCutLabel);
     
     reverbHighCutKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -1631,7 +1631,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbHighCutKnob.setValue(8000.0);
     reverbHighCutKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbHighCutKnob.setVisible(true);
-    reverbHighCutKnob.setBounds(100, 130, 50, 50);
+    reverbHighCutKnob.setBounds(130, 145, 50, 50);
     reverbTab->addAndMakeVisible(reverbHighCutKnob);
     
     reverbHighCutLabel.setText("HIGH CUT", juce::dontSendNotification);
@@ -1639,7 +1639,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbHighCutLabel.setJustificationType(juce::Justification::centred);
     reverbHighCutLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbHighCutLabel.setVisible(true);
-    reverbHighCutLabel.setBounds(100, 185, 50, 15);
+    reverbHighCutLabel.setBounds(130, 200, 50, 15);
     reverbTab->addAndMakeVisible(reverbHighCutLabel);
     
     // Row 4: Size and Pre Delay
@@ -1649,7 +1649,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbSizeKnob.setValue(50.0);
     reverbSizeKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbSizeKnob.setVisible(true);
-    reverbSizeKnob.setBounds(30, 210, 50, 50);
+    reverbSizeKnob.setBounds(60, 225, 50, 50);
     reverbTab->addAndMakeVisible(reverbSizeKnob);
     
     reverbSizeLabel.setText("SIZE", juce::dontSendNotification);
@@ -1657,7 +1657,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbSizeLabel.setJustificationType(juce::Justification::centred);
     reverbSizeLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbSizeLabel.setVisible(true);
-    reverbSizeLabel.setBounds(30, 265, 50, 15);
+    reverbSizeLabel.setBounds(60, 280, 50, 15);
     reverbTab->addAndMakeVisible(reverbSizeLabel);
     
     reverbPreDelayKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -1666,7 +1666,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbPreDelayKnob.setValue(20.0);
     reverbPreDelayKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbPreDelayKnob.setVisible(true);
-    reverbPreDelayKnob.setBounds(100, 210, 50, 50);
+    reverbPreDelayKnob.setBounds(130, 225, 50, 50);
     reverbTab->addAndMakeVisible(reverbPreDelayKnob);
     
     reverbPreDelayLabel.setText("PRE DELAY", juce::dontSendNotification);
@@ -1674,7 +1674,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbPreDelayLabel.setJustificationType(juce::Justification::centred);
     reverbPreDelayLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbPreDelayLabel.setVisible(true);
-    reverbPreDelayLabel.setBounds(100, 265, 50, 15);
+    reverbPreDelayLabel.setBounds(130, 280, 50, 15);
     reverbTab->addAndMakeVisible(reverbPreDelayLabel);
     
     // Row 5: Damp and Width
@@ -1684,7 +1684,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbDampKnob.setValue(50.0);
     reverbDampKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbDampKnob.setVisible(true);
-    reverbDampKnob.setBounds(30, 290, 50, 50);
+    reverbDampKnob.setBounds(60, 305, 50, 50);
     reverbTab->addAndMakeVisible(reverbDampKnob);
     
     reverbDampLabel.setText("DAMP", juce::dontSendNotification);
@@ -1692,7 +1692,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbDampLabel.setJustificationType(juce::Justification::centred);
     reverbDampLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbDampLabel.setVisible(true);
-    reverbDampLabel.setBounds(30, 345, 50, 15);
+    reverbDampLabel.setBounds(60, 360, 50, 15);
     reverbTab->addAndMakeVisible(reverbDampLabel);
     
     reverbWidthKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -1701,7 +1701,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbWidthKnob.setValue(80.0);
     reverbWidthKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbWidthKnob.setVisible(true);
-    reverbWidthKnob.setBounds(100, 290, 50, 50);
+    reverbWidthKnob.setBounds(130, 305, 50, 50);
     reverbTab->addAndMakeVisible(reverbWidthKnob);
     
     reverbWidthLabel.setText("WIDTH", juce::dontSendNotification);
@@ -1709,7 +1709,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbWidthLabel.setJustificationType(juce::Justification::centred);
     reverbWidthLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     reverbWidthLabel.setVisible(true);
-    reverbWidthLabel.setBounds(100, 345, 50, 15);
+    reverbWidthLabel.setBounds(130, 360, 50, 15);
     reverbTab->addAndMakeVisible(reverbWidthLabel);
     
     // Digital screen background color for tabs
@@ -1721,7 +1721,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     effectsModule.addTab("DIST", digitalBg, distortionTab, true);
     effectsModule.addTab("EQ", digitalBg, equalizerTab, true);
     effectsModule.addTab("FLANGE", digitalBg, flangerTab, true);
-    effectsModule.addTab("PHASE", digitalBg, phaserTab, true);
+    effectsModule.addTab("PHASER", digitalBg, phaserTab, true);
     effectsModule.addTab("REVERB", digitalBg, reverbTab, true);
     
     // Apply digital screen look and feel
@@ -1827,7 +1827,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     chorusTab->addAndMakeVisible(chorusMixLabel);
     
     // Power button
-    chorusPowerButton.setButtonText("POWER");
+    chorusPowerButton.setButtonText("CHORUS ON");
     chorusPowerButton.setClickingTogglesState(true);
     chorusPowerButton.setToggleState(false, juce::dontSendNotification);
     chorusPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
@@ -1926,7 +1926,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     compressorTab->addAndMakeVisible(compressorMixLabel);
     
     // Power button
-    compressorPowerButton.setButtonText("POWER");
+    compressorPowerButton.setButtonText("COMP ON");
     compressorPowerButton.setClickingTogglesState(true);
     compressorPowerButton.setToggleState(false, juce::dontSendNotification);
     compressorPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
@@ -2074,7 +2074,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     delayTab->addAndMakeVisible(delayMixLabel);
     
     // Power button
-    delayPowerButton.setButtonText("POWER");
+    delayPowerButton.setButtonText("DELAY ON");
     delayPowerButton.setClickingTogglesState(true);
     delayPowerButton.setToggleState(false, juce::dontSendNotification);
     delayPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
@@ -2126,7 +2126,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     distortionTab->addAndMakeVisible(distortionMixLabel);
     
     // Power button
-    distortionPowerButton.setButtonText("POWER");
+    distortionPowerButton.setButtonText("DIST ON");
     distortionPowerButton.setClickingTogglesState(true);
     distortionPowerButton.setToggleState(false, juce::dontSendNotification);
     distortionPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
