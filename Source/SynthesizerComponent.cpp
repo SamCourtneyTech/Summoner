@@ -2132,6 +2132,13 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     distortionPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     distortionTab->addAndMakeVisible(distortionPowerButton);
     
+    // Filter section label
+    distortionFilterSectionLabel.setText("FILTER", juce::dontSendNotification);
+    distortionFilterSectionLabel.setFont(juce::Font("Times New Roman", 10.0f, juce::Font::bold));
+    distortionFilterSectionLabel.setJustificationType(juce::Justification::centred);
+    distortionFilterSectionLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    distortionTab->addAndMakeVisible(distortionFilterSectionLabel);
+    
     // DISTORTION FILTER CONTROLS
     // Filter mode buttons (Off/Pre/Post)
     distortionFilterOffButton.setButtonText("OFF");
@@ -4749,20 +4756,20 @@ void SynthesizerComponent::layoutDistortionControls(juce::Rectangle<int>& bounds
     
     auto startY = 25; // Higher positioning for more rows
     
-    // Row 1: Power button and Mix knob (moved right 10 pixels)
-    auto row1Y = startY;
+    // Row 1: Power button and Mix knob (moved down 65 pixels)
+    auto row1Y = startY + 65;
     auto powerButtonX = (bounds.getWidth() - buttonWidth - knobSpacing - knobSize) / 2 + 5;
-    distortionPowerButton.setBounds(powerButtonX, row1Y, buttonWidth, buttonHeight);
+    distortionPowerButton.setBounds(powerButtonX, row1Y - 4, buttonWidth, buttonHeight);
     
     // Mix knob in same row as power button
     auto mixRow1X = powerButtonX + buttonWidth + knobSpacing;
-    distortionMixKnob.setBounds(mixRow1X, row1Y - (knobSize - buttonHeight) / 2, knobSize, knobSize);
-    distortionMixLabel.setBounds(mixRow1X, row1Y - (knobSize - buttonHeight) / 2 + knobSize + 3, knobSize, labelHeight);
+    distortionMixKnob.setBounds(mixRow1X, row1Y - (knobSize - buttonHeight) / 2 - 4, knobSize, knobSize);
+    distortionMixLabel.setBounds(mixRow1X, row1Y - (knobSize - buttonHeight) / 2 + knobSize - 12 - 4, knobSize, labelHeight);
     
-    // Row 2: Type selector, Drive knob (moved right 50px and down 30px)
-    auto row2Y = row1Y + buttonHeight + 50; // Moved down 30 pixels (20 + 30)
+    // Row 2: Type selector, Drive knob (moved up 45 pixels from previous position)
+    auto row2Y = row1Y + buttonHeight + 20; // Moved up 45 pixels total
     auto totalMainWidth = typeBoxWidth + knobSpacing + knobSize; // Only type + drive now
-    auto mainStartX = (bounds.getWidth() - totalMainWidth) / 2 + 10; // Moved right 10 pixels (20 - 10)
+    auto mainStartX = (bounds.getWidth() - totalMainWidth) / 2 - 6; // Moved left 6 pixels from center (10 - 4)
     
     // Type selector area
     auto typeY = row2Y + (knobSize - typeBoxHeight) / 2;
@@ -4772,16 +4779,20 @@ void SynthesizerComponent::layoutDistortionControls(juce::Rectangle<int>& bounds
     // Drive knob and label
     auto drive_x = mainStartX + typeBoxWidth + knobSpacing;
     distortionDriveKnob.setBounds(drive_x, row2Y, knobSize, knobSize);
-    distortionDriveLabel.setBounds(drive_x, row2Y + knobSize + 3, knobSize, labelHeight);
+    distortionDriveLabel.setBounds(drive_x, row2Y + knobSize - 12, knobSize, labelHeight);
     
     // Mix knob moved to row 1 - no longer here
     
+    // Filter section label (moved down 30 pixels from current position)
+    auto filterLabelY = row2Y + knobSize + labelHeight;
+    distortionFilterSectionLabel.setBounds((bounds.getWidth() - 60) / 2 + 6, filterLabelY, 60, 15);
+    
     // Row 3: Filter mode buttons (Off/Pre/Post) - moved down 40 pixels to avoid clashing
-    auto row3Y = row2Y + knobSize + labelHeight + 60;
+    auto row3Y = filterLabelY + 25;
     
     // Filter mode buttons (Off/Pre/Post) - centered (moved left 20 pixels)
     auto filterModeWidth = 3 * smallButtonWidth + 2 * 5; // Total width of 3 buttons + spacing
-    auto filterModeStartX = (bounds.getWidth() - filterModeWidth) / 2;
+    auto filterModeStartX = (bounds.getWidth() - filterModeWidth) / 2 + 6;
     distortionFilterOffButton.setBounds(filterModeStartX, row3Y, smallButtonWidth, buttonHeight);
     distortionFilterPreButton.setBounds(filterModeStartX + smallButtonWidth + 5, row3Y, smallButtonWidth, buttonHeight);
     distortionFilterPostButton.setBounds(filterModeStartX + 2 * (smallButtonWidth + 5), row3Y, smallButtonWidth, buttonHeight);
@@ -4789,20 +4800,20 @@ void SynthesizerComponent::layoutDistortionControls(juce::Rectangle<int>& bounds
     // Row 4: Filter type buttons (LP/BP/HP) - separate row
     auto row4Y = row3Y + buttonHeight + 15;
     auto filterTypeWidth = 3 * smallButtonWidth + 2 * 5; // Total width of 3 buttons + spacing
-    auto filterTypeStartX = (bounds.getWidth() - filterTypeWidth) / 2;
+    auto filterTypeStartX = (bounds.getWidth() - filterTypeWidth) / 2 + 6;
     distortionFilterLPButton.setBounds(filterTypeStartX, row4Y, smallButtonWidth, buttonHeight);
     distortionFilterBPButton.setBounds(filterTypeStartX + smallButtonWidth + 5, row4Y, smallButtonWidth, buttonHeight);
     distortionFilterHPButton.setBounds(filterTypeStartX + 2 * (smallButtonWidth + 5), row4Y, smallButtonWidth, buttonHeight);
     
-    // Row 5: Filter knobs (Freq, Q) - separate row below buttons
-    auto row5Y = row4Y + buttonHeight + 20;
-    auto filterKnobStartX = (bounds.getWidth() - (2 * knobSize) - knobSpacing) / 2 + 5; // Moved right 5 pixels
+    // Row 5: Filter knobs (Freq, Q) - separate row below buttons (moved up 20 pixels total)
+    auto row5Y = row4Y + buttonHeight;
+    auto filterKnobStartX = (bounds.getWidth() - (2 * knobSize) - knobSpacing) / 2 + 8; // Moved right 8 pixels (11 - 3)
     
     distortionFilterFreqKnob.setBounds(filterKnobStartX, row5Y, knobSize, knobSize);
-    distortionFilterFreqLabel.setBounds(filterKnobStartX, row5Y + knobSize + 3, knobSize, labelHeight);
+    distortionFilterFreqLabel.setBounds(filterKnobStartX, row5Y + knobSize - 12, knobSize, labelHeight);
     
     distortionFilterQKnob.setBounds(filterKnobStartX + knobSize + knobSpacing, row5Y, knobSize, knobSize);
-    distortionFilterQLabel.setBounds(filterKnobStartX + knobSize + knobSpacing, row5Y + knobSize + 3, knobSize, labelHeight);
+    distortionFilterQLabel.setBounds(filterKnobStartX + knobSize + knobSpacing, row5Y + knobSize - 12, knobSize, labelHeight);
 }
 
 void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)

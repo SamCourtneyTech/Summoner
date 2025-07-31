@@ -1090,6 +1090,7 @@ private:
     juce::TextButton distortionPowerButton;
     
     // Distortion filter controls
+    juce::Label distortionFilterSectionLabel;
     juce::TextButton distortionFilterOffButton;
     juce::TextButton distortionFilterPreButton;
     juce::TextButton distortionFilterPostButton;
