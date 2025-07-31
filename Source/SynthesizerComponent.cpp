@@ -4674,72 +4674,73 @@ void SynthesizerComponent::layoutDelayControls(juce::Rectangle<int>& bounds)
     // Calculate positions for layout
     auto startY = 25; // Same as other effects but slightly higher due to more rows
     
-    // Row 1: Power button (left), BPM and LINK buttons (center), Mix knob (right)
+    // Row 1: Delay ON button and Mix knob (top row, moved right 5 pixels)
     auto row1Y = startY;
-    auto powerX = 20;
-    delayPowerButton.setBounds(powerX, row1Y, buttonWidth, buttonHeight);
+    auto powerButtonX = (bounds.getWidth() - buttonWidth - knobSpacing - knobSize) / 2 + 5;
+    delayPowerButton.setBounds(powerButtonX, row1Y, buttonWidth, buttonHeight);
     
-    auto bpmX = bounds.getWidth() / 2 - buttonWidth - 10;
-    delayBpmButton.setBounds(bpmX, row1Y, buttonWidth, buttonHeight);
+    // Mix knob in same row as power button
+    auto mixRow1X = powerButtonX + buttonWidth + knobSpacing;
+    delayMixKnob.setBounds(mixRow1X, row1Y - (knobSize - buttonHeight) / 2, knobSize, knobSize);
+    delayMixLabel.setBounds(mixRow1X, row1Y - (knobSize - buttonHeight) / 2 + knobSize + 3, knobSize, labelHeight);
     
-    auto linkX = bounds.getWidth() / 2 + 10;
-    delayLinkButton.setBounds(linkX, row1Y, buttonWidth, buttonHeight);
-    
-    auto mixX = bounds.getWidth() - knobSize - 20;
-    auto mixY = row1Y + (buttonHeight - knobSize) / 2;
-    delayMixKnob.setBounds(mixX, mixY, knobSize, knobSize);
-    delayMixLabel.setBounds(mixX, mixY + knobSize + 3, knobSize, labelHeight);
-    
-    // Row 2: Left Time, Feedback, Right Time knobs
+    // Row 2: BPM and LINK buttons (moved right 5 pixels)
     auto row2Y = row1Y + std::max(buttonHeight, knobSize) + 20;
+    auto bpmX = bounds.getWidth() / 2 - buttonWidth - 10 + 5;
+    delayBpmButton.setBounds(bpmX, row2Y, buttonWidth, buttonHeight);
+    
+    auto linkX = bounds.getWidth() / 2 + 10 + 5;
+    delayLinkButton.setBounds(linkX, row2Y, buttonWidth, buttonHeight);
+    
+    // Row 3: Left Time, Feedback, Right Time knobs (moved right 3 pixels)
+    auto row3Y = row2Y + buttonHeight + 20;
     auto totalKnobWidth = (3 * knobSize) + (2 * knobSpacing);
-    auto knobStartX = (bounds.getWidth() - totalKnobWidth) / 2;
+    auto knobStartX = (bounds.getWidth() - totalKnobWidth) / 2 + 3;
     
     // Left time
-    delayLeftTimeSlider.setBounds(knobStartX, row2Y, knobSize, knobSize);
-    delayLeftTimeLabel.setBounds(knobStartX, row2Y + knobSize + 3, knobSize, labelHeight);
+    delayLeftTimeSlider.setBounds(knobStartX, row3Y, knobSize, knobSize);
+    delayLeftTimeLabel.setBounds(knobStartX, row3Y + knobSize + 3, knobSize, labelHeight);
     
     // Feedback (center)
     auto feedbackX = knobStartX + knobSize + knobSpacing;
-    delayFeedbackKnob.setBounds(feedbackX, row2Y, knobSize, knobSize);
-    delayFeedbackLabel.setBounds(feedbackX, row2Y + knobSize + 3, knobSize, labelHeight);
+    delayFeedbackKnob.setBounds(feedbackX, row3Y, knobSize, knobSize);
+    delayFeedbackLabel.setBounds(feedbackX, row3Y + knobSize + 3, knobSize, labelHeight);
     
     // Right time
     auto rightTimeX = knobStartX + 2 * (knobSize + knobSpacing);
-    delayRightTimeSlider.setBounds(rightTimeX, row2Y, knobSize, knobSize);
-    delayRightTimeLabel.setBounds(rightTimeX, row2Y + knobSize + 3, knobSize, labelHeight);
+    delayRightTimeSlider.setBounds(rightTimeX, row3Y, knobSize, knobSize);
+    delayRightTimeLabel.setBounds(rightTimeX, row3Y + knobSize + 3, knobSize, labelHeight);
     
-    // Row 3: Triplet and dot buttons under time knobs
-    auto row3Y = row2Y + knobSize + labelHeight + 10;
+    // Row 4: Triplet and dot buttons under time knobs (moved right 3 pixels with row 3)
+    auto row4Y = row3Y + knobSize + labelHeight + 10;
     
-    // Left triplet and dot buttons (under left time)
+    // Left triplet and dot buttons (under left time) - positioned relative to knobStartX which already moved 3px
     auto leftTripletX = knobStartX + (knobSize - 2 * smallButtonWidth - 5) / 2;
-    delayLeftTripletButton.setBounds(leftTripletX, row3Y, smallButtonWidth, buttonHeight);
-    delayLeftDotButton.setBounds(leftTripletX + smallButtonWidth + 5, row3Y, smallButtonWidth, buttonHeight);
+    delayLeftTripletButton.setBounds(leftTripletX, row4Y, smallButtonWidth, buttonHeight);
+    delayLeftDotButton.setBounds(leftTripletX + smallButtonWidth + 5, row4Y, smallButtonWidth, buttonHeight);
     
-    // Right triplet and dot buttons (under right time)
+    // Right triplet and dot buttons (under right time) - positioned relative to rightTimeX which moved with knobStartX
     auto rightTripletX = rightTimeX + (knobSize - 2 * smallButtonWidth - 5) / 2;
-    delayRightTripletButton.setBounds(rightTripletX, row3Y, smallButtonWidth, buttonHeight);
-    delayRightDotButton.setBounds(rightTripletX + smallButtonWidth + 5, row3Y, smallButtonWidth, buttonHeight);
+    delayRightTripletButton.setBounds(rightTripletX, row4Y, smallButtonWidth, buttonHeight);
+    delayRightDotButton.setBounds(rightTripletX + smallButtonWidth + 5, row4Y, smallButtonWidth, buttonHeight);
     
-    // Row 4: Filter Freq, Filter Q knobs and Normal/Ping-Pong buttons
-    auto row4Y = row3Y + buttonHeight + 15;
+    // Row 5: Filter Freq and Filter Q knobs (separate row)
+    auto row5Y = row4Y + buttonHeight + 15;
+    auto filterKnobWidth = (2 * knobSize) + knobSpacing;
+    auto filterKnobStartX = (bounds.getWidth() - filterKnobWidth) / 2;
     
-    // Filter frequency knob (left)
-    auto filterStartX = (bounds.getWidth() - (2 * knobSize + knobSpacing + 2 * buttonWidth + 20)) / 2;
-    delayFilterFreqKnob.setBounds(filterStartX, row4Y, knobSize, knobSize);
-    delayFilterFreqLabel.setBounds(filterStartX, row4Y + knobSize + 3, knobSize, labelHeight);
+    delayFilterFreqKnob.setBounds(filterKnobStartX, row5Y, knobSize, knobSize);
+    delayFilterFreqLabel.setBounds(filterKnobStartX, row5Y + knobSize + 3, knobSize, labelHeight);
     
-    // Filter Q knob
-    auto filterQX = filterStartX + knobSize + knobSpacing;
-    delayFilterQKnob.setBounds(filterQX, row4Y, knobSize, knobSize);
-    delayFilterQLabel.setBounds(filterQX, row4Y + knobSize + 3, knobSize, labelHeight);
+    auto filterQX = filterKnobStartX + knobSize + knobSpacing;
+    delayFilterQKnob.setBounds(filterQX, row5Y, knobSize, knobSize);
+    delayFilterQLabel.setBounds(filterQX, row5Y + knobSize + 3, knobSize, labelHeight);
     
-    // Normal and Ping-Pong buttons (right side)
-    auto normalX = filterQX + knobSize + 30;
-    auto buttonY = row4Y + (knobSize - 2 * buttonHeight - 5) / 2;
-    delayNormalButton.setBounds(normalX, buttonY, buttonWidth, buttonHeight);
-    delayPingPongButton.setBounds(normalX, buttonY + buttonHeight + 5, buttonWidth, buttonHeight);
+    // Row 6: Normal and Ping-Pong buttons (separate row)
+    auto row6Y = row5Y + knobSize + labelHeight + 15;
+    auto buttonStartX = (bounds.getWidth() - buttonWidth) / 2;
+    delayNormalButton.setBounds(buttonStartX, row6Y, buttonWidth, buttonHeight);
+    delayPingPongButton.setBounds(buttonStartX, row6Y + buttonHeight + 5, buttonWidth, buttonHeight);
 }
 
 void SynthesizerComponent::layoutDistortionControls(juce::Rectangle<int>& bounds)
