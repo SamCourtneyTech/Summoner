@@ -434,7 +434,7 @@ public:
         
         // Set up rate value display label
         lfoRateValueLabel.setText("1.000 Hz", juce::dontSendNotification);
-        lfoRateValueLabel.setFont(juce::Font("Press Start 2P", 6.5f, juce::Font::plain));
+        lfoRateValueLabel.setFont(juce::Font("Press Start 2P", 7.5f, juce::Font::plain));
         lfoRateValueLabel.setColour(juce::Label::textColourId, juce::Colours::white);
         lfoRateValueLabel.setJustificationType(juce::Justification::centred);
         lfoRateValueLabel.setColour(juce::Label::backgroundColourId, juce::Colour(0xff1a1a1a));
@@ -695,8 +695,8 @@ public:
         lfoRateLabel.setBounds(rateLabelArea);
         lfoRateKnob.setBounds(rateKnobArea);
         
-        // Rate value display box next to rate knob (moved 105 pixels to the left and 8 pixels down)
-        auto rateValueArea = juce::Rectangle<int>(rateKnobArea.getRight() + 5 - 105, rateKnobArea.getY() + 16, 60, 16);
+        // Rate value display box next to rate knob (moved 118 pixels to the left and 3 pixels down)
+        auto rateValueArea = juce::Rectangle<int>(rateKnobArea.getRight() + 5 - 118, rateKnobArea.getY() + 11, 75, 20);
         lfoRateValueLabel.setBounds(rateValueArea);
         
         // Trigger button on left
