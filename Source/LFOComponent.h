@@ -361,7 +361,9 @@ public:
     public:
         void drawButtonText(juce::Graphics& g, juce::TextButton& button, bool, bool) override
         {
-            auto font = juce::Font("Press Start 2P", 7.0f, juce::Font::plain); // Readable font size
+            // Use smaller font for trigger button, normal for others
+            float fontSize = (button.getButtonText() == "TRIGGER") ? 5.0f : 7.0f;
+            auto font = juce::Font("Press Start 2P", fontSize, juce::Font::plain);
             g.setFont(font);
             g.setColour(button.findColour(button.getToggleState() ? juce::TextButton::textColourOnId
                                                                    : juce::TextButton::textColourOffId)
@@ -699,8 +701,8 @@ public:
         auto rateValueArea = juce::Rectangle<int>(rateKnobArea.getRight() + 5 - 118, rateKnobArea.getY() + 11, 75, 20);
         lfoRateValueLabel.setBounds(rateValueArea);
         
-        // Trigger button on left
-        auto triggerArea = juce::Rectangle<int>(10, 10, 50, 20);
+        // Trigger button on left (moved 25 pixels right and 3 pixels down)
+        auto triggerArea = juce::Rectangle<int>(35, 13, 45, 18);
         lfoTriggerButton.setBounds(triggerArea);
         
         // Draw button on right (moved 55 pixels to the left and 5 pixels down)
@@ -788,8 +790,18 @@ public:
         
         if (lfoHzButton.getToggleState())
         {
-            // Hz mode: 0.1 to 20.0 Hz (from knob range) mapped to 0.000 to 100 Hz display
-            double displayHz = (rateValue - 0.1) / (20.0 - 0.1) * 100.0;
+            // Hz mode: slightly compressed logarithmic mapping from 0.001 to 100 Hz
+            // Map knob range 0.1-20.0 to logarithmic scale 0.001-100 Hz with reduced granularity
+            double normalizedValue = (rateValue - 0.1) / (20.0 - 0.1); // 0.0 to 1.0
+            
+            // Apply power curve to compress the lower end even more
+            double compressedValue = std::pow(normalizedValue, 0.25); // 0.25 creates more even distribution
+            
+            double logMin = std::log(0.001); // ln(0.001) ≈ -6.91
+            double logMax = std::log(100.0);  // ln(100) ≈ 4.61
+            double logValue = logMin + compressedValue * (logMax - logMin);
+            double displayHz = std::exp(logValue);
+            
             juce::String displayText = juce::String(displayHz, 3) + " Hz";
             lfoRateValueLabel.setText(displayText, juce::dontSendNotification);
         }
