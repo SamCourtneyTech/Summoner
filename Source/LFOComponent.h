@@ -9,6 +9,8 @@ public:
     {
         waveformPoints.resize(numWaveformPoints);
         resetToSineWave();
+        initializeControlPoints();
+        discreteEditMode = true; // Start in discrete edit mode since draw button is enabled by default
     }
     ~LFOComponent() override {}
     
@@ -37,27 +39,28 @@ public:
         if (waveformArea.getWidth() <= 0 || waveformArea.getHeight() <= 0) 
             return;
         
-        // Draw grid lines
+        // Draw enhanced grid lines
         g.setColour(juce::Colour(0xff202020));
         
         // Horizontal center line
         int centerY = waveformArea.getCentreY();
         g.drawLine(waveformArea.getX(), centerY, waveformArea.getRight(), centerY, 1.0f);
         
-        // Vertical grid lines (4 divisions)
-        for (int i = 1; i < 4; ++i)
+        // Vertical grid lines (8 divisions for finer grid)
+        for (int i = 1; i < 8; ++i)
         {
-            int x = waveformArea.getX() + (waveformArea.getWidth() * i / 4);
+            int x = waveformArea.getX() + (waveformArea.getWidth() * i / 8);
             g.setColour(juce::Colour(0xff151515));
             g.drawLine(x, waveformArea.getY(), x, waveformArea.getBottom(), 0.5f);
         }
         
-        // Horizontal grid lines (top and bottom quarter lines)
-        int quarterY1 = waveformArea.getY() + waveformArea.getHeight() / 4;
-        int quarterY2 = waveformArea.getY() + (waveformArea.getHeight() * 3 / 4);
-        g.setColour(juce::Colour(0xff151515));
-        g.drawLine(waveformArea.getX(), quarterY1, waveformArea.getRight(), quarterY1, 0.5f);
-        g.drawLine(waveformArea.getX(), quarterY2, waveformArea.getRight(), quarterY2, 0.5f);
+        // Horizontal grid lines (8 divisions for finer grid)
+        for (int i = 1; i < 8; ++i)
+        {
+            int y = waveformArea.getY() + (waveformArea.getHeight() * i / 8);
+            g.setColour(juce::Colour(0xff151515));
+            g.drawLine(waveformArea.getX(), y, waveformArea.getRight(), y, 0.5f);
+        }
         
         // Draw the waveform
         if (waveformPoints.size() >= 2)
@@ -92,9 +95,28 @@ public:
             g.setColour(juce::Colours::white);
             g.strokePath(waveformPath, juce::PathStrokeType(2.0f));
             
-            // Draw control points as small circles when editing
-            if (isDragging)
+            // Draw control points based on editing mode
+            if (discreteEditMode)
             {
+                // Draw discrete control points
+                for (int i = 0; i < controlPoints.size(); ++i)
+                {
+                    auto& cp = controlPoints[i];
+                    int x = waveformArea.getX() + static_cast<int>(cp.x * waveformArea.getWidth());
+                    int y = waveformArea.getY() + static_cast<int>((1.0f - cp.y) * waveformArea.getHeight());
+                    
+                    // Outer ring
+                    g.setColour(juce::Colours::white.withAlpha(0.8f));
+                    g.fillEllipse(x - 4, y - 4, 8, 8);
+                    
+                    // Inner dot
+                    g.setColour(cp.selected ? juce::Colours::orange : juce::Colours::black);
+                    g.fillEllipse(x - 2, y - 2, 4, 4);
+                }
+            }
+            else if (isDragging)
+            {
+                // Show continuous editing points
                 g.setColour(juce::Colours::white.withAlpha(0.6f));
                 for (int i = 0; i < waveformPoints.size(); i += 8) // Show every 8th point
                 {
@@ -116,9 +138,28 @@ public:
         if (!waveformArea.contains(event.getPosition()))
             return;
             
-        isDragging = true;
-        dragStartIndex = getWaveformIndexFromX(event.x);
-        updateWaveformPoint(event.x, event.y);
+        lastMousePos = event.getPosition();
+        
+        if (discreteEditMode)
+        {
+            // Check if clicking on existing control point
+            selectedControlPoint = getControlPointAt(event.getPosition());
+            if (selectedControlPoint >= 0)
+            {
+                // Deselect all, select clicked one
+                for (auto& cp : controlPoints)
+                    cp.selected = false;
+                controlPoints[selectedControlPoint].selected = true;
+                isDragging = true;
+            }
+        }
+        else
+        {
+            // Continuous editing mode
+            isDragging = true;
+            dragStartIndex = getWaveformIndexFromX(event.x);
+            updateWaveformPoint(event.x, event.y);
+        }
         repaint();
     }
     
@@ -127,7 +168,23 @@ public:
         if (!isDragging)
             return;
             
-        updateWaveformPoint(event.x, event.y);
+        if (discreteEditMode && selectedControlPoint >= 0)
+        {
+            // Drag control point
+            float x = (event.x - waveformArea.getX()) / float(waveformArea.getWidth());
+            float y = 1.0f - (event.y - waveformArea.getY()) / float(waveformArea.getHeight());
+            x = juce::jlimit(0.0f, 1.0f, x);
+            y = juce::jlimit(0.0f, 1.0f, y);
+            
+            controlPoints[selectedControlPoint].x = x;
+            controlPoints[selectedControlPoint].y = y;
+            updateWaveformFromControlPoints();
+        }
+        else if (!discreteEditMode)
+        {
+            // Continuous editing
+            updateWaveformPoint(event.x, event.y);
+        }
         repaint();
     }
     
@@ -135,12 +192,49 @@ public:
     {
         isDragging = false;
         dragStartIndex = -1;
+        selectedControlPoint = -1;
+        repaint();
+    }
+    
+    void mouseDoubleClick(const juce::MouseEvent& event) override
+    {
+        if (!waveformArea.contains(event.getPosition()) || !discreteEditMode)
+            return;
+            
+        // Add new control point at double-click location
+        float x = (event.x - waveformArea.getX()) / float(waveformArea.getWidth());
+        float y = 1.0f - (event.y - waveformArea.getY()) / float(waveformArea.getHeight());
+        x = juce::jlimit(0.0f, 1.0f, x);
+        y = juce::jlimit(0.0f, 1.0f, y);
+        
+        ControlPoint newPoint;
+        newPoint.x = x;
+        newPoint.y = y;
+        newPoint.selected = false;
+        
+        // Insert in correct position to maintain x-order
+        auto insertPos = std::lower_bound(controlPoints.begin(), controlPoints.end(), newPoint,
+            [](const ControlPoint& a, const ControlPoint& b) { return a.x < b.x; });
+        controlPoints.insert(insertPos, newPoint);
+        
+        updateWaveformFromControlPoints();
         repaint();
     }
     
     // Get/set waveform data
     const std::vector<float>& getWaveformData() const { return waveformPoints; }
     void setWaveformData(const std::vector<float>& data) {}
+    
+    // Discrete edit mode control
+    void setDiscreteEditMode(bool enabled) 
+    { 
+        discreteEditMode = enabled; 
+        if (enabled && controlPoints.empty()) 
+        {
+            initializeControlPoints();
+        }
+        repaint();
+    }
     
     // Reset to default waveform
     void resetToSineWave()
@@ -194,9 +288,20 @@ private:
     std::vector<float> waveformPoints;
     static const int numWaveformPoints = 128; // Resolution of drawable waveform
     
+    // Control points for discrete editing mode
+    struct ControlPoint {
+        float x; // 0.0 to 1.0
+        float y; // 0.0 to 1.0
+        bool selected = false;
+    };
+    std::vector<ControlPoint> controlPoints;
+    bool discreteEditMode = false;
+    
     // Drawing state
     bool isDragging = false;
     int dragStartIndex = -1;
+    int selectedControlPoint = -1;
+    juce::Point<int> lastMousePos;
     
     // Helper methods
     void updateWaveformPoint(int x, int y)
@@ -258,6 +363,75 @@ private:
         int y = waveformArea.getY() + static_cast<int>(normalizedY * waveformArea.getHeight());
         
         return juce::Point<int>(x, y);
+    }
+    
+    int getControlPointAt(juce::Point<int> mousePos)
+    {
+        for (int i = 0; i < controlPoints.size(); ++i)
+        {
+            auto& cp = controlPoints[i];
+            int x = waveformArea.getX() + static_cast<int>(cp.x * waveformArea.getWidth());
+            int y = waveformArea.getY() + static_cast<int>((1.0f - cp.y) * waveformArea.getHeight());
+            
+            // Check if within 8 pixel radius
+            if (mousePos.getDistanceFrom(juce::Point<int>(x, y)) <= 8.0f)
+                return i;
+        }
+        return -1;
+    }
+    
+    void updateWaveformFromControlPoints()
+    {
+        if (controlPoints.empty())
+            return;
+            
+        // Interpolate waveform from control points
+        for (int i = 0; i < waveformPoints.size(); ++i)
+        {
+            float x = i / float(waveformPoints.size() - 1);
+            waveformPoints[i] = interpolateControlPoints(x);
+        }
+    }
+    
+    float interpolateControlPoints(float x)
+    {
+        if (controlPoints.empty())
+            return 0.5f;
+            
+        if (controlPoints.size() == 1)
+            return controlPoints[0].y;
+            
+        // Find surrounding control points
+        int leftIndex = -1, rightIndex = -1;
+        
+        for (int i = 0; i < controlPoints.size(); ++i)
+        {
+            if (controlPoints[i].x <= x)
+                leftIndex = i;
+            if (controlPoints[i].x >= x && rightIndex == -1)
+                rightIndex = i;
+        }
+        
+        // Handle edge cases
+        if (leftIndex == -1)
+            return controlPoints[0].y;
+        if (rightIndex == -1)
+            return controlPoints[controlPoints.size() - 1].y;
+        if (leftIndex == rightIndex)
+            return controlPoints[leftIndex].y;
+            
+        // Linear interpolation
+        float t = (x - controlPoints[leftIndex].x) / (controlPoints[rightIndex].x - controlPoints[leftIndex].x);
+        return controlPoints[leftIndex].y + t * (controlPoints[rightIndex].y - controlPoints[leftIndex].y);
+    }
+    
+    void initializeControlPoints()
+    {
+        controlPoints.clear();
+        // Add default control points at start and end
+        controlPoints.push_back({0.0f, 0.5f, false});
+        controlPoints.push_back({1.0f, 0.5f, false});
+        updateWaveformFromControlPoints();
     }
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LFOComponent)
@@ -816,9 +990,14 @@ public:
             if (isDrawMode)
             {
                 lfoChaosButton.setToggleState(false, juce::dontSendNotification);
+                // Enable discrete edit mode
+                lfoWaveform.setDiscreteEditMode(true);
             }
-            // TODO: Enable/disable draw mode when implementation is added
-            // This could switch between different drawing behaviors
+            else
+            {
+                // Disable discrete edit mode (revert to continuous drawing)
+                lfoWaveform.setDiscreteEditMode(false);
+            }
         }
         // else if (button == &lfoSineButton)
         // {
@@ -843,6 +1022,8 @@ public:
             if (isChaosMode)
             {
                 lfoDrawButton.setToggleState(false, juce::dontSendNotification);
+                // Disable discrete edit mode
+                lfoWaveform.setDiscreteEditMode(false);
             }
             // TODO: Implement chaos LFO mode - for now just placeholder
             // This could generate a random/chaotic waveform or enable the current smooth drawing behavior
