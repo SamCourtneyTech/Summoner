@@ -649,14 +649,16 @@ public:
         // Right side buttons - CHAOS button and Hz/BPM controls
         auto rightButtonArea = topArea.removeFromRight(120);
         
-        // CHAOS button on right
+        // CHAOS button on right (moved 70 pixels to the left)
         auto chaosArea = rightButtonArea.removeFromLeft(60);
-        lfoChaosButton.setBounds(chaosArea.reduced(2, 1));
+        auto chaosRect = chaosArea.reduced(2, 1);
+        chaosRect = chaosRect.translated(-70, 0);
+        lfoChaosButton.setBounds(chaosRect);
         
-        // Hz/BPM buttons stacked vertically
-        auto hzBpmArea = rightButtonArea.removeFromLeft(60);
+        // Hz/BPM buttons stacked vertically (moved 20 pixels to the left)
+        auto hzBpmArea = rightButtonArea.removeFromLeft(60).translated(-20, 0);
         auto hzArea = hzBpmArea.removeFromTop(11);
-        auto bpmArea = hzBpmArea;
+        auto bpmArea = hzBpmArea.translated(0, 2);
         lfoHzButton.setBounds(hzArea.reduced(2, 0));
         lfoBpmButton.setBounds(bpmArea.reduced(2, 0));
         
@@ -685,8 +687,8 @@ public:
         auto triggerArea = juce::Rectangle<int>(10, 10, 50, 20);
         lfoTriggerButton.setBounds(triggerArea);
         
-        // Draw button on right
-        auto drawArea = juce::Rectangle<int>(bottomControlsArea.getWidth() - 60, 10, 50, 20);
+        // Draw button on right (moved 55 pixels to the left and 5 pixels down)
+        auto drawArea = juce::Rectangle<int>(bottomControlsArea.getWidth() - 115, 15, 50, 20);
         lfoDrawButton.setBounds(drawArea);
     }
     
