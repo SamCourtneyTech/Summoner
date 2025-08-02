@@ -4552,51 +4552,55 @@ void SynthesizerComponent::layoutChorusControls(juce::Rectangle<int>& bounds)
     // Top row: Power button and Mix knob closer together
     auto topRowY = startY;
     
-    // Calculate closer positioning for power button and mix knob
-    auto topRowWidth = buttonWidth + 40 + knobSize; // Button + gap + knob
-    auto topRowStartX = (bounds.getWidth() - topRowWidth) / 2; // Center the top row
+    // Calculate closer positioning for power button and mix knob (moved left 20 pixels)
+    auto topRowWidth = buttonWidth + 25 + knobSize; // Button + smaller gap + knob
+    auto topRowStartX = (bounds.getWidth() - topRowWidth) / 2 - 3; // Center the top row, moved left 3px (2 + 1)
     
-    // Power button (positioned closer to center)
-    auto powerButtonX = topRowStartX;
-    chorusPowerButton.setBounds(powerButtonX, topRowY, buttonWidth, buttonHeight);
+    // Power button (moved 12 pixels to the right from new position)
+    auto powerButtonX = topRowStartX + 12;
+    chorusPowerButton.setBounds(powerButtonX, topRowY + 60, buttonWidth, buttonHeight);
     
     // Mix knob (positioned closer to power button)
-    auto mixX = topRowStartX + buttonWidth + 40; // 40px gap instead of full width
+    auto mixX = topRowStartX + buttonWidth + 25; // 25px gap instead of 40px
     auto mixKnobY = topRowY + (buttonHeight - knobSize) / 2; // Center with power button
-    chorusMixKnob.setBounds(mixX, mixKnobY, knobSize, knobSize);
-    chorusMixLabel.setBounds(mixX, mixKnobY + knobSize + 3, knobSize, labelHeight);
+    chorusMixKnob.setBounds(mixX, mixKnobY + 60, knobSize, knobSize);
+    chorusMixLabel.setBounds(mixX, mixKnobY + 60 + knobSize + 3, knobSize, labelHeight);
     
-    // First knob row: Rate, Delay 1, Delay 2 (perfectly centered)
-    auto row1Y = topRowY + std::max(buttonHeight, knobSize) + 25; // Space after top row
+    // First knob row: Rate, Delay 1, Delay 2 (moved right 7 pixels and down 60 pixels)
+    auto row1Y = topRowY + std::max(buttonHeight, knobSize) + 25 + 60; // Space after top row + 60 pixels
+    auto row2StartX = startX + 7; // Moved right 7 pixels
     
     // Rate knob and label
-    chorusRateKnob.setBounds(startX, row1Y, knobSize, knobSize);
-    chorusRateLabel.setBounds(startX, row1Y + knobSize + 3, knobSize, labelHeight);
+    chorusRateKnob.setBounds(row2StartX, row1Y, knobSize, knobSize);
+    chorusRateLabel.setBounds(row2StartX, row1Y + knobSize + 3, knobSize, labelHeight);
     
     // Delay 1 knob and label
-    auto delay1_x = startX + knobSize + knobSpacing;
+    auto delay1_x = row2StartX + knobSize + knobSpacing;
     chorusDelay1Knob.setBounds(delay1_x, row1Y, knobSize, knobSize);
     chorusDelay1Label.setBounds(delay1_x, row1Y + knobSize + 3, knobSize, labelHeight);
     
     // Delay 2 knob and label
-    auto delay2_x = startX + 2 * (knobSize + knobSpacing);
+    auto delay2_x = row2StartX + 2 * (knobSize + knobSpacing);
     chorusDelay2Knob.setBounds(delay2_x, row1Y, knobSize, knobSize);
     chorusDelay2Label.setBounds(delay2_x, row1Y + knobSize + 3, knobSize, labelHeight);
     
-    // Second knob row: Depth, Feed, LPF (perfectly aligned)
+    // Second knob row: Depth, Feed, LPF (moved right 7 pixels and down 60 pixels)
     auto row2Y = row1Y + knobSize + labelHeight + rowSpacing;
+    auto row3StartX = startX + 7; // Moved right 7 pixels
     
     // Depth knob and label
-    chorusDepthKnob.setBounds(startX, row2Y, knobSize, knobSize);
-    chorusDepthLabel.setBounds(startX, row2Y + knobSize + 3, knobSize, labelHeight);
+    chorusDepthKnob.setBounds(row3StartX, row2Y, knobSize, knobSize);
+    chorusDepthLabel.setBounds(row3StartX, row2Y + knobSize + 3, knobSize, labelHeight);
     
     // Feed knob and label
-    chorusFeedKnob.setBounds(delay1_x, row2Y, knobSize, knobSize);
-    chorusFeedLabel.setBounds(delay1_x, row2Y + knobSize + 3, knobSize, labelHeight);
+    auto feedX = row3StartX + knobSize + knobSpacing;
+    chorusFeedKnob.setBounds(feedX, row2Y, knobSize, knobSize);
+    chorusFeedLabel.setBounds(feedX, row2Y + knobSize + 3, knobSize, labelHeight);
     
     // LPF knob and label
-    chorusLpfKnob.setBounds(delay2_x, row2Y, knobSize, knobSize);
-    chorusLpfLabel.setBounds(delay2_x, row2Y + knobSize + 3, knobSize, labelHeight);
+    auto lpfX = row3StartX + 2 * (knobSize + knobSpacing);
+    chorusLpfKnob.setBounds(lpfX, row2Y, knobSize, knobSize);
+    chorusLpfLabel.setBounds(lpfX, row2Y + knobSize + 3, knobSize, labelHeight);
 }
 
 void SynthesizerComponent::layoutCompressorControls(juce::Rectangle<int>& bounds)
