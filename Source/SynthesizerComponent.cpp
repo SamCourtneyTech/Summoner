@@ -4617,47 +4617,50 @@ void SynthesizerComponent::layoutCompressorControls(juce::Rectangle<int>& bounds
     // Top row: Power button (left) and Mix knob (right)
     auto topRowY = startY;
     
-    // Power button (positioned on left side)
-    auto powerButtonX = startX;
-    compressorPowerButton.setBounds(powerButtonX, topRowY, buttonWidth, buttonHeight);
+    // Power button (moved 28 pixels to the right)
+    auto powerButtonX = startX + 28;
+    compressorPowerButton.setBounds(powerButtonX, topRowY + 60, buttonWidth, buttonHeight);
     
-    // Mix knob (positioned on right side, aligned with power button)
-    auto mixX = startX + 2 * (knobSize + knobSpacing); // Right side position
-    auto mixKnobY = topRowY + (buttonHeight - knobSize) / 2; // Center with power button
+    // Mix knob (positioned on right side, moved left 37 pixels with row)
+    auto mixX = startX + 2 * (knobSize + knobSpacing) - 37; // Right side position, moved left 37px
+    auto mixKnobY = topRowY + 60 + (buttonHeight - knobSize) / 2; // Center with power button
     compressorMixKnob.setBounds(mixX, mixKnobY, knobSize, knobSize);
     compressorMixLabel.setBounds(mixX, mixKnobY + knobSize + 3, knobSize, labelHeight);
     
-    // First knob row: Threshold, Ratio, Attack (perfectly centered)
-    auto row1Y = topRowY + std::max(buttonHeight, knobSize) + 25; // Space after top row
+    // First knob row: Threshold, Ratio, Attack (moved right 7 pixels and down 60 pixels)
+    auto row1Y = topRowY + std::max(buttonHeight, knobSize) + 25 + 60; // Space after top row + 60 pixels down
+    auto row2StartX = startX + 7; // Moved right 7 pixels
     
     // Threshold knob and label
-    compressorThresholdKnob.setBounds(startX, row1Y, knobSize, knobSize);
-    compressorThresholdLabel.setBounds(startX, row1Y + knobSize + 3, knobSize, labelHeight);
+    compressorThresholdKnob.setBounds(row2StartX, row1Y, knobSize, knobSize);
+    compressorThresholdLabel.setBounds(row2StartX, row1Y + knobSize + 3, knobSize, labelHeight);
     
     // Ratio knob and label
-    auto ratio_x = startX + knobSize + knobSpacing;
+    auto ratio_x = row2StartX + knobSize + knobSpacing;
     compressorRatioKnob.setBounds(ratio_x, row1Y, knobSize, knobSize);
     compressorRatioLabel.setBounds(ratio_x, row1Y + knobSize + 3, knobSize, labelHeight);
     
     // Attack knob and label
-    auto attack_x = startX + 2 * (knobSize + knobSpacing);
+    auto attack_x = row2StartX + 2 * (knobSize + knobSpacing);
     compressorAttackKnob.setBounds(attack_x, row1Y, knobSize, knobSize);
     compressorAttackLabel.setBounds(attack_x, row1Y + knobSize + 3, knobSize, labelHeight);
     
-    // Second knob row: Release, Gain, and Multiband button (perfectly aligned)
+    // Second knob row: Release, Gain, and Multiband button (moved right 7 pixels and down 60 pixels)
     auto row2Y = row1Y + knobSize + labelHeight + rowSpacing;
+    auto row3StartX = startX + 7; // Moved right 7 pixels
     
     // Release knob and label
-    compressorReleaseKnob.setBounds(startX, row2Y, knobSize, knobSize);
-    compressorReleaseLabel.setBounds(startX, row2Y + knobSize + 3, knobSize, labelHeight);
+    compressorReleaseKnob.setBounds(row3StartX, row2Y, knobSize, knobSize);
+    compressorReleaseLabel.setBounds(row3StartX, row2Y + knobSize + 3, knobSize, labelHeight);
     
-    // Gain knob and label
-    compressorGainKnob.setBounds(ratio_x, row2Y, knobSize, knobSize);
-    compressorGainLabel.setBounds(ratio_x, row2Y + knobSize + 3, knobSize, labelHeight);
+    // Gain knob and label (using updated ratio_x from row 2)
+    auto gainX = row3StartX + knobSize + knobSpacing;
+    compressorGainKnob.setBounds(gainX, row2Y, knobSize, knobSize);
+    compressorGainLabel.setBounds(gainX, row2Y + knobSize + 3, knobSize, labelHeight);
     
-    // Multiband button (right side, centered vertically with knobs)
+    // Multiband button (moved 20 pixels to the left)
     auto multibandY = row2Y + (knobSize - buttonHeight) / 2; // Center with knobs
-    compressorMultibandButton.setBounds(attack_x, multibandY, buttonWidth, buttonHeight);
+    compressorMultibandButton.setBounds(attack_x - 20, multibandY, buttonWidth, buttonHeight);
 }
 
 void SynthesizerComponent::layoutDelayControls(juce::Rectangle<int>& bounds)
