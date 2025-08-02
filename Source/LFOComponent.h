@@ -361,8 +361,8 @@ public:
     public:
         void drawButtonText(juce::Graphics& g, juce::TextButton& button, bool, bool) override
         {
-            // Use smaller font for trigger button, normal for others
-            float fontSize = (button.getButtonText() == "TRIGGER") ? 5.0f : 7.0f;
+            // Use much smaller font for trigger button, normal for others
+            float fontSize = (button.getButtonText() == "TRIGGER") ? 2.0f : 7.0f;
             auto font = juce::Font("Press Start 2P", fontSize, juce::Font::plain);
             g.setFont(font);
             g.setColour(button.findColour(button.getToggleState() ? juce::TextButton::textColourOnId
@@ -408,7 +408,57 @@ public:
         }
     };
 
-    LFOModuleComponent() : knobLookAndFeel(nullptr), buttonLookAndFeel(nullptr), labelLookAndFeel(nullptr) 
+    // Trigger button look and feel - same as main button but smaller font
+    class TriggerButtonLookAndFeel : public juce::LookAndFeel_V4
+    {
+    private:
+        WaveButtonLookAndFeel* mainButtonLookAndFeel;
+        
+    public:
+        TriggerButtonLookAndFeel(WaveButtonLookAndFeel* mainLookAndFeel) 
+            : mainButtonLookAndFeel(mainLookAndFeel) {}
+        
+        void drawButtonBackground(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour,
+                                bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown) override
+        {
+            if (mainButtonLookAndFeel)
+                mainButtonLookAndFeel->drawButtonBackground(g, button, backgroundColour, 
+                                                          shouldDrawButtonAsHighlighted, shouldDrawButtonAsDown);
+            else
+                juce::LookAndFeel_V4::drawButtonBackground(g, button, backgroundColour, 
+                                                         shouldDrawButtonAsHighlighted, shouldDrawButtonAsDown);
+        }
+        
+        void drawButtonText(juce::Graphics& g, juce::TextButton& button, bool, bool) override
+        {
+            // Use smaller font specifically for trigger button
+            float fontSize = 8.5f; // Good size for "TRIG"
+            auto font = juce::Font("Press Start 2P", fontSize, juce::Font::plain);
+            g.setFont(font);
+            g.setColour(button.findColour(button.getToggleState() ? juce::TextButton::textColourOnId
+                                                                   : juce::TextButton::textColourOffId)
+                              .withMultipliedAlpha(button.isEnabled() ? 1.0f : 0.5f));
+
+            const int yIndent = juce::jmin(4, button.proportionOfHeight(0.3f));
+            const int cornerSize = juce::jmin(button.getHeight(), button.getWidth()) / 2;
+
+            const int fontHeight = juce::roundToInt(font.getHeight() * 0.6f);
+            const int leftIndent = juce::jmin(fontHeight, 2 + cornerSize / (button.isConnectedOnLeft() ? 4 : 2));
+            const int rightIndent = juce::jmin(fontHeight, 2 + cornerSize / (button.isConnectedOnRight() ? 4 : 2));
+
+            g.drawFittedText(button.getButtonText(),
+                           leftIndent, yIndent, button.getWidth() - leftIndent - rightIndent,
+                           button.getHeight() - yIndent * 2,
+                           juce::Justification::centred, 1);
+        }
+        
+        void setMainButtonLookAndFeel(WaveButtonLookAndFeel* newMainLookAndFeel)
+        {
+            mainButtonLookAndFeel = newMainLookAndFeel;
+        }
+    };
+
+    LFOModuleComponent() : knobLookAndFeel(nullptr), buttonLookAndFeel(nullptr), labelLookAndFeel(nullptr), triggerButtonLookAndFeel(nullptr) 
     {
         // Set up title label with engraved effect
         lfoTitleLabel.setText("LFO", juce::dontSendNotification);
@@ -457,7 +507,7 @@ public:
         addAndMakeVisible(lfoBpmButton);
         
         // Set up trigger button
-        lfoTriggerButton.setButtonText("TRIGGER");
+        lfoTriggerButton.setButtonText("TRIG");
         lfoTriggerButton.setClickingTogglesState(true);
         lfoTriggerButton.setToggleState(false, juce::dontSendNotification);
         lfoTriggerButton.addListener(this);
@@ -466,7 +516,7 @@ public:
         // Set up draw button
         lfoDrawButton.setButtonText("DRAW");
         lfoDrawButton.setClickingTogglesState(true);
-        lfoDrawButton.setToggleState(false, juce::dontSendNotification);
+        lfoDrawButton.setToggleState(true, juce::dontSendNotification);
         lfoDrawButton.addListener(this);
         addAndMakeVisible(lfoDrawButton);
         
@@ -488,6 +538,8 @@ public:
         // addAndMakeVisible(lfoTriangleButton);
         
         lfoChaosButton.setButtonText("CHAOS");
+        lfoChaosButton.setClickingTogglesState(true);
+        lfoChaosButton.setToggleState(false, juce::dontSendNotification);
         lfoChaosButton.addListener(this);
         addAndMakeVisible(lfoChaosButton);
         
@@ -524,13 +576,16 @@ public:
         {
             lfoHzButton.setLookAndFeel(this->buttonLookAndFeel);
             lfoBpmButton.setLookAndFeel(this->buttonLookAndFeel);
-            lfoTriggerButton.setLookAndFeel(this->buttonLookAndFeel);
             lfoDrawButton.setLookAndFeel(this->buttonLookAndFeel);
             lfoSineButton.setLookAndFeel(this->buttonLookAndFeel);
             lfoSawButton.setLookAndFeel(this->buttonLookAndFeel);
             lfoSquareButton.setLookAndFeel(this->buttonLookAndFeel);
             lfoTriangleButton.setLookAndFeel(this->buttonLookAndFeel);
             lfoChaosButton.setLookAndFeel(this->buttonLookAndFeel);
+            
+            // Set up trigger button with custom look and feel that uses same background but smaller font
+            triggerButtonLookAndFeel.setMainButtonLookAndFeel(this->buttonLookAndFeel);
+            lfoTriggerButton.setLookAndFeel(&triggerButtonLookAndFeel);
         }
     }
     
@@ -701,8 +756,8 @@ public:
         auto rateValueArea = juce::Rectangle<int>(rateKnobArea.getRight() + 5 - 118, rateKnobArea.getY() + 11, 75, 20);
         lfoRateValueLabel.setBounds(rateValueArea);
         
-        // Trigger button on left (moved 25 pixels right and 3 pixels down)
-        auto triggerArea = juce::Rectangle<int>(35, 13, 45, 18);
+        // Trigger button on left (moved 25 pixels right and 3 pixels down) - same size as chaos button
+        auto triggerArea = juce::Rectangle<int>(35, 13, 58, 18);
         lfoTriggerButton.setBounds(triggerArea);
         
         // Draw button on right (moved 55 pixels to the left and 5 pixels down)
@@ -756,8 +811,12 @@ public:
         }
         else if (button == &lfoDrawButton)
         {
-            // Toggle draw mode
+            // Toggle draw mode - mutually exclusive with chaos mode
             bool isDrawMode = lfoDrawButton.getToggleState();
+            if (isDrawMode)
+            {
+                lfoChaosButton.setToggleState(false, juce::dontSendNotification);
+            }
             // TODO: Enable/disable draw mode when implementation is added
             // This could switch between different drawing behaviors
         }
@@ -779,6 +838,12 @@ public:
         // }
         else if (button == &lfoChaosButton)
         {
+            // Toggle chaos mode - mutually exclusive with draw mode
+            bool isChaosMode = lfoChaosButton.getToggleState();
+            if (isChaosMode)
+            {
+                lfoDrawButton.setToggleState(false, juce::dontSendNotification);
+            }
             // TODO: Implement chaos LFO mode - for now just placeholder
             // This could generate a random/chaotic waveform or enable the current smooth drawing behavior
         }
@@ -865,6 +930,9 @@ private:
     
     // Engraved label look and feel for LFO title (owned)
     EngravedLabelLookAndFeel engravedLabelLookAndFeel;
+    
+    // Trigger button look and feel (owned)
+    TriggerButtonLookAndFeel triggerButtonLookAndFeel;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LFOModuleComponent)
 };
