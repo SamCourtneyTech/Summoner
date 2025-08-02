@@ -432,6 +432,15 @@ public:
         lfoRateLabel.setJustificationType(juce::Justification::centred);
         addAndMakeVisible(lfoRateLabel);
         
+        // Set up rate value display label
+        lfoRateValueLabel.setText("1.000 Hz", juce::dontSendNotification);
+        lfoRateValueLabel.setFont(juce::Font("Press Start 2P", 6.5f, juce::Font::plain));
+        lfoRateValueLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+        lfoRateValueLabel.setJustificationType(juce::Justification::centred);
+        lfoRateValueLabel.setColour(juce::Label::backgroundColourId, juce::Colour(0xff1a1a1a));
+        lfoRateValueLabel.setColour(juce::Label::outlineColourId, juce::Colour(0xff404040));
+        addAndMakeVisible(lfoRateValueLabel);
+        
         // Set up rate type buttons (Hz/BPM)
         lfoHzButton.setButtonText("Hz");
         lfoHzButton.setClickingTogglesState(true);
@@ -490,6 +499,9 @@ public:
         // lfoSquareButton.setLookAndFeel(&smallButtonLookAndFeel);
         // lfoTriangleButton.setLookAndFeel(&smallButtonLookAndFeel);
         lfoChaosButton.setLookAndFeel(&smallButtonLookAndFeel);
+        
+        // Initialize rate display
+        updateRateDisplay();
     }
     ~LFOModuleComponent() override {}
     
@@ -662,8 +674,8 @@ public:
         lfoHzButton.setBounds(hzArea.reduced(2, 0));
         lfoBpmButton.setBounds(bpmArea.reduced(2, 0));
         
-        // Center title area
-        lfoTitleLabel.setBounds(topArea);
+        // Center title area (moved 20 pixels to the left)
+        lfoTitleLabel.setBounds(topArea.translated(-20, 0));
         
         bounds.removeFromTop(5); // Small gap
         
@@ -677,11 +689,15 @@ public:
         // Bottom controls: Rate knob centered, action buttons spread out
         auto bottomControlsArea = bounds.removeFromTop(40);
         
-        // Rate knob in center
-        auto rateKnobArea = juce::Rectangle<int>((bottomControlsArea.getWidth() - 40) / 2, 0, 40, 40);
+        // Rate knob in center (moved 10 pixels to the left)
+        auto rateKnobArea = juce::Rectangle<int>((bottomControlsArea.getWidth() - 40) / 2 - 10, 0, 40, 40);
         auto rateLabelArea = rateKnobArea.removeFromBottom(12);
         lfoRateLabel.setBounds(rateLabelArea);
         lfoRateKnob.setBounds(rateKnobArea);
+        
+        // Rate value display box next to rate knob (moved 105 pixels to the left and 8 pixels down)
+        auto rateValueArea = juce::Rectangle<int>(rateKnobArea.getRight() + 5 - 105, rateKnobArea.getY() + 16, 60, 16);
+        lfoRateValueLabel.setBounds(rateValueArea);
         
         // Trigger button on left
         auto triggerArea = juce::Rectangle<int>(10, 10, 50, 20);
@@ -693,7 +709,13 @@ public:
     }
     
     // Slider listener
-    void sliderValueChanged(juce::Slider* slider) override {}
+    void sliderValueChanged(juce::Slider* slider) override 
+    {
+        if (slider == &lfoRateKnob)
+        {
+            updateRateDisplay();
+        }
+    }
     
     // Button listener
     void buttonClicked(juce::Button* button) override
@@ -708,6 +730,7 @@ public:
             }
             
             lfoBpmButton.setToggleState(false, juce::dontSendNotification);
+            updateRateDisplay();
             // TODO: Switch to Hz mode when implementation is added
         }
         else if (button == &lfoBpmButton)
@@ -720,6 +743,7 @@ public:
             }
             
             lfoHzButton.setToggleState(false, juce::dontSendNotification);
+            updateRateDisplay();
             // TODO: Switch to BPM mode when implementation is added
         }
         else if (button == &lfoTriggerButton)
@@ -758,6 +782,35 @@ public:
         }
     }
     
+    void updateRateDisplay()
+    {
+        double rateValue = lfoRateKnob.getValue();
+        
+        if (lfoHzButton.getToggleState())
+        {
+            // Hz mode: 0.1 to 20.0 Hz (from knob range) mapped to 0.000 to 100 Hz display
+            double displayHz = (rateValue - 0.1) / (20.0 - 0.1) * 100.0;
+            juce::String displayText = juce::String(displayHz, 3) + " Hz";
+            lfoRateValueLabel.setText(displayText, juce::dontSendNotification);
+        }
+        else if (lfoBpmButton.getToggleState())
+        {
+            // BPM mode: Convert knob value to musical note values
+            // Map 0.1-20.0 to different note divisions
+            const char* noteValues[] = {
+                "32 bars", "16 bars", "8 bars", "4 bars", "2 bars", "1 bar",
+                "1/2", "1/3", "1/4", "1/6", "1/8", "1/12", "1/16", "1/24", 
+                "1/32", "1/48", "1/64", "1/96", "1/128", "1/192", "1/256"
+            };
+            
+            int numValues = sizeof(noteValues) / sizeof(noteValues[0]);
+            int index = static_cast<int>((rateValue - 0.1) / (20.0 - 0.1) * (numValues - 1));
+            index = juce::jlimit(0, numValues - 1, index);
+            
+            lfoRateValueLabel.setText(noteValues[index], juce::dontSendNotification);
+        }
+    }
+    
 private:
     // LFO waveform drawing component
     LFOComponent lfoWaveform;
@@ -765,6 +818,7 @@ private:
     // Rate control
     juce::Slider lfoRateKnob;
     juce::Label lfoRateLabel;
+    juce::Label lfoRateValueLabel;
     
     // Rate type buttons (Hz/BPM)
     juce::TextButton lfoHzButton;
