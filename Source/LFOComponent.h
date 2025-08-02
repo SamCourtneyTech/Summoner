@@ -105,13 +105,29 @@ public:
                     int x = waveformArea.getX() + static_cast<int>(cp.x * waveformArea.getWidth());
                     int y = waveformArea.getY() + static_cast<int>((1.0f - cp.y) * waveformArea.getHeight());
                     
-                    // Outer ring
-                    g.setColour(juce::Colours::white.withAlpha(0.8f));
-                    g.fillEllipse(x - 4, y - 4, 8, 8);
-                    
-                    // Inner dot
-                    g.setColour(cp.selected ? juce::Colours::orange : juce::Colours::black);
-                    g.fillEllipse(x - 2, y - 2, 4, 4);
+                    if (cp.type == ControlPointType::Main)
+                    {
+                        // Main points (solid) - outer ring
+                        g.setColour(juce::Colours::white.withAlpha(0.8f));
+                        g.fillEllipse(x - 4, y - 4, 8, 8);
+                        
+                        // Inner dot
+                        g.setColour(cp.selected ? juce::Colours::orange : juce::Colours::black);
+                        g.fillEllipse(x - 2, y - 2, 4, 4);
+                    }
+                    else // Curve points (hollow)
+                    {
+                        // Hollow curve points - outer ring
+                        g.setColour(juce::Colours::white.withAlpha(0.8f));
+                        g.drawEllipse(x - 4, y - 4, 8, 8, 2.0f);
+                        
+                        // Hollow center with selection highlight
+                        if (cp.selected)
+                        {
+                            g.setColour(juce::Colours::orange.withAlpha(0.5f));
+                            g.fillEllipse(x - 2, y - 2, 4, 4);
+                        }
+                    }
                 }
             }
             else if (isDragging)
@@ -133,35 +149,6 @@ public:
     }
     
     // Mouse events for drawing the waveform
-    void mouseDown(const juce::MouseEvent& event) override
-    {
-        if (!waveformArea.contains(event.getPosition()))
-            return;
-            
-        lastMousePos = event.getPosition();
-        
-        if (discreteEditMode)
-        {
-            // Check if clicking on existing control point
-            selectedControlPoint = getControlPointAt(event.getPosition());
-            if (selectedControlPoint >= 0)
-            {
-                // Deselect all, select clicked one
-                for (auto& cp : controlPoints)
-                    cp.selected = false;
-                controlPoints[selectedControlPoint].selected = true;
-                isDragging = true;
-            }
-        }
-        else
-        {
-            // Continuous editing mode
-            isDragging = true;
-            dragStartIndex = getWaveformIndexFromX(event.x);
-            updateWaveformPoint(event.x, event.y);
-        }
-        repaint();
-    }
     
     void mouseDrag(const juce::MouseEvent& event) override
     {
@@ -201,7 +188,7 @@ public:
         if (!waveformArea.contains(event.getPosition()) || !discreteEditMode)
             return;
             
-        // Add new control point at double-click location
+        // Double-click always creates a solid main point with straight line connections
         float x = (event.x - waveformArea.getX()) / float(waveformArea.getWidth());
         float y = 1.0f - (event.y - waveformArea.getY()) / float(waveformArea.getHeight());
         x = juce::jlimit(0.0f, 1.0f, x);
@@ -211,13 +198,52 @@ public:
         newPoint.x = x;
         newPoint.y = y;
         newPoint.selected = false;
+        newPoint.type = ControlPointType::Main;
+        newPoint.associatedMainPoint = -1;
         
-        // Insert in correct position to maintain x-order
+        // Insert in correct position to maintain x-order for main points
         auto insertPos = std::lower_bound(controlPoints.begin(), controlPoints.end(), newPoint,
-            [](const ControlPoint& a, const ControlPoint& b) { return a.x < b.x; });
+            [](const ControlPoint& a, const ControlPoint& b) { 
+                if (a.type == ControlPointType::Main && b.type == ControlPointType::Main)
+                    return a.x < b.x; 
+                return false;
+            });
         controlPoints.insert(insertPos, newPoint);
         
+        // Automatically create curve handles for new segments
+        createCurveHandlesForAllSegments();
+        
         updateWaveformFromControlPoints();
+        repaint();
+    }
+    
+    void mouseDown(const juce::MouseEvent& event) override
+    {
+        if (!waveformArea.contains(event.getPosition()))
+            return;
+            
+        lastMousePos = event.getPosition();
+        
+        if (discreteEditMode)
+        {
+            // Check if clicking on existing control point
+            selectedControlPoint = getControlPointAt(event.getPosition());
+            if (selectedControlPoint >= 0)
+            {
+                // Deselect all, select clicked one
+                for (auto& cp : controlPoints)
+                    cp.selected = false;
+                controlPoints[selectedControlPoint].selected = true;
+                isDragging = true;
+            }
+        }
+        else
+        {
+            // Continuous editing mode
+            isDragging = true;
+            dragStartIndex = getWaveformIndexFromX(event.x);
+            updateWaveformPoint(event.x, event.y);
+        }
         repaint();
     }
     
@@ -289,10 +315,17 @@ private:
     static const int numWaveformPoints = 128; // Resolution of drawable waveform
     
     // Control points for discrete editing mode
+    enum class ControlPointType {
+        Main,   // Solid control points that the curve passes through
+        Curve   // Hollow control points that create bezier curves
+    };
+    
     struct ControlPoint {
         float x; // 0.0 to 1.0
         float y; // 0.0 to 1.0
         bool selected = false;
+        ControlPointType type = ControlPointType::Main;
+        int associatedMainPoint = -1; // For curve points, which main point segment they belong to
     };
     std::vector<ControlPoint> controlPoints;
     bool discreteEditMode = false;
@@ -395,42 +428,178 @@ private:
     
     float interpolateControlPoints(float x)
     {
-        if (controlPoints.empty())
+        // Get only main points for interpolation
+        std::vector<ControlPoint> mainPoints;
+        for (const auto& cp : controlPoints)
+        {
+            if (cp.type == ControlPointType::Main)
+                mainPoints.push_back(cp);
+        }
+        
+        if (mainPoints.empty())
             return 0.5f;
             
-        if (controlPoints.size() == 1)
-            return controlPoints[0].y;
+        if (mainPoints.size() == 1)
+            return mainPoints[0].y;
             
-        // Find surrounding control points
+        // Find surrounding main points
         int leftIndex = -1, rightIndex = -1;
         
-        for (int i = 0; i < controlPoints.size(); ++i)
+        for (int i = 0; i < mainPoints.size(); ++i)
         {
-            if (controlPoints[i].x <= x)
+            if (mainPoints[i].x <= x)
                 leftIndex = i;
-            if (controlPoints[i].x >= x && rightIndex == -1)
+            if (mainPoints[i].x >= x && rightIndex == -1)
                 rightIndex = i;
         }
         
         // Handle edge cases
         if (leftIndex == -1)
-            return controlPoints[0].y;
+            return mainPoints[0].y;
         if (rightIndex == -1)
-            return controlPoints[controlPoints.size() - 1].y;
+            return mainPoints[mainPoints.size() - 1].y;
         if (leftIndex == rightIndex)
-            return controlPoints[leftIndex].y;
+            return mainPoints[leftIndex].y;
             
-        // Linear interpolation
-        float t = (x - controlPoints[leftIndex].x) / (controlPoints[rightIndex].x - controlPoints[leftIndex].x);
-        return controlPoints[leftIndex].y + t * (controlPoints[rightIndex].y - controlPoints[leftIndex].y);
+        // Check if there are curve points for this segment
+        std::vector<ControlPoint> segmentCurvePoints;
+        for (const auto& cp : controlPoints)
+        {
+            if (cp.type == ControlPointType::Curve && 
+                cp.x >= mainPoints[leftIndex].x && cp.x <= mainPoints[rightIndex].x)
+            {
+                segmentCurvePoints.push_back(cp);
+            }
+        }
+        
+        if (segmentCurvePoints.empty())
+        {
+            // Linear interpolation
+            float t = (x - mainPoints[leftIndex].x) / (mainPoints[rightIndex].x - mainPoints[leftIndex].x);
+            return mainPoints[leftIndex].y + t * (mainPoints[rightIndex].y - mainPoints[leftIndex].y);
+        }
+        else
+        {
+            // Bezier curve interpolation with curve points
+            return interpolateBezier(x, mainPoints[leftIndex], mainPoints[rightIndex], segmentCurvePoints);
+        }
+    }
+    
+    float interpolateBezier(float x, const ControlPoint& p0, const ControlPoint& p3, 
+                           const std::vector<ControlPoint>& curvePoints)
+    {
+        // For simplicity, use quadratic bezier with first curve point as control point
+        if (curvePoints.empty())
+            return p0.y + (x - p0.x) / (p3.x - p0.x) * (p3.y - p0.y);
+            
+        // Use first curve point as bezier control point
+        const auto& p1 = curvePoints[0];
+        
+        // Convert x to parameter t (0 to 1) for the segment
+        float t = (x - p0.x) / (p3.x - p0.x);
+        t = juce::jlimit(0.0f, 1.0f, t);
+        
+        // Quadratic bezier formula: B(t) = (1-t)²P0 + 2(1-t)tP1 + t²P2
+        // We'll use p1 as control point, but need to create intermediate point
+        float oneMinusT = 1.0f - t;
+        return oneMinusT * oneMinusT * p0.y + 2 * oneMinusT * t * p1.y + t * t * p3.y;
+    }
+    
+    bool isBetweenMainPoints(float x)
+    {
+        // Check if x position is between two existing main points
+        std::vector<float> mainXPositions;
+        for (const auto& cp : controlPoints)
+        {
+            if (cp.type == ControlPointType::Main)
+                mainXPositions.push_back(cp.x);
+        }
+        
+        if (mainXPositions.size() < 2)
+            return false;
+            
+        std::sort(mainXPositions.begin(), mainXPositions.end());
+        
+        for (int i = 0; i < mainXPositions.size() - 1; ++i)
+        {
+            if (x > mainXPositions[i] && x < mainXPositions[i + 1])
+                return true;
+        }
+        return false;
+    }
+    
+    int findMainPointSegment(float x)
+    {
+        // Find which main point segment this x belongs to
+        std::vector<std::pair<float, int>> mainPoints;
+        for (int i = 0; i < controlPoints.size(); ++i)
+        {
+            if (controlPoints[i].type == ControlPointType::Main)
+                mainPoints.push_back({controlPoints[i].x, i});
+        }
+        
+        std::sort(mainPoints.begin(), mainPoints.end());
+        
+        for (int i = 0; i < mainPoints.size() - 1; ++i)
+        {
+            if (x >= mainPoints[i].first && x <= mainPoints[i + 1].first)
+                return mainPoints[i].second;
+        }
+        return -1;
+    }
+    
+    void createCurveHandlesForAllSegments()
+    {
+        // Remove all existing curve points
+        controlPoints.erase(
+            std::remove_if(controlPoints.begin(), controlPoints.end(),
+                [](const ControlPoint& cp) { return cp.type == ControlPointType::Curve; }),
+            controlPoints.end());
+        
+        // Get sorted main points
+        std::vector<ControlPoint*> mainPoints;
+        for (auto& cp : controlPoints)
+        {
+            if (cp.type == ControlPointType::Main)
+                mainPoints.push_back(&cp);
+        }
+        
+        std::sort(mainPoints.begin(), mainPoints.end(),
+            [](const ControlPoint* a, const ControlPoint* b) { return a->x < b->x; });
+        
+        // Create curve handle in the middle of each segment
+        for (int i = 0; i < mainPoints.size() - 1; ++i)
+        {
+            auto* leftPoint = mainPoints[i];
+            auto* rightPoint = mainPoints[i + 1];
+            
+            // Create curve handle at midpoint with linear interpolated y
+            float midX = (leftPoint->x + rightPoint->x) / 2.0f;
+            float midY = (leftPoint->y + rightPoint->y) / 2.0f; // Start at linear interpolation
+            
+            ControlPoint curveHandle;
+            curveHandle.x = midX;
+            curveHandle.y = midY;
+            curveHandle.selected = false;
+            curveHandle.type = ControlPointType::Curve;
+            curveHandle.associatedMainPoint = i; // Associate with left main point index
+            
+            controlPoints.push_back(curveHandle);
+        }
     }
     
     void initializeControlPoints()
     {
         controlPoints.clear();
         // Add default control points at start and end
-        controlPoints.push_back({0.0f, 0.5f, false});
-        controlPoints.push_back({1.0f, 0.5f, false});
+        ControlPoint start = {0.0f, 0.5f, false, ControlPointType::Main, -1};
+        ControlPoint end = {1.0f, 0.5f, false, ControlPointType::Main, -1};
+        controlPoints.push_back(start);
+        controlPoints.push_back(end);
+        
+        // Create curve handles for the initial segment
+        createCurveHandlesForAllSegments();
+        
         updateWaveformFromControlPoints();
     }
     
