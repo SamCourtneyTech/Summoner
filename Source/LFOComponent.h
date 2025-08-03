@@ -163,8 +163,23 @@ public:
             x = juce::jlimit(0.0f, 1.0f, x);
             y = juce::jlimit(0.0f, 1.0f, y);
             
-            controlPoints[selectedControlPoint].x = x;
-            controlPoints[selectedControlPoint].y = y;
+            auto& currentPoint = controlPoints[selectedControlPoint];
+            
+            // Only constrain main points to prevent crossing others
+            if (currentPoint.type == ControlPointType::Main)
+            {
+                x = constrainMainPointX(selectedControlPoint, x);
+            }
+            
+            currentPoint.x = x;
+            currentPoint.y = y;
+            
+            // If a main point was moved, update positions of associated curve points
+            if (currentPoint.type == ControlPointType::Main)
+            {
+                updateCurvePointPositions();
+            }
+            
             updateWaveformFromControlPoints();
         }
         else if (!discreteEditMode)
@@ -548,6 +563,104 @@ private:
         return -1;
     }
     
+    float constrainMainPointX(int pointIndex, float desiredX)
+    {
+        // Get all other main points and their x positions
+        std::vector<float> otherMainXPositions;
+        for (int i = 0; i < controlPoints.size(); ++i)
+        {
+            if (i != pointIndex && controlPoints[i].type == ControlPointType::Main)
+                otherMainXPositions.push_back(controlPoints[i].x);
+        }
+        
+        // Sort x positions
+        std::sort(otherMainXPositions.begin(), otherMainXPositions.end());
+        
+        // Find the constraints (nearest neighbors)
+        float leftConstraint = 0.0f;   // Minimum x
+        float rightConstraint = 1.0f;  // Maximum x
+        
+        for (float xPos : otherMainXPositions)
+        {
+            if (xPos < desiredX)
+            {
+                // This point is to the left, update left constraint
+                leftConstraint = std::max(leftConstraint, xPos + 0.01f); // Small buffer
+            }
+            else if (xPos > desiredX)
+            {
+                // This point is to the right, update right constraint
+                rightConstraint = std::min(rightConstraint, xPos - 0.01f); // Small buffer
+                break; // Since sorted, this is the closest right neighbor
+            }
+        }
+        
+        // Ensure constraints are valid
+        if (leftConstraint >= rightConstraint)
+        {
+            // If constraints overlap, keep the original position
+            return controlPoints[pointIndex].x;
+        }
+        
+        // Constrain the desired x within the bounds
+        return juce::jlimit(leftConstraint, rightConstraint, desiredX);
+    }
+    
+    void updateCurvePointPositions()
+    {
+        // Get sorted main points
+        std::vector<ControlPoint*> mainPoints;
+        for (auto& cp : controlPoints)
+        {
+            if (cp.type == ControlPointType::Main)
+                mainPoints.push_back(&cp);
+        }
+        
+        std::sort(mainPoints.begin(), mainPoints.end(),
+            [](const ControlPoint* a, const ControlPoint* b) { return a->x < b->x; });
+        
+        // Update each curve point to stay at the midpoint of its segment
+        for (auto& cp : controlPoints)
+        {
+            if (cp.type == ControlPointType::Curve)
+            {
+                // Find which segment this curve point belongs to
+                int segmentIndex = cp.associatedMainPoint;
+                
+                // Find the actual left and right main points for this segment
+                ControlPoint* leftMain = nullptr;
+                ControlPoint* rightMain = nullptr;
+                
+                if (segmentIndex >= 0 && segmentIndex < mainPoints.size() - 1)
+                {
+                    leftMain = mainPoints[segmentIndex];
+                    rightMain = mainPoints[segmentIndex + 1];
+                }
+                else
+                {
+                    // Fallback: find closest main points by x position
+                    for (int i = 0; i < mainPoints.size() - 1; ++i)
+                    {
+                        if (cp.x >= mainPoints[i]->x && cp.x <= mainPoints[i + 1]->x)
+                        {
+                            leftMain = mainPoints[i];
+                            rightMain = mainPoints[i + 1];
+                            cp.associatedMainPoint = i; // Update association
+                            break;
+                        }
+                    }
+                }
+                
+                // Update curve point position to midpoint
+                if (leftMain && rightMain)
+                {
+                    cp.x = (leftMain->x + rightMain->x) / 2.0f;
+                    // Keep the y position as is (user can still adjust curve height)
+                }
+            }
+        }
+    }
+    
     void createCurveHandlesForAllSegments()
     {
         // Remove all existing curve points
@@ -704,8 +817,8 @@ public:
     public:
         void drawButtonText(juce::Graphics& g, juce::TextButton& button, bool, bool) override
         {
-            // Use much smaller font for trigger button, normal for others
-            float fontSize = (button.getButtonText() == "TRIGGER") ? 2.0f : 7.0f;
+            // Use same font size for all buttons
+            float fontSize = 7.0f;
             auto font = juce::Font("Press Start 2P", fontSize, juce::Font::plain);
             g.setFont(font);
             g.setColour(button.findColour(button.getToggleState() ? juce::TextButton::textColourOnId
@@ -774,13 +887,44 @@ public:
         
         void drawButtonText(juce::Graphics& g, juce::TextButton& button, bool, bool) override
         {
-            // Use smaller font specifically for trigger button
-            float fontSize = 8.5f; // Good size for "TRIG"
+            // Use slightly larger font size for trigger button
+            float fontSize = 8.0f; // Slightly larger than chaos and draw buttons
             auto font = juce::Font("Press Start 2P", fontSize, juce::Font::plain);
             g.setFont(font);
-            g.setColour(button.findColour(button.getToggleState() ? juce::TextButton::textColourOnId
-                                                                   : juce::TextButton::textColourOffId)
-                              .withMultipliedAlpha(button.isEnabled() ? 1.0f : 0.5f));
+            
+            // LED effect when button is toggled
+            if (button.getToggleState())
+            {
+                // LED glow effect - same as other buttons
+                auto textBounds = juce::Rectangle<float>(0, 0, button.getWidth(), button.getHeight());
+                
+                // Outer glow layers
+                for (float glowRadius = 3.0f; glowRadius >= 1.0f; glowRadius -= 0.5f)
+                {
+                    auto alpha = 0.02f + (0.06f * (3.5f - glowRadius) / 2.5f);
+                    g.setColour(juce::Colours::white.withAlpha(alpha));
+                    g.drawFittedText(button.getButtonText(),
+                                   textBounds.getX() - glowRadius, textBounds.getY() - glowRadius,
+                                   textBounds.getWidth() + (glowRadius * 2), textBounds.getHeight() + (glowRadius * 2),
+                                   juce::Justification::centred, 1);
+                }
+                
+                // Inner glow
+                g.setColour(juce::Colours::white.withAlpha(0.3f));
+                g.drawFittedText(button.getButtonText(),
+                               textBounds.getX() - 1, textBounds.getY() - 1,
+                               textBounds.getWidth() + 2, textBounds.getHeight() + 2,
+                               juce::Justification::centred, 1);
+                
+                // Core bright white text
+                g.setColour(juce::Colours::white);
+            }
+            else
+            {
+                // Normal text color when not toggled
+                g.setColour(button.findColour(juce::TextButton::textColourOffId)
+                                  .withMultipliedAlpha(button.isEnabled() ? 1.0f : 0.5f));
+            }
 
             const int yIndent = juce::jmin(4, button.proportionOfHeight(0.3f));
             const int cornerSize = juce::jmin(button.getHeight(), button.getWidth()) / 2;
@@ -803,12 +947,7 @@ public:
 
     LFOModuleComponent() : knobLookAndFeel(nullptr), buttonLookAndFeel(nullptr), labelLookAndFeel(nullptr), triggerButtonLookAndFeel(nullptr) 
     {
-        // Set up title label with engraved effect
-        lfoTitleLabel.setText("LFO", juce::dontSendNotification);
-        lfoTitleLabel.setFont(juce::Font("Times New Roman", 11.0f, juce::Font::bold));
-        lfoTitleLabel.setJustificationType(juce::Justification::centred);
-        lfoTitleLabel.setLookAndFeel(&engravedLabelLookAndFeel);
-        addAndMakeVisible(lfoTitleLabel);
+        // Title label removed
         
         // Set up LFO waveform drawing area
         addAndMakeVisible(lfoWaveform);
@@ -912,7 +1051,6 @@ public:
         lfoRateKnob.setLookAndFeel(&simpleKnobLookAndFeel);
         if (this->labelLookAndFeel) 
         {
-            lfoTitleLabel.setLookAndFeel(this->labelLookAndFeel);
             lfoRateLabel.setLookAndFeel(this->labelLookAndFeel);
         }
         if (this->buttonLookAndFeel)
@@ -926,9 +1064,8 @@ public:
             lfoTriangleButton.setLookAndFeel(this->buttonLookAndFeel);
             lfoChaosButton.setLookAndFeel(this->buttonLookAndFeel);
             
-            // Set up trigger button with custom look and feel that uses same background but smaller font
-            triggerButtonLookAndFeel.setMainButtonLookAndFeel(this->buttonLookAndFeel);
-            lfoTriggerButton.setLookAndFeel(&triggerButtonLookAndFeel);
+            // Use exact same look and feel as other buttons
+            lfoTriggerButton.setLookAndFeel(this->buttonLookAndFeel);
         }
     }
     
@@ -1061,21 +1198,20 @@ public:
         // Right side buttons - CHAOS button and Hz/BPM controls
         auto rightButtonArea = topArea.removeFromRight(120);
         
-        // CHAOS button on right (moved 70 pixels to the left)
+        // CHAOS button on right (moved 10 pixels to the left)
         auto chaosArea = rightButtonArea.removeFromLeft(60);
         auto chaosRect = chaosArea.reduced(2, 1);
-        chaosRect = chaosRect.translated(-70, 0);
+        chaosRect = chaosRect.translated(-10, 0);
         lfoChaosButton.setBounds(chaosRect);
         
-        // Hz/BPM buttons stacked vertically (moved 20 pixels to the left)
-        auto hzBpmArea = rightButtonArea.removeFromLeft(60).translated(-20, 0);
+        // Hz/BPM buttons stacked vertically (moved 190 pixels to the left)
+        auto hzBpmArea = rightButtonArea.removeFromLeft(60).translated(-190, 0);
         auto hzArea = hzBpmArea.removeFromTop(11);
         auto bpmArea = hzBpmArea.translated(0, 2);
         lfoHzButton.setBounds(hzArea.reduced(2, 0));
         lfoBpmButton.setBounds(bpmArea.reduced(2, 0));
         
-        // Center title area (moved 20 pixels to the left)
-        lfoTitleLabel.setBounds(topArea.translated(-20, 0));
+        // Title area removed
         
         bounds.removeFromTop(5); // Small gap
         
@@ -1089,8 +1225,8 @@ public:
         // Bottom controls: Rate knob centered, action buttons spread out
         auto bottomControlsArea = bounds.removeFromTop(40);
         
-        // Rate knob in center (moved 10 pixels to the left)
-        auto rateKnobArea = juce::Rectangle<int>((bottomControlsArea.getWidth() - 40) / 2 - 10, 0, 40, 40);
+        // Rate knob in center (moved 60 pixels to the left from center)
+        auto rateKnobArea = juce::Rectangle<int>((bottomControlsArea.getWidth() - 40) / 2 - 60, 0, 40, 40);
         auto rateLabelArea = rateKnobArea.removeFromBottom(12);
         lfoRateLabel.setBounds(rateLabelArea);
         lfoRateKnob.setBounds(rateKnobArea);
@@ -1099,12 +1235,12 @@ public:
         auto rateValueArea = juce::Rectangle<int>(rateKnobArea.getRight() + 5 - 118, rateKnobArea.getY() + 11, 75, 20);
         lfoRateValueLabel.setBounds(rateValueArea);
         
-        // Trigger button on left (moved 25 pixels right and 3 pixels down) - same size as chaos button
-        auto triggerArea = juce::Rectangle<int>(35, 13, 58, 18);
+        // Trigger button on left (moved 199 pixels right and 5 pixels down) - same size as chaos button
+        auto triggerArea = juce::Rectangle<int>(209, 15, 58, 20);
         lfoTriggerButton.setBounds(triggerArea);
         
-        // Draw button on right (moved 55 pixels to the left and 5 pixels down)
-        auto drawArea = juce::Rectangle<int>(bottomControlsArea.getWidth() - 115, 15, 50, 20);
+        // Draw button on right (moved back 5 pixels to the right and 5 pixels down) - same size as chaos button
+        auto drawArea = juce::Rectangle<int>(bottomControlsArea.getWidth() - 63, 15, 58, 20);
         lfoDrawButton.setBounds(drawArea);
     }
     
