@@ -663,12 +663,6 @@ private:
     
     void createCurveHandlesForAllSegments()
     {
-        // Remove all existing curve points
-        controlPoints.erase(
-            std::remove_if(controlPoints.begin(), controlPoints.end(),
-                [](const ControlPoint& cp) { return cp.type == ControlPointType::Curve; }),
-            controlPoints.end());
-        
         // Get sorted main points
         std::vector<ControlPoint*> mainPoints;
         for (auto& cp : controlPoints)
@@ -680,24 +674,40 @@ private:
         std::sort(mainPoints.begin(), mainPoints.end(),
             [](const ControlPoint* a, const ControlPoint* b) { return a->x < b->x; });
         
-        // Create curve handle in the middle of each segment
+        // Check which segments need curve handles
         for (int i = 0; i < mainPoints.size() - 1; ++i)
         {
             auto* leftPoint = mainPoints[i];
             auto* rightPoint = mainPoints[i + 1];
             
-            // Create curve handle at midpoint with linear interpolated y
-            float midX = (leftPoint->x + rightPoint->x) / 2.0f;
-            float midY = (leftPoint->y + rightPoint->y) / 2.0f; // Start at linear interpolation
+            // Check if this segment already has a curve point
+            bool hasExistingCurve = false;
+            for (const auto& cp : controlPoints)
+            {
+                if (cp.type == ControlPointType::Curve && 
+                    cp.x > leftPoint->x && cp.x < rightPoint->x)
+                {
+                    hasExistingCurve = true;
+                    break;
+                }
+            }
             
-            ControlPoint curveHandle;
-            curveHandle.x = midX;
-            curveHandle.y = midY;
-            curveHandle.selected = false;
-            curveHandle.type = ControlPointType::Curve;
-            curveHandle.associatedMainPoint = i; // Associate with left main point index
-            
-            controlPoints.push_back(curveHandle);
+            // Only create curve handle if segment doesn't have one
+            if (!hasExistingCurve)
+            {
+                // Create curve handle at midpoint with linear interpolated y
+                float midX = (leftPoint->x + rightPoint->x) / 2.0f;
+                float midY = (leftPoint->y + rightPoint->y) / 2.0f; // Start at linear interpolation
+                
+                ControlPoint curveHandle;
+                curveHandle.x = midX;
+                curveHandle.y = midY;
+                curveHandle.selected = false;
+                curveHandle.type = ControlPointType::Curve;
+                curveHandle.associatedMainPoint = i; // Associate with left main point index
+                
+                controlPoints.push_back(curveHandle);
+            }
         }
     }
     
