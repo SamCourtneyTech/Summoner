@@ -754,7 +754,7 @@ private:
     float synthStereoWidth = 0.5f;
     float synthPan = 0.0f;
     float synthPhase = 0.0f;
-    float synthAttack = 0.1f;
+    float synthAttack = 0.01f;
     float synthDecay = 0.2f;
     float synthSustain = 0.7f;
     float synthRelease = 0.3f;
@@ -766,13 +766,13 @@ private:
     int osc1FineTune = 0; // -100 to +100 cents
     bool osc1RandomPhase = true; // true = random phase, false = consistent phase
     int osc1VoiceCount = 1; // 1 to 16 unison voices
-    int osc1Type = 0; // 0 = sine, 1 = saw
+    int osc1Type = 1; // 0 = sine, 1 = saw
     float osc1Volume = 0.5f;
     
     // Second oscillator parameters
     float osc2Volume = 0.0f; // 0.0 to 1.0
-    bool osc2Enabled = false; // true when sine button is toggled
-    int osc2Type = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise, 5 = pink noise
+    bool osc2Enabled = true; // true when wave button is toggled
+    int osc2Type = 1; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise, 5 = pink noise
     int osc2VoiceCount = 1; // 1 to 16 unison voices
     float osc2Detune = 0.0f; // 0.0 to 1.0, controls detune amount
     float osc2Stereo = 0.5f; // 0.0 to 1.0, controls stereo width
@@ -782,7 +782,7 @@ private:
     int osc2FineTune = 0; // -100 to +100 cents
     bool osc2RandomPhase = true; // true = random phase, false = fixed phase
     float osc2Phase = 0.0f; // 0.0 to 360.0 degrees, fixed phase starting point
-    float osc2Attack = 0.1f;
+    float osc2Attack = 0.01f;
     float osc2Decay = 0.2f;
     float osc2Sustain = 0.7f;
     float osc2Release = 0.3f;
@@ -1366,7 +1366,7 @@ private:
         std::array<double, maxUnisonVoices> unisonAngles;
         std::array<double, maxUnisonVoices> unisonDeltas;
         std::array<double, maxUnisonVoices> unisonFrequencies;
-        int osc1Type = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise, 5 = pink noise
+        int osc1Type = 1; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise, 5 = pink noise
         float osc1PulseWidth = 0.5f;
         int osc1Octave = 0; // -4 to +4 octaves
         int osc1Semitone = 0; // -12 to +12 semitones
@@ -1384,8 +1384,8 @@ private:
         
         // Second oscillator parameters
         float osc2Volume = 0.0f;
-        bool osc2Enabled = false;
-        int osc2Type = 0; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise, 5 = pink noise
+        bool osc2Enabled = true;
+        int osc2Type = 1; // 0 = sine, 1 = saw, 2 = square, 3 = triangle, 4 = white noise, 5 = pink noise
         int osc2VoiceCount = 1; // Number of unison voices (1-16)
         float osc2Detune = 0.0f; // Detune amount (0.0 to 1.0)
         float osc2Stereo = 0.5f; // Stereo width (0.0 to 1.0)

@@ -726,7 +726,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     // Custom look and feel handles all colors
     waveTypeSineButton.setLookAndFeel(&customWaveButtonLookAndFeel);
     waveTypeSineButton.setClickingTogglesState(true);
-    waveTypeSineButton.setToggleState(true, juce::dontSendNotification); // Start with sine selected
+    waveTypeSineButton.setToggleState(false, juce::dontSendNotification); // Sine not selected by default
     waveTypeSineButton.addListener(this);
     addAndMakeVisible(waveTypeSineButton);
     
@@ -734,8 +734,12 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     // Custom look and feel handles all colors
     waveTypeSawButton.setLookAndFeel(&customWaveButtonLookAndFeel);
     waveTypeSawButton.setClickingTogglesState(true);
+    waveTypeSawButton.setToggleState(true, juce::dontSendNotification); // Start with saw selected
     waveTypeSawButton.addListener(this);
     addAndMakeVisible(waveTypeSawButton);
+    
+    // Set oscillator 1 to saw wave by default
+    audioProcessor.setOsc1Type(1); // 1 = saw wave
     
     waveTypeSquareButton.setButtonText("SQR");
     // Custom look and feel handles all colors
@@ -779,7 +783,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     osc2SineButton.setButtonText("SIN");
     osc2SineButton.setLookAndFeel(&customWaveButtonLookAndFeel);
     osc2SineButton.setClickingTogglesState(true);
-    osc2SineButton.setToggleState(true, juce::dontSendNotification); // Start selected (sine is default)
+    osc2SineButton.setToggleState(false, juce::dontSendNotification); // Sine not selected by default
     osc2SineButton.addListener(this);
     addAndMakeVisible(osc2SineButton);
     
@@ -884,14 +888,14 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     osc2PhaseKnob.addListener(this);
     addAndMakeVisible(osc2PhaseKnob);
     
-    // Set oscillator 2 to sine wave and enable it by default
-    audioProcessor.setOsc2Type(0); // 0 = sine
+    // Set oscillator 2 to saw wave and enable it by default
     audioProcessor.setOsc2Enabled(true);
+    audioProcessor.setOsc2Type(1); // 1 = saw wave
     
     osc2SawButton.setButtonText("SAW");
     osc2SawButton.setLookAndFeel(&customWaveButtonLookAndFeel);
     osc2SawButton.setClickingTogglesState(true);
-    osc2SawButton.setToggleState(false, juce::dontSendNotification); // Start unselected
+    osc2SawButton.setToggleState(true, juce::dontSendNotification); // Start selected
     osc2SawButton.addListener(this);
     addAndMakeVisible(osc2SawButton);
     

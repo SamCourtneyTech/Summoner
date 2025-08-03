@@ -26,7 +26,7 @@ SummonerXSerum2AudioProcessorEditor::SummonerXSerum2AudioProcessorEditor(Summone
     appProps.setStorageParameters(options);
 
     // Setup tabs but don't make visible yet
-    tabs.addTab("ChatGPT", juce::Colours::transparentBlack, &chatBar, false);
+    tabs.addTab("LLM", juce::Colours::transparentBlack, &chatBar, false);
     tabs.addTab("Synthesizer", juce::Colours::transparentBlack, &synthesizer, false);
     tabs.addTab("Settings", juce::Colours::transparentBlack, &settings, false);
     addAndMakeVisible(tabs);
