@@ -540,7 +540,7 @@ public:
     
     // Second oscillator controls
     void setOsc2Volume(float volume) { 
-        osc2Volume = volume; 
+        osc2Volume = volume * 0.093f; // Apply -20.63 dB gain reduction (10^(-20.63/20) ≈ 0.093)
         updateOsc2Parameters();
     }
     float getOsc2Volume() const { return osc2Volume; }
