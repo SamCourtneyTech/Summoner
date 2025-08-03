@@ -749,7 +749,7 @@ private:
 
     // Synthesizer components
     juce::Synthesiser synthesiser;
-    float synthVolume = 0.5f;
+    float synthVolume = 3.0f; // +25 dB louder (approximately)
     float synthDetune = 0.0f;
     float synthStereoWidth = 0.5f;
     float synthPan = 0.0f;

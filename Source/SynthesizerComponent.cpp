@@ -501,7 +501,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     volumeControlsVolumeKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     volumeControlsVolumeKnob.setRange(0.0, 1.0, 0.01);
-    volumeControlsVolumeKnob.setValue(0.5);
+    volumeControlsVolumeKnob.setValue(0.75); // Start oscillator 1 at 75% volume
     volumeControlsVolumeKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
     volumeControlsVolumeKnob.setLookAndFeel(&customKnobLookAndFeel);
     volumeControlsVolumeKnob.addListener(this);
@@ -925,7 +925,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     osc2VolumeKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     osc2VolumeKnob.setRange(0.0, 0.237, 0.001); // Max reduced by 12.5 dB to match osc1 level
-    osc2VolumeKnob.setValue(0.0); // Start at 0 volume
+    osc2VolumeKnob.setValue(0.0); // Start oscillator 2 at 0 volume (off by default)
     osc2VolumeKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
     osc2VolumeKnob.setLookAndFeel(&customKnobLookAndFeel);
     osc2VolumeKnob.addListener(this);
