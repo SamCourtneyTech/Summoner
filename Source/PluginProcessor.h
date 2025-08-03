@@ -3,6 +3,65 @@
 #include <array>
 #include "SettingsComponent.h"
 
+// One-pole smoothing filter for parameter smoothing
+class OnePoleSmoothing
+{
+public:
+    OnePoleSmoothing() = default;
+    
+    void setSampleRate(double newSampleRate)
+    {
+        sampleRate = newSampleRate;
+        updateTimeConstant();
+    }
+    
+    void setTimeConstantMs(float timeMs)
+    {
+        timeConstantMs = timeMs;
+        updateTimeConstant();
+    }
+    
+    void setTarget(float newTarget)
+    {
+        target = newTarget;
+    }
+    
+    float getNextValue()
+    {
+        current = current + coefficient * (target - current);
+        return current;
+    }
+    
+    void reset(float initialValue = 0.0f)
+    {
+        current = initialValue;
+        target = initialValue;
+    }
+    
+    float getCurrentValue() const { return current; }
+    
+private:
+    void updateTimeConstant()
+    {
+        if (sampleRate > 0.0 && timeConstantMs > 0.0f)
+        {
+            // One-pole coefficient calculation
+            float timeConstantSamples = timeConstantMs * 0.001f * static_cast<float>(sampleRate);
+            coefficient = 1.0f - std::exp(-1.0f / timeConstantSamples);
+        }
+        else
+        {
+            coefficient = 1.0f; // No smoothing
+        }
+    }
+    
+    double sampleRate = 44100.0;
+    float timeConstantMs = 10.0f; // Default 10ms smoothing time
+    float coefficient = 0.1f;
+    float current = 0.0f;
+    float target = 0.0f;
+};
+
 // Variable slope filter with separate LP and HP modes
 class SimpleStableFilter
 {
@@ -26,18 +85,27 @@ public:
     
     SimpleStableFilter()
     {
+        cutoffSmoothing.setSampleRate(44100.0);
+        cutoffSmoothing.setTimeConstantMs(10.0f); // 10ms smoothing time
         reset();
     }
     
     void setSampleRate(double newSampleRate)
     {
         sampleRate = newSampleRate;
+        cutoffSmoothing.setSampleRate(newSampleRate);
         updateCoeff();
     }
     
     void setCutoffFrequency(float cutoff)
     {
-        cutoffFreq = juce::jlimit(20.0f, static_cast<float>(sampleRate * 0.4), cutoff);
+        float limitedCutoff = juce::jlimit(20.0f, static_cast<float>(sampleRate * 0.4), cutoff);
+        cutoffSmoothing.setTarget(limitedCutoff);
+        
+        // For user knob movements, jump immediately to the new value
+        // Smoothing will handle sample-to-sample changes during audio processing
+        cutoffFreq = limitedCutoff;
+        cutoffSmoothing.reset(limitedCutoff);
         updateCoeff();
     }
     
@@ -60,6 +128,11 @@ public:
         updateCoeff();
     }
     
+    void setSmoothingTimeMs(float timeMs)
+    {
+        cutoffSmoothing.setTimeConstantMs(timeMs);
+    }
+    
     // Getter methods for per-voice filter synchronization
     float getCutoffFrequency() const { return cutoffFreq; }
     FilterType getFilterType() const { return filterType; }
@@ -72,6 +145,9 @@ public:
         z2 = 0.0f;
         z3 = 0.0f;
         z4 = 0.0f;
+        
+        // Reset smoothing to current cutoff frequency
+        cutoffSmoothing.reset(cutoffFreq);
         
         // Clear comb filter delay line
         if (!delayLine.empty())
@@ -96,8 +172,14 @@ public:
         if (filterType == OFF)
             return inputSample;
             
-        // Apply input scaling to prevent numerical issues
-        inputSample = juce::jlimit(-1.0f, 1.0f, inputSample);
+        // Update smoothed cutoff frequency and recalculate coefficients if needed
+        float newCutoffFreq = cutoffSmoothing.getNextValue();
+        if (std::abs(newCutoffFreq - cutoffFreq) > 0.01f) // Very small threshold for smooth updates
+        {
+            cutoffFreq = newCutoffFreq;
+            updateCoeff();
+        }
+            
         
         // Handle comb filter separately as it uses a different processing method
         if (filterType == COMB)
@@ -117,8 +199,6 @@ public:
             // Update delay index (circular buffer)
             delayIndex = (delayIndex + 1) % delayLineSize;
             
-            // Apply gentle saturation for stability
-            output = std::tanh(output * 0.8f) * 1.25f;
             
             return output;
         }
@@ -145,8 +225,6 @@ public:
             // Mix the three formants with emphasis on lower formants
             float output = f1_output * 0.5f + f2_output * 0.35f + f3_output * 0.15f;
             
-            // Apply gentle saturation for stability
-            output = std::tanh(output * 0.8f) * 1.25f;
             
             return output;
         }
@@ -160,8 +238,6 @@ public:
             z1 = inputSample * a1 + z2 - b1 * output;
             z2 = inputSample * a2 - b2 * output;
             
-            // Apply gentle saturation for stability
-            output = std::tanh(output * 0.8f) * 1.25f;
             
             return output;
         }
@@ -177,8 +253,6 @@ public:
             z3 = stage1 * a1 + z4 - b1 * output;
             z4 = stage1 * a2 - b2 * output;
             
-            // Apply gentle saturation for stability
-            output = std::tanh(output * 0.8f) * 1.25f;
             
             return output;
         }
@@ -196,9 +270,11 @@ private:
         
         // Standard 12dB/octave filter design with Q factor
         float omega = 2.0f * juce::MathConstants<float>::pi * cutoffFreq / static_cast<float>(sampleRate);
+        omega = juce::jlimit(0.001f, juce::MathConstants<float>::pi * 0.99f, omega); // Prevent extreme values
         float c = 1.0f / std::tan(omega * 0.5f);
         float cSq = c * c;
-        float cQ = c / q; // Use Q factor instead of sqrt(2)
+        float safeQ = juce::jlimit(0.5f, 3.0f, q); // Conservative Q range for stability
+        float cQ = c / safeQ;
         
         if (filterType == LOWPASS)
         {
@@ -262,8 +338,8 @@ private:
             }
             
             // Set feedback gain based on Q factor (resonance)
-            // Higher Q = more feedback = more resonance
-            feedbackGain = juce::jlimit(0.0f, 0.95f, (q - 0.707f) / 19.293f * 0.9f);
+            // Higher Q = more feedback = more resonance, but keep very conservative
+            feedbackGain = juce::jlimit(0.0f, 0.5f, (safeQ - 0.707f) / 1.293f * 0.4f);
             
             // Clear biquad coefficients for comb filter
             a0 = 1.0f; a1 = 0.0f; a2 = 0.0f;
@@ -354,12 +430,7 @@ private:
             return;
         }
         
-        // Clamp coefficients to prevent instability
-        a0 = juce::jlimit(-2.0f, 2.0f, a0);
-        a1 = juce::jlimit(-2.0f, 2.0f, a1);
-        a2 = juce::jlimit(-2.0f, 2.0f, a2);
-        b1 = juce::jlimit(-1.99f, 1.99f, b1);
-        b2 = juce::jlimit(-1.99f, 1.99f, b2);
+        // Coefficients should be stable due to conservative Q range and omega limiting
     }
     
     double sampleRate = 44100.0;
@@ -374,6 +445,9 @@ private:
     
     // State variables (z3, z4 for 24dB filters)
     float z1 = 0.0f, z2 = 0.0f, z3 = 0.0f, z4 = 0.0f;
+    
+    // One-pole smoothing for cutoff frequency
+    OnePoleSmoothing cutoffSmoothing;
     
     // Comb filter delay line
     std::vector<float> delayLine;
@@ -737,9 +811,9 @@ private:
     
     // Helper function to convert resonance (0.0-1.0) to Q factor
     float resonanceToQ(float resonance) const {
-        // Convert 0.0-1.0 resonance to Q factor (0.707 to 20.0)
-        // 0.0 = 0.707 (no resonance), 1.0 = 20.0 (high resonance)
-        return 0.707f + (resonance * 19.293f); // 19.293 = 20.0 - 0.707
+        // Convert 0.0-1.0 resonance to Q factor (0.707 to 2.0)
+        // 0.0 = 0.707 (no resonance), 1.0 = 2.0 (mild resonance, no self-oscillation)
+        return 0.707f + (resonance * 1.293f); // 1.293 = 2.0 - 0.707
     }
 
     SettingsComponent settingsComponent;
@@ -1343,7 +1417,7 @@ private:
                 voiceOsc1Filter.setResonance(osc1FilterInstance->getResonance());
                 voiceOsc1Filter.setFilterType(osc1FilterInstance->getFilterType());
                 voiceOsc1Filter.setFilterSlope(osc1FilterInstance->getFilterSlope());
-                voiceOsc1Filter.reset();
+                // Don't reset - preserve filter state to avoid artifacts
             }
             if (osc2FilterInstance != nullptr)
             {
@@ -1352,7 +1426,7 @@ private:
                 voiceOsc2Filter.setResonance(osc2FilterInstance->getResonance());
                 voiceOsc2Filter.setFilterType(osc2FilterInstance->getFilterType());
                 voiceOsc2Filter.setFilterSlope(osc2FilterInstance->getFilterSlope());
-                voiceOsc2Filter.reset();
+                // Don't reset - preserve filter state to avoid artifacts
             }
         }
         

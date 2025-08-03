@@ -377,9 +377,7 @@ void SummonerXSerum2AudioProcessor::updateOsc2EnvelopeParameters()
 
 void SummonerXSerum2AudioProcessor::updateFilterParameters()
 {
-    // Reset filters before updating parameters
-    osc1Filter.reset();
-    osc2Filter.reset();
+    // Don't reset filters - preserve state to avoid audio artifacts
     
     // Determine filter type
     SimpleStableFilter::FilterType filterType = SimpleStableFilter::OFF;
