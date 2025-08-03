@@ -3000,6 +3000,8 @@ void SynthesizerComponent::paintOverChildren(juce::Graphics& g)
     auto centerX = gridBounds.getWidth() / 2.0f;
     auto centerY = gridBounds.getHeight() / 2.0f;
     
+    // Main synth page grid temporarily commented out
+    /*
     g.setColour(juce::Colours::cyan.withAlpha(0.3f));
     
     // Vertical grid lines - symmetrical from center
@@ -3041,6 +3043,7 @@ void SynthesizerComponent::paintOverChildren(juce::Graphics& g)
         g.drawLine(0, centerY + offset, gridBounds.getWidth(), centerY + offset, 1.0f);
         g.drawLine(0, centerY - offset, gridBounds.getWidth(), centerY - offset, 1.0f);
     }
+    */
     
     // Draw white bracket lines for EQ bands (only if we're in the effects module tab)
     if (effectsModule.getCurrentTabIndex() == 4) // EQ tab index
