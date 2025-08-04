@@ -505,8 +505,19 @@ public:
         rmsBuffer[1].resize(rmsBufferSize, 0.0f);
         rmsBufferSize_ = rmsBufferSize;
         
-        // Initialize crossover filters for multiband (if needed later)
-        // TODO: Implement 3-band crossover network
+        // Initialize multiband RMS buffers
+        rmsBufferLow[0].resize(rmsBufferSize, 0.0f);
+        rmsBufferLow[1].resize(rmsBufferSize, 0.0f);
+        rmsBufferMid[0].resize(rmsBufferSize, 0.0f);
+        rmsBufferMid[1].resize(rmsBufferSize, 0.0f);
+        rmsBufferHigh[0].resize(rmsBufferSize, 0.0f);
+        rmsBufferHigh[1].resize(rmsBufferSize, 0.0f);
+        
+        // Initialize 3-band crossover filters for multiband processing
+        initializeCrossoverFilters();
+        
+        // Reset all processing state to safe defaults
+        reset();
     }
     
     void setEnabled(bool enabled) { isEnabled = enabled; }
@@ -538,18 +549,61 @@ public:
     
     void reset()
     {
-        // Clear RMS buffers
+        // Clear RMS buffers and reset all state
+        for (int ch = 0; ch < 2; ++ch)
+        {
+            std::fill(rmsBuffer[ch].begin(), rmsBuffer[ch].end(), 0.0f);
+            std::fill(rmsBufferLow[ch].begin(), rmsBufferLow[ch].end(), 0.0f);
+            std::fill(rmsBufferMid[ch].begin(), rmsBufferMid[ch].end(), 0.0f);
+            std::fill(rmsBufferHigh[ch].begin(), rmsBufferHigh[ch].end(), 0.0f);
+            
+            rmsIndex[ch] = 0;
+            rmsIndexLow[ch] = 0;
+            rmsIndexMid[ch] = 0;
+            rmsIndexHigh[ch] = 0;
+            
+            rmsSum[ch] = 0.0f;
+            rmsSumLow[ch] = 0.0f;
+            rmsSumMid[ch] = 0.0f;
+            rmsSumHigh[ch] = 0.0f;
+            
+            gainReduction[ch] = 1.0f;
+            gainReductionLow[ch] = 1.0f;
+            gainReductionMid[ch] = 1.0f;
+            gainReductionHigh[ch] = 1.0f;
+        }
+        
+        // Reset parameter smoothing
+        thresholdSmoothing.reset();
+        ratioSmoothing.reset();
+        attackSmoothing.reset();
+        releaseSmoothing.reset();
+        makeupGainSmoothing.reset();
+        mixSmoothing.reset();
         for (int ch = 0; ch < 2; ++ch)
         {
             if (!rmsBuffer[ch].empty())
                 std::fill(rmsBuffer[ch].begin(), rmsBuffer[ch].end(), 0.0f);
             rmsIndex[ch] = 0;
             rmsSum[ch] = 0.0f;
+            
+            // Clear multiband RMS buffers
+            if (!rmsBufferLow[ch].empty())
+                std::fill(rmsBufferLow[ch].begin(), rmsBufferLow[ch].end(), 0.0f);
+            if (!rmsBufferMid[ch].empty())
+                std::fill(rmsBufferMid[ch].begin(), rmsBufferMid[ch].end(), 0.0f);
+            if (!rmsBufferHigh[ch].empty())
+                std::fill(rmsBufferHigh[ch].begin(), rmsBufferHigh[ch].end(), 0.0f);
+            
+            rmsIndexLow[ch] = rmsIndexMid[ch] = rmsIndexHigh[ch] = 0;
+            rmsSumLow[ch] = rmsSumMid[ch] = rmsSumHigh[ch] = 0.0f;
         }
         
         // Reset envelope followers
-        gainReduction[0] = 0.0f;
-        gainReduction[1] = 0.0f;
+        gainReduction[0] = gainReduction[1] = 1.0f;
+        gainReductionLow[0] = gainReductionLow[1] = 1.0f;
+        gainReductionMid[0] = gainReductionMid[1] = 1.0f;
+        gainReductionHigh[0] = gainReductionHigh[1] = 1.0f;
         
         // Reset smoothing
         thresholdSmoothing.reset(threshold);
@@ -568,6 +622,24 @@ public:
         const int numSamples = buffer.getNumSamples();
         const int numChannels = juce::jmin(buffer.getNumChannels(), 2);
         
+        // Additional safety checks
+        if (numSamples <= 0 || numChannels <= 0 || rmsBufferSize_ <= 0)
+            return;
+            
+        // Temporarily disable multiband to isolate the issue
+        if (false && multibandEnabled) // Force disable multiband for debugging
+        {
+            processMultiband(buffer, numSamples, numChannels);
+        }
+        else
+        {
+            processSingleband(buffer, numSamples, numChannels);
+        }
+    }
+    
+private:
+    void processSingleband(juce::AudioBuffer<float>& buffer, int numSamples, int numChannels)
+    {
         for (int sample = 0; sample < numSamples; ++sample)
         {
             // Get smoothed parameters
@@ -587,61 +659,281 @@ public:
                 float inputSample = buffer.getSample(ch, sample);
                 float drySample = inputSample;
                 
-                // RMS Detection (10ms window)
-                float inputSquared = inputSample * inputSample;
+                float compressedSample = compressSample(inputSample, currentThreshold, currentRatio, 
+                                                       attackCoeff, releaseCoeff, ch, 
+                                                       rmsBuffer[ch], rmsIndex[ch], rmsSum[ch], gainReduction[ch]);
                 
-                // Update RMS circular buffer
-                if (rmsBufferSize_ > 0)
-                {
-                    rmsSum[ch] -= rmsBuffer[ch][rmsIndex[ch]]; // Remove old sample
-                    rmsBuffer[ch][rmsIndex[ch]] = inputSquared; // Add new sample
-                    rmsSum[ch] += inputSquared;
-                    rmsIndex[ch] = (rmsIndex[ch] + 1) % rmsBufferSize_;
-                    
-                    // Calculate RMS level in dB
-                    float rmsValue = std::sqrt(rmsSum[ch] / static_cast<float>(rmsBufferSize_));
-                    float rmsDb = rmsValue > 0.0f ? 20.0f * std::log10(rmsValue) : -100.0f;
-                    
-                    // Calculate required gain reduction
-                    float gainReductionDb = 0.0f;
-                    if (rmsDb > currentThreshold)
-                    {
-                        float overshoot = rmsDb - currentThreshold;
-                        gainReductionDb = overshoot * (1.0f - 1.0f / currentRatio);
-                    }
-                    
-                    // Convert to linear gain reduction
-                    float targetGainReduction = std::pow(10.0f, -gainReductionDb / 20.0f);
-                    
-                    // Apply attack/release envelope
-                    if (targetGainReduction < gainReduction[ch])
-                    {
-                        // Attack (gain reduction increasing)
-                        gainReduction[ch] = targetGainReduction + (gainReduction[ch] - targetGainReduction) * attackCoeff;
-                    }
-                    else
-                    {
-                        // Release (gain reduction decreasing)
-                        gainReduction[ch] = targetGainReduction + (gainReduction[ch] - targetGainReduction) * releaseCoeff;
-                    }
-                    
-                    // Apply compression
-                    float compressedSample = inputSample * gainReduction[ch];
-                    
-                    // Apply makeup gain
-                    float makeupGainLinear = std::pow(10.0f, currentMakeupGain / 20.0f);
-                    compressedSample *= makeupGainLinear;
-                    
-                    // Mix dry and wet (parallel compression)
-                    float outputSample = drySample * (1.0f - currentMix) + compressedSample * currentMix;
-                    
-                    buffer.setSample(ch, sample, outputSample);
-                }
+                // Apply makeup gain
+                float makeupGainLinear = std::pow(10.0f, currentMakeupGain / 20.0f);
+                compressedSample *= makeupGainLinear;
+                
+                // Mix dry and wet (parallel compression)
+                float outputSample = drySample * (1.0f - currentMix) + compressedSample * currentMix;
+                
+                buffer.setSample(ch, sample, outputSample);
             }
         }
     }
     
-private:
+    void processMultiband(juce::AudioBuffer<float>& buffer, int numSamples, int numChannels)
+    {
+        for (int sample = 0; sample < numSamples; ++sample)
+        {
+            // Get smoothed parameters
+            float currentThreshold = thresholdSmoothing.getNextValue();
+            float currentRatio = ratioSmoothing.getNextValue();
+            float currentAttack = attackSmoothing.getNextValue();
+            float currentRelease = releaseSmoothing.getNextValue();
+            float currentMakeupGain = makeupGainSmoothing.getNextValue();
+            float currentMix = mixSmoothing.getNextValue();
+            
+            // Calculate envelope coefficients
+            float attackCoeff = std::exp(-1.0f / (currentAttack * 0.001f * static_cast<float>(sampleRate)));
+            float releaseCoeff = std::exp(-1.0f / (currentRelease * 0.001f * static_cast<float>(sampleRate)));
+            
+            for (int ch = 0; ch < numChannels; ++ch)
+            {
+                float inputSample = buffer.getSample(ch, sample);
+                float drySample = inputSample;
+                
+                // Split into frequency bands
+                float lowBand = inputSample;
+                lowBand = lowBandFilter[ch][0].processSample(lowBand, ch);
+                lowBand = lowBandFilter[ch][1].processSample(lowBand, ch);
+                
+                float midBand = inputSample;
+                midBand = midBandFilterHP[ch][0].processSample(midBand, ch);
+                midBand = midBandFilterHP[ch][1].processSample(midBand, ch);
+                midBand = midBandFilterLP[ch][0].processSample(midBand, ch);
+                midBand = midBandFilterLP[ch][1].processSample(midBand, ch);
+                
+                float highBand = inputSample;
+                highBand = highBandFilter[ch][0].processSample(highBand, ch);
+                highBand = highBandFilter[ch][1].processSample(highBand, ch);
+                
+                // OTT-style per-band processing with more aggressive characteristics
+                // Low band: Very aggressive for that signature OTT bass punch
+                float lowThreshold = currentThreshold - 8.0f; // More compression
+                float lowRatio = juce::jmax(4.0f, currentRatio * 1.8f); // Much higher ratio, minimum 4:1
+                float compressedLow = compressSample(lowBand, lowThreshold, lowRatio,
+                                                   attackCoeff * 0.5f, releaseCoeff * 1.2f, ch, // Faster attack, slower release
+                                                   rmsBufferLow[ch], rmsIndexLow[ch], rmsSumLow[ch], gainReductionLow[ch]);
+                
+                // Mid band: Aggressive for vocal/instrument clarity (OTT's strength)
+                float midThreshold = currentThreshold - 3.0f; // More sensitive
+                float midRatio = juce::jmax(3.0f, currentRatio * 1.2f); // Higher ratio, minimum 3:1
+                float compressedMid = compressSample(midBand, midThreshold, midRatio,
+                                                   attackCoeff * 0.4f, releaseCoeff, ch, // Very fast attack
+                                                   rmsBufferMid[ch], rmsIndexMid[ch], rmsSumMid[ch], gainReductionMid[ch]);
+                
+                // High band: Moderate but present compression for sparkle
+                float highThreshold = currentThreshold + 2.0f; // Still gentler but more active
+                float highRatio = juce::jmax(2.0f, currentRatio * 0.9f); // Moderate ratio, minimum 2:1
+                float compressedHigh = compressSample(highBand, highThreshold, highRatio,
+                                                    attackCoeff * 0.8f, releaseCoeff, ch, // Medium-fast attack
+                                                    rmsBufferHigh[ch], rmsIndexHigh[ch], rmsSumHigh[ch], gainReductionHigh[ch]);
+                
+                // Apply conservative band balancing (no boosts to prevent gain stacking)
+                compressedLow *= 0.95f;   // Slight reduction to prevent bass buildup
+                compressedMid *= 1.0f;    // Keep mids neutral 
+                compressedHigh *= 0.98f;  // Slight high reduction
+                
+                // Sum the compressed bands with safety checks
+                float compressedSample = compressedLow + compressedMid + compressedHigh;
+                
+                // Safety check after band summing
+                if (!std::isfinite(compressedSample) || std::abs(compressedSample) > 100.0f)
+                {
+                    compressedSample = 0.0f; // Return silence if something went wrong
+                }
+                else
+                {
+                    // Apply gain cut early in chain to prevent saturation/limiting from being hit too hard
+                    float gainCutEarly = std::pow(10.0f, -12.0f / 20.0f); // 12dB cut before saturation
+                    compressedSample *= gainCutEarly;
+                    
+                    // Add OTT-style harmonic saturation
+                    if (std::abs(compressedSample) > 0.005f)
+                    {
+                        float saturation = 0.08f; // More noticeable saturation for OTT character
+                        compressedSample = std::tanh(compressedSample * (1.0f + saturation)) / (1.0f + saturation);
+                    }
+                    
+                    // Soft limiting with OTT-style characteristics
+                    compressedSample = std::tanh(compressedSample * 0.9f) * 0.9f;
+                    
+                    // Apply additional 6dB cut after processing (total 18dB with early cut)
+                    float gainCutLate = std::pow(10.0f, -6.0f / 20.0f); // Additional 6dB cut
+                    compressedSample *= gainCutLate;
+                    
+                    // Final safety check
+                    if (!std::isfinite(compressedSample))
+                    {
+                        compressedSample = 0.0f;
+                    }
+                }
+                
+                // Apply makeup gain
+                float makeupGainLinear = std::pow(10.0f, currentMakeupGain / 20.0f);
+                compressedSample *= makeupGainLinear;
+                
+                // Mix dry and wet (parallel compression)
+                float outputSample = drySample * (1.0f - currentMix) + compressedSample * currentMix;
+                
+                buffer.setSample(ch, sample, outputSample);
+            }
+        }
+    }
+    
+    float compressSample(float inputSample, float threshold, float ratio, 
+                        float attackCoeff, float releaseCoeff, int channel,
+                        std::vector<float>& rmsBuffer, int& rmsIndex, float& rmsSum, float& gainReduction)
+    {
+        // RMS Detection (10ms window)
+        float inputSquared = inputSample * inputSample;
+        
+        // Update RMS circular buffer
+        if (rmsBufferSize_ > 0)
+        {
+            rmsSum -= rmsBuffer[rmsIndex]; // Remove old sample
+            rmsBuffer[rmsIndex] = inputSquared; // Add new sample
+            rmsSum += inputSquared;
+            rmsIndex = (rmsIndex + 1) % rmsBufferSize_;
+            
+            // Calculate RMS level in dB
+            float rmsValue = std::sqrt(rmsSum / static_cast<float>(rmsBufferSize_));
+            float rmsDb = rmsValue > 0.0f ? 20.0f * std::log10(rmsValue) : -100.0f;
+            
+            // True OTT-style dual compression with proper upward/downward sections
+            float gainChangeDb = 0.0f;
+            
+            // Split threshold into upward and downward sections like real OTT
+            float upwardThreshold = threshold - 15.0f; // 15dB below for upward section
+            float downwardThreshold = threshold; // Main threshold for downward
+            
+            // Downward compression (compress loud signals above threshold)
+            if (rmsDb > downwardThreshold)
+            {
+                float overshoot = rmsDb - downwardThreshold;
+                float downwardRatio = juce::jmax(2.0f, ratio); // Minimum 2:1 for downward
+                gainChangeDb -= overshoot * (1.0f - 1.0f / downwardRatio);
+            }
+            
+            // Upward compression (OTT's signature - aggressively boost quiet parts)
+            if (rmsDb < upwardThreshold && rmsDb > -50.0f) // Don't boost noise floor
+            {
+                float undershoot = upwardThreshold - rmsDb;
+                float upwardRatio = juce::jmax(3.0f, ratio * 0.8f); // Strong upward compression
+                
+                // More aggressive upward compression curve - this is the OTT magic
+                float upwardGain = undershoot * (1.0f - 1.0f / upwardRatio);
+                
+                // Apply controlled scaling to prevent excessive gain buildup
+                float quietnessScale = juce::jlimit(0.1f, 0.6f, (upwardThreshold - rmsDb) / 30.0f);
+                gainChangeDb += upwardGain * quietnessScale * 0.2f; // Controlled upward compression to prevent gain stacking
+            }
+            
+            // Middle zone (between upward and downward thresholds) - gentle expansion
+            if (rmsDb >= upwardThreshold && rmsDb <= downwardThreshold)
+            {
+                // Controlled expansion in the middle zone to prevent gain stacking
+                float middleZoneWidth = downwardThreshold - upwardThreshold;
+                float positionInZone = (rmsDb - upwardThreshold) / middleZoneWidth; // 0-1
+                float expansionAmount = (1.0f - positionInZone) * 0.05f; // Reduced expansion to control gain
+                gainChangeDb += expansionAmount;
+            }
+            
+            // Convert to linear gain change
+            float targetGainReduction = std::pow(10.0f, gainChangeDb / 20.0f);
+            
+            // Apply attack/release envelope
+            if (targetGainReduction < gainReduction)
+            {
+                // Attack (gain reduction increasing or boost decreasing)
+                gainReduction = targetGainReduction + (gainReduction - targetGainReduction) * attackCoeff;
+            }
+            else
+            {
+                // Release (gain reduction decreasing or boost increasing)  
+                gainReduction = targetGainReduction + (gainReduction - targetGainReduction) * releaseCoeff;
+            }
+            
+            // Apply compression/expansion with safety checks
+            float outputSample = inputSample * gainReduction;
+            
+            // Safety check for NaN, infinity, or excessive values
+            if (!std::isfinite(outputSample) || std::abs(outputSample) > 10.0f)
+            {
+                return 0.0f; // Return silence if something went wrong
+            }
+            
+            return outputSample;
+        }
+        
+        return inputSample;
+    }
+    
+    void initializeCrossoverFilters()
+    {
+        // Crossover frequencies: 200Hz and 2kHz
+        float lowCrossover = 200.0f;
+        float highCrossover = 2000.0f;
+        
+        for (int ch = 0; ch < 2; ++ch)
+        {
+            // Low band: Lowpass at 200Hz (24dB/octave Linkwitz-Riley)
+            lowBandFilter[ch][0].setSampleRate(sampleRate);
+            lowBandFilter[ch][0].setCutoffFrequency(lowCrossover);
+            lowBandFilter[ch][0].setResonance(0.707f);
+            lowBandFilter[ch][0].setFilterType(SimpleStableFilter::LOWPASS);
+            lowBandFilter[ch][0].setFilterSlope(SimpleStableFilter::SLOPE_12DB);
+            
+            lowBandFilter[ch][1].setSampleRate(sampleRate);
+            lowBandFilter[ch][1].setCutoffFrequency(lowCrossover);
+            lowBandFilter[ch][1].setResonance(0.707f);
+            lowBandFilter[ch][1].setFilterType(SimpleStableFilter::LOWPASS);
+            lowBandFilter[ch][1].setFilterSlope(SimpleStableFilter::SLOPE_12DB);
+            
+            // Mid band: Highpass at 200Hz + Lowpass at 2kHz
+            midBandFilterHP[ch][0].setSampleRate(sampleRate);
+            midBandFilterHP[ch][0].setCutoffFrequency(lowCrossover);
+            midBandFilterHP[ch][0].setResonance(0.707f);
+            midBandFilterHP[ch][0].setFilterType(SimpleStableFilter::HIGHPASS);
+            midBandFilterHP[ch][0].setFilterSlope(SimpleStableFilter::SLOPE_12DB);
+            
+            midBandFilterHP[ch][1].setSampleRate(sampleRate);
+            midBandFilterHP[ch][1].setCutoffFrequency(lowCrossover);
+            midBandFilterHP[ch][1].setResonance(0.707f);
+            midBandFilterHP[ch][1].setFilterType(SimpleStableFilter::HIGHPASS);
+            midBandFilterHP[ch][1].setFilterSlope(SimpleStableFilter::SLOPE_12DB);
+            
+            midBandFilterLP[ch][0].setSampleRate(sampleRate);
+            midBandFilterLP[ch][0].setCutoffFrequency(highCrossover);
+            midBandFilterLP[ch][0].setResonance(0.707f);
+            midBandFilterLP[ch][0].setFilterType(SimpleStableFilter::LOWPASS);
+            midBandFilterLP[ch][0].setFilterSlope(SimpleStableFilter::SLOPE_12DB);
+            
+            midBandFilterLP[ch][1].setSampleRate(sampleRate);
+            midBandFilterLP[ch][1].setCutoffFrequency(highCrossover);
+            midBandFilterLP[ch][1].setResonance(0.707f);
+            midBandFilterLP[ch][1].setFilterType(SimpleStableFilter::LOWPASS);
+            midBandFilterLP[ch][1].setFilterSlope(SimpleStableFilter::SLOPE_12DB);
+            
+            // High band: Highpass at 2kHz (24dB/octave Linkwitz-Riley)
+            highBandFilter[ch][0].setSampleRate(sampleRate);
+            highBandFilter[ch][0].setCutoffFrequency(highCrossover);
+            highBandFilter[ch][0].setResonance(0.707f);
+            highBandFilter[ch][0].setFilterType(SimpleStableFilter::HIGHPASS);
+            highBandFilter[ch][0].setFilterSlope(SimpleStableFilter::SLOPE_12DB);
+            
+            highBandFilter[ch][1].setSampleRate(sampleRate);
+            highBandFilter[ch][1].setCutoffFrequency(highCrossover);
+            highBandFilter[ch][1].setResonance(0.707f);
+            highBandFilter[ch][1].setFilterType(SimpleStableFilter::HIGHPASS);
+            highBandFilter[ch][1].setFilterSlope(SimpleStableFilter::SLOPE_12DB);
+        }
+    }
+    
     // Parameters
     bool isEnabled = false;
     float threshold = -20.0f; // dB
@@ -662,6 +954,713 @@ private:
     int rmsIndex[2] = {0, 0};
     float rmsSum[2] = {0.0f, 0.0f};
     float gainReduction[2] = {1.0f, 1.0f}; // Linear gain reduction values
+    
+    // Multiband crossover filters (2 stages each for 24dB/octave Linkwitz-Riley)
+    SimpleStableFilter lowBandFilter[2][2];     // Low band: LP @ 200Hz (2 stages)
+    SimpleStableFilter midBandFilterHP[2][2];   // Mid band: HP @ 200Hz (2 stages)
+    SimpleStableFilter midBandFilterLP[2][2];   // Mid band: LP @ 2kHz (2 stages)  
+    SimpleStableFilter highBandFilter[2][2];    // High band: HP @ 2kHz (2 stages)
+    
+    // Multiband RMS buffers (separate per band)
+    std::vector<float> rmsBufferLow[2], rmsBufferMid[2], rmsBufferHigh[2];
+    int rmsIndexLow[2] = {0, 0}, rmsIndexMid[2] = {0, 0}, rmsIndexHigh[2] = {0, 0};
+    float rmsSumLow[2] = {0.0f, 0.0f}, rmsSumMid[2] = {0.0f, 0.0f}, rmsSumHigh[2] = {0.0f, 0.0f};
+    float gainReductionLow[2] = {1.0f, 1.0f}, gainReductionMid[2] = {1.0f, 1.0f}, gainReductionHigh[2] = {1.0f, 1.0f};
+};
+
+// Multi-mode distortion effect with pre/post filtering
+class DistortionEffect
+{
+public:
+    enum DistortionType
+    {
+        TUBE = 1,           // "TUBE"
+        SOFTCLIP = 2,       // "SOFTCLIP"  
+        HARDCLIP = 3,       // "HARDCLIP"
+        DIODE1 = 4,         // "DIODE 1"
+        DIODE2 = 5,         // "DIODE 2"
+        LINEAR_FOLD = 6,    // "LINEAR FOLD"
+        SINE_FOLD = 7,      // "SINE FOLD"
+        ZERO_SQUARE = 8,    // "ZERO-SQUARE"
+        DOWNSAMPLE = 9,     // "DOWNSAMPLE"
+        ASYMMETRIC = 10,    // "ASYMMETRIC"
+        RECTIFY = 11,       // "RECTIFY"
+        SINE_SHAPER = 12,   // "SINE SHAPER"
+        STOMP_BOX = 13,     // "STOMP BOX"
+        TAPE_SAT = 14,      // "TAPE SAT"
+        OVERDRIVE = 15,     // "OVERDRIVE"
+        SOFT_SAT = 16       // "SOFT SAT"
+    };
+    
+    enum FilterPosition
+    {
+        FILTER_OFF = 0,
+        FILTER_PRE = 1,
+        FILTER_POST = 2
+    };
+    
+    DistortionEffect()
+    {
+        reset();
+    }
+    
+    void setSampleRate(double newSampleRate)
+    {
+        sampleRate = newSampleRate;
+        
+        // Initialize parameter smoothing
+        driveSmoothing.setSampleRate(sampleRate);
+        driveSmoothing.setTimeConstantMs(10.0f);
+        
+        mixSmoothing.setSampleRate(sampleRate);
+        mixSmoothing.setTimeConstantMs(20.0f);
+        
+        // Initialize filters
+        preFilter[0].setSampleRate(sampleRate);
+        preFilter[1].setSampleRate(sampleRate);
+        postFilter[0].setSampleRate(sampleRate);
+        postFilter[1].setSampleRate(sampleRate);
+        
+        updateFilters();
+        reset();
+    }
+    
+    void setEnabled(bool enabled) { isEnabled = enabled; }
+    void setType(int type) { 
+        distortionType = juce::jlimit(1, 16, type);
+    }
+    void setDrive(float driveValue) { 
+        drive = juce::jlimit(0.0f, 100.0f, driveValue);
+        driveSmoothing.setTarget(drive);
+    }
+    void setMix(float mixValue) { 
+        wetMix = juce::jlimit(0.0f, 1.0f, mixValue);
+        mixSmoothing.setTarget(wetMix);
+    }
+    
+    // Filter controls
+    void setFilterPosition(FilterPosition position) { 
+        FilterPosition oldPosition = filterPosition;
+        filterPosition = position;
+        
+        // Reset filter states when switching positions to ensure clean transition
+        if (oldPosition != position)
+        {
+            for (int ch = 0; ch < 2; ++ch)
+            {
+                preFilter[ch].reset();
+                postFilter[ch].reset();
+            }
+        }
+        
+        updateFilters();
+    }
+    void setFilterType(SimpleStableFilter::FilterType type) { 
+        filterType = type;
+        updateFilters();
+    }
+    void setFilterFrequency(float freq) { 
+        filterFreq = juce::jlimit(20.0f, 20000.0f, freq);
+        updateFilters();
+    }
+    void setFilterQ(float q) { 
+        filterQ = juce::jlimit(0.1f, 30.0f, q);
+        updateFilters();
+    }
+    
+    void reset()
+    {
+        // Reset parameter smoothing
+        driveSmoothing.reset(drive);
+        mixSmoothing.reset(wetMix);
+        
+        // Reset filters
+        for (int ch = 0; ch < 2; ++ch)
+        {
+            preFilter[ch].reset();
+            postFilter[ch].reset();
+        }
+        
+        // Reset bitcrusher state
+        bitcrushHold[0] = bitcrushHold[1] = 0.0f;
+        bitcrushCounter[0] = bitcrushCounter[1] = 0;
+    }
+    
+    void processBlock(juce::AudioBuffer<float>& buffer)
+    {
+        if (!isEnabled || sampleRate <= 0.0)
+            return;
+            
+        const int numSamples = buffer.getNumSamples();
+        const int numChannels = juce::jmin(buffer.getNumChannels(), 2);
+        
+        if (numSamples <= 0 || numChannels <= 0)
+            return;
+        
+        for (int sample = 0; sample < numSamples; ++sample)
+        {
+            float currentDrive = driveSmoothing.getNextValue();
+            float currentMix = mixSmoothing.getNextValue();
+            
+            for (int ch = 0; ch < numChannels; ++ch)
+            {
+                float inputSample = buffer.getSample(ch, sample);
+                float drySample = inputSample;
+                float processedSample = inputSample;
+                
+                // Pre-filtering (will pass through unchanged if filter is OFF)
+                processedSample = preFilter[ch].processSample(processedSample, ch);
+                
+                // Apply distortion
+                processedSample = applyDistortion(processedSample, currentDrive, ch);
+                
+                // Post-filtering (will pass through unchanged if filter is OFF)
+                processedSample = postFilter[ch].processSample(processedSample, ch);
+                
+                // Mix dry and wet
+                float outputSample = drySample * (1.0f - currentMix) + processedSample * currentMix;
+                
+                // Safety check
+                if (!std::isfinite(outputSample))
+                {
+                    outputSample = 0.0f;
+                }
+                
+                buffer.setSample(ch, sample, outputSample);
+            }
+        }
+    }
+    
+private:
+    float applyDistortion(float input, float driveAmount, int channel)
+    {
+        if (driveAmount <= 0.0f) return input;
+        
+        // Convert drive (0-100) to coloration amount - focus on character, not just gain
+        // Lower values still produce obvious coloration
+        float driveScale = 0.5f + (driveAmount / 100.0f) * 3.0f; // Range: 0.5 to 3.5 (much more reasonable)
+        float driven = input * driveScale;
+        
+        switch (distortionType)
+        {
+            case TUBE:
+                return tubeSaturation(driven);
+                
+            case SOFTCLIP:
+                return softSaturation(driven);
+                
+            case HARDCLIP:
+                return hardClipping(driven);
+                
+            case DIODE1:
+                return diode1Distortion(driven);
+                
+            case DIODE2:
+                return diode2Distortion(driven);
+                
+            case LINEAR_FOLD:
+                return linearFolding(driven);
+                
+            case SINE_FOLD:
+                return sineFolding(driven);
+                
+            case ZERO_SQUARE:
+                return zeroSquareDistortion(driven);
+                
+            case DOWNSAMPLE:
+                return decimateDistortion(driven, channel);
+                
+            case ASYMMETRIC:
+                return asymmetricDistortion(driven);
+                
+            case RECTIFY:
+                return rectifyDistortion(driven);
+                
+            case SINE_SHAPER:
+                return sineShaping(driven);
+                
+            case STOMP_BOX:
+                return stompBoxDistortion(driven);
+                
+            case TAPE_SAT:
+                return tapeSaturation(driven);
+                
+            case OVERDRIVE:
+                return overdriveSaturation(driven);
+                
+            case SOFT_SAT:
+                return softSaturation(driven);
+                
+            default:
+                return tubeSaturation(driven);
+        }
+    }
+    
+    // Distortion algorithms
+    float tubeSaturation(float x)
+    {
+        // AGGRESSIVE tube saturation - maximum coloration, not subtlety!
+        // Multiple stages of processing for rich harmonic content
+        
+        // Stage 1: Pre-emphasis to enhance mid-range tube character
+        float preEmphasized = x + (x * x * x) * 0.4f; // Cubic nonlinearity for warmth
+        
+        // Stage 2: Asymmetric tube-style saturation with heavy coloration
+        float tubeSignal;
+        if (preEmphasized > 0.0f)
+        {
+            // Positive: Heavy 2nd harmonic generation + soft limiting
+            float drive = preEmphasized * 2.5f; // More aggressive drive internally
+            tubeSignal = std::tanh(drive) * 0.7f;
+            
+            // Add strong even harmonics (2nd, 4th)
+            float harmonic2 = tubeSignal * tubeSignal * 0.6f;           // Strong 2nd harmonic
+            float harmonic4 = tubeSignal * tubeSignal * tubeSignal * tubeSignal * 0.2f; // 4th harmonic
+            tubeSignal += harmonic2 + harmonic4;
+        }
+        else
+        {
+            // Negative: Harder clipping with odd harmonics
+            float drive = preEmphasized * 3.0f; // Even more aggressive on negative
+            tubeSignal = std::tanh(drive) * 0.6f;
+            
+            // Add strong odd harmonics (3rd, 5th)
+            float harmonic3 = tubeSignal * tubeSignal * tubeSignal * 0.4f;   // Strong 3rd
+            float harmonic5 = std::pow(std::abs(tubeSignal), 5) * (tubeSignal < 0 ? -0.15f : 0.15f); // 5th
+            tubeSignal += harmonic3 + harmonic5;
+        }
+        
+        // Stage 3: Tube-style compression and warmth
+        float compressed = tubeSignal / (1.0f + std::abs(tubeSignal) * 0.8f);
+        
+        // Stage 4: Add tube "glow" - subtle high-frequency rolling off with saturation
+        float glow = compressed + std::sin(compressed * 6.28f) * 0.1f; // Subtle intermodulation
+        
+        // Final soft limiting to prevent overload while maintaining character
+        return std::tanh(glow * 1.2f) * 0.8f;
+    }
+    
+    float softSaturation(float x)
+    {
+        return x / (1.0f + std::abs(x));
+    }
+    
+    float hardClipping(float x)
+    {
+        return juce::jlimit(-0.7f, 0.7f, x);
+    }
+    
+    float diode1Distortion(float x)
+    {
+        // Asymmetric diode clipping - more aggressive on positive
+        if (x > 0.4f)
+            return 0.4f + std::tanh((x - 0.4f) * 3.0f) * 0.3f;
+        else if (x < -0.6f)
+            return -0.6f + std::tanh((x + 0.6f) * 2.0f) * 0.2f;
+        return x;
+    }
+    
+    float diode2Distortion(float x)
+    {
+        // Different diode characteristics - softer knee
+        if (x > 0.3f)
+            return 0.3f + std::tanh((x - 0.3f) * 2.0f) * 0.4f;
+        else if (x < -0.4f)
+            return -0.4f + std::tanh((x + 0.4f) * 2.5f) * 0.3f;
+        return x;
+    }
+    
+    float linearFolding(float x)
+    {
+        while (std::abs(x) > 1.0f)
+        {
+            if (x > 1.0f)
+                x = 2.0f - x;
+            else if (x < -1.0f)
+                x = -2.0f - x;
+        }
+        return x;
+    }
+    
+    float sineFolding(float x)
+    {
+        if (std::abs(x) > 1.0f)
+        {
+            return std::sin(x * juce::MathConstants<float>::pi);
+        }
+        return x;
+    }
+    
+    float zeroSquareDistortion(float x)
+    {
+        return x > 0.0f ? 1.0f : -1.0f;
+    }
+    
+    float decimateDistortion(float x, int channel)
+    {
+        // Reduce effective sample rate (downsample)
+        if (++bitcrushCounter[channel] >= 8)
+        {
+            bitcrushHold[channel] = x;
+            bitcrushCounter[channel] = 0;
+        }
+        return bitcrushHold[channel];
+    }
+    
+    float asymmetricDistortion(float x)
+    {
+        if (x > 0.0f)
+            return std::tanh(x * 2.0f);
+        else
+            return std::tanh(x * 0.5f);
+    }
+    
+    float rectifyDistortion(float x)
+    {
+        return std::abs(x);
+    }
+    
+    float sineShaping(float x)
+    {
+        return std::sin(x * juce::MathConstants<float>::pi * 0.5f);
+    }
+    
+    float stompBoxDistortion(float x)
+    {
+        // Classic stomp box overdrive with soft knee
+        return std::tanh(x * 1.5f) * 0.8f;
+    }
+    
+    float tapeSaturation(float x)
+    {
+        // Tape-style saturation with even harmonics
+        float saturated = std::tanh(x * 0.8f);
+        return saturated + saturated * saturated * 0.1f; // Add 2nd harmonic
+    }
+    
+    float overdriveSaturation(float x)
+    {
+        if (x > 0.0f)
+            return 1.0f - std::exp(-x);
+        else
+            return -1.0f + std::exp(x);
+    }
+    
+    void updateFilters()
+    {
+        for (int ch = 0; ch < 2; ++ch)
+        {
+            // Only configure the active filter to ensure proper state
+            if (filterPosition == FILTER_PRE)
+            {
+                preFilter[ch].setCutoffFrequency(filterFreq);
+                preFilter[ch].setResonance(filterQ);
+                preFilter[ch].setFilterType(filterType);
+                // Ensure post filter is off
+                postFilter[ch].setFilterType(SimpleStableFilter::OFF);
+            }
+            else if (filterPosition == FILTER_POST)
+            {
+                postFilter[ch].setCutoffFrequency(filterFreq);
+                postFilter[ch].setResonance(filterQ);
+                postFilter[ch].setFilterType(filterType);
+                // Ensure pre filter is off
+                preFilter[ch].setFilterType(SimpleStableFilter::OFF);
+            }
+            else // FILTER_OFF
+            {
+                preFilter[ch].setFilterType(SimpleStableFilter::OFF);
+                postFilter[ch].setFilterType(SimpleStableFilter::OFF);
+            }
+        }
+    }
+    
+    // Parameters
+    bool isEnabled = false;
+    int distortionType = TUBE;
+    float drive = 50.0f; // 0-100
+    float wetMix = 1.0f; // 0-1
+    
+    // Filter parameters
+    FilterPosition filterPosition = FILTER_OFF;
+    SimpleStableFilter::FilterType filterType = SimpleStableFilter::LOWPASS;
+    float filterFreq = 800.0f;  // Lower frequency to make LP filtering more obvious
+    float filterQ = 2.0f;       // Higher Q for more pronounced filtering
+    
+    // Parameter smoothing
+    OnePoleSmoothing driveSmoothing, mixSmoothing;
+    
+    // Processing state
+    double sampleRate = 44100.0;
+    SimpleStableFilter preFilter[2], postFilter[2];
+    
+    // Bitcrusher state
+    float bitcrushHold[2] = {0.0f, 0.0f};
+    int bitcrushCounter[2] = {0, 0};
+};
+
+// Stereo delay effect with ping-pong, filtering, and tempo sync
+class DelayEffect
+{
+public:
+    enum DelayMode
+    {
+        NORMAL = 0,
+        PING_PONG = 1
+    };
+    
+    DelayEffect()
+    {
+        reset();
+    }
+    
+    void setSampleRate(double newSampleRate)
+    {
+        sampleRate = newSampleRate;
+        
+        // Initialize parameter smoothing
+        feedbackSmoothing.setSampleRate(sampleRate);
+        feedbackSmoothing.setTimeConstantMs(10.0f);
+        
+        mixSmoothing.setSampleRate(sampleRate);
+        mixSmoothing.setTimeConstantMs(20.0f);
+        
+        // Allocate delay buffers - maximum 2 seconds at any sample rate
+        int maxDelaySize = static_cast<int>(sampleRate * 2.0);
+        delayBufferL.resize(maxDelaySize, 0.0f);
+        delayBufferR.resize(maxDelaySize, 0.0f);
+        delayBufferSize = maxDelaySize;
+        
+        // Initialize filters for feedback path
+        feedbackFilterL.setSampleRate(sampleRate);
+        feedbackFilterR.setSampleRate(sampleRate);
+        updateFilters();
+        
+        reset();
+    }
+    
+    void setEnabled(bool enabled) { isEnabled = enabled; }
+    
+    void setFeedback(float feedback) { 
+        feedbackAmount = juce::jlimit(0.0f, 0.95f, feedback);
+        feedbackSmoothing.setTarget(feedbackAmount);
+    }
+    
+    void setMix(float mixValue) { 
+        wetMix = juce::jlimit(0.0f, 1.0f, mixValue);
+        mixSmoothing.setTarget(wetMix);
+    }
+    
+    void setDelayMode(DelayMode mode) { delayMode = mode; }
+    
+    void setLeftTime(float timeMs) { 
+        leftTimeMs = juce::jlimit(1.0f, 2000.0f, timeMs);
+        updateDelayTimes();
+    }
+    
+    void setRightTime(float timeMs) { 
+        rightTimeMs = juce::jlimit(1.0f, 2000.0f, timeMs);
+        updateDelayTimes();
+    }
+    
+    void setLinked(bool linked) { 
+        isLinked = linked;
+        if (linked) {
+            setRightTime(leftTimeMs);
+        }
+    }
+    
+    void setBpmSync(bool sync) { bpmSync = sync; }
+    
+    void setLeftTriplet(bool triplet) { leftIsTriplet = triplet; updateDelayTimes(); }
+    void setLeftDotted(bool dotted) { leftIsDotted = dotted; updateDelayTimes(); }
+    void setRightTriplet(bool triplet) { rightIsTriplet = triplet; updateDelayTimes(); }
+    void setRightDotted(bool dotted) { rightIsDotted = dotted; updateDelayTimes(); }
+    
+    // Filter controls
+    void setFilterFreq(float freq) { 
+        filterFreq = juce::jlimit(20.0f, 20000.0f, freq);
+        updateFilters();
+    }
+    
+    void setFilterQ(float q) { 
+        filterQ = juce::jlimit(0.1f, 30.0f, q);
+        updateFilters();
+    }
+    
+    void reset()
+    {
+        // Clear delay buffers
+        std::fill(delayBufferL.begin(), delayBufferL.end(), 0.0f);
+        std::fill(delayBufferR.begin(), delayBufferR.end(), 0.0f);
+        delayIndexL = delayIndexR = 0;
+        
+        // Reset parameter smoothing
+        feedbackSmoothing.reset(feedbackAmount);
+        mixSmoothing.reset(wetMix);
+        
+        // Reset filters
+        feedbackFilterL.reset();
+        feedbackFilterR.reset();
+    }
+    
+    void processBlock(juce::AudioBuffer<float>& buffer)
+    {
+        if (!isEnabled || sampleRate <= 0.0)
+            return;
+            
+        const int numSamples = buffer.getNumSamples();
+        const int numChannels = juce::jmin(buffer.getNumChannels(), 2);
+        
+        if (numSamples <= 0 || numChannels <= 0 || delayBufferSize <= 0)
+            return;
+        
+        for (int sample = 0; sample < numSamples; ++sample)
+        {
+            float currentFeedback = feedbackSmoothing.getNextValue();
+            float currentMix = mixSmoothing.getNextValue();
+            
+            // Process stereo or mono
+            float inputL = buffer.getSample(0, sample);
+            float inputR = numChannels > 1 ? buffer.getSample(1, sample) : inputL;
+            
+            float outputL, outputR;
+            
+            if (delayMode == PING_PONG)
+            {
+                processPingPong(inputL, inputR, outputL, outputR, currentFeedback);
+            }
+            else
+            {
+                processNormal(inputL, inputR, outputL, outputR, currentFeedback);
+            }
+            
+            // Mix dry and wet
+            float finalL = inputL * (1.0f - currentMix) + outputL * currentMix;
+            float finalR = inputR * (1.0f - currentMix) + outputR * currentMix;
+            
+            // Safety checks
+            if (!std::isfinite(finalL)) finalL = 0.0f;
+            if (!std::isfinite(finalR)) finalR = 0.0f;
+            
+            buffer.setSample(0, sample, finalL);
+            if (numChannels > 1)
+                buffer.setSample(1, sample, finalR);
+        }
+    }
+    
+private:
+    void processNormal(float inputL, float inputR, float& outputL, float& outputR, float feedback)
+    {
+        // Read delayed samples
+        float delayedL = delayBufferL[delayIndexL];
+        float delayedR = delayBufferR[delayIndexR];
+        
+        // Apply feedback filtering
+        delayedL = feedbackFilterL.processSample(delayedL, 0);
+        delayedR = feedbackFilterR.processSample(delayedR, 1);
+        
+        // Feedback path
+        float feedbackL = inputL + delayedL * feedback;
+        float feedbackR = inputR + delayedR * feedback;
+        
+        // Write to delay buffers
+        delayBufferL[delayIndexL] = feedbackL;
+        delayBufferR[delayIndexR] = feedbackR;
+        
+        // Advance delay indices
+        delayIndexL = (delayIndexL + 1) % leftDelaySamples;
+        delayIndexR = (delayIndexR + 1) % rightDelaySamples;
+        
+        // Output delayed signals
+        outputL = delayedL;
+        outputR = delayedR;
+    }
+    
+    void processPingPong(float inputL, float inputR, float& outputL, float& outputR, float feedback)
+    {
+        // Read delayed samples
+        float delayedL = delayBufferL[delayIndexL];
+        float delayedR = delayBufferR[delayIndexR];
+        
+        // Apply feedback filtering
+        delayedL = feedbackFilterL.processSample(delayedL, 0);
+        delayedR = feedbackFilterR.processSample(delayedR, 1);
+        
+        // Ping-pong: cross-feed the delays
+        float feedbackL = inputL + delayedR * feedback; // Right delay feeds left
+        float feedbackR = inputR + delayedL * feedback; // Left delay feeds right
+        
+        // Write to delay buffers
+        delayBufferL[delayIndexL] = feedbackL;
+        delayBufferR[delayIndexR] = feedbackR;
+        
+        // Advance delay indices
+        delayIndexL = (delayIndexL + 1) % leftDelaySamples;
+        delayIndexR = (delayIndexR + 1) % rightDelaySamples;
+        
+        // Output delayed signals
+        outputL = delayedL;
+        outputR = delayedR;
+    }
+    
+    void updateDelayTimes()
+    {
+        if (sampleRate <= 0.0) return;
+        
+        float leftTime = leftTimeMs;
+        float rightTime = rightTimeMs;
+        
+        // Apply triplet/dotted modifiers
+        if (leftIsTriplet) leftTime *= 2.0f / 3.0f;
+        if (leftIsDotted) leftTime *= 1.5f;
+        if (rightIsTriplet) rightTime *= 2.0f / 3.0f;
+        if (rightIsDotted) rightTime *= 1.5f;
+        
+        // Convert to samples
+        leftDelaySamples = juce::jlimit(1, delayBufferSize - 1, static_cast<int>(leftTime * 0.001f * sampleRate));
+        rightDelaySamples = juce::jlimit(1, delayBufferSize - 1, static_cast<int>(rightTime * 0.001f * sampleRate));
+    }
+    
+    void updateFilters()
+    {
+        feedbackFilterL.setCutoffFrequency(filterFreq);
+        feedbackFilterL.setResonance(filterQ);
+        feedbackFilterL.setFilterType(SimpleStableFilter::LOWPASS);
+        
+        feedbackFilterR.setCutoffFrequency(filterFreq);
+        feedbackFilterR.setResonance(filterQ);
+        feedbackFilterR.setFilterType(SimpleStableFilter::LOWPASS);
+    }
+    
+    // Parameters
+    bool isEnabled = false;
+    DelayMode delayMode = NORMAL;
+    float feedbackAmount = 0.3f;
+    float wetMix = 0.3f;
+    float leftTimeMs = 250.0f;
+    float rightTimeMs = 250.0f;
+    bool isLinked = true;
+    bool bpmSync = false;
+    bool leftIsTriplet = false;
+    bool leftIsDotted = false;
+    bool rightIsTriplet = false;
+    bool rightIsDotted = false;
+    float filterFreq = 8000.0f;
+    float filterQ = 0.707f;
+    
+    // Parameter smoothing
+    OnePoleSmoothing feedbackSmoothing, mixSmoothing;
+    
+    // Processing state
+    double sampleRate = 44100.0;
+    std::vector<float> delayBufferL, delayBufferR;
+    int delayBufferSize = 0;
+    int delayIndexL = 0, delayIndexR = 0;
+    int leftDelaySamples = 0, rightDelaySamples = 0;
+    
+    // Feedback filters
+    SimpleStableFilter feedbackFilterL, feedbackFilterR;
 };
 
 // Multi-tap stereo chorus effect
@@ -1306,6 +2305,137 @@ public:
         compressor.setMultiband(enabled);
     }
     bool getCompressorMultiband() const { return compressorMultiband; }
+    
+    // Distortion effect control methods
+    void setDistortionEnabled(bool enabled) {
+        distortionEnabled = enabled;
+        distortion.setEnabled(enabled);
+    }
+    bool getDistortionEnabled() const { return distortionEnabled; }
+    
+    void setDistortionType(int type) {
+        distortionType = juce::jlimit(1, 16, type);
+        distortion.setType(type);
+    }
+    int getDistortionType() const { return distortionType; }
+    
+    void setDistortionDrive(float drive) {
+        distortionDrive = juce::jlimit(0.0f, 100.0f, drive);
+        distortion.setDrive(drive);
+    }
+    float getDistortionDrive() const { return distortionDrive; }
+    
+    void setDistortionMix(float mix) {
+        distortionMix = juce::jlimit(0.0f, 1.0f, mix);
+        distortion.setMix(mix);
+    }
+    float getDistortionMix() const { return distortionMix; }
+    
+    void setDistortionFilterPosition(int position) {
+        distortionFilterPosition = juce::jlimit(0, 2, position);
+        distortion.setFilterPosition(static_cast<DistortionEffect::FilterPosition>(position));
+    }
+    int getDistortionFilterPosition() const { return distortionFilterPosition; }
+    
+    void setDistortionFilterType(int type) {
+        distortionFilterType = juce::jlimit(1, 3, type);
+        SimpleStableFilter::FilterType filterType = SimpleStableFilter::LOWPASS;
+        if (type == 2) filterType = SimpleStableFilter::BANDPASS;
+        else if (type == 3) filterType = SimpleStableFilter::HIGHPASS;
+        distortion.setFilterType(filterType);
+    }
+    int getDistortionFilterType() const { return distortionFilterType; }
+    
+    void setDistortionFilterFreq(float freq) {
+        distortionFilterFreq = juce::jlimit(20.0f, 20000.0f, freq);
+        distortion.setFilterFrequency(freq);
+    }
+    float getDistortionFilterFreq() const { return distortionFilterFreq; }
+    
+    void setDistortionFilterQ(float q) {
+        distortionFilterQ = juce::jlimit(0.1f, 30.0f, q);
+        distortion.setFilterQ(q);
+    }
+    float getDistortionFilterQ() const { return distortionFilterQ; }
+    
+    // Delay effect control methods
+    void setDelayEnabled(bool enabled) {
+        delayEnabled = enabled;
+        delay.setEnabled(enabled);
+    }
+    bool getDelayEnabled() const { return delayEnabled; }
+    
+    void setDelayFeedback(float feedback) {
+        delayFeedback = juce::jlimit(0.0f, 0.95f, feedback);
+        delay.setFeedback(feedback);
+    }
+    float getDelayFeedback() const { return delayFeedback; }
+    
+    void setDelayMix(float mix) {
+        delayMix = juce::jlimit(0.0f, 1.0f, mix);
+        delay.setMix(mix);
+    }
+    float getDelayMix() const { return delayMix; }
+    
+    void setDelayPingPong(bool pingPong) {
+        delayPingPong = pingPong;
+        delay.setDelayMode(pingPong ? DelayEffect::PING_PONG : DelayEffect::NORMAL);
+    }
+    bool getDelayPingPong() const { return delayPingPong; }
+    
+    void setDelayLeftTime(float timeMs) {
+        delayLeftTime = juce::jlimit(1.0f, 2000.0f, timeMs);
+        delay.setLeftTime(timeMs);
+    }
+    float getDelayLeftTime() const { return delayLeftTime; }
+    
+    void setDelayRightTime(float timeMs) {
+        delayRightTime = juce::jlimit(1.0f, 2000.0f, timeMs);
+        delay.setRightTime(timeMs);
+    }
+    float getDelayRightTime() const { return delayRightTime; }
+    
+    void setDelaySync(bool sync) {
+        delaySync = sync;
+        delay.setBpmSync(sync);
+    }
+    bool getDelaySync() const { return delaySync; }
+    
+    void setDelayTriplet(bool triplet) {
+        delayTriplet = triplet;
+        delay.setLeftTriplet(triplet);
+    }
+    bool getDelayTriplet() const { return delayTriplet; }
+    
+    void setDelayDotted(bool dotted) {
+        delayDotted = dotted;
+        delay.setLeftDotted(dotted);
+    }
+    bool getDelayDotted() const { return delayDotted; }
+    
+    void setDelayRTriplet(bool triplet) {
+        delayRTriplet = triplet;
+        delay.setRightTriplet(triplet);
+    }
+    bool getDelayRTriplet() const { return delayRTriplet; }
+    
+    void setDelayRDotted(bool dotted) {
+        delayRDotted = dotted;
+        delay.setRightDotted(dotted);
+    }
+    bool getDelayRDotted() const { return delayRDotted; }
+    
+    void setDelayFilterFreq(float freq) {
+        delayFilterFreq = juce::jlimit(20.0f, 20000.0f, freq);
+        delay.setFilterFreq(freq);
+    }
+    float getDelayFilterFreq() const { return delayFilterFreq; }
+    
+    void setDelayFilterQ(float q) {
+        delayFilterQ = juce::jlimit(0.1f, 30.0f, q);
+        delay.setFilterQ(q);
+    }
+    float getDelayFilterQ() const { return delayFilterQ; }
 
 private:
     std::map<std::string, int> parameterMap;
@@ -1420,6 +2550,33 @@ private:
     float compressorMix = 1.0f; // 0.0 to 1.0
     bool compressorMultiband = false;
     CompressorEffect compressor; // Compressor effect instance
+    
+    // Distortion effect parameters
+    bool distortionEnabled = false;
+    int distortionType = 1; // 1-16 for different distortion types
+    float distortionDrive = 50.0f; // 0.0 to 100.0
+    float distortionMix = 1.0f; // 0.0 to 1.0
+    int distortionFilterPosition = 0; // 0=Off, 1=Pre, 2=Post
+    int distortionFilterType = 1; // 1=LP, 2=BP, 3=HP
+    float distortionFilterFreq = 1000.0f; // 20.0 to 20000.0 Hz
+    float distortionFilterQ = 0.707f; // 0.1 to 30.0
+    DistortionEffect distortion; // Distortion effect instance
+    
+    // Delay effect parameters
+    bool delayEnabled = false;
+    float delayFeedback = 0.3f; // 0.0 to 0.95
+    float delayMix = 0.3f; // 0.0 to 1.0
+    bool delayPingPong = false; // Normal vs ping-pong mode
+    float delayLeftTime = 250.0f; // 1.0 to 2000.0 ms
+    float delayRightTime = 250.0f; // 1.0 to 2000.0 ms
+    bool delaySync = false; // BPM sync enabled/disabled
+    bool delayTriplet = false; // Triplet timing for left channel
+    bool delayDotted = false; // Dotted timing for left channel
+    bool delayRTriplet = false; // Triplet timing for right channel
+    bool delayRDotted = false; // Dotted timing for right channel
+    float delayFilterFreq = 8000.0f; // 20.0 to 20000.0 Hz
+    float delayFilterQ = 0.707f; // 0.1 to 30.0
+    DelayEffect delay; // Delay effect instance
     
     // Temporary buffers for separate oscillator processing
     juce::AudioBuffer<float> osc1Buffer;

@@ -156,6 +156,36 @@ void SummonerXSerum2AudioProcessor::prepareToPlay(double sampleRate, int samples
     compressor.setMix(compressorMix);
     compressor.setMultiband(compressorMultiband);
     
+    // Initialize distortion effect
+    distortion.setSampleRate(sampleRate);
+    distortion.setEnabled(distortionEnabled);
+    distortion.setType(distortionType);
+    distortion.setDrive(distortionDrive);
+    distortion.setMix(distortionMix);
+    distortion.setFilterPosition(static_cast<DistortionEffect::FilterPosition>(distortionFilterPosition));
+    SimpleStableFilter::FilterType filterType = SimpleStableFilter::LOWPASS;
+    if (distortionFilterType == 2) filterType = SimpleStableFilter::BANDPASS;
+    else if (distortionFilterType == 3) filterType = SimpleStableFilter::HIGHPASS;
+    distortion.setFilterType(filterType);
+    distortion.setFilterFrequency(distortionFilterFreq);
+    distortion.setFilterQ(distortionFilterQ);
+    
+    // Initialize delay effect
+    delay.setSampleRate(sampleRate);
+    delay.setEnabled(delayEnabled);
+    delay.setFeedback(delayFeedback);
+    delay.setMix(delayMix);
+    delay.setDelayMode(delayPingPong ? DelayEffect::PING_PONG : DelayEffect::NORMAL);
+    delay.setLeftTime(delayLeftTime);
+    delay.setRightTime(delayRightTime);
+    delay.setBpmSync(delaySync);
+    delay.setLeftTriplet(delayTriplet);
+    delay.setLeftDotted(delayDotted);
+    delay.setRightTriplet(delayRTriplet);
+    delay.setRightDotted(delayRDotted);
+    delay.setFilterFreq(delayFilterFreq);
+    delay.setFilterQ(delayFilterQ);
+    
     // Initialize filter routing for all voices
     updateFilterRouting();
 }
@@ -216,6 +246,12 @@ void SummonerXSerum2AudioProcessor::processBlock(juce::AudioBuffer<float>& buffe
     
     // Apply compressor effect
     compressor.processBlock(buffer);
+    
+    // Apply distortion effect
+    distortion.processBlock(buffer);
+    
+    // Apply delay effect
+    delay.processBlock(buffer);
     
     // Apply volume control
     buffer.applyGain(synthVolume);

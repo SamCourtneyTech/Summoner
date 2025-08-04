@@ -2146,6 +2146,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     distortionDriveKnob.setRange(0.0, 100.0, 0.1);
     distortionDriveKnob.setValue(50.0);
     distortionDriveKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    distortionDriveKnob.addListener(this);
     distortionTab->addAndMakeVisible(distortionDriveKnob);
     
     distortionDriveLabel.setText("DRIVE", juce::dontSendNotification);
@@ -2160,6 +2161,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     distortionMixKnob.setRange(0.0, 1.0, 0.01);
     distortionMixKnob.setValue(1.0);
     distortionMixKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    distortionMixKnob.addListener(this);
     distortionTab->addAndMakeVisible(distortionMixKnob);
     
     distortionMixLabel.setText("MIX", juce::dontSendNotification);
@@ -2173,6 +2175,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     distortionPowerButton.setClickingTogglesState(true);
     distortionPowerButton.setToggleState(false, juce::dontSendNotification);
     distortionPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    distortionPowerButton.addListener(this);
     distortionTab->addAndMakeVisible(distortionPowerButton);
     
     // Filter section label
@@ -2188,18 +2191,21 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     distortionFilterOffButton.setClickingTogglesState(true);
     distortionFilterOffButton.setToggleState(true, juce::dontSendNotification);
     distortionFilterOffButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    distortionFilterOffButton.addListener(this);
     distortionTab->addAndMakeVisible(distortionFilterOffButton);
     
     distortionFilterPreButton.setButtonText("PRE");
     distortionFilterPreButton.setClickingTogglesState(true);
     distortionFilterPreButton.setToggleState(false, juce::dontSendNotification);
     distortionFilterPreButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    distortionFilterPreButton.addListener(this);
     distortionTab->addAndMakeVisible(distortionFilterPreButton);
     
     distortionFilterPostButton.setButtonText("POST");
     distortionFilterPostButton.setClickingTogglesState(true);
     distortionFilterPostButton.setToggleState(false, juce::dontSendNotification);
     distortionFilterPostButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    distortionFilterPostButton.addListener(this);
     distortionTab->addAndMakeVisible(distortionFilterPostButton);
     
     // Filter type buttons (LP/BP/HP)
@@ -2207,26 +2213,30 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     distortionFilterLPButton.setClickingTogglesState(true);
     distortionFilterLPButton.setToggleState(true, juce::dontSendNotification);
     distortionFilterLPButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    distortionFilterLPButton.addListener(this);
     distortionTab->addAndMakeVisible(distortionFilterLPButton);
     
     distortionFilterBPButton.setButtonText("BP");
     distortionFilterBPButton.setClickingTogglesState(true);
     distortionFilterBPButton.setToggleState(false, juce::dontSendNotification);
     distortionFilterBPButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    distortionFilterBPButton.addListener(this);
     distortionTab->addAndMakeVisible(distortionFilterBPButton);
     
     distortionFilterHPButton.setButtonText("HP");
     distortionFilterHPButton.setClickingTogglesState(true);
     distortionFilterHPButton.setToggleState(false, juce::dontSendNotification);
     distortionFilterHPButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    distortionFilterHPButton.addListener(this);
     distortionTab->addAndMakeVisible(distortionFilterHPButton);
     
     // Filter frequency knob
     distortionFilterFreqKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     distortionFilterFreqKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     distortionFilterFreqKnob.setRange(20.0, 20000.0, 1.0);
-    distortionFilterFreqKnob.setValue(1000.0);
+    distortionFilterFreqKnob.setValue(800.0);
     distortionFilterFreqKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    distortionFilterFreqKnob.addListener(this);
     distortionTab->addAndMakeVisible(distortionFilterFreqKnob);
     
     distortionFilterFreqLabel.setText("FREQ", juce::dontSendNotification);
@@ -2239,8 +2249,9 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     distortionFilterQKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     distortionFilterQKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     distortionFilterQKnob.setRange(0.1, 10.0, 0.1);
-    distortionFilterQKnob.setValue(1.0);
+    distortionFilterQKnob.setValue(2.0);
     distortionFilterQKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    distortionFilterQKnob.addListener(this);
     distortionTab->addAndMakeVisible(distortionFilterQKnob);
     
     distortionFilterQLabel.setText("Q", juce::dontSendNotification);
@@ -2248,6 +2259,23 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     distortionFilterQLabel.setJustificationType(juce::Justification::centred);
     distortionFilterQLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     distortionTab->addAndMakeVisible(distortionFilterQLabel);
+    
+    // Add delay listeners
+    delayFeedbackKnob.addListener(this);
+    delayBpmButton.addListener(this);
+    delayLinkButton.addListener(this);
+    delayLeftTimeSlider.addListener(this);
+    delayRightTimeSlider.addListener(this);
+    delayLeftTripletButton.addListener(this);
+    delayLeftDotButton.addListener(this);
+    delayRightTripletButton.addListener(this);
+    delayRightDotButton.addListener(this);
+    delayFilterFreqKnob.addListener(this);
+    delayFilterQKnob.addListener(this);
+    delayNormalButton.addListener(this);
+    delayPingPongButton.addListener(this);
+    delayMixKnob.addListener(this);
+    delayPowerButton.addListener(this);
     
     // EQ EFFECT CONTROLS
     // Band 1 (Left) filter type buttons
@@ -3441,6 +3469,65 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     {
         audioProcessor.setCompressorMix(static_cast<float>(compressorMixKnob.getValue()));
     }
+    else if (slider == &distortionDriveKnob)
+    {
+        audioProcessor.setDistortionDrive(static_cast<float>(distortionDriveKnob.getValue()));
+    }
+    else if (slider == &distortionMixKnob)
+    {
+        audioProcessor.setDistortionMix(static_cast<float>(distortionMixKnob.getValue()));
+    }
+    else if (slider == &distortionFilterFreqKnob)
+    {
+        audioProcessor.setDistortionFilterFreq(static_cast<float>(distortionFilterFreqKnob.getValue()));
+    }
+    else if (slider == &distortionFilterQKnob)
+    {
+        audioProcessor.setDistortionFilterQ(static_cast<float>(distortionFilterQKnob.getValue()));
+    }
+    
+    // Delay effect sliders
+    else if (slider == &delayFeedbackKnob)
+    {
+        audioProcessor.setDelayFeedback(static_cast<float>(delayFeedbackKnob.getValue()));
+    }
+    else if (slider == &delayMixKnob)
+    {
+        audioProcessor.setDelayMix(static_cast<float>(delayMixKnob.getValue()));
+    }
+    else if (slider == &delayLeftTimeSlider)
+    {
+        float leftTime = static_cast<float>(delayLeftTimeSlider.getValue());
+        audioProcessor.setDelayLeftTime(leftTime);
+        
+        // If link is enabled, also update right time
+        if (delayLinkButton.getToggleState())
+        {
+            delayRightTimeSlider.setValue(leftTime, juce::dontSendNotification);
+            audioProcessor.setDelayRightTime(leftTime);
+        }
+    }
+    else if (slider == &delayRightTimeSlider)
+    {
+        float rightTime = static_cast<float>(delayRightTimeSlider.getValue());
+        audioProcessor.setDelayRightTime(rightTime);
+        
+        // If link is enabled, also update left time
+        if (delayLinkButton.getToggleState())
+        {
+            delayLeftTimeSlider.setValue(rightTime, juce::dontSendNotification);
+            audioProcessor.setDelayLeftTime(rightTime);
+        }
+    }
+    else if (slider == &delayFilterFreqKnob)
+    {
+        audioProcessor.setDelayFilterFreq(static_cast<float>(delayFilterFreqKnob.getValue()));
+    }
+    else if (slider == &delayFilterQKnob)
+    {
+        audioProcessor.setDelayFilterQ(static_cast<float>(delayFilterQKnob.getValue()));
+    }
+    
     /*
     else if (slider == &pulseWidthSlider)
     {
@@ -4047,6 +4134,152 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
     {
         audioProcessor.setCompressorMultiband(compressorMultibandButton.getToggleState());
     }
+    else if (button == &distortionPowerButton)
+    {
+        audioProcessor.setDistortionEnabled(distortionPowerButton.getToggleState());
+    }
+    else if (button == &delayPowerButton)
+    {
+        audioProcessor.setDelayEnabled(delayPowerButton.getToggleState());
+    }
+    
+    // Distortion filter position buttons (exclusive)
+    else if (button == &distortionFilterOffButton)
+    {
+        if (distortionFilterOffButton.getToggleState())
+        {
+            distortionFilterPreButton.setToggleState(false, juce::dontSendNotification);
+            distortionFilterPostButton.setToggleState(false, juce::dontSendNotification);
+            audioProcessor.setDistortionFilterPosition(0); // OFF
+        }
+        else
+        {
+            distortionFilterOffButton.setToggleState(true, juce::dontSendNotification); // Force stay on
+        }
+    }
+    else if (button == &distortionFilterPreButton)
+    {
+        if (distortionFilterPreButton.getToggleState())
+        {
+            distortionFilterOffButton.setToggleState(false, juce::dontSendNotification);
+            distortionFilterPostButton.setToggleState(false, juce::dontSendNotification);
+            audioProcessor.setDistortionFilterPosition(1); // PRE
+        }
+        else
+        {
+            distortionFilterPreButton.setToggleState(true, juce::dontSendNotification); // Force stay on
+        }
+    }
+    else if (button == &distortionFilterPostButton)
+    {
+        if (distortionFilterPostButton.getToggleState())
+        {
+            distortionFilterOffButton.setToggleState(false, juce::dontSendNotification);
+            distortionFilterPreButton.setToggleState(false, juce::dontSendNotification);
+            audioProcessor.setDistortionFilterPosition(2); // POST
+        }
+        else
+        {
+            distortionFilterPostButton.setToggleState(true, juce::dontSendNotification); // Force stay on
+        }
+    }
+    
+    // Distortion filter type buttons (exclusive)
+    else if (button == &distortionFilterLPButton)
+    {
+        if (distortionFilterLPButton.getToggleState())
+        {
+            distortionFilterBPButton.setToggleState(false, juce::dontSendNotification);
+            distortionFilterHPButton.setToggleState(false, juce::dontSendNotification);
+            audioProcessor.setDistortionFilterType(1); // LP
+        }
+        else
+        {
+            distortionFilterLPButton.setToggleState(true, juce::dontSendNotification); // Force stay on
+        }
+    }
+    else if (button == &distortionFilterBPButton)
+    {
+        if (distortionFilterBPButton.getToggleState())
+        {
+            distortionFilterLPButton.setToggleState(false, juce::dontSendNotification);
+            distortionFilterHPButton.setToggleState(false, juce::dontSendNotification);
+            audioProcessor.setDistortionFilterType(2); // BP
+        }
+        else
+        {
+            distortionFilterBPButton.setToggleState(true, juce::dontSendNotification); // Force stay on
+        }
+    }
+    else if (button == &distortionFilterHPButton)
+    {
+        if (distortionFilterHPButton.getToggleState())
+        {
+            distortionFilterLPButton.setToggleState(false, juce::dontSendNotification);
+            distortionFilterBPButton.setToggleState(false, juce::dontSendNotification);
+            audioProcessor.setDistortionFilterType(3); // HP
+        }
+        else
+        {
+            distortionFilterHPButton.setToggleState(true, juce::dontSendNotification); // Force stay on
+        }
+    }
+    
+    // Delay effect buttons
+    else if (button == &delayBpmButton)
+    {
+        audioProcessor.setDelaySync(delayBpmButton.getToggleState());
+    }
+    else if (button == &delayLinkButton)
+    {
+        // Link button controls if left/right times are linked
+        if (delayLinkButton.getToggleState())
+        {
+            // When linking, sync right time to left time
+            float leftTime = delayLeftTimeSlider.getValue();
+            delayRightTimeSlider.setValue(leftTime, juce::sendNotification);
+        }
+    }
+    else if (button == &delayNormalButton)
+    {
+        if (delayNormalButton.getToggleState())
+        {
+            delayPingPongButton.setToggleState(false, juce::dontSendNotification);
+            audioProcessor.setDelayPingPong(false);
+        }
+        else
+        {
+            delayNormalButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
+        }
+    }
+    else if (button == &delayPingPongButton)
+    {
+        if (delayPingPongButton.getToggleState())
+        {
+            delayNormalButton.setToggleState(false, juce::dontSendNotification);
+            audioProcessor.setDelayPingPong(true);
+        }
+        else
+        {
+            delayPingPongButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
+        }
+    }
+    else if (button == &delayLeftTripletButton)
+    {
+        audioProcessor.setDelayTriplet(delayLeftTripletButton.getToggleState());
+    }
+    else if (button == &delayLeftDotButton)
+    {
+        audioProcessor.setDelayDotted(delayLeftDotButton.getToggleState());
+    }
+    else if (button == &delayRightTripletButton)
+    {
+        audioProcessor.setDelayRTriplet(delayRightTripletButton.getToggleState());
+    }
+    else if (button == &delayRightDotButton)
+    {
+        audioProcessor.setDelayRDotted(delayRightDotButton.getToggleState());
+    }
 }
 
 void SynthesizerComponent::mouseDown(const juce::MouseEvent& event)
@@ -4116,6 +4349,9 @@ void SynthesizerComponent::mouseDown(const juce::MouseEvent& event)
         };
         
         distortionTypeValueLabel.setText(typeNames[distortionTypeValue - 1], juce::dontSendNotification);
+        
+        // Update the processor with the new distortion type
+        audioProcessor.setDistortionType(distortionTypeValue);
         
         // Still set up drag state in case drag events work
         isDraggingDistortionType = true;
@@ -4307,7 +4543,7 @@ void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
             };
             
             distortionTypeValueLabel.setText(typeNames[distortionTypeValue - 1], juce::dontSendNotification);
-            // audioProcessor.setDistortionType(distortionTypeValue); // Add this when audio processor supports it
+            audioProcessor.setDistortionType(distortionTypeValue); // Now supported!
         }
     }
     else if (isDraggingReverbType)
