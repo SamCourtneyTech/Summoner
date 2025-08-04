@@ -498,7 +498,7 @@ public:
         mixSmoothing.setTimeConstantMs(20.0f);
         
         lpfCutoffSmoothing.setSampleRate(sampleRate);
-        lpfCutoffSmoothing.setTimeConstantMs(20.0f);
+        lpfCutoffSmoothing.setTimeConstantMs(5.0f); // Much faster smoothing for gentle transitions
         
         // Allocate delay buffers - maximum 100ms at any sample rate
         int maxDelaySize = static_cast<int>(sampleRate * 0.1); // 100ms
@@ -533,7 +533,10 @@ public:
     }
     void setLPFCutoff(float cutoffHz) { 
         lpfCutoff = juce::jlimit(200.0f, 20000.0f, cutoffHz);
-        lpfCutoffSmoothing.setTarget(lpfCutoff);
+        
+        // Update immediately - no smoothing for instant response
+        currentLPFCutoff = lpfCutoff;
+        updateLPF();
     }
     void setMix(float mix) { 
         wetMix = juce::jlimit(0.0f, 1.0f, mix);
@@ -564,6 +567,11 @@ public:
         feedbackSmoothing.reset(feedbackAmount);
         mixSmoothing.reset(wetMix);
         lpfCutoffSmoothing.reset(lpfCutoff);
+        
+        // Initialize current LPF cutoff and update filters
+        currentLPFCutoff = lpfCutoff;
+        if (sampleRate > 0.0)
+            updateLPF();
     }
     
     void processBlock(juce::AudioBuffer<float>& buffer)
@@ -574,13 +582,7 @@ public:
         const int numSamples = buffer.getNumSamples();
         const int numChannels = juce::jmin(buffer.getNumChannels(), 2);
         
-        // Update LPF if cutoff changed
-        float newLPFCutoff = lpfCutoffSmoothing.getNextValue();
-        if (std::abs(newLPFCutoff - currentLPFCutoff) > 10.0f)
-        {
-            currentLPFCutoff = newLPFCutoff;
-            updateLPF();
-        }
+        // LPF is updated immediately in setLPFCutoff() - no per-sample updates needed
         
         for (int sample = 0; sample < numSamples; ++sample)
         {
@@ -627,14 +629,19 @@ public:
                 // Apply feedback
                 float feedbackSample = inputSample + (currentFeedback * delayedSample);
                 
-                // Apply lowpass filter to feedback signal
-                feedbackSample = lpf[ch].processSample(feedbackSample, ch);
-                
                 // Write to delay buffer
                 delayBuffer[ch][delayIndex[ch]] = feedbackSample;
                 
-                // Create wet signal
-                float wetSample = delayedSample;
+                // Create wet signal and apply lowpass filter to wet signal (if cutoff is low enough to matter)
+                float wetSample;
+                if (currentLPFCutoff < 18000.0f) // Only filter if cutoff is meaningfully low
+                {
+                    wetSample = lpf[ch].processSample(delayedSample, ch);
+                }
+                else
+                {
+                    wetSample = delayedSample; // Bypass filter when at high frequencies
+                }
                 
                 // Mix dry and wet
                 float outputSample = drySample * (1.0f - currentMix) + wetSample * currentMix;
@@ -652,14 +659,14 @@ private:
     void updateLPF()
     {
         lpf[0].setCutoffFrequency(currentLPFCutoff);
-        lpf[0].setResonance(0.707f); // Neutral Q
+        lpf[0].setResonance(0.707f); // No resonance - clean filtering
         lpf[0].setFilterType(SimpleStableFilter::LOWPASS);
-        lpf[0].setFilterSlope(SimpleStableFilter::SLOPE_12DB);
+        lpf[0].setFilterSlope(SimpleStableFilter::SLOPE_12DB); // Standard 12dB slope
         
         lpf[1].setCutoffFrequency(currentLPFCutoff);
-        lpf[1].setResonance(0.707f);
+        lpf[1].setResonance(0.707f); // No resonance - clean filtering
         lpf[1].setFilterType(SimpleStableFilter::LOWPASS);
-        lpf[1].setFilterSlope(SimpleStableFilter::SLOPE_12DB);
+        lpf[1].setFilterSlope(SimpleStableFilter::SLOPE_12DB); // Standard 12dB slope
     }
     
     // Parameters
@@ -669,9 +676,9 @@ private:
     float delay2Ms = 30.0f;
     float depthMs = 5.0f;
     float feedbackAmount = 0.2f;
-    float lpfCutoff = 8000.0f;
+    float lpfCutoff = 20000.0f;
     float wetMix = 0.5f;
-    float currentLPFCutoff = 8000.0f;
+    float currentLPFCutoff = 20000.0f;
     
     // Parameter smoothing
     OnePoleSmoothing rateSmoothing, depthSmoothing, feedbackSmoothing, mixSmoothing, lpfCutoffSmoothing;
@@ -1153,7 +1160,7 @@ private:
     float chorusDelay2 = 30.0f; // 1.0 to 50.0 ms
     float chorusDepth = 5.0f; // 0.0 to 20.0 ms
     float chorusFeedback = 0.2f; // 0.0 to 0.95
-    float chorusLPF = 8000.0f; // 200.0 to 20000.0 Hz
+    float chorusLPF = 20000.0f; // 200.0 to 20000.0 Hz
     float chorusMix = 0.5f; // 0.0 to 1.0
     ChorusEffect chorus; // Chorus effect instance
     

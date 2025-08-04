@@ -29,7 +29,7 @@ print_error() {
 }
 
 # Check if we're in the right directory
-if [ ! -f "Summoner-x-Serum-2/Summoner X Serum2.jucer" ]; then
+if [ ! -f "Summoner.jucer" ]; then
     print_error "Please run this script from the project root directory"
     exit 1
 fi
@@ -38,10 +38,10 @@ fi
 PLATFORM=""
 if [[ "$OSTYPE" == "darwin"* ]]; then
     PLATFORM="macOS"
-    BUILD_DIR="Summoner-x-Serum-2/Builds/MacOSX"
+    BUILD_DIR="Builds/MacOSX"
 elif [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "win32" ]]; then
     PLATFORM="Windows"
-    BUILD_DIR="Summoner-x-Serum-2/Builds/VisualStudio2022"
+    BUILD_DIR="Builds/VisualStudio2022"
 else
     print_error "Unsupported platform: $OSTYPE"
     exit 1
@@ -117,8 +117,8 @@ if [ "$BUILD_PLUGIN" = true ]; then
         fi
         
         # Build the project
-        xcodebuild -project "Summoner X Serum2.xcodeproj" \
-                   -scheme "Summoner X Serum2_All" \
+        xcodebuild -project "Summoner.xcodeproj" \
+                   -scheme "Summoner_All" \
                    -configuration $BUILD_TYPE \
                    -derivedDataPath ./build \
                    build

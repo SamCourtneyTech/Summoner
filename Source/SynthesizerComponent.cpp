@@ -1805,8 +1805,8 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     // LPF knob
     chorusLpfKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     chorusLpfKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    chorusLpfKnob.setRange(200.0, 20000.0, 100.0);
-    chorusLpfKnob.setValue(8000.0);
+    chorusLpfKnob.setRange(0.0, 100.0, 1.0);
+    chorusLpfKnob.setValue(0.0);
     chorusLpfKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     chorusTab->addAndMakeVisible(chorusLpfKnob);
     
@@ -3372,7 +3372,10 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     }
     else if (slider == &chorusLpfKnob)
     {
-        audioProcessor.setChorusLPF(static_cast<float>(chorusLpfKnob.getValue()));
+        // Convert 0-100% to filter frequency: 0% = 20000Hz (no filter), 100% = 200Hz (heavy filter)
+        float percentage = static_cast<float>(chorusLpfKnob.getValue()) / 100.0f; // 0.0 to 1.0
+        float filterFreq = 20000.0f - (percentage * (20000.0f - 200.0f)); // 20000Hz to 200Hz
+        audioProcessor.setChorusLPF(filterFreq);
     }
     else if (slider == &chorusMixKnob)
     {
