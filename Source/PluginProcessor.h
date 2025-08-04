@@ -467,6 +467,226 @@ private:
     float formant3_b1 = 0.0f, formant3_b2 = 0.0f;
 };
 
+// Multi-tap stereo chorus effect
+class ChorusEffect
+{
+public:
+    ChorusEffect()
+    {
+        // Initialize LFO phases - offset by 90 degrees for stereo width
+        lfoPhase[0] = 0.0f;
+        lfoPhase[1] = juce::MathConstants<float>::pi * 0.5f; // 90 degree offset
+        
+        reset();
+    }
+    
+    void setSampleRate(double newSampleRate)
+    {
+        sampleRate = newSampleRate;
+        
+        // Initialize parameter smoothing
+        rateSmoothing.setSampleRate(sampleRate);
+        rateSmoothing.setTimeConstantMs(20.0f);
+        
+        depthSmoothing.setSampleRate(sampleRate);
+        depthSmoothing.setTimeConstantMs(20.0f);
+        
+        feedbackSmoothing.setSampleRate(sampleRate);
+        feedbackSmoothing.setTimeConstantMs(20.0f);
+        
+        mixSmoothing.setSampleRate(sampleRate);
+        mixSmoothing.setTimeConstantMs(20.0f);
+        
+        lpfCutoffSmoothing.setSampleRate(sampleRate);
+        lpfCutoffSmoothing.setTimeConstantMs(20.0f);
+        
+        // Allocate delay buffers - maximum 100ms at any sample rate
+        int maxDelaySize = static_cast<int>(sampleRate * 0.1); // 100ms
+        delayBuffer[0].resize(maxDelaySize, 0.0f);
+        delayBuffer[1].resize(maxDelaySize, 0.0f);
+        delayBufferSize = maxDelaySize;
+        
+        // Initialize LPF
+        lpf[0].setSampleRate(sampleRate);
+        lpf[1].setSampleRate(sampleRate);
+        updateLPF();
+    }
+    
+    void setEnabled(bool enabled) { isEnabled = enabled; }
+    void setRate(float rate) { 
+        rateHz = juce::jlimit(0.1f, 10.0f, rate);
+        rateSmoothing.setTarget(rateHz);
+    }
+    void setDelay1(float delayMs) { 
+        delay1Ms = juce::jlimit(1.0f, 50.0f, delayMs);
+    }
+    void setDelay2(float delayMs) { 
+        delay2Ms = juce::jlimit(1.0f, 50.0f, delayMs);
+    }
+    void setDepth(float depth) { 
+        depthMs = juce::jlimit(0.0f, 20.0f, depth);
+        depthSmoothing.setTarget(depthMs);
+    }
+    void setFeedback(float feedback) { 
+        feedbackAmount = juce::jlimit(0.0f, 0.95f, feedback);
+        feedbackSmoothing.setTarget(feedbackAmount);
+    }
+    void setLPFCutoff(float cutoffHz) { 
+        lpfCutoff = juce::jlimit(200.0f, 20000.0f, cutoffHz);
+        lpfCutoffSmoothing.setTarget(lpfCutoff);
+    }
+    void setMix(float mix) { 
+        wetMix = juce::jlimit(0.0f, 1.0f, mix);
+        mixSmoothing.setTarget(wetMix);
+    }
+    
+    void reset()
+    {
+        // Clear delay buffers
+        for (int ch = 0; ch < 2; ++ch)
+        {
+            if (!delayBuffer[ch].empty())
+                std::fill(delayBuffer[ch].begin(), delayBuffer[ch].end(), 0.0f);
+            delayIndex[ch] = 0;
+        }
+        
+        // Reset LFO phases
+        lfoPhase[0] = 0.0f;
+        lfoPhase[1] = juce::MathConstants<float>::pi * 0.5f;
+        
+        // Reset filters
+        lpf[0].reset();
+        lpf[1].reset();
+        
+        // Reset smoothing
+        rateSmoothing.reset(rateHz);
+        depthSmoothing.reset(depthMs);
+        feedbackSmoothing.reset(feedbackAmount);
+        mixSmoothing.reset(wetMix);
+        lpfCutoffSmoothing.reset(lpfCutoff);
+    }
+    
+    void processBlock(juce::AudioBuffer<float>& buffer)
+    {
+        if (!isEnabled || sampleRate <= 0.0)
+            return;
+            
+        const int numSamples = buffer.getNumSamples();
+        const int numChannels = juce::jmin(buffer.getNumChannels(), 2);
+        
+        // Update LPF if cutoff changed
+        float newLPFCutoff = lpfCutoffSmoothing.getNextValue();
+        if (std::abs(newLPFCutoff - currentLPFCutoff) > 10.0f)
+        {
+            currentLPFCutoff = newLPFCutoff;
+            updateLPF();
+        }
+        
+        for (int sample = 0; sample < numSamples; ++sample)
+        {
+            // Get smoothed parameters
+            float currentRate = rateSmoothing.getNextValue();
+            float currentDepth = depthSmoothing.getNextValue();
+            float currentFeedback = feedbackSmoothing.getNextValue();
+            float currentMix = mixSmoothing.getNextValue();
+            
+            // Calculate LFO increment
+            float lfoIncrement = 2.0f * juce::MathConstants<float>::pi * currentRate / static_cast<float>(sampleRate);
+            
+            for (int ch = 0; ch < numChannels; ++ch)
+            {
+                // Read input sample
+                float inputSample = buffer.getSample(ch, sample);
+                float drySample = inputSample;
+                
+                // Update LFO
+                lfoPhase[ch] += lfoIncrement;
+                if (lfoPhase[ch] >= 2.0f * juce::MathConstants<float>::pi)
+                    lfoPhase[ch] -= 2.0f * juce::MathConstants<float>::pi;
+                
+                // Calculate modulated delay time
+                float lfoValue = std::sin(lfoPhase[ch]);
+                float baseDelay = (ch == 0) ? delay1Ms : delay2Ms;
+                float modulatedDelayMs = baseDelay + (currentDepth * lfoValue);
+                
+                // Convert to samples and clamp
+                float delaySamples = modulatedDelayMs * static_cast<float>(sampleRate) / 1000.0f;
+                delaySamples = juce::jlimit(1.0f, static_cast<float>(delayBufferSize - 1), delaySamples);
+                
+                // Calculate interpolated delay tap
+                int delayInt = static_cast<int>(delaySamples);
+                float delayFrac = delaySamples - delayInt;
+                
+                int readPos1 = (delayIndex[ch] - delayInt + delayBufferSize) % delayBufferSize;
+                int readPos2 = (readPos1 - 1 + delayBufferSize) % delayBufferSize;
+                
+                float sample1 = delayBuffer[ch][readPos1];
+                float sample2 = delayBuffer[ch][readPos2];
+                float delayedSample = sample1 + delayFrac * (sample2 - sample1); // Linear interpolation
+                
+                // Apply feedback
+                float feedbackSample = inputSample + (currentFeedback * delayedSample);
+                
+                // Apply lowpass filter to feedback signal
+                feedbackSample = lpf[ch].processSample(feedbackSample, ch);
+                
+                // Write to delay buffer
+                delayBuffer[ch][delayIndex[ch]] = feedbackSample;
+                
+                // Create wet signal
+                float wetSample = delayedSample;
+                
+                // Mix dry and wet
+                float outputSample = drySample * (1.0f - currentMix) + wetSample * currentMix;
+                
+                // Write back to buffer
+                buffer.setSample(ch, sample, outputSample);
+                
+                // Advance delay index
+                delayIndex[ch] = (delayIndex[ch] + 1) % delayBufferSize;
+            }
+        }
+    }
+    
+private:
+    void updateLPF()
+    {
+        lpf[0].setCutoffFrequency(currentLPFCutoff);
+        lpf[0].setResonance(0.707f); // Neutral Q
+        lpf[0].setFilterType(SimpleStableFilter::LOWPASS);
+        lpf[0].setFilterSlope(SimpleStableFilter::SLOPE_12DB);
+        
+        lpf[1].setCutoffFrequency(currentLPFCutoff);
+        lpf[1].setResonance(0.707f);
+        lpf[1].setFilterType(SimpleStableFilter::LOWPASS);
+        lpf[1].setFilterSlope(SimpleStableFilter::SLOPE_12DB);
+    }
+    
+    // Parameters
+    bool isEnabled = false;
+    float rateHz = 2.0f;
+    float delay1Ms = 20.0f;
+    float delay2Ms = 30.0f;
+    float depthMs = 5.0f;
+    float feedbackAmount = 0.2f;
+    float lpfCutoff = 8000.0f;
+    float wetMix = 0.5f;
+    float currentLPFCutoff = 8000.0f;
+    
+    // Parameter smoothing
+    OnePoleSmoothing rateSmoothing, depthSmoothing, feedbackSmoothing, mixSmoothing, lpfCutoffSmoothing;
+    
+    // Processing state
+    double sampleRate = 44100.0;
+    std::vector<float> delayBuffer[2]; // Stereo delay buffers
+    int delayBufferSize = 0;
+    int delayIndex[2] = {0, 0};
+    float lfoPhase[2] = {0.0f, 0.0f}; // LFO phases for L/R channels
+    
+    // Built-in lowpass filters
+    SimpleStableFilter lpf[2];
+};
+
 class SummonerXSerum2AudioProcessor : public juce::AudioProcessor
 {
 public:
@@ -785,6 +1005,55 @@ public:
     }
     bool getFilter24dBEnabled() const { return filter24dBEnabled; }
 
+    // Chorus effect controls
+    void setChorusEnabled(bool enabled) {
+        chorusEnabled = enabled;
+        chorus.setEnabled(enabled);
+    }
+    bool getChorusEnabled() const { return chorusEnabled; }
+    
+    void setChorusRate(float rate) {
+        chorusRate = rate;
+        chorus.setRate(rate);
+    }
+    float getChorusRate() const { return chorusRate; }
+    
+    void setChorusDelay1(float delayMs) {
+        chorusDelay1 = delayMs;
+        chorus.setDelay1(delayMs);
+    }
+    float getChorusDelay1() const { return chorusDelay1; }
+    
+    void setChorusDelay2(float delayMs) {
+        chorusDelay2 = delayMs;
+        chorus.setDelay2(delayMs);
+    }
+    float getChorusDelay2() const { return chorusDelay2; }
+    
+    void setChorusDepth(float depth) {
+        chorusDepth = depth;
+        chorus.setDepth(depth);
+    }
+    float getChorusDepth() const { return chorusDepth; }
+    
+    void setChorusFeedback(float feedback) {
+        chorusFeedback = feedback;
+        chorus.setFeedback(feedback);
+    }
+    float getChorusFeedback() const { return chorusFeedback; }
+    
+    void setChorusLPF(float cutoffHz) {
+        chorusLPF = cutoffHz;
+        chorus.setLPFCutoff(cutoffHz);
+    }
+    float getChorusLPF() const { return chorusLPF; }
+    
+    void setChorusMix(float mix) {
+        chorusMix = mix;
+        chorus.setMix(mix);
+    }
+    float getChorusMix() const { return chorusMix; }
+
 private:
     std::map<std::string, int> parameterMap;
     void enumerateParameters();
@@ -876,6 +1145,17 @@ private:
     bool osc2FilterEnabled = false; // OSC 2 filter disabled by default
     SimpleStableFilter osc1Filter; // Separate filter instance for OSC1
     SimpleStableFilter osc2Filter; // Separate filter instance for OSC2
+    
+    // Chorus effect parameters
+    bool chorusEnabled = false;
+    float chorusRate = 2.0f; // 0.1 to 10.0 Hz
+    float chorusDelay1 = 20.0f; // 1.0 to 50.0 ms
+    float chorusDelay2 = 30.0f; // 1.0 to 50.0 ms
+    float chorusDepth = 5.0f; // 0.0 to 20.0 ms
+    float chorusFeedback = 0.2f; // 0.0 to 0.95
+    float chorusLPF = 8000.0f; // 200.0 to 20000.0 Hz
+    float chorusMix = 0.5f; // 0.0 to 1.0
+    ChorusEffect chorus; // Chorus effect instance
     
     // Temporary buffers for separate oscillator processing
     juce::AudioBuffer<float> osc1Buffer;

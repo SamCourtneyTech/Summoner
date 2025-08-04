@@ -1837,6 +1837,16 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     chorusPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     chorusTab->addAndMakeVisible(chorusPowerButton);
     
+    // Add listeners for chorus controls
+    chorusRateKnob.addListener(this);
+    chorusDelay1Knob.addListener(this);
+    chorusDelay2Knob.addListener(this);
+    chorusDepthKnob.addListener(this);
+    chorusFeedKnob.addListener(this);
+    chorusLpfKnob.addListener(this);
+    chorusMixKnob.addListener(this);
+    chorusPowerButton.addListener(this);
+    
     // COMPRESSOR EFFECT CONTROLS
     // Threshold knob
     compressorThresholdKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -3339,6 +3349,35 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     {
         audioProcessor.setFilterResonance(static_cast<float>(filterResonanceKnob.getValue()));
     }
+    // Chorus effect sliders
+    else if (slider == &chorusRateKnob)
+    {
+        audioProcessor.setChorusRate(static_cast<float>(chorusRateKnob.getValue()));
+    }
+    else if (slider == &chorusDelay1Knob)
+    {
+        audioProcessor.setChorusDelay1(static_cast<float>(chorusDelay1Knob.getValue()));
+    }
+    else if (slider == &chorusDelay2Knob)
+    {
+        audioProcessor.setChorusDelay2(static_cast<float>(chorusDelay2Knob.getValue()));
+    }
+    else if (slider == &chorusDepthKnob)
+    {
+        audioProcessor.setChorusDepth(static_cast<float>(chorusDepthKnob.getValue()));
+    }
+    else if (slider == &chorusFeedKnob)
+    {
+        audioProcessor.setChorusFeedback(static_cast<float>(chorusFeedKnob.getValue()));
+    }
+    else if (slider == &chorusLpfKnob)
+    {
+        audioProcessor.setChorusLPF(static_cast<float>(chorusLpfKnob.getValue()));
+    }
+    else if (slider == &chorusMixKnob)
+    {
+        audioProcessor.setChorusMix(static_cast<float>(chorusMixKnob.getValue()));
+    }
     /*
     else if (slider == &pulseWidthSlider)
     {
@@ -3930,6 +3969,11 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
         {
             eq2PassButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
         }
+    }
+    // Chorus effect power button
+    else if (button == &chorusPowerButton)
+    {
+        audioProcessor.setChorusEnabled(chorusPowerButton.getToggleState());
     }
 }
 

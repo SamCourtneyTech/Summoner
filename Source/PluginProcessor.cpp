@@ -134,6 +134,17 @@ void SummonerXSerum2AudioProcessor::prepareToPlay(double sampleRate, int samples
     osc1Buffer.setSize(2, samplesPerBlock);
     osc2Buffer.setSize(2, samplesPerBlock);
     
+    // Initialize chorus effect
+    chorus.setSampleRate(sampleRate);
+    chorus.setEnabled(chorusEnabled);
+    chorus.setRate(chorusRate);
+    chorus.setDelay1(chorusDelay1);
+    chorus.setDelay2(chorusDelay2);
+    chorus.setDepth(chorusDepth);
+    chorus.setFeedback(chorusFeedback);
+    chorus.setLPFCutoff(chorusLPF);
+    chorus.setMix(chorusMix);
+    
     // Initialize filter routing for all voices
     updateFilterRouting();
 }
@@ -188,6 +199,9 @@ void SummonerXSerum2AudioProcessor::processBlock(juce::AudioBuffer<float>& buffe
         float polyScale = 1.0f / std::sqrt((float)activeVoices);
         buffer.applyGain(polyScale);
     }
+    
+    // Apply chorus effect
+    chorus.processBlock(buffer);
     
     // Apply volume control
     buffer.applyGain(synthVolume);
