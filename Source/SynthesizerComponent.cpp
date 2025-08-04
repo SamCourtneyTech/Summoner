@@ -1946,6 +1946,16 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     compressorPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     compressorTab->addAndMakeVisible(compressorPowerButton);
     
+    // Add listeners for compressor controls
+    compressorThresholdKnob.addListener(this);
+    compressorRatioKnob.addListener(this);
+    compressorAttackKnob.addListener(this);
+    compressorReleaseKnob.addListener(this);
+    compressorGainKnob.addListener(this);
+    compressorMixKnob.addListener(this);
+    compressorMultibandButton.addListener(this);
+    compressorPowerButton.addListener(this);
+    
     // DELAY EFFECT CONTROLS
     // Feedback knob
     delayFeedbackKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -3381,6 +3391,31 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     {
         audioProcessor.setChorusMix(static_cast<float>(chorusMixKnob.getValue()));
     }
+    // Compressor controls
+    else if (slider == &compressorThresholdKnob)
+    {
+        audioProcessor.setCompressorThreshold(static_cast<float>(compressorThresholdKnob.getValue()));
+    }
+    else if (slider == &compressorRatioKnob)
+    {
+        audioProcessor.setCompressorRatio(static_cast<float>(compressorRatioKnob.getValue()));
+    }
+    else if (slider == &compressorAttackKnob)
+    {
+        audioProcessor.setCompressorAttack(static_cast<float>(compressorAttackKnob.getValue()));
+    }
+    else if (slider == &compressorReleaseKnob)
+    {
+        audioProcessor.setCompressorRelease(static_cast<float>(compressorReleaseKnob.getValue()));
+    }
+    else if (slider == &compressorGainKnob)
+    {
+        audioProcessor.setCompressorGain(static_cast<float>(compressorGainKnob.getValue()));
+    }
+    else if (slider == &compressorMixKnob)
+    {
+        audioProcessor.setCompressorMix(static_cast<float>(compressorMixKnob.getValue()));
+    }
     /*
     else if (slider == &pulseWidthSlider)
     {
@@ -3977,6 +4012,15 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
     else if (button == &chorusPowerButton)
     {
         audioProcessor.setChorusEnabled(chorusPowerButton.getToggleState());
+    }
+    // Compressor effect buttons
+    else if (button == &compressorPowerButton)
+    {
+        audioProcessor.setCompressorEnabled(compressorPowerButton.getToggleState());
+    }
+    else if (button == &compressorMultibandButton)
+    {
+        audioProcessor.setCompressorMultiband(compressorMultibandButton.getToggleState());
     }
 }
 

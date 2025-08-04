@@ -145,6 +145,17 @@ void SummonerXSerum2AudioProcessor::prepareToPlay(double sampleRate, int samples
     chorus.setLPFCutoff(chorusLPF);
     chorus.setMix(chorusMix);
     
+    // Initialize compressor effect
+    compressor.setSampleRate(sampleRate);
+    compressor.setEnabled(compressorEnabled);
+    compressor.setThreshold(compressorThreshold);
+    compressor.setRatio(compressorRatio);
+    compressor.setAttack(compressorAttack);
+    compressor.setRelease(compressorRelease);
+    compressor.setMakeupGain(compressorGain);
+    compressor.setMix(compressorMix);
+    compressor.setMultiband(compressorMultiband);
+    
     // Initialize filter routing for all voices
     updateFilterRouting();
 }
@@ -202,6 +213,9 @@ void SummonerXSerum2AudioProcessor::processBlock(juce::AudioBuffer<float>& buffe
     
     // Apply chorus effect
     chorus.processBlock(buffer);
+    
+    // Apply compressor effect
+    compressor.processBlock(buffer);
     
     // Apply volume control
     buffer.applyGain(synthVolume);

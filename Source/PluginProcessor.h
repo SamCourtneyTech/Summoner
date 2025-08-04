@@ -467,6 +467,203 @@ private:
     float formant3_b1 = 0.0f, formant3_b2 = 0.0f;
 };
 
+// Dynamics compressor with optional multiband processing
+class CompressorEffect
+{
+public:
+    CompressorEffect()
+    {
+        reset();
+    }
+    
+    void setSampleRate(double newSampleRate)
+    {
+        sampleRate = newSampleRate;
+        
+        // Initialize parameter smoothing
+        thresholdSmoothing.setSampleRate(sampleRate);
+        thresholdSmoothing.setTimeConstantMs(10.0f);
+        
+        ratioSmoothing.setSampleRate(sampleRate);
+        ratioSmoothing.setTimeConstantMs(10.0f);
+        
+        attackSmoothing.setSampleRate(sampleRate);
+        attackSmoothing.setTimeConstantMs(5.0f);
+        
+        releaseSmoothing.setSampleRate(sampleRate);
+        releaseSmoothing.setTimeConstantMs(5.0f);
+        
+        makeupGainSmoothing.setSampleRate(sampleRate);
+        makeupGainSmoothing.setTimeConstantMs(10.0f);
+        
+        mixSmoothing.setSampleRate(sampleRate);
+        mixSmoothing.setTimeConstantMs(20.0f);
+        
+        // Initialize RMS buffers (10ms window)
+        int rmsBufferSize = static_cast<int>(sampleRate * 0.01);
+        rmsBuffer[0].resize(rmsBufferSize, 0.0f);
+        rmsBuffer[1].resize(rmsBufferSize, 0.0f);
+        rmsBufferSize_ = rmsBufferSize;
+        
+        // Initialize crossover filters for multiband (if needed later)
+        // TODO: Implement 3-band crossover network
+    }
+    
+    void setEnabled(bool enabled) { isEnabled = enabled; }
+    void setThreshold(float thresholdDb) { 
+        threshold = juce::jlimit(-60.0f, 0.0f, thresholdDb);
+        thresholdSmoothing.setTarget(threshold);
+    }
+    void setRatio(float ratioValue) { 
+        ratio = juce::jlimit(1.0f, 20.0f, ratioValue);
+        ratioSmoothing.setTarget(ratio);
+    }
+    void setAttack(float attackMs) { 
+        attack = juce::jlimit(0.1f, 100.0f, attackMs);
+        attackSmoothing.setTarget(attack);
+    }
+    void setRelease(float releaseMs) { 
+        release = juce::jlimit(10.0f, 1000.0f, releaseMs);
+        releaseSmoothing.setTarget(release);
+    }
+    void setMakeupGain(float gainDb) { 
+        makeupGain = juce::jlimit(0.0f, 30.0f, gainDb);
+        makeupGainSmoothing.setTarget(makeupGain);
+    }
+    void setMix(float mixValue) { 
+        wetMix = juce::jlimit(0.0f, 1.0f, mixValue);
+        mixSmoothing.setTarget(wetMix);
+    }
+    void setMultiband(bool enabled) { multibandEnabled = enabled; }
+    
+    void reset()
+    {
+        // Clear RMS buffers
+        for (int ch = 0; ch < 2; ++ch)
+        {
+            if (!rmsBuffer[ch].empty())
+                std::fill(rmsBuffer[ch].begin(), rmsBuffer[ch].end(), 0.0f);
+            rmsIndex[ch] = 0;
+            rmsSum[ch] = 0.0f;
+        }
+        
+        // Reset envelope followers
+        gainReduction[0] = 0.0f;
+        gainReduction[1] = 0.0f;
+        
+        // Reset smoothing
+        thresholdSmoothing.reset(threshold);
+        ratioSmoothing.reset(ratio);
+        attackSmoothing.reset(attack);
+        releaseSmoothing.reset(release);
+        makeupGainSmoothing.reset(makeupGain);
+        mixSmoothing.reset(wetMix);
+    }
+    
+    void processBlock(juce::AudioBuffer<float>& buffer)
+    {
+        if (!isEnabled || sampleRate <= 0.0)
+            return;
+            
+        const int numSamples = buffer.getNumSamples();
+        const int numChannels = juce::jmin(buffer.getNumChannels(), 2);
+        
+        for (int sample = 0; sample < numSamples; ++sample)
+        {
+            // Get smoothed parameters
+            float currentThreshold = thresholdSmoothing.getNextValue();
+            float currentRatio = ratioSmoothing.getNextValue();
+            float currentAttack = attackSmoothing.getNextValue();
+            float currentRelease = releaseSmoothing.getNextValue();
+            float currentMakeupGain = makeupGainSmoothing.getNextValue();
+            float currentMix = mixSmoothing.getNextValue();
+            
+            // Calculate envelope coefficients
+            float attackCoeff = std::exp(-1.0f / (currentAttack * 0.001f * static_cast<float>(sampleRate)));
+            float releaseCoeff = std::exp(-1.0f / (currentRelease * 0.001f * static_cast<float>(sampleRate)));
+            
+            for (int ch = 0; ch < numChannels; ++ch)
+            {
+                float inputSample = buffer.getSample(ch, sample);
+                float drySample = inputSample;
+                
+                // RMS Detection (10ms window)
+                float inputSquared = inputSample * inputSample;
+                
+                // Update RMS circular buffer
+                if (rmsBufferSize_ > 0)
+                {
+                    rmsSum[ch] -= rmsBuffer[ch][rmsIndex[ch]]; // Remove old sample
+                    rmsBuffer[ch][rmsIndex[ch]] = inputSquared; // Add new sample
+                    rmsSum[ch] += inputSquared;
+                    rmsIndex[ch] = (rmsIndex[ch] + 1) % rmsBufferSize_;
+                    
+                    // Calculate RMS level in dB
+                    float rmsValue = std::sqrt(rmsSum[ch] / static_cast<float>(rmsBufferSize_));
+                    float rmsDb = rmsValue > 0.0f ? 20.0f * std::log10(rmsValue) : -100.0f;
+                    
+                    // Calculate required gain reduction
+                    float gainReductionDb = 0.0f;
+                    if (rmsDb > currentThreshold)
+                    {
+                        float overshoot = rmsDb - currentThreshold;
+                        gainReductionDb = overshoot * (1.0f - 1.0f / currentRatio);
+                    }
+                    
+                    // Convert to linear gain reduction
+                    float targetGainReduction = std::pow(10.0f, -gainReductionDb / 20.0f);
+                    
+                    // Apply attack/release envelope
+                    if (targetGainReduction < gainReduction[ch])
+                    {
+                        // Attack (gain reduction increasing)
+                        gainReduction[ch] = targetGainReduction + (gainReduction[ch] - targetGainReduction) * attackCoeff;
+                    }
+                    else
+                    {
+                        // Release (gain reduction decreasing)
+                        gainReduction[ch] = targetGainReduction + (gainReduction[ch] - targetGainReduction) * releaseCoeff;
+                    }
+                    
+                    // Apply compression
+                    float compressedSample = inputSample * gainReduction[ch];
+                    
+                    // Apply makeup gain
+                    float makeupGainLinear = std::pow(10.0f, currentMakeupGain / 20.0f);
+                    compressedSample *= makeupGainLinear;
+                    
+                    // Mix dry and wet (parallel compression)
+                    float outputSample = drySample * (1.0f - currentMix) + compressedSample * currentMix;
+                    
+                    buffer.setSample(ch, sample, outputSample);
+                }
+            }
+        }
+    }
+    
+private:
+    // Parameters
+    bool isEnabled = false;
+    float threshold = -20.0f; // dB
+    float ratio = 4.0f; // ratio
+    float attack = 5.0f; // ms
+    float release = 100.0f; // ms
+    float makeupGain = 0.0f; // dB
+    float wetMix = 1.0f; // 0.0 to 1.0
+    bool multibandEnabled = false;
+    
+    // Parameter smoothing
+    OnePoleSmoothing thresholdSmoothing, ratioSmoothing, attackSmoothing, releaseSmoothing, makeupGainSmoothing, mixSmoothing;
+    
+    // Processing state
+    double sampleRate = 44100.0;
+    std::vector<float> rmsBuffer[2]; // RMS calculation buffers
+    int rmsBufferSize_ = 0;
+    int rmsIndex[2] = {0, 0};
+    float rmsSum[2] = {0.0f, 0.0f};
+    float gainReduction[2] = {1.0f, 1.0f}; // Linear gain reduction values
+};
+
 // Multi-tap stereo chorus effect
 class ChorusEffect
 {
@@ -1061,6 +1258,55 @@ public:
     }
     float getChorusMix() const { return chorusMix; }
 
+    // Compressor effect controls
+    void setCompressorEnabled(bool enabled) {
+        compressorEnabled = enabled;
+        compressor.setEnabled(enabled);
+    }
+    bool getCompressorEnabled() const { return compressorEnabled; }
+    
+    void setCompressorThreshold(float thresholdDb) {
+        compressorThreshold = thresholdDb;
+        compressor.setThreshold(thresholdDb);
+    }
+    float getCompressorThreshold() const { return compressorThreshold; }
+    
+    void setCompressorRatio(float ratio) {
+        compressorRatio = ratio;
+        compressor.setRatio(ratio);
+    }
+    float getCompressorRatio() const { return compressorRatio; }
+    
+    void setCompressorAttack(float attackMs) {
+        compressorAttack = attackMs;
+        compressor.setAttack(attackMs);
+    }
+    float getCompressorAttack() const { return compressorAttack; }
+    
+    void setCompressorRelease(float releaseMs) {
+        compressorRelease = releaseMs;
+        compressor.setRelease(releaseMs);
+    }
+    float getCompressorRelease() const { return compressorRelease; }
+    
+    void setCompressorGain(float gainDb) {
+        compressorGain = gainDb;
+        compressor.setMakeupGain(gainDb);
+    }
+    float getCompressorGain() const { return compressorGain; }
+    
+    void setCompressorMix(float mix) {
+        compressorMix = mix;
+        compressor.setMix(mix);
+    }
+    float getCompressorMix() const { return compressorMix; }
+    
+    void setCompressorMultiband(bool enabled) {
+        compressorMultiband = enabled;
+        compressor.setMultiband(enabled);
+    }
+    bool getCompressorMultiband() const { return compressorMultiband; }
+
 private:
     std::map<std::string, int> parameterMap;
     void enumerateParameters();
@@ -1163,6 +1409,17 @@ private:
     float chorusLPF = 20000.0f; // 200.0 to 20000.0 Hz
     float chorusMix = 0.5f; // 0.0 to 1.0
     ChorusEffect chorus; // Chorus effect instance
+    
+    // Compressor effect parameters
+    bool compressorEnabled = false;
+    float compressorThreshold = -20.0f; // -60.0 to 0.0 dB
+    float compressorRatio = 4.0f; // 1.0 to 20.0
+    float compressorAttack = 5.0f; // 0.1 to 100.0 ms
+    float compressorRelease = 100.0f; // 10.0 to 1000.0 ms
+    float compressorGain = 0.0f; // 0.0 to 30.0 dB
+    float compressorMix = 1.0f; // 0.0 to 1.0
+    bool compressorMultiband = false;
+    CompressorEffect compressor; // Compressor effect instance
     
     // Temporary buffers for separate oscillator processing
     juce::AudioBuffer<float> osc1Buffer;
