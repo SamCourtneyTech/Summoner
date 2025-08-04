@@ -2037,7 +2037,7 @@ public:
     
     // Second oscillator controls
     void setOsc2Volume(float volume) { 
-        osc2Volume = volume * 0.093f; // Apply -20.63 dB gain reduction (10^(-20.63/20) ≈ 0.093)
+        osc2Volume = volume; // Made same as OSC1 - removed gain reduction
         updateOsc2Parameters();
     }
     float getOsc2Volume() const { return osc2Volume; }
@@ -2615,7 +2615,7 @@ private:
             frequency *= std::pow(2.0, osc1Semitone / 12.0);
             // Apply oscillator 1 fine tune shift: each cent is 2^(1/1200) frequency ratio
             frequency *= std::pow(2.0, osc1FineTune / 1200.0);
-            level = velocity * 0.15;
+            level = velocity * 0.15 * 3.16f; // Increased by 10dB
             
             // Initialize oscillator 1 unison voices with detuning
             for (int i = 0; i < maxUnisonVoices; ++i)
@@ -2720,41 +2720,30 @@ private:
                         // Generate waveform based on oscillator 1 type for this voice
                         if (osc1Type == 0) // Sine wave
                         {
-                            voiceSample = (float)(std::sin(unisonAngles[voice]) * level);
+                            voiceSample = (float)(std::sin(unisonAngles[voice]) * osc1Volume * 3.16f / 6.31f);
                         }
                         else if (osc1Type == 1) // Saw wave
                         {
-                            // Sawtooth wave: variable ramp using pulse width
                             auto normalizedAngle = std::fmod(unisonAngles[voice], 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
-                            if (osc1PulseWidth < 0.5) {
-                                // More reverse saw character
-                                auto adjustedAngle = normalizedAngle * (1.0 - osc1PulseWidth) + osc1PulseWidth;
-                                voiceSample = (float)((2.0 * (1.0 - adjustedAngle) - 1.0) * level);
-                            } else {
-                                // More forward saw character
-                                auto adjustedAngle = normalizedAngle * osc1PulseWidth;
-                                voiceSample = (float)((2.0 * adjustedAngle - 1.0) * level);
-                            }
+                            voiceSample = (float)((2.0 * normalizedAngle - 1.0) * osc1Volume * 3.16f / 6.31f);
                         }
                         else if (osc1Type == 2) // Square wave
                         {
-                            // Square wave: variable duty cycle using pulse width
                             auto normalizedAngle = std::fmod(unisonAngles[voice], 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
-                            voiceSample = (float)((normalizedAngle < osc1PulseWidth ? 1.0 : -1.0) * level);
+                            voiceSample = (float)((normalizedAngle < 0.5 ? 1.0 : -1.0) * osc1Volume * 3.16f / 6.31f);
                         }
                         else if (osc1Type == 3) // Triangle wave
                         {
-                            // Triangle wave: variable peak position using pulse width
                             auto normalizedAngle = std::fmod(unisonAngles[voice], 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
-                            if (normalizedAngle < osc1PulseWidth)
-                                voiceSample = (float)((normalizedAngle / osc1PulseWidth * 2.0 - 1.0) * level); // Rising: -1 to 1
+                            if (normalizedAngle < 0.5)
+                                voiceSample = (float)((normalizedAngle * 4.0 - 1.0) * osc1Volume * 3.16f / 6.31f);
                             else
-                                voiceSample = (float)((1.0 - (normalizedAngle - osc1PulseWidth) / (1.0 - osc1PulseWidth)) * 2.0 - 1.0) * level; // Falling: 1 to -1
+                                voiceSample = (float)((3.0 - normalizedAngle * 4.0) * osc1Volume * 3.16f / 6.31f);
                         }
                         else if (osc1Type == 4) // White noise
                         {
                             // White noise: random values between -1 and 1 (same for all unison voices)
-                            voiceSample = (float)((random.nextFloat() * 2.0f - 1.0f) * level);
+                            voiceSample = (float)((random.nextFloat() * 2.0f - 1.0f) * osc1Volume * 3.16f / 6.31f);
                         }
                         else if (osc1Type == 5) // Pink noise
                         {
@@ -2771,12 +2760,12 @@ private:
                             float pink = pinkFilter[0] + pinkFilter[1] + pinkFilter[2] + pinkFilter[3] + pinkFilter[4] + pinkFilter[5] + pinkFilter[6] + white * 0.5362f;
                             pinkFilter[6] = white * 0.115926f;
                             
-                            voiceSample = (float)(pink * 0.11f * level); // Scale down to prevent clipping
+                            voiceSample = (float)(pink * 0.11f * osc1Volume * 3.16f / 6.31f);
                         }
                         else
                         {
                             // Default to sine wave for unknown oscillator types
-                            voiceSample = (float)(std::sin(unisonAngles[voice]) * level);
+                            voiceSample = (float)(std::sin(unisonAngles[voice]) * osc1Volume * 3.16f / 6.31f);
                         }
                         
                         // Calculate stereo panning for this voice
@@ -2802,18 +2791,14 @@ private:
                     // Apply level scaling to prevent clipping from multiple oscillator 1 voices
                     leftSample /= std::sqrt((float)osc1VoiceCount);
                     rightSample /= std::sqrt((float)osc1VoiceCount);
-
-                    // Apply Oscillator 1 volume
-                    leftSample *= osc1Volume;
-                    rightSample *= osc1Volume;
                     
                     // Apply envelope to oscillator 1 ONLY
                     auto envelopeValue = envelope.getNextSample();
                     leftSample *= envelopeValue;
                     rightSample *= envelopeValue;
                     
-                    // Apply overall pan to oscillator 1 ONLY (-50 to +50 range)
-                    float normalizedPan = pan / 50.0f; // Convert to -1.0 to +1.0 range
+                    // Apply overall pan to oscillator 1 (-1.0 to +1.0 range like OSC2)
+                    float normalizedPan = pan;
                     normalizedPan = juce::jlimit(-1.0f, 1.0f, normalizedPan);
                     
                     // Apply overall pan using equal power panning to oscillator 1
@@ -2844,30 +2829,30 @@ private:
                             // Generate waveform based on oscillator 2 type for this voice
                             if (osc2Type == 0) // Sine wave
                             {
-                                voiceSample = (float)(std::sin(osc2UnisonAngles[voice]) * osc2Volume);
+                                voiceSample = (float)(std::sin(osc2UnisonAngles[voice]) * osc2Volume * 3.16f / 6.31f); // +10dB then -16dB = -6dB net
                             }
                             else if (osc2Type == 1) // Saw wave
                             {
                                 auto normalizedAngle = std::fmod(osc2UnisonAngles[voice], 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
-                                voiceSample = (float)((2.0 * normalizedAngle - 1.0) * osc2Volume);
+                                voiceSample = (float)((2.0 * normalizedAngle - 1.0) * osc2Volume * 3.16f / 6.31f); // +10dB then -16dB = -6dB net
                             }
                             else if (osc2Type == 2) // Square wave
                             {
                                 auto normalizedAngle = std::fmod(osc2UnisonAngles[voice], 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
-                                voiceSample = (float)((normalizedAngle < 0.5 ? 1.0 : -1.0) * osc2Volume);
+                                voiceSample = (float)((normalizedAngle < 0.5 ? 1.0 : -1.0) * osc2Volume * 3.16f / 6.31f); // +10dB then -16dB = -6dB net
                             }
                             else if (osc2Type == 3) // Triangle wave
                             {
                                 auto normalizedAngle = std::fmod(osc2UnisonAngles[voice], 2.0 * juce::MathConstants<double>::pi) / (2.0 * juce::MathConstants<double>::pi);
                                 if (normalizedAngle < 0.5)
-                                    voiceSample = (float)((normalizedAngle * 4.0 - 1.0) * osc2Volume);
+                                    voiceSample = (float)((normalizedAngle * 4.0 - 1.0) * osc2Volume * 3.16f / 6.31f); // +10dB then -16dB = -6dB net
                                 else
-                                    voiceSample = (float)((3.0 - normalizedAngle * 4.0) * osc2Volume);
+                                    voiceSample = (float)((3.0 - normalizedAngle * 4.0) * osc2Volume * 3.16f / 6.31f); // +10dB then -16dB = -6dB net
                             }
                             else if (osc2Type == 4) // White noise
                             {
                                 // White noise: same for all unison voices
-                                voiceSample = (float)((random.nextFloat() * 2.0f - 1.0f) * osc2Volume);
+                                voiceSample = (float)((random.nextFloat() * 2.0f - 1.0f) * osc2Volume * 3.16f / 6.31f); // +10dB then -16dB = -6dB net
                             }
                             else if (osc2Type == 5) // Pink noise
                             {
@@ -2884,12 +2869,12 @@ private:
                                 float pink = osc2PinkFilter[0] + osc2PinkFilter[1] + osc2PinkFilter[2] + osc2PinkFilter[3] + osc2PinkFilter[4] + osc2PinkFilter[5] + osc2PinkFilter[6] + white * 0.5362f;
                                 osc2PinkFilter[6] = white * 0.115926f;
                                 
-                                voiceSample = (float)(pink * 0.11f * osc2Volume);
+                                voiceSample = (float)(pink * 0.11f * osc2Volume * 3.16f / 6.31f); // +10dB then -16dB = -6dB net
                             }
                             else
                             {
                                 // Default to sine wave for unknown types
-                                voiceSample = (float)(std::sin(osc2UnisonAngles[voice]) * osc2Volume);
+                                voiceSample = (float)(std::sin(osc2UnisonAngles[voice]) * osc2Volume * 3.16f / 6.31f); // +10dB then -16dB = -6dB net
                             }
                             
                             // Calculate stereo panning for this osc2 voice
