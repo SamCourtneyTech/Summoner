@@ -1404,6 +1404,15 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     flangerPhaseLabel.setBounds(125, 325, 50, 15);
     flangerTab->addAndMakeVisible(flangerPhaseLabel);
     
+    // Add listeners for flanger controls
+    flangerPowerButton.addListener(this);
+    flangerMixKnob.addListener(this);
+    flangerRateKnob.addListener(this);
+    flangerBpmButton.addListener(this);
+    flangerDepthKnob.addListener(this);
+    flangerFeedbackKnob.addListener(this);
+    flangerPhaseKnob.addListener(this);
+    
     auto phaserTab = new juce::Component();
     
     // Initialize phaser controls
@@ -1561,6 +1570,17 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     phaserPhaseLabel.setVisible(true);
     phaserPhaseLabel.setBounds(194, 395, 50, 15);
     phaserTab->addAndMakeVisible(phaserPhaseLabel);
+    
+    // Add listeners for phaser controls
+    phaserPowerButton.addListener(this);
+    phaserMixKnob.addListener(this);
+    phaserRateKnob.addListener(this);
+    phaserBpmButton.addListener(this);
+    phaserDepth1Knob.addListener(this);
+    phaserDepth2Knob.addListener(this);
+    phaserFrequencyKnob.addListener(this);
+    phaserFeedbackKnob.addListener(this);
+    phaserPhaseKnob.addListener(this);
     
     auto reverbTab = new juce::Component();
     
@@ -3438,6 +3458,56 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     {
         audioProcessor.setChorusMix(static_cast<float>(chorusMixKnob.getValue()));
     }
+    // Flanger effect sliders
+    else if (slider == &flangerRateKnob)
+    {
+        audioProcessor.setFlangerRate(static_cast<float>(flangerRateKnob.getValue()));
+    }
+    else if (slider == &flangerDepthKnob)
+    {
+        audioProcessor.setFlangerDepth(static_cast<float>(flangerDepthKnob.getValue()));
+    }
+    else if (slider == &flangerFeedbackKnob)
+    {
+        audioProcessor.setFlangerFeedback(static_cast<float>(flangerFeedbackKnob.getValue()));
+    }
+    else if (slider == &flangerMixKnob)
+    {
+        audioProcessor.setFlangerMix(static_cast<float>(flangerMixKnob.getValue()));
+    }
+    else if (slider == &flangerPhaseKnob)
+    {
+        audioProcessor.setFlangerPhase(static_cast<float>(flangerPhaseKnob.getValue()));
+    }
+    // Phaser effect sliders
+    else if (slider == &phaserRateKnob)
+    {
+        audioProcessor.setPhaserRate(static_cast<float>(phaserRateKnob.getValue()));
+    }
+    else if (slider == &phaserDepth1Knob)
+    {
+        audioProcessor.setPhaserDepth1(static_cast<float>(phaserDepth1Knob.getValue()));
+    }
+    else if (slider == &phaserDepth2Knob)
+    {
+        audioProcessor.setPhaserDepth2(static_cast<float>(phaserDepth2Knob.getValue()));
+    }
+    else if (slider == &phaserFeedbackKnob)
+    {
+        audioProcessor.setPhaserFeedback(static_cast<float>(phaserFeedbackKnob.getValue()));
+    }
+    else if (slider == &phaserMixKnob)
+    {
+        audioProcessor.setPhaserMix(static_cast<float>(phaserMixKnob.getValue()));
+    }
+    else if (slider == &phaserPhaseKnob)
+    {
+        audioProcessor.setPhaserPhase(static_cast<float>(phaserPhaseKnob.getValue()));
+    }
+    else if (slider == &phaserFrequencyKnob)
+    {
+        audioProcessor.setPhaserFrequency(static_cast<float>(phaserFrequencyKnob.getValue()));
+    }
     // Compressor controls
     else if (slider == &compressorThresholdKnob)
     {
@@ -4124,6 +4194,26 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
     else if (button == &chorusPowerButton)
     {
         audioProcessor.setChorusEnabled(chorusPowerButton.getToggleState());
+    }
+    // Flanger effect buttons
+    else if (button == &flangerPowerButton)
+    {
+        audioProcessor.setFlangerEnabled(flangerPowerButton.getToggleState());
+    }
+    else if (button == &flangerBpmButton)
+    {
+        // TODO: Implement BPM sync for flanger if needed
+        // For now, just toggle the button state
+    }
+    // Phaser effect buttons
+    else if (button == &phaserPowerButton)
+    {
+        audioProcessor.setPhaserEnabled(phaserPowerButton.getToggleState());
+    }
+    else if (button == &phaserBpmButton)
+    {
+        // TODO: Implement BPM sync for phaser if needed
+        // For now, just toggle the button state
     }
     // Compressor effect buttons
     else if (button == &compressorPowerButton)

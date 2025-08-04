@@ -145,6 +145,27 @@ void SummonerXSerum2AudioProcessor::prepareToPlay(double sampleRate, int samples
     chorus.setLPFCutoff(chorusLPF);
     chorus.setMix(chorusMix);
     
+    // Initialize flanger effect
+    flanger.setSampleRate(sampleRate);
+    flanger.setEnabled(flangerEnabled);
+    flanger.setRate(flangerRate);
+    flanger.setDepth(flangerDepth);
+    flanger.setFeedback(flangerFeedback);
+    flanger.setMix(flangerMix);
+    flanger.setPhase(flangerPhase);
+    
+    // Initialize phaser effect
+    phaser.setSampleRate(sampleRate);
+    phaser.setEnabled(phaserEnabled);
+    phaser.setRate(phaserRate);
+    phaser.setDepth1(phaserDepth1);
+    phaser.setDepth2(phaserDepth2);
+    phaser.setFeedback(phaserFeedback);
+    phaser.setMix(phaserMix);
+    phaser.setPhase(phaserPhase);
+    phaser.setFrequency(phaserFrequency);
+    phaser.setPoles(phaserPoles);
+    
     // Initialize compressor effect
     compressor.setSampleRate(sampleRate);
     compressor.setEnabled(compressorEnabled);
@@ -243,6 +264,12 @@ void SummonerXSerum2AudioProcessor::processBlock(juce::AudioBuffer<float>& buffe
     
     // Apply chorus effect
     chorus.processBlock(buffer);
+    
+    // Apply flanger effect
+    flanger.processBlock(buffer);
+    
+    // Apply phaser effect
+    phaser.processBlock(buffer);
     
     // Apply compressor effect
     compressor.processBlock(buffer);

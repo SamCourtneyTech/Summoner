@@ -1890,6 +1890,435 @@ private:
     SimpleStableFilter lpf[2];
 };
 
+// Stereo flanger effect with LFO modulation
+class FlangerEffect
+{
+public:
+    FlangerEffect()
+    {
+        // Initialize LFO phases - offset by 90 degrees for stereo width
+        lfoPhase[0] = 0.0f;
+        lfoPhase[1] = juce::MathConstants<float>::pi * 0.5f; // 90 degree offset
+        
+        reset();
+    }
+    
+    void setSampleRate(double newSampleRate)
+    {
+        sampleRate = newSampleRate;
+        
+        // Initialize parameter smoothing
+        rateSmoothing.setSampleRate(sampleRate);
+        rateSmoothing.setTimeConstantMs(20.0f);
+        
+        depthSmoothing.setSampleRate(sampleRate);
+        depthSmoothing.setTimeConstantMs(20.0f);
+        
+        feedbackSmoothing.setSampleRate(sampleRate);
+        feedbackSmoothing.setTimeConstantMs(20.0f);
+        
+        mixSmoothing.setSampleRate(sampleRate);
+        mixSmoothing.setTimeConstantMs(20.0f);
+        
+        phaseSmoothing.setSampleRate(sampleRate);
+        phaseSmoothing.setTimeConstantMs(50.0f); // Slower smoothing for phase changes
+        
+        // Allocate delay buffers - maximum 20ms for flanger
+        int maxDelaySize = static_cast<int>(sampleRate * 0.02); // 20ms
+        delayBuffer[0].resize(maxDelaySize, 0.0f);
+        delayBuffer[1].resize(maxDelaySize, 0.0f);
+        delayBufferSize = maxDelaySize;
+    }
+    
+    void setEnabled(bool enabled) { isEnabled = enabled; }
+    void setRate(float rate) { 
+        rateHz = juce::jlimit(0.1f, 10.0f, rate);
+        rateSmoothing.setTarget(rateHz);
+    }
+    void setDepth(float depth) { 
+        depthMs = juce::jlimit(0.1f, 10.0f, depth);
+        depthSmoothing.setTarget(depthMs);
+    }
+    void setFeedback(float feedback) { 
+        feedbackAmount = juce::jlimit(-0.95f, 0.95f, feedback / 100.0f);
+        feedbackSmoothing.setTarget(feedbackAmount);
+    }
+    void setMix(float mix) { 
+        wetMix = juce::jlimit(0.0f, 1.0f, mix / 100.0f);
+        mixSmoothing.setTarget(wetMix);
+    }
+    void setPhase(float phase) {
+        phaseOffset = juce::jlimit(0.0f, 360.0f, phase) * juce::MathConstants<float>::pi / 180.0f;
+        phaseSmoothing.setTarget(phaseOffset);
+    }
+    
+    void reset()
+    {
+        delayIndex[0] = 0;
+        delayIndex[1] = 0;
+        
+        if (!delayBuffer[0].empty())
+        {
+            std::fill(delayBuffer[0].begin(), delayBuffer[0].end(), 0.0f);
+            std::fill(delayBuffer[1].begin(), delayBuffer[1].end(), 0.0f);
+        }
+        
+        // Reset smoothing
+        rateSmoothing.reset(rateHz);
+        depthSmoothing.reset(depthMs);
+        feedbackSmoothing.reset(feedbackAmount);
+        mixSmoothing.reset(wetMix);
+        phaseSmoothing.reset(phaseOffset);
+    }
+    
+    void processBlock(juce::AudioBuffer<float>& buffer)
+    {
+        if (!isEnabled || sampleRate <= 0.0)
+            return;
+            
+        const int numSamples = buffer.getNumSamples();
+        const int numChannels = juce::jmin(buffer.getNumChannels(), 2);
+        
+        if (numSamples <= 0 || numChannels <= 0 || delayBufferSize <= 0)
+            return;
+        
+        for (int sample = 0; sample < numSamples; ++sample)
+        {
+            // Get smoothed parameters
+            float currentRate = rateSmoothing.getNextValue();
+            float currentDepth = depthSmoothing.getNextValue();
+            float currentFeedback = feedbackSmoothing.getNextValue();
+            float currentMix = mixSmoothing.getNextValue();
+            float currentPhase = phaseSmoothing.getNextValue();
+            
+            // Calculate LFO increment
+            float lfoIncrement = 2.0f * juce::MathConstants<float>::pi * currentRate / static_cast<float>(sampleRate);
+            
+            for (int ch = 0; ch < numChannels; ++ch)
+            {
+                // Read input sample
+                float inputSample = buffer.getSample(ch, sample);
+                float drySample = inputSample;
+                
+                // Update LFO with phase offset for right channel
+                float effectivePhase = lfoPhase[ch];
+                if (ch == 1) // Right channel gets phase offset
+                    effectivePhase += currentPhase;
+                
+                lfoPhase[ch] += lfoIncrement;
+                if (lfoPhase[ch] >= 2.0f * juce::MathConstants<float>::pi)
+                    lfoPhase[ch] -= 2.0f * juce::MathConstants<float>::pi;
+                
+                // Calculate modulated delay time (flanger uses shorter delays than chorus)
+                float lfoValue = std::sin(effectivePhase);
+                float delayMs = 1.0f + (currentDepth * 0.5f * (1.0f + lfoValue)); // 1-6ms range typically
+                float delaySamples = delayMs * static_cast<float>(sampleRate) / 1000.0f;
+                
+                // Ensure delay is within bounds
+                delaySamples = juce::jlimit(1.0f, static_cast<float>(delayBufferSize - 1), delaySamples);
+                
+                // Linear interpolation for smooth delay modulation
+                int delayInt = static_cast<int>(delaySamples);
+                float delayFrac = delaySamples - delayInt;
+                
+                int readIndex1 = (delayIndex[ch] - delayInt + delayBufferSize) % delayBufferSize;
+                int readIndex2 = (readIndex1 - 1 + delayBufferSize) % delayBufferSize;
+                
+                float delayedSample1 = delayBuffer[ch][readIndex1];
+                float delayedSample2 = delayBuffer[ch][readIndex2];
+                float interpolatedSample = delayedSample1 + delayFrac * (delayedSample2 - delayedSample1);
+                
+                // Apply feedback
+                float feedbackSample = inputSample + currentFeedback * interpolatedSample;
+                
+                // Write to delay buffer
+                delayBuffer[ch][delayIndex[ch]] = feedbackSample;
+                delayIndex[ch] = (delayIndex[ch] + 1) % delayBufferSize;
+                
+                // Mix dry and wet signals
+                float output = drySample + currentMix * (interpolatedSample - drySample);
+                buffer.setSample(ch, sample, output);
+            }
+        }
+    }
+    
+private:
+    // Parameters
+    bool isEnabled = false;
+    float rateHz = 1.0f;
+    float depthMs = 2.0f;
+    float feedbackAmount = 0.25f;
+    float wetMix = 0.5f;
+    float phaseOffset = 0.0f;
+    
+    // Parameter smoothing
+    OnePoleSmoothing rateSmoothing, depthSmoothing, feedbackSmoothing, mixSmoothing, phaseSmoothing;
+    
+    // Processing state
+    double sampleRate = 44100.0;
+    std::vector<float> delayBuffer[2]; // Stereo delay buffers
+    int delayBufferSize = 0;
+    int delayIndex[2] = {0, 0};
+    float lfoPhase[2] = {0.0f, 0.0f}; // LFO phases for L/R channels
+};
+
+// First-order all-pass filter for phaser effect
+class AllPassFilter
+{
+public:
+    AllPassFilter() = default;
+    
+    void setSampleRate(double newSampleRate)
+    {
+        sampleRate = newSampleRate;
+    }
+    
+    void setCoefficient(float coeff)
+    {
+        // Coefficient should be between -1 and 1
+        a = juce::jlimit(-0.99f, 0.99f, coeff);
+    }
+    
+    void reset()
+    {
+        x1 = 0.0f;
+        y1 = 0.0f;
+    }
+    
+    float processSample(float input)
+    {
+        // First-order all-pass: y[n] = -a*x[n] + x[n-1] + a*y[n-1]
+        float output = -a * input + x1 + a * y1;
+        
+        // Update delay elements
+        x1 = input;
+        y1 = output;
+        
+        return output;
+    }
+    
+private:
+    double sampleRate = 44100.0;
+    float a = 0.0f;  // All-pass coefficient
+    float x1 = 0.0f; // Input delay
+    float y1 = 0.0f; // Output delay
+};
+
+// Multi-stage stereo phaser effect
+class PhaserEffect
+{
+public:
+    PhaserEffect()
+    {
+        // Initialize LFO phases - offset by 90 degrees for stereo width
+        lfoPhase[0] = 0.0f;
+        lfoPhase[1] = juce::MathConstants<float>::pi * 0.5f; // 90 degree offset
+        
+        reset();
+    }
+    
+    void setSampleRate(double newSampleRate)
+    {
+        sampleRate = newSampleRate;
+        
+        // Initialize parameter smoothing
+        rateSmoothing.setSampleRate(sampleRate);
+        rateSmoothing.setTimeConstantMs(20.0f);
+        
+        depth1Smoothing.setSampleRate(sampleRate);
+        depth1Smoothing.setTimeConstantMs(20.0f);
+        
+        depth2Smoothing.setSampleRate(sampleRate);
+        depth2Smoothing.setTimeConstantMs(20.0f);
+        
+        feedbackSmoothing.setSampleRate(sampleRate);
+        feedbackSmoothing.setTimeConstantMs(20.0f);
+        
+        mixSmoothing.setSampleRate(sampleRate);
+        mixSmoothing.setTimeConstantMs(20.0f);
+        
+        phaseSmoothing.setSampleRate(sampleRate);
+        phaseSmoothing.setTimeConstantMs(50.0f);
+        
+        frequencySmoothing.setSampleRate(sampleRate);
+        frequencySmoothing.setTimeConstantMs(30.0f);
+        
+        // Initialize all-pass filters
+        for (int ch = 0; ch < 2; ++ch)
+        {
+            for (int stage = 0; stage < MAX_POLES; ++stage)
+            {
+                allPassFilters[ch][stage].setSampleRate(sampleRate);
+                allPassFilters[ch][stage].setCoefficient(0.5f); // Start with neutral coefficient
+            }
+        }
+    }
+    
+    void setEnabled(bool enabled) { isEnabled = enabled; }
+    void setRate(float rate) { 
+        rateHz = juce::jlimit(0.1f, 10.0f, rate);
+        rateSmoothing.setTarget(rateHz);
+    }
+    void setDepth1(float depth) { 
+        depth1Amount = juce::jlimit(0.0f, 100.0f, depth) / 100.0f;
+        depth1Smoothing.setTarget(depth1Amount);
+    }
+    void setDepth2(float depth) { 
+        depth2Amount = juce::jlimit(0.0f, 100.0f, depth) / 100.0f;
+        depth2Smoothing.setTarget(depth2Amount);
+    }
+    void setFeedback(float feedback) { 
+        feedbackAmount = juce::jlimit(0.0f, 100.0f, feedback) / 100.0f * 0.95f; // Scale to 0-0.95
+        feedbackSmoothing.setTarget(feedbackAmount);
+    }
+    void setMix(float mix) { 
+        wetMix = juce::jlimit(0.0f, 100.0f, mix) / 100.0f;
+        mixSmoothing.setTarget(wetMix);
+    }
+    void setPhase(float phase) {
+        phaseOffset = juce::jlimit(0.0f, 360.0f, phase) * juce::MathConstants<float>::pi / 180.0f;
+        phaseSmoothing.setTarget(phaseOffset);
+    }
+    void setFrequency(float freq) {
+        centerFreq = juce::jlimit(20.0f, 2000.0f, freq);
+        frequencySmoothing.setTarget(centerFreq);
+    }
+    void setPoles(int poles) {
+        numPoles = juce::jlimit(1, MAX_POLES, poles);
+    }
+    
+    void reset()
+    {
+        for (int ch = 0; ch < 2; ++ch)
+        {
+            for (int stage = 0; stage < MAX_POLES; ++stage)
+            {
+                allPassFilters[ch][stage].reset();
+            }
+            feedbackDelay[ch] = 0.0f;
+        }
+        
+        // Reset smoothing
+        rateSmoothing.reset(rateHz);
+        depth1Smoothing.reset(depth1Amount);
+        depth2Smoothing.reset(depth2Amount);
+        feedbackSmoothing.reset(feedbackAmount);
+        mixSmoothing.reset(wetMix);
+        phaseSmoothing.reset(phaseOffset);
+        frequencySmoothing.reset(centerFreq);
+    }
+    
+    void processBlock(juce::AudioBuffer<float>& buffer)
+    {
+        if (!isEnabled || sampleRate <= 0.0)
+            return;
+            
+        const int numSamples = buffer.getNumSamples();
+        const int numChannels = juce::jmin(buffer.getNumChannels(), 2);
+        
+        if (numSamples <= 0 || numChannels <= 0)
+            return;
+        
+        for (int sample = 0; sample < numSamples; ++sample)
+        {
+            // Get smoothed parameters
+            float currentRate = rateSmoothing.getNextValue();
+            float currentDepth1 = depth1Smoothing.getNextValue();
+            float currentDepth2 = depth2Smoothing.getNextValue();
+            float currentFeedback = feedbackSmoothing.getNextValue();
+            float currentMix = mixSmoothing.getNextValue();
+            float currentPhase = phaseSmoothing.getNextValue();
+            float currentFreq = frequencySmoothing.getNextValue();
+            
+            // Calculate LFO increment
+            float lfoIncrement = 2.0f * juce::MathConstants<float>::pi * currentRate / static_cast<float>(sampleRate);
+            
+            for (int ch = 0; ch < numChannels; ++ch)
+            {
+                // Read input sample
+                float inputSample = buffer.getSample(ch, sample);
+                float drySample = inputSample;
+                
+                // Update LFO with phase offset for right channel
+                float effectivePhase = lfoPhase[ch];
+                if (ch == 1) // Right channel gets phase offset
+                    effectivePhase += currentPhase;
+                
+                lfoPhase[ch] += lfoIncrement;
+                if (lfoPhase[ch] >= 2.0f * juce::MathConstants<float>::pi)
+                    lfoPhase[ch] -= 2.0f * juce::MathConstants<float>::pi;
+                
+                // Calculate LFO values - use both depth controls to modulate different aspects
+                float lfo1Value = std::sin(effectivePhase);
+                float lfo2Value = std::sin(effectivePhase + juce::MathConstants<float>::pi * 0.25f);
+                
+                // Calculate all-pass coefficients based on frequency and LFO modulation
+                // Map frequency to coefficient range for musical phasing
+                float baseCoeff = (currentFreq - 20.0f) / (2000.0f - 20.0f); // Normalize 20-2000Hz to 0-1
+                baseCoeff = baseCoeff * 1.8f - 0.9f; // Map to -0.9 to 0.9 range
+                
+                // Modulate coefficients with LFO
+                float depthScale1 = currentDepth1 * 0.6f; // Scale depth to reasonable range
+                float depthScale2 = currentDepth2 * 0.4f;
+                
+                // Add feedback before all-pass processing
+                float feedbackSample = inputSample + currentFeedback * feedbackDelay[ch];
+                
+                // Process through all-pass filter stages
+                float allPassOutput = feedbackSample;
+                
+                for (int stage = 0; stage < numPoles; ++stage)
+                {
+                    // Use different LFO modulation for different stages to create complex phasing
+                    float stageModulation = (stage % 2 == 0) ? lfo1Value * depthScale1 : lfo2Value * depthScale2;
+                    
+                    // Calculate stage-specific coefficient
+                    float stageOffset = (float)stage / (float)numPoles * 0.3f; // Spread stages
+                    float stageCoeff = baseCoeff + stageModulation + stageOffset;
+                    
+                    allPassFilters[ch][stage].setCoefficient(stageCoeff);
+                    allPassOutput = allPassFilters[ch][stage].processSample(allPassOutput);
+                }
+                
+                // Store feedback (from all-pass output, not final mix)
+                feedbackDelay[ch] = allPassOutput;
+                
+                // The KEY to phasing: mix the all-pass filtered signal with the dry signal
+                // This creates the characteristic notches due to phase cancellation
+                float phasedSignal = drySample + allPassOutput;
+                
+                // Final mix control
+                float output = drySample + currentMix * (phasedSignal - drySample);
+                buffer.setSample(ch, sample, output);
+            }
+        }
+    }
+    
+private:
+    static constexpr int MAX_POLES = 16;
+    
+    // Parameters
+    bool isEnabled = false;
+    float rateHz = 1.0f;
+    float depth1Amount = 0.5f;
+    float depth2Amount = 0.3f;
+    float feedbackAmount = 0.25f;
+    float wetMix = 0.5f;
+    float phaseOffset = 0.0f;
+    float centerFreq = 500.0f;
+    int numPoles = 4;
+    
+    // Parameter smoothing
+    OnePoleSmoothing rateSmoothing, depth1Smoothing, depth2Smoothing, feedbackSmoothing;
+    OnePoleSmoothing mixSmoothing, phaseSmoothing, frequencySmoothing;
+    
+    // Processing state
+    double sampleRate = 44100.0;
+    AllPassFilter allPassFilters[2][MAX_POLES]; // Stereo array of all-pass filters
+    float feedbackDelay[2] = {0.0f, 0.0f}; // Feedback delay for each channel
+    float lfoPhase[2] = {0.0f, 0.0f}; // LFO phases for L/R channels
+};
+
 class SummonerXSerum2AudioProcessor : public juce::AudioProcessor
 {
 public:
@@ -2257,6 +2686,98 @@ public:
     }
     float getChorusMix() const { return chorusMix; }
 
+    // Flanger effect controls
+    void setFlangerEnabled(bool enabled) {
+        flangerEnabled = enabled;
+        flanger.setEnabled(enabled);
+    }
+    bool getFlangerEnabled() const { return flangerEnabled; }
+    
+    void setFlangerRate(float rate) {
+        flangerRate = rate;
+        flanger.setRate(rate);
+    }
+    float getFlangerRate() const { return flangerRate; }
+    
+    void setFlangerDepth(float depthMs) {
+        flangerDepth = depthMs;
+        flanger.setDepth(depthMs);
+    }
+    float getFlangerDepth() const { return flangerDepth; }
+    
+    void setFlangerFeedback(float feedbackPercent) {
+        flangerFeedback = feedbackPercent;
+        flanger.setFeedback(feedbackPercent);
+    }
+    float getFlangerFeedback() const { return flangerFeedback; }
+    
+    void setFlangerMix(float mixPercent) {
+        flangerMix = mixPercent;
+        flanger.setMix(mixPercent);
+    }
+    float getFlangerMix() const { return flangerMix; }
+    
+    void setFlangerPhase(float phaseDegrees) {
+        flangerPhase = phaseDegrees;
+        flanger.setPhase(phaseDegrees);
+    }
+    float getFlangerPhase() const { return flangerPhase; }
+
+    // Phaser effect controls
+    void setPhaserEnabled(bool enabled) {
+        phaserEnabled = enabled;
+        phaser.setEnabled(enabled);
+    }
+    bool getPhaserEnabled() const { return phaserEnabled; }
+    
+    void setPhaserRate(float rate) {
+        phaserRate = rate;
+        phaser.setRate(rate);
+    }
+    float getPhaserRate() const { return phaserRate; }
+    
+    void setPhaserDepth1(float depth) {
+        phaserDepth1 = depth;
+        phaser.setDepth1(depth);
+    }
+    float getPhaserDepth1() const { return phaserDepth1; }
+    
+    void setPhaserDepth2(float depth) {
+        phaserDepth2 = depth;
+        phaser.setDepth2(depth);
+    }
+    float getPhaserDepth2() const { return phaserDepth2; }
+    
+    void setPhaserFeedback(float feedback) {
+        phaserFeedback = feedback;
+        phaser.setFeedback(feedback);
+    }
+    float getPhaserFeedback() const { return phaserFeedback; }
+    
+    void setPhaserMix(float mix) {
+        phaserMix = mix;
+        phaser.setMix(mix);
+    }
+    float getPhaserMix() const { return phaserMix; }
+    
+    void setPhaserPhase(float phase) {
+        phaserPhase = phase;
+        phaser.setPhase(phase);
+    }
+    float getPhaserPhase() const { return phaserPhase; }
+    
+    void setPhaserFrequency(float freq) {
+        phaserFrequency = freq;
+        phaser.setFrequency(freq);
+    }
+    float getPhaserFrequency() const { return phaserFrequency; }
+    
+    void setPhaserPoles(int poles) {
+        phaserPoles = poles;
+        phaser.setPoles(poles);
+    }
+    int getPhaserPoles() const { return phaserPoles; }
+
     // Compressor effect controls
     void setCompressorEnabled(bool enabled) {
         compressorEnabled = enabled;
@@ -2539,6 +3060,27 @@ private:
     float chorusLPF = 20000.0f; // 200.0 to 20000.0 Hz
     float chorusMix = 0.5f; // 0.0 to 1.0
     ChorusEffect chorus; // Chorus effect instance
+    
+    // Flanger effect parameters
+    bool flangerEnabled = false;
+    float flangerRate = 1.0f; // 0.1 to 10.0 Hz
+    float flangerDepth = 2.0f; // 0.1 to 10.0 ms
+    float flangerFeedback = 25.0f; // 0.0 to 100.0 %
+    float flangerMix = 50.0f; // 0.0 to 100.0 %
+    float flangerPhase = 0.0f; // 0.0 to 360.0 degrees
+    FlangerEffect flanger; // Flanger effect instance
+    
+    // Phaser effect parameters
+    bool phaserEnabled = false;
+    float phaserRate = 1.0f; // 0.1 to 10.0 Hz
+    float phaserDepth1 = 50.0f; // 0.0 to 100.0 %
+    float phaserDepth2 = 30.0f; // 0.0 to 100.0 %
+    float phaserFeedback = 25.0f; // 0.0 to 100.0 %
+    float phaserMix = 50.0f; // 0.0 to 100.0 %
+    float phaserPhase = 0.0f; // 0.0 to 360.0 degrees
+    float phaserFrequency = 500.0f; // 20.0 to 2000.0 Hz
+    int phaserPoles = 4; // 1 to 16 poles
+    PhaserEffect phaser; // Phaser effect instance
     
     // Compressor effect parameters
     bool compressorEnabled = false;
