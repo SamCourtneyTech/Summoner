@@ -1057,6 +1057,11 @@ private:
     juce::Label compressorMixLabel;
     juce::TextButton compressorPowerButton;
     
+    // Compressor value displays
+    juce::Label compressorRatioValueLabel;
+    juce::Label compressorAttackValueLabel;
+    juce::Label compressorReleaseValueLabel;
+    
     // Delay effect controls
     juce::Slider delayFeedbackKnob;
     juce::Label delayFeedbackLabel;

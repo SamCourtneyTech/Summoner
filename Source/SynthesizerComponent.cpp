@@ -1946,6 +1946,25 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     compressorPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
     compressorTab->addAndMakeVisible(compressorPowerButton);
     
+    // Compressor value displays
+    compressorRatioValueLabel.setText("4.0:1", juce::dontSendNotification);
+    compressorRatioValueLabel.setFont(juce::Font("Times New Roman", 7.0f, juce::Font::bold));
+    compressorRatioValueLabel.setJustificationType(juce::Justification::centred);
+    compressorRatioValueLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    compressorTab->addAndMakeVisible(compressorRatioValueLabel);
+    
+    compressorAttackValueLabel.setText("5.0ms", juce::dontSendNotification);
+    compressorAttackValueLabel.setFont(juce::Font("Times New Roman", 7.0f, juce::Font::bold));
+    compressorAttackValueLabel.setJustificationType(juce::Justification::centred);
+    compressorAttackValueLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    compressorTab->addAndMakeVisible(compressorAttackValueLabel);
+    
+    compressorReleaseValueLabel.setText("100ms", juce::dontSendNotification);
+    compressorReleaseValueLabel.setFont(juce::Font("Times New Roman", 7.0f, juce::Font::bold));
+    compressorReleaseValueLabel.setJustificationType(juce::Justification::centred);
+    compressorReleaseValueLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    compressorTab->addAndMakeVisible(compressorReleaseValueLabel);
+    
     // Add listeners for compressor controls
     compressorThresholdKnob.addListener(this);
     compressorRatioKnob.addListener(this);
@@ -3398,15 +3417,21 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     }
     else if (slider == &compressorRatioKnob)
     {
-        audioProcessor.setCompressorRatio(static_cast<float>(compressorRatioKnob.getValue()));
+        float ratio = static_cast<float>(compressorRatioKnob.getValue());
+        audioProcessor.setCompressorRatio(ratio);
+        compressorRatioValueLabel.setText(juce::String(ratio, 1) + ":1", juce::dontSendNotification);
     }
     else if (slider == &compressorAttackKnob)
     {
-        audioProcessor.setCompressorAttack(static_cast<float>(compressorAttackKnob.getValue()));
+        float attack = static_cast<float>(compressorAttackKnob.getValue());
+        audioProcessor.setCompressorAttack(attack);
+        compressorAttackValueLabel.setText(juce::String(attack, 1) + "ms", juce::dontSendNotification);
     }
     else if (slider == &compressorReleaseKnob)
     {
-        audioProcessor.setCompressorRelease(static_cast<float>(compressorReleaseKnob.getValue()));
+        float release = static_cast<float>(compressorReleaseKnob.getValue());
+        audioProcessor.setCompressorRelease(release);
+        compressorReleaseValueLabel.setText(juce::String(release, 0) + "ms", juce::dontSendNotification);
     }
     else if (slider == &compressorGainKnob)
     {
@@ -4741,11 +4766,13 @@ void SynthesizerComponent::layoutCompressorControls(juce::Rectangle<int>& bounds
     auto ratio_x = row2StartX + knobSize + knobSpacing;
     compressorRatioKnob.setBounds(ratio_x, row1Y, knobSize, knobSize);
     compressorRatioLabel.setBounds(ratio_x, row1Y + knobSize + 3, knobSize, labelHeight);
+    compressorRatioValueLabel.setBounds(ratio_x, row1Y + knobSize + labelHeight + 6, knobSize, 12);
     
     // Attack knob and label
     auto attack_x = row2StartX + 2 * (knobSize + knobSpacing);
     compressorAttackKnob.setBounds(attack_x, row1Y, knobSize, knobSize);
     compressorAttackLabel.setBounds(attack_x, row1Y + knobSize + 3, knobSize, labelHeight);
+    compressorAttackValueLabel.setBounds(attack_x, row1Y + knobSize + labelHeight + 6, knobSize, 12);
     
     // Second knob row: Release, Gain, and Multiband button (moved right 7 pixels and down 60 pixels)
     auto row2Y = row1Y + knobSize + labelHeight + rowSpacing;
@@ -4754,6 +4781,7 @@ void SynthesizerComponent::layoutCompressorControls(juce::Rectangle<int>& bounds
     // Release knob and label
     compressorReleaseKnob.setBounds(row3StartX, row2Y, knobSize, knobSize);
     compressorReleaseLabel.setBounds(row3StartX, row2Y + knobSize + 3, knobSize, labelHeight);
+    compressorReleaseValueLabel.setBounds(row3StartX, row2Y + knobSize + labelHeight + 6, knobSize, 12);
     
     // Gain knob and label (using updated ratio_x from row 2)
     auto gainX = row3StartX + knobSize + knobSpacing;
