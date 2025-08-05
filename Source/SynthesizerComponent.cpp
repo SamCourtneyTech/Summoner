@@ -469,6 +469,11 @@ void ParametricEQComponent::updateKnobsFromBand(int bandIndex)
         parentSynthesizer->eq1FreqKnob.setValue(bands[0].frequency, juce::dontSendNotification);
         parentSynthesizer->eq1QKnob.setValue(bands[0].q, juce::dontSendNotification);
         parentSynthesizer->eq1GainKnob.setValue(bands[0].gain, juce::dontSendNotification);
+        
+        // Update audio processor DSP
+        parentSynthesizer->audioProcessor.setEQ1Frequency(bands[0].frequency);
+        parentSynthesizer->audioProcessor.setEQ1Q(bands[0].q);
+        parentSynthesizer->audioProcessor.setEQ1Gain(bands[0].gain);
     }
     else if (bandIndex == 1)
     {
@@ -476,6 +481,11 @@ void ParametricEQComponent::updateKnobsFromBand(int bandIndex)
         parentSynthesizer->eq2FreqKnob.setValue(bands[1].frequency, juce::dontSendNotification);
         parentSynthesizer->eq2QKnob.setValue(bands[1].q, juce::dontSendNotification);
         parentSynthesizer->eq2GainKnob.setValue(bands[1].gain, juce::dontSendNotification);
+        
+        // Update audio processor DSP
+        parentSynthesizer->audioProcessor.setEQ2Frequency(bands[1].frequency);
+        parentSynthesizer->audioProcessor.setEQ2Q(bands[1].q);
+        parentSynthesizer->audioProcessor.setEQ2Gain(bands[1].gain);
     }
 }
 
@@ -486,6 +496,37 @@ void ParametricEQComponent::setBandFilterType(int bandIndex, FilterType type)
         bands[bandIndex].filterType = type;
         Component::repaint();
     }
+}
+
+void ParametricEQComponent::syncWithDSPState()
+{
+    if (!parentSynthesizer) return;
+    
+    // Sync Band 1 (left) parameters
+    bands[0].frequency = parentSynthesizer->audioProcessor.getEQ1Frequency();
+    bands[0].q = parentSynthesizer->audioProcessor.getEQ1Q();
+    bands[0].gain = parentSynthesizer->audioProcessor.getEQ1Gain();
+    
+    // Map DSP filter type to visual filter type
+    int eq1Type = parentSynthesizer->audioProcessor.getEQ1Type();
+    if (eq1Type == 0) bands[0].filterType = Peak;
+    else if (eq1Type == 1) bands[0].filterType = Shelf;
+    else if (eq1Type == 2) bands[0].filterType = Pass;
+    
+    // Sync Band 2 (right) parameters  
+    bands[1].frequency = parentSynthesizer->audioProcessor.getEQ2Frequency();
+    bands[1].q = parentSynthesizer->audioProcessor.getEQ2Q();
+    bands[1].gain = parentSynthesizer->audioProcessor.getEQ2Gain();
+    
+    // Map DSP filter type to visual filter type
+    int eq2Type = parentSynthesizer->audioProcessor.getEQ2Type();
+    if (eq2Type == 0) bands[1].filterType = Peak;
+    else if (eq2Type == 1) bands[1].filterType = Shelf;
+    else if (eq2Type == 2) bands[1].filterType = Pass;
+    
+    // Update visual positions based on frequency/gain
+    resized(); // This will update graphPosition for each band
+    repaint();
 }
 
 SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& processor)
@@ -1281,6 +1322,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     // Initialize parametric EQ component
     parametricEQ.setParentSynthesizer(this);
+    parametricEQ.syncWithDSPState(); // Sync with initial DSP state
     parametricEQ.setVisible(true);
     equalizerTab->addAndMakeVisible(parametricEQ);
     
@@ -3642,6 +3684,47 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     {
         audioProcessor.setReverbWidth(static_cast<float>(reverbWidthKnob.getValue()));
     }
+    // EQ CONTROLS
+    else if (slider == &eq1FreqKnob)
+    {
+        audioProcessor.setEQ1Frequency(static_cast<float>(eq1FreqKnob.getValue()));
+        parametricEQ.getBand(0).frequency = static_cast<float>(eq1FreqKnob.getValue());
+        parametricEQ.resized(); // Update visual positions
+        parametricEQ.repaint();
+    }
+    else if (slider == &eq1QKnob)
+    {
+        audioProcessor.setEQ1Q(static_cast<float>(eq1QKnob.getValue()));
+        parametricEQ.getBand(0).q = static_cast<float>(eq1QKnob.getValue());
+        parametricEQ.repaint();
+    }
+    else if (slider == &eq1GainKnob)
+    {
+        audioProcessor.setEQ1Gain(static_cast<float>(eq1GainKnob.getValue()));
+        parametricEQ.getBand(0).gain = static_cast<float>(eq1GainKnob.getValue());
+        parametricEQ.resized(); // Update visual positions
+        parametricEQ.repaint();
+    }
+    else if (slider == &eq2FreqKnob)
+    {
+        audioProcessor.setEQ2Frequency(static_cast<float>(eq2FreqKnob.getValue()));
+        parametricEQ.getBand(1).frequency = static_cast<float>(eq2FreqKnob.getValue());
+        parametricEQ.resized(); // Update visual positions
+        parametricEQ.repaint();
+    }
+    else if (slider == &eq2QKnob)
+    {
+        audioProcessor.setEQ2Q(static_cast<float>(eq2QKnob.getValue()));
+        parametricEQ.getBand(1).q = static_cast<float>(eq2QKnob.getValue());
+        parametricEQ.repaint();
+    }
+    else if (slider == &eq2GainKnob)
+    {
+        audioProcessor.setEQ2Gain(static_cast<float>(eq2GainKnob.getValue()));
+        parametricEQ.getBand(1).gain = static_cast<float>(eq2GainKnob.getValue());
+        parametricEQ.resized(); // Update visual positions
+        parametricEQ.repaint();
+    }
 }
 
 void SynthesizerComponent::buttonClicked(juce::Button* button)
@@ -4132,13 +4215,15 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
         if (eqOnOffButton.getToggleState())
         {
             eqOnOffButton.setButtonText("EQ ON");
-            // Enable EQ processing here if needed
+            audioProcessor.setEQEnabled(true);
             parametricEQ.setVisible(true);
+            parametricEQ.syncWithDSPState(); // Sync when enabled
         }
         else
         {
             eqOnOffButton.setButtonText("EQ OFF");
-            // Disable EQ processing here if needed
+            audioProcessor.setEQEnabled(false);
+            parametricEQ.setVisible(true); // Keep visible but show it's disabled
         }
         parametricEQ.repaint();
     }
@@ -4149,8 +4234,9 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
         {
             eq1ShelfButton.setToggleState(false, juce::dontSendNotification);
             eq1PassButton.setToggleState(false, juce::dontSendNotification);
-            parametricEQ.setBandFilterType(0, ParametricEQComponent::FilterType::Peak); 
-            parametricEQ.repaint();
+            parametricEQ.setBandFilterType(0, ParametricEQComponent::FilterType::Peak);
+            audioProcessor.setEQ1Type(0); // 0 = Peak
+            parametricEQ.syncWithDSPState();
         }
         else
         {
@@ -4164,7 +4250,8 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             eq1PeakButton.setToggleState(false, juce::dontSendNotification);
             eq1PassButton.setToggleState(false, juce::dontSendNotification);
             parametricEQ.setBandFilterType(0, ParametricEQComponent::FilterType::Shelf);
-            parametricEQ.repaint();
+            audioProcessor.setEQ1Type(1); // 1 = Low Shelf
+            parametricEQ.syncWithDSPState();
         }
         else
         {
@@ -4178,7 +4265,8 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             eq1PeakButton.setToggleState(false, juce::dontSendNotification);
             eq1ShelfButton.setToggleState(false, juce::dontSendNotification);
             parametricEQ.setBandFilterType(0, ParametricEQComponent::FilterType::Pass);
-            parametricEQ.repaint();
+            audioProcessor.setEQ1Type(2); // 2 = High Pass
+            parametricEQ.syncWithDSPState();
         }
         else
         {
@@ -4193,7 +4281,8 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             eq2ShelfButton.setToggleState(false, juce::dontSendNotification);
             eq2PassButton.setToggleState(false, juce::dontSendNotification);
             parametricEQ.setBandFilterType(1, ParametricEQComponent::FilterType::Peak);
-            parametricEQ.repaint();
+            audioProcessor.setEQ2Type(0); // 0 = Peak
+            parametricEQ.syncWithDSPState();
         }
         else
         {
@@ -4207,7 +4296,8 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             eq2PeakButton.setToggleState(false, juce::dontSendNotification);
             eq2PassButton.setToggleState(false, juce::dontSendNotification);
             parametricEQ.setBandFilterType(1, ParametricEQComponent::FilterType::Shelf);
-            parametricEQ.repaint();
+            audioProcessor.setEQ2Type(1); // 1 = High Shelf
+            parametricEQ.syncWithDSPState();
         }
         else
         {
@@ -4221,7 +4311,8 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             eq2PeakButton.setToggleState(false, juce::dontSendNotification);
             eq2ShelfButton.setToggleState(false, juce::dontSendNotification);
             parametricEQ.setBandFilterType(1, ParametricEQComponent::FilterType::Pass);
-            parametricEQ.repaint();
+            audioProcessor.setEQ2Type(2); // 2 = Low Pass
+            parametricEQ.syncWithDSPState();
         }
         else
         {

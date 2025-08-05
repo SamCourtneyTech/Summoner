@@ -57,6 +57,7 @@ public:
     void updateKnobsFromBand(int bandIndex);
     void setBandFilterType(int bandIndex, FilterType type);
     void setParentSynthesizer(SynthesizerComponent* parent) { parentSynthesizer = parent; }
+    void syncWithDSPState(); // Sync visual component with DSP state
     
     EQBand& getBand(int index) { return bands[index]; }
     const EQBand& getBand(int index) const { return bands[index]; }

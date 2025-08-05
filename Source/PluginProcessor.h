@@ -2659,6 +2659,355 @@ private:
     float lastSize = -1.0f, lastDamping = -1.0f, lastWidth = -1.0f;
 };
 
+//==============================================================================
+// Biquad IIR Filter for Parametric EQ
+class BiquadFilter
+{
+public:
+    enum FilterType
+    {
+        PEAK,
+        LOW_SHELF,
+        HIGH_SHELF,
+        LOW_PASS,
+        HIGH_PASS,
+        BAND_PASS
+    };
+    
+    BiquadFilter() = default;
+    
+    void setSampleRate(double sampleRate)
+    {
+        this->sampleRate = sampleRate;
+        reset();
+        updateCoefficients();
+    }
+    
+    void setFilterType(FilterType type)
+    {
+        filterType = type;
+        updateCoefficients();
+    }
+    
+    void setFrequency(float freq)
+    {
+        frequency = juce::jlimit(20.0f, 20000.0f, freq);
+        frequencySmoothing.setTarget(frequency);
+        if (sampleRate > 0.0)
+            updateCoefficients();
+    }
+    
+    void setQ(float qValue)
+    {
+        q = juce::jlimit(0.1f, 30.0f, qValue);
+        qSmoothing.setTarget(q);
+        if (sampleRate > 0.0)
+            updateCoefficients();
+    }
+    
+    void setGain(float gainDb)
+    {
+        gain = juce::jlimit(-15.0f, 15.0f, gainDb);
+        gainSmoothing.setTarget(gain);
+        if (sampleRate > 0.0)
+            updateCoefficients();
+    }
+    
+    void reset()
+    {
+        x1 = x2 = y1 = y2 = 0.0f;
+        frequencySmoothing.reset(frequency);
+        qSmoothing.reset(q);
+        gainSmoothing.reset(gain);
+    }
+    
+    void prepare(double sampleRate)
+    {
+        this->sampleRate = sampleRate;
+        
+        // Setup parameter smoothing
+        frequencySmoothing.setSampleRate(sampleRate);
+        frequencySmoothing.setTimeConstantMs(20.0f);
+        
+        qSmoothing.setSampleRate(sampleRate);
+        qSmoothing.setTimeConstantMs(30.0f);
+        
+        gainSmoothing.setSampleRate(sampleRate);
+        gainSmoothing.setTimeConstantMs(25.0f);
+        
+        reset();
+        updateCoefficients();
+    }
+    
+    float processSample(float input)
+    {
+        // Check if parameters need updating
+        float currentFreq = frequencySmoothing.getNextValue();
+        float currentQ = qSmoothing.getNextValue();
+        float currentGain = gainSmoothing.getNextValue();
+        
+        if (std::abs(currentFreq - lastFreq) > 0.1f ||
+            std::abs(currentQ - lastQ) > 0.001f ||
+            std::abs(currentGain - lastGain) > 0.001f)
+        {
+            lastFreq = currentFreq;
+            lastQ = currentQ;
+            lastGain = currentGain;
+            calculateCoefficients(currentFreq, currentQ, currentGain);
+        }
+        
+        // Biquad processing: y[n] = b0*x[n] + b1*x[n-1] + b2*x[n-2] - a1*y[n-1] - a2*y[n-2]
+        float output = b0 * input + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
+        
+        // Update delay elements
+        x2 = x1;
+        x1 = input;
+        y2 = y1;
+        y1 = output;
+        
+        return output;
+    }
+    
+private:
+    void updateCoefficients()
+    {
+        if (sampleRate <= 0.0) return;
+        calculateCoefficients(frequency, q, gain);
+    }
+    
+    void calculateCoefficients(float freq, float qVal, float gainDb)
+    {
+        const double omega = 2.0 * juce::MathConstants<double>::pi * freq / sampleRate;
+        const double sinOmega = std::sin(omega);
+        const double cosOmega = std::cos(omega);
+        const double alpha = sinOmega / (2.0 * qVal);
+        const double A = std::pow(10.0, gainDb / 40.0); // Convert dB to linear gain
+        const double beta = std::sqrt(A) / qVal;
+        
+        double a0, a1Temp, a2Temp, b0Temp, b1Temp, b2Temp;
+        
+        switch (filterType)
+        {
+            case PEAK:
+                a0 = 1.0 + alpha / A;
+                a1Temp = -2.0 * cosOmega;
+                a2Temp = 1.0 - alpha / A;
+                b0Temp = 1.0 + alpha * A;
+                b1Temp = -2.0 * cosOmega;
+                b2Temp = 1.0 - alpha * A;
+                break;
+                
+            case LOW_SHELF:
+                {
+                    double S = 1.0;
+                    double beta = std::sqrt(A) / qVal;
+                    
+                    a0 = (A + 1.0) + (A - 1.0) * cosOmega + beta * sinOmega;
+                    a1Temp = -2.0 * ((A - 1.0) + (A + 1.0) * cosOmega);
+                    a2Temp = (A + 1.0) + (A - 1.0) * cosOmega - beta * sinOmega;
+                    b0Temp = A * ((A + 1.0) - (A - 1.0) * cosOmega + beta * sinOmega);
+                    b1Temp = 2.0 * A * ((A - 1.0) - (A + 1.0) * cosOmega);
+                    b2Temp = A * ((A + 1.0) - (A - 1.0) * cosOmega - beta * sinOmega);
+                }
+                break;
+                
+            case HIGH_SHELF:
+                {
+                    double S = 1.0;
+                    double beta = std::sqrt(A) / qVal;
+                    
+                    a0 = (A + 1.0) - (A - 1.0) * cosOmega + beta * sinOmega;
+                    a1Temp = 2.0 * ((A - 1.0) - (A + 1.0) * cosOmega);
+                    a2Temp = (A + 1.0) - (A - 1.0) * cosOmega - beta * sinOmega;
+                    b0Temp = A * ((A + 1.0) + (A - 1.0) * cosOmega + beta * sinOmega);
+                    b1Temp = -2.0 * A * ((A - 1.0) + (A + 1.0) * cosOmega);
+                    b2Temp = A * ((A + 1.0) + (A - 1.0) * cosOmega - beta * sinOmega);
+                }
+                break;
+                
+            case LOW_PASS:
+                a0 = 1.0 + alpha;
+                a1Temp = -2.0 * cosOmega;
+                a2Temp = 1.0 - alpha;
+                b0Temp = (1.0 - cosOmega) / 2.0;
+                b1Temp = 1.0 - cosOmega;
+                b2Temp = (1.0 - cosOmega) / 2.0;
+                break;
+                
+            case HIGH_PASS:
+                a0 = 1.0 + alpha;
+                a1Temp = -2.0 * cosOmega;
+                a2Temp = 1.0 - alpha;
+                b0Temp = (1.0 + cosOmega) / 2.0;
+                b1Temp = -(1.0 + cosOmega);
+                b2Temp = (1.0 + cosOmega) / 2.0;
+                break;
+                
+            case BAND_PASS:
+                a0 = 1.0 + alpha;
+                a1Temp = -2.0 * cosOmega;
+                a2Temp = 1.0 - alpha;
+                b0Temp = alpha;
+                b1Temp = 0.0;
+                b2Temp = -alpha;
+                break;
+                
+            default:
+                // Unity filter (no change)
+                a0 = 1.0;
+                a1Temp = 0.0;
+                a2Temp = 0.0;
+                b0Temp = 1.0;
+                b1Temp = 0.0;
+                b2Temp = 0.0;
+                break;
+        }
+        
+        // Normalize coefficients
+        b0 = static_cast<float>(b0Temp / a0);
+        b1 = static_cast<float>(b1Temp / a0);
+        b2 = static_cast<float>(b2Temp / a0);
+        a1 = static_cast<float>(a1Temp / a0);
+        a2 = static_cast<float>(a2Temp / a0);
+    }
+    
+    // Filter coefficients
+    float b0 = 1.0f, b1 = 0.0f, b2 = 0.0f;
+    float a1 = 0.0f, a2 = 0.0f;
+    
+    // Delay elements
+    float x1 = 0.0f, x2 = 0.0f;
+    float y1 = 0.0f, y2 = 0.0f;
+    
+    // Parameters
+    FilterType filterType = PEAK;
+    float frequency = 1000.0f;
+    float q = 1.0f;
+    float gain = 0.0f;
+    
+    // Parameter smoothing
+    OnePoleSmoothing frequencySmoothing, qSmoothing, gainSmoothing;
+    float lastFreq = -1.0f, lastQ = -1.0f, lastGain = -1000.0f;
+    
+    double sampleRate = 44100.0;
+};
+
+//==============================================================================
+// 2-Band Parametric EQ Effect
+class ParametricEQEffect
+{
+public:
+    ParametricEQEffect() = default;
+    
+    void setSampleRate(double sampleRate)
+    {
+        this->sampleRate = sampleRate;
+        
+        // Initialize filters for both channels
+        for (int ch = 0; ch < 2; ++ch)
+        {
+            band1Filters[ch].setSampleRate(sampleRate);
+            band2Filters[ch].setSampleRate(sampleRate);
+            band1Filters[ch].prepare(sampleRate);
+            band2Filters[ch].prepare(sampleRate);
+        }
+    }
+    
+    void setEnabled(bool enabled) { isEnabled = enabled; }
+    
+    // Band 1 controls
+    void setBand1Type(BiquadFilter::FilterType type)
+    {
+        for (int ch = 0; ch < 2; ++ch)
+            band1Filters[ch].setFilterType(type);
+    }
+    
+    void setBand1Frequency(float freq)
+    {
+        for (int ch = 0; ch < 2; ++ch)
+            band1Filters[ch].setFrequency(freq);
+    }
+    
+    void setBand1Q(float q)
+    {
+        for (int ch = 0; ch < 2; ++ch)
+            band1Filters[ch].setQ(q);
+    }
+    
+    void setBand1Gain(float gain)
+    {
+        for (int ch = 0; ch < 2; ++ch)
+            band1Filters[ch].setGain(gain);
+    }
+    
+    // Band 2 controls
+    void setBand2Type(BiquadFilter::FilterType type)
+    {
+        for (int ch = 0; ch < 2; ++ch)
+            band2Filters[ch].setFilterType(type);
+    }
+    
+    void setBand2Frequency(float freq)
+    {
+        for (int ch = 0; ch < 2; ++ch)
+            band2Filters[ch].setFrequency(freq);
+    }
+    
+    void setBand2Q(float q)
+    {
+        for (int ch = 0; ch < 2; ++ch)
+            band2Filters[ch].setQ(q);
+    }
+    
+    void setBand2Gain(float gain)
+    {
+        for (int ch = 0; ch < 2; ++ch)
+            band2Filters[ch].setGain(gain);
+    }
+    
+    void reset()
+    {
+        for (int ch = 0; ch < 2; ++ch)
+        {
+            band1Filters[ch].reset();
+            band2Filters[ch].reset();
+        }
+    }
+    
+    void processBlock(juce::AudioBuffer<float>& buffer)
+    {
+        if (!isEnabled)
+            return;
+            
+        const int numSamples = buffer.getNumSamples();
+        const int numChannels = juce::jmin(buffer.getNumChannels(), 2);
+        
+        for (int ch = 0; ch < numChannels; ++ch)
+        {
+            float* channelData = buffer.getWritePointer(ch);
+            
+            for (int sample = 0; sample < numSamples; ++sample)
+            {
+                float input = channelData[sample];
+                
+                // Process through band 1, then band 2 (series connection)
+                float output = band1Filters[ch].processSample(input);
+                output = band2Filters[ch].processSample(output);
+                
+                channelData[sample] = output;
+            }
+        }
+    }
+    
+private:
+    bool isEnabled = false;
+    double sampleRate = 44100.0;
+    
+    // Stereo filters for each band
+    BiquadFilter band1Filters[2];
+    BiquadFilter band2Filters[2];
+};
+
 class SummonerXSerum2AudioProcessor : public juce::AudioProcessor
 {
 public:
@@ -3353,6 +3702,71 @@ public:
         reverb.setWidth(reverbWidth / 100.0f);
     }
     float getReverbWidth() const { return reverbWidth; }
+    
+    // EQ effect controls
+    void setEQEnabled(bool enabled) {
+        eqEnabled = enabled;
+        eq.setEnabled(enabled);
+    }
+    bool getEQEnabled() const { return eqEnabled; }
+    
+    // Band 1 controls
+    void setEQ1Frequency(float freq) {
+        eq1Frequency = juce::jlimit(20.0f, 20000.0f, freq);
+        eq.setBand1Frequency(eq1Frequency);
+    }
+    float getEQ1Frequency() const { return eq1Frequency; }
+    
+    void setEQ1Q(float q) {
+        eq1Q = juce::jlimit(0.1f, 30.0f, q);
+        eq.setBand1Q(eq1Q);
+    }
+    float getEQ1Q() const { return eq1Q; }
+    
+    void setEQ1Gain(float gain) {
+        eq1Gain = juce::jlimit(-15.0f, 15.0f, gain);
+        eq.setBand1Gain(eq1Gain);
+    }
+    float getEQ1Gain() const { return eq1Gain; }
+    
+    void setEQ1Type(int type) {
+        eq1Type = juce::jlimit(0, 2, type);
+        BiquadFilter::FilterType filterType = BiquadFilter::PEAK;
+        if (eq1Type == 0) filterType = BiquadFilter::PEAK;
+        else if (eq1Type == 1) filterType = BiquadFilter::LOW_SHELF;
+        else if (eq1Type == 2) filterType = BiquadFilter::HIGH_PASS;
+        eq.setBand1Type(filterType);
+    }
+    int getEQ1Type() const { return eq1Type; }
+    
+    // Band 2 controls
+    void setEQ2Frequency(float freq) {
+        eq2Frequency = juce::jlimit(20.0f, 20000.0f, freq);
+        eq.setBand2Frequency(eq2Frequency);
+    }
+    float getEQ2Frequency() const { return eq2Frequency; }
+    
+    void setEQ2Q(float q) {
+        eq2Q = juce::jlimit(0.1f, 30.0f, q);
+        eq.setBand2Q(eq2Q);
+    }
+    float getEQ2Q() const { return eq2Q; }
+    
+    void setEQ2Gain(float gain) {
+        eq2Gain = juce::jlimit(-15.0f, 15.0f, gain);
+        eq.setBand2Gain(eq2Gain);
+    }
+    float getEQ2Gain() const { return eq2Gain; }
+    
+    void setEQ2Type(int type) {
+        eq2Type = juce::jlimit(0, 2, type);
+        BiquadFilter::FilterType filterType = BiquadFilter::PEAK;
+        if (eq2Type == 0) filterType = BiquadFilter::PEAK;
+        else if (eq2Type == 1) filterType = BiquadFilter::HIGH_SHELF;
+        else if (eq2Type == 2) filterType = BiquadFilter::LOW_PASS;
+        eq.setBand2Type(filterType);
+    }
+    int getEQ2Type() const { return eq2Type; }
 
 private:
     std::map<std::string, int> parameterMap;
@@ -3527,6 +3941,23 @@ private:
     float reverbDamping = 0.5f; // 0.0 to 1.0
     float reverbWidth = 1.0f; // 0.0 to 1.0
     ReverbEffect reverb; // Reverb effect instance
+    
+    // EQ effect parameters and instance
+    bool eqEnabled = false;
+    
+    // Band 1 parameters
+    float eq1Frequency = 400.0f; // 20.0 to 20000.0 Hz
+    float eq1Q = 1.0f; // 0.1 to 30.0
+    float eq1Gain = 0.0f; // -15.0 to +15.0 dB
+    int eq1Type = 0; // 0=Peak, 1=Shelf, 2=Pass
+    
+    // Band 2 parameters  
+    float eq2Frequency = 4000.0f; // 20.0 to 20000.0 Hz
+    float eq2Q = 1.0f; // 0.1 to 30.0
+    float eq2Gain = 0.0f; // -15.0 to +15.0 dB
+    int eq2Type = 0; // 0=Peak, 1=Shelf, 2=Pass
+    
+    ParametricEQEffect eq; // EQ effect instance
     
     // Temporary buffers for separate oscillator processing
     juce::AudioBuffer<float> osc1Buffer;

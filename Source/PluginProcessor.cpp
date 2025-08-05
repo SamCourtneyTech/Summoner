@@ -219,6 +219,27 @@ void SummonerXSerum2AudioProcessor::prepareToPlay(double sampleRate, int samples
     reverb.setDamping(reverbDamping / 100.0f); // Convert from percentage to 0-1
     reverb.setWidth(reverbWidth / 100.0f); // Convert from percentage to 0-1
     
+    // Initialize EQ effect
+    eq.setSampleRate(sampleRate);
+    eq.setEnabled(eqEnabled);
+    eq.setBand1Frequency(eq1Frequency);
+    eq.setBand1Q(eq1Q);
+    eq.setBand1Gain(eq1Gain);
+    BiquadFilter::FilterType eq1FilterType = BiquadFilter::PEAK;
+    if (eq1Type == 0) eq1FilterType = BiquadFilter::PEAK;
+    else if (eq1Type == 1) eq1FilterType = BiquadFilter::LOW_SHELF;
+    else if (eq1Type == 2) eq1FilterType = BiquadFilter::HIGH_PASS;
+    eq.setBand1Type(eq1FilterType);
+    
+    eq.setBand2Frequency(eq2Frequency);
+    eq.setBand2Q(eq2Q);
+    eq.setBand2Gain(eq2Gain);
+    BiquadFilter::FilterType eq2FilterType = BiquadFilter::PEAK;
+    if (eq2Type == 0) eq2FilterType = BiquadFilter::PEAK;
+    else if (eq2Type == 1) eq2FilterType = BiquadFilter::HIGH_SHELF;
+    else if (eq2Type == 2) eq2FilterType = BiquadFilter::LOW_PASS;
+    eq.setBand2Type(eq2FilterType);
+    
     // Initialize filter routing for all voices
     updateFilterRouting();
 }
@@ -294,6 +315,9 @@ void SummonerXSerum2AudioProcessor::processBlock(juce::AudioBuffer<float>& buffe
     
     // Apply reverb effect
     reverb.processBlock(buffer);
+    
+    // Apply EQ effect
+    eq.processBlock(buffer);
     
     // Apply volume control
     buffer.applyGain(synthVolume);
