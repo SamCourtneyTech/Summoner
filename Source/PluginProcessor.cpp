@@ -217,6 +217,7 @@ void SummonerXSerum2AudioProcessor::prepareToPlay(double sampleRate, int samples
     reverb.setSize(reverbSize / 100.0f); // Convert from percentage to 0-1
     reverb.setPreDelay(reverbPreDelay);
     reverb.setDamping(reverbDamping / 100.0f); // Convert from percentage to 0-1
+    reverb.setDecay(reverbDecay / 100.0f); // Convert from percentage to 0-1
     reverb.setWidth(reverbWidth / 100.0f); // Convert from percentage to 0-1
     
     // Initialize filter routing for all voices

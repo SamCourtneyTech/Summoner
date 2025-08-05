@@ -2350,6 +2350,9 @@ public:
         dampSmoothing.setSampleRate(sampleRate);
         dampSmoothing.setTimeConstantMs(30.0f);
         
+        decaySmoothing.setSampleRate(sampleRate);
+        decaySmoothing.setTimeConstantMs(40.0f);
+        
         preDelaySmoothing.setSampleRate(sampleRate);
         preDelaySmoothing.setTimeConstantMs(10.0f);
         
@@ -2398,6 +2401,11 @@ public:
         dampSmoothing.setTarget(damping);
     }
     
+    void setDecay(float decayVal) { 
+        decayTime = juce::jlimit(0.0f, 1.0f, decayVal);
+        decaySmoothing.setTarget(decayTime);
+    }
+    
     void setWidth(float w) { 
         width = juce::jlimit(0.0f, 1.0f, w);
         widthSmoothing.setTarget(width);
@@ -2439,11 +2447,12 @@ public:
             float currentMix = mixSmoothing.getNextValue();
             float currentSize = sizeSmoothing.getNextValue();
             float currentDamp = dampSmoothing.getNextValue();
+            float currentDecay = decaySmoothing.getNextValue();
             float currentWidth = widthSmoothing.getNextValue();
             float currentPreDelay = preDelaySmoothing.getNextValue();
             
             // Update reverb parameters if they changed
-            updateReverbParametersIfNeeded(currentSize, currentDamp, currentWidth);
+            updateReverbParametersIfNeeded(currentSize, currentDamp, currentDecay, currentWidth);
             
             // Store dry signals
             float dryL = leftChannel[sample];
@@ -2483,6 +2492,7 @@ public:
         mixSmoothing.reset(wetMix);
         sizeSmoothing.reset(roomSize);
         dampSmoothing.reset(damping);
+        decaySmoothing.reset(decayTime);
         preDelaySmoothing.reset(preDelayMs);
         widthSmoothing.reset(width);
         
@@ -2499,11 +2509,14 @@ private:
         juce::Reverb::Parameters params;
         
         // Base parameters based on reverb type
+        // Combine damping and decay for more realistic reverb tail control
+        float effectiveDamping = (damping * 0.7f + decayTime * 0.3f);
+        
         switch (reverbType)
         {
             case PLATE:
-                params.roomSize = roomSize * 0.8f + 0.1f;  // Smaller, brighter
-                params.damping = damping * 0.3f + 0.1f;
+                params.roomSize = (roomSize * 0.8f + 0.1f) * (1.0f + decayTime * 0.3f);  // Decay affects size
+                params.damping = effectiveDamping * 0.3f + 0.1f;
                 params.wetLevel = 1.0f;
                 params.dryLevel = 0.0f;
                 params.width = width;
@@ -2511,8 +2524,8 @@ private:
                 break;
                 
             case HALL:
-                params.roomSize = roomSize * 0.9f + 0.1f;  // Large, spacious
-                params.damping = damping * 0.4f + 0.2f;
+                params.roomSize = (roomSize * 0.9f + 0.1f) * (1.0f + decayTime * 0.4f);  // More decay influence
+                params.damping = effectiveDamping * 0.4f + 0.2f;
                 params.wetLevel = 1.0f;
                 params.dryLevel = 0.0f;
                 params.width = width;
@@ -2520,8 +2533,8 @@ private:
                 break;
                 
             case VINTAGE:
-                params.roomSize = roomSize * 0.6f + 0.3f;  // Medium, warm
-                params.damping = damping * 0.7f + 0.3f;
+                params.roomSize = (roomSize * 0.6f + 0.3f) * (1.0f + decayTime * 0.2f);  // Moderate decay influence
+                params.damping = effectiveDamping * 0.7f + 0.3f;
                 params.wetLevel = 1.0f;
                 params.dryLevel = 0.0f;
                 params.width = width * 0.8f;
@@ -2529,8 +2542,8 @@ private:
                 break;
                 
             case ROOM:
-                params.roomSize = roomSize * 0.5f + 0.1f;  // Small, intimate
-                params.damping = damping * 0.8f + 0.2f;
+                params.roomSize = (roomSize * 0.5f + 0.1f) * (1.0f + decayTime * 0.15f);  // Small decay influence
+                params.damping = effectiveDamping * 0.8f + 0.2f;
                 params.wetLevel = 1.0f;
                 params.dryLevel = 0.0f;
                 params.width = width;
@@ -2538,8 +2551,8 @@ private:
                 break;
                 
             case AMBIENCE:
-                params.roomSize = roomSize * 0.3f + 0.05f; // Very small, subtle
-                params.damping = damping * 0.9f + 0.1f;
+                params.roomSize = (roomSize * 0.3f + 0.05f) * (1.0f + decayTime * 0.1f); // Minimal decay influence
+                params.damping = effectiveDamping * 0.9f + 0.1f;
                 params.wetLevel = 1.0f;
                 params.dryLevel = 0.0f;
                 params.width = width * 1.2f;
@@ -2550,17 +2563,20 @@ private:
         reverb.setParameters(params);
         lastSize = roomSize;
         lastDamping = damping;
+        lastDecay = decayTime;
         lastWidth = width;
     }
     
-    inline void updateReverbParametersIfNeeded(float currentSize, float currentDamp, float currentWidth)
+    inline void updateReverbParametersIfNeeded(float currentSize, float currentDamp, float currentDecay, float currentWidth)
     {
         if (std::abs(currentSize - lastSize) > 0.001f ||
             std::abs(currentDamp - lastDamping) > 0.001f ||
+            std::abs(currentDecay - lastDecay) > 0.001f ||
             std::abs(currentWidth - lastWidth) > 0.001f)
         {
             roomSize = currentSize;
             damping = currentDamp;
+            decayTime = currentDecay;
             width = currentWidth;
             updateReverbParameters();
         }
@@ -2627,6 +2643,7 @@ private:
     float wetMix = 0.3f;
     float roomSize = 0.5f;
     float damping = 0.5f;
+    float decayTime = 0.4f;
     float width = 1.0f;
     float preDelayMs = 20.0f;
     float lowCutFreq = 80.0f;
@@ -2634,7 +2651,7 @@ private:
     
     // Parameter smoothing
     OnePoleSmoothing mixSmoothing, sizeSmoothing, dampSmoothing;
-    OnePoleSmoothing preDelaySmoothing, widthSmoothing;
+    OnePoleSmoothing decaySmoothing, preDelaySmoothing, widthSmoothing;
     
     // Processing state
     double sampleRate = 44100.0;
@@ -2651,7 +2668,7 @@ private:
     SimpleStableFilter highCutFilterL, highCutFilterR;
     
     // Cached values for parameter updates
-    float lastSize = -1.0f, lastDamping = -1.0f, lastWidth = -1.0f;
+    float lastSize = -1.0f, lastDamping = -1.0f, lastDecay = -1.0f, lastWidth = -1.0f;
 };
 
 class SummonerXSerum2AudioProcessor : public juce::AudioProcessor
@@ -3342,6 +3359,12 @@ public:
     }
     float getReverbDamping() const { return reverbDamping; }
     
+    void setReverbDecay(float decay) {
+        reverbDecay = juce::jlimit(0.0f, 100.0f, decay);
+        reverb.setDecay(reverbDecay / 100.0f);
+    }
+    float getReverbDecay() const { return reverbDecay; }
+    
     void setReverbWidth(float width) {
         reverbWidth = juce::jlimit(0.0f, 100.0f, width);
         reverb.setWidth(reverbWidth / 100.0f);
@@ -3519,6 +3542,7 @@ private:
     float reverbSize = 0.5f; // 0.0 to 1.0
     float reverbPreDelay = 20.0f; // 0.0 to 200.0 ms
     float reverbDamping = 0.5f; // 0.0 to 1.0
+    float reverbDecay = 0.4f; // 0.0 to 1.0
     float reverbWidth = 1.0f; // 0.0 to 1.0
     ReverbEffect reverb; // Reverb effect instance
     
