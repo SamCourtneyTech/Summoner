@@ -1670,25 +1670,6 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbHighCutLabel.setBounds(159, 240, 50, 15);
     reverbTab->addAndMakeVisible(reverbHighCutLabel);
     
-    // Decay knob (middle of row 3)
-    reverbDecayKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    reverbDecayKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    reverbDecayKnob.setRange(0.0, 100.0, 1.0);
-    reverbDecayKnob.setValue(40.0);
-    reverbDecayKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    reverbDecayKnob.setVisible(true);
-    reverbDecayKnob.setBounds(124, 185, 50, 50);
-    reverbTab->addAndMakeVisible(reverbDecayKnob);
-    reverbDecayKnob.addListener(this);
-    
-    reverbDecayLabel.setText("DECAY", juce::dontSendNotification);
-    reverbDecayLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    reverbDecayLabel.setJustificationType(juce::Justification::centred);
-    reverbDecayLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    reverbDecayLabel.setVisible(true);
-    reverbDecayLabel.setBounds(124, 240, 50, 15);
-    reverbTab->addAndMakeVisible(reverbDecayLabel);
-    
     // Row 4: Size and Pre Delay
     reverbSizeKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     reverbSizeKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -3656,10 +3637,6 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     else if (slider == &reverbDampKnob)
     {
         audioProcessor.setReverbDamping(static_cast<float>(reverbDampKnob.getValue()));
-    }
-    else if (slider == &reverbDecayKnob)
-    {
-        audioProcessor.setReverbDecay(static_cast<float>(reverbDecayKnob.getValue()));
     }
     else if (slider == &reverbWidthKnob)
     {

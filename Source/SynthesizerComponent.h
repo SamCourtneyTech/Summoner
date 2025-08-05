@@ -1188,8 +1188,6 @@ private:
     juce::Slider reverbDampKnob;
     juce::Label reverbDampLabel;
     juce::Slider reverbWidthKnob;
-    juce::Slider reverbDecayKnob;
-    juce::Label reverbDecayLabel;
     juce::Label reverbWidthLabel;
     
     // Octave control state
