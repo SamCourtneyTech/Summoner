@@ -2319,6 +2319,341 @@ private:
     float lfoPhase[2] = {0.0f, 0.0f}; // LFO phases for L/R channels
 };
 
+class ReverbEffect
+{
+public:
+    enum ReverbType
+    {
+        PLATE = 1,      // "PLATE"
+        HALL = 2,       // "HALL"
+        VINTAGE = 3,    // "VINTAGE"
+        ROOM = 4,       // "ROOM"
+        AMBIENCE = 5    // "AMBIENCE"
+    };
+    
+    ReverbEffect()
+    {
+        reset();
+    }
+    
+    void setSampleRate(double newSampleRate)
+    {
+        sampleRate = newSampleRate;
+        
+        // Initialize parameter smoothing
+        mixSmoothing.setSampleRate(sampleRate);
+        mixSmoothing.setTimeConstantMs(20.0f);
+        
+        sizeSmoothing.setSampleRate(sampleRate);
+        sizeSmoothing.setTimeConstantMs(50.0f);
+        
+        dampSmoothing.setSampleRate(sampleRate);
+        dampSmoothing.setTimeConstantMs(30.0f);
+        
+        preDelaySmoothing.setSampleRate(sampleRate);
+        preDelaySmoothing.setTimeConstantMs(10.0f);
+        
+        widthSmoothing.setSampleRate(sampleRate);
+        widthSmoothing.setTimeConstantMs(30.0f);
+        
+        // Initialize JUCE Reverb
+        reverb.setSampleRate(sampleRate);
+        updateReverbParameters();
+        
+        // Initialize pre-delay buffer
+        int maxPreDelaySize = static_cast<int>(sampleRate * 0.2); // 200ms max
+        preDelayBufferL.resize(maxPreDelaySize, 0.0f);
+        preDelayBufferR.resize(maxPreDelaySize, 0.0f);
+        preDelayBufferSize = maxPreDelaySize;
+        
+        // Initialize filters
+        lowCutFilterL.setSampleRate(sampleRate);
+        lowCutFilterR.setSampleRate(sampleRate);
+        highCutFilterL.setSampleRate(sampleRate);
+        highCutFilterR.setSampleRate(sampleRate);
+        updateFilters();
+        
+        reset();
+    }
+    
+    void setEnabled(bool enabled) { isEnabled = enabled; }
+    
+    void setMix(float mixValue) { 
+        wetMix = juce::jlimit(0.0f, 1.0f, mixValue);
+        mixSmoothing.setTarget(wetMix);
+    }
+    
+    void setType(ReverbType type) { 
+        reverbType = type;
+        updateReverbParameters();
+    }
+    
+    void setSize(float size) { 
+        roomSize = juce::jlimit(0.0f, 1.0f, size);
+        sizeSmoothing.setTarget(roomSize);
+    }
+    
+    void setDamping(float damp) { 
+        damping = juce::jlimit(0.0f, 1.0f, damp);
+        dampSmoothing.setTarget(damping);
+    }
+    
+    void setWidth(float w) { 
+        width = juce::jlimit(0.0f, 1.0f, w);
+        widthSmoothing.setTarget(width);
+    }
+    
+    void setPreDelay(float delayMs) { 
+        preDelayMs = juce::jlimit(0.0f, 200.0f, delayMs);
+        preDelaySmoothing.setTarget(preDelayMs);
+        updatePreDelayTime();
+    }
+    
+    void setLowCut(float freq) { 
+        lowCutFreq = juce::jlimit(20.0f, 1000.0f, freq);
+        updateFilters();
+    }
+    
+    void setHighCut(float freq) { 
+        highCutFreq = juce::jlimit(1000.0f, 20000.0f, freq);
+        updateFilters();
+    }
+    
+    void processBlock(juce::AudioBuffer<float>& buffer)
+    {
+        if (!isEnabled)
+            return;
+            
+        int numSamples = buffer.getNumSamples();
+        int numChannels = buffer.getNumChannels();
+        
+        if (numChannels < 2)
+            return;
+            
+        float* leftChannel = buffer.getWritePointer(0);
+        float* rightChannel = buffer.getWritePointer(1);
+        
+        // Update smoothed parameters
+        for (int sample = 0; sample < numSamples; ++sample)
+        {
+            float currentMix = mixSmoothing.getNextValue();
+            float currentSize = sizeSmoothing.getNextValue();
+            float currentDamp = dampSmoothing.getNextValue();
+            float currentWidth = widthSmoothing.getNextValue();
+            float currentPreDelay = preDelaySmoothing.getNextValue();
+            
+            // Update reverb parameters if they changed
+            updateReverbParametersIfNeeded(currentSize, currentDamp, currentWidth);
+            
+            // Store dry signals
+            float dryL = leftChannel[sample];
+            float dryR = rightChannel[sample];
+            
+            // Apply pre-delay
+            float delayedL = applyPreDelay(dryL, 0, currentPreDelay);
+            float delayedR = applyPreDelay(dryR, 1, currentPreDelay);
+            
+            // Apply filters before reverb
+            delayedL = lowCutFilterL.processSample(delayedL, 0);
+            delayedL = highCutFilterL.processSample(delayedL, 0);
+            delayedR = lowCutFilterR.processSample(delayedR, 1);
+            delayedR = highCutFilterR.processSample(delayedR, 1);
+            
+            // Process through reverb
+            float reverbL = delayedL;
+            float reverbR = delayedR;
+            reverb.processStereo(&reverbL, &reverbR, 1);
+            
+            // Mix wet and dry signals
+            leftChannel[sample] = dryL * (1.0f - currentMix) + reverbL * currentMix;
+            rightChannel[sample] = dryR * (1.0f - currentMix) + reverbR * currentMix;
+        }
+    }
+    
+    void reset()
+    {
+        reverb.reset();
+        
+        // Clear pre-delay buffers
+        std::fill(preDelayBufferL.begin(), preDelayBufferL.end(), 0.0f);
+        std::fill(preDelayBufferR.begin(), preDelayBufferR.end(), 0.0f);
+        preDelayIndexL = preDelayIndexR = 0;
+        
+        // Reset parameter smoothing
+        mixSmoothing.reset(wetMix);
+        sizeSmoothing.reset(roomSize);
+        dampSmoothing.reset(damping);
+        preDelaySmoothing.reset(preDelayMs);
+        widthSmoothing.reset(width);
+        
+        // Reset filters
+        lowCutFilterL.reset();
+        lowCutFilterR.reset();
+        highCutFilterL.reset();
+        highCutFilterR.reset();
+    }
+
+private:
+    void updateReverbParameters()
+    {
+        juce::Reverb::Parameters params;
+        
+        // Base parameters based on reverb type
+        switch (reverbType)
+        {
+            case PLATE:
+                params.roomSize = roomSize * 0.8f + 0.1f;  // Smaller, brighter
+                params.damping = damping * 0.3f + 0.1f;
+                params.wetLevel = 1.0f;
+                params.dryLevel = 0.0f;
+                params.width = width;
+                params.freezeMode = 0.0f;
+                break;
+                
+            case HALL:
+                params.roomSize = roomSize * 0.9f + 0.1f;  // Large, spacious
+                params.damping = damping * 0.4f + 0.2f;
+                params.wetLevel = 1.0f;
+                params.dryLevel = 0.0f;
+                params.width = width;
+                params.freezeMode = 0.0f;
+                break;
+                
+            case VINTAGE:
+                params.roomSize = roomSize * 0.6f + 0.3f;  // Medium, warm
+                params.damping = damping * 0.7f + 0.3f;
+                params.wetLevel = 1.0f;
+                params.dryLevel = 0.0f;
+                params.width = width * 0.8f;
+                params.freezeMode = 0.0f;
+                break;
+                
+            case ROOM:
+                params.roomSize = roomSize * 0.5f + 0.1f;  // Small, intimate
+                params.damping = damping * 0.8f + 0.2f;
+                params.wetLevel = 1.0f;
+                params.dryLevel = 0.0f;
+                params.width = width;
+                params.freezeMode = 0.0f;
+                break;
+                
+            case AMBIENCE:
+                params.roomSize = roomSize * 0.3f + 0.05f; // Very small, subtle
+                params.damping = damping * 0.9f + 0.1f;
+                params.wetLevel = 1.0f;
+                params.dryLevel = 0.0f;
+                params.width = width * 1.2f;
+                params.freezeMode = 0.0f;
+                break;
+        }
+        
+        reverb.setParameters(params);
+        lastSize = roomSize;
+        lastDamping = damping;
+        lastWidth = width;
+    }
+    
+    inline void updateReverbParametersIfNeeded(float currentSize, float currentDamp, float currentWidth)
+    {
+        if (std::abs(currentSize - lastSize) > 0.001f ||
+            std::abs(currentDamp - lastDamping) > 0.001f ||
+            std::abs(currentWidth - lastWidth) > 0.001f)
+        {
+            roomSize = currentSize;
+            damping = currentDamp;
+            width = currentWidth;
+            updateReverbParameters();
+        }
+    }
+    
+    void updatePreDelayTime()
+    {
+        if (sampleRate > 0.0)
+        {
+            preDelaySamples = static_cast<int>(preDelayMs * 0.001f * sampleRate);
+            preDelaySamples = juce::jlimit(0, preDelayBufferSize - 1, preDelaySamples);
+        }
+    }
+    
+    float applyPreDelay(float input, int channel, float currentDelayMs)
+    {
+        if (currentDelayMs <= 0.0f)
+            return input;
+            
+        auto& buffer = (channel == 0) ? preDelayBufferL : preDelayBufferR;
+        auto& index = (channel == 0) ? preDelayIndexL : preDelayIndexR;
+        
+        int delaySamples = static_cast<int>(currentDelayMs * 0.001f * sampleRate);
+        delaySamples = juce::jlimit(0, preDelayBufferSize - 1, delaySamples);
+        
+        // Read delayed sample
+        int readIndex = (index - delaySamples + preDelayBufferSize) % preDelayBufferSize;
+        float output = buffer[readIndex];
+        
+        // Write new sample
+        buffer[index] = input;
+        index = (index + 1) % preDelayBufferSize;
+        
+        return output;
+    }
+    
+    void updateFilters()
+    {
+        if (sampleRate <= 0.0)
+            return;
+            
+        // Low cut filter (high-pass)
+        lowCutFilterL.setFilterType(SimpleStableFilter::HIGHPASS);
+        lowCutFilterL.setCutoffFrequency(lowCutFreq);
+        lowCutFilterL.setResonance(0.707f);
+        
+        lowCutFilterR.setFilterType(SimpleStableFilter::HIGHPASS);
+        lowCutFilterR.setCutoffFrequency(lowCutFreq);
+        lowCutFilterR.setResonance(0.707f);
+        
+        // High cut filter (low-pass)
+        highCutFilterL.setFilterType(SimpleStableFilter::LOWPASS);
+        highCutFilterL.setCutoffFrequency(highCutFreq);
+        highCutFilterL.setResonance(0.707f);
+        
+        highCutFilterR.setFilterType(SimpleStableFilter::LOWPASS);
+        highCutFilterR.setCutoffFrequency(highCutFreq);
+        highCutFilterR.setResonance(0.707f);
+    }
+    
+    // Parameters
+    bool isEnabled = false;
+    ReverbType reverbType = HALL;
+    float wetMix = 0.3f;
+    float roomSize = 0.5f;
+    float damping = 0.5f;
+    float width = 1.0f;
+    float preDelayMs = 20.0f;
+    float lowCutFreq = 80.0f;
+    float highCutFreq = 8000.0f;
+    
+    // Parameter smoothing
+    OnePoleSmoothing mixSmoothing, sizeSmoothing, dampSmoothing;
+    OnePoleSmoothing preDelaySmoothing, widthSmoothing;
+    
+    // Processing state
+    double sampleRate = 44100.0;
+    juce::Reverb reverb;
+    
+    // Pre-delay buffers
+    std::vector<float> preDelayBufferL, preDelayBufferR;
+    int preDelayBufferSize = 0;
+    int preDelayIndexL = 0, preDelayIndexR = 0;
+    int preDelaySamples = 0;
+    
+    // Filters for frequency shaping
+    SimpleStableFilter lowCutFilterL, lowCutFilterR;
+    SimpleStableFilter highCutFilterL, highCutFilterR;
+    
+    // Cached values for parameter updates
+    float lastSize = -1.0f, lastDamping = -1.0f, lastWidth = -1.0f;
+};
+
 class SummonerXSerum2AudioProcessor : public juce::AudioProcessor
 {
 public:
@@ -2957,6 +3292,61 @@ public:
         delay.setFilterQ(q);
     }
     float getDelayFilterQ() const { return delayFilterQ; }
+    
+    // Reverb effect controls
+    void setReverbEnabled(bool enabled) {
+        reverbEnabled = enabled;
+        reverb.setEnabled(enabled);
+    }
+    bool getReverbEnabled() const { return reverbEnabled; }
+    
+    void setReverbMix(float mix) {
+        reverbMix = juce::jlimit(0.0f, 100.0f, mix);
+        reverb.setMix(reverbMix / 100.0f);
+    }
+    float getReverbMix() const { return reverbMix; }
+    
+    void setReverbType(int type) {
+        reverbType = juce::jlimit(1, 5, type);
+        reverb.setType(static_cast<ReverbEffect::ReverbType>(reverbType));
+    }
+    int getReverbType() const { return reverbType; }
+    
+    void setReverbLowCut(float freq) {
+        reverbLowCut = juce::jlimit(20.0f, 1000.0f, freq);
+        reverb.setLowCut(freq);
+    }
+    float getReverbLowCut() const { return reverbLowCut; }
+    
+    void setReverbHighCut(float freq) {
+        reverbHighCut = juce::jlimit(1000.0f, 20000.0f, freq);
+        reverb.setHighCut(freq);
+    }
+    float getReverbHighCut() const { return reverbHighCut; }
+    
+    void setReverbSize(float size) {
+        reverbSize = juce::jlimit(0.0f, 100.0f, size);
+        reverb.setSize(reverbSize / 100.0f);
+    }
+    float getReverbSize() const { return reverbSize; }
+    
+    void setReverbPreDelay(float delay) {
+        reverbPreDelay = juce::jlimit(0.0f, 200.0f, delay);
+        reverb.setPreDelay(delay);
+    }
+    float getReverbPreDelay() const { return reverbPreDelay; }
+    
+    void setReverbDamping(float damp) {
+        reverbDamping = juce::jlimit(0.0f, 100.0f, damp);
+        reverb.setDamping(reverbDamping / 100.0f);
+    }
+    float getReverbDamping() const { return reverbDamping; }
+    
+    void setReverbWidth(float width) {
+        reverbWidth = juce::jlimit(0.0f, 100.0f, width);
+        reverb.setWidth(reverbWidth / 100.0f);
+    }
+    float getReverbWidth() const { return reverbWidth; }
 
 private:
     std::map<std::string, int> parameterMap;
@@ -3119,6 +3509,18 @@ private:
     float delayFilterFreq = 8000.0f; // 20.0 to 20000.0 Hz
     float delayFilterQ = 0.707f; // 0.1 to 30.0
     DelayEffect delay; // Delay effect instance
+    
+    // ===== REVERB EFFECT PARAMETERS =====
+    bool reverbEnabled = false;
+    float reverbMix = 0.3f; // 0.0 to 1.0
+    int reverbType = 2; // 1-5 (PLATE, HALL, VINTAGE, ROOM, AMBIENCE)
+    float reverbLowCut = 80.0f; // 20.0 to 1000.0 Hz
+    float reverbHighCut = 8000.0f; // 1000.0 to 20000.0 Hz
+    float reverbSize = 0.5f; // 0.0 to 1.0
+    float reverbPreDelay = 20.0f; // 0.0 to 200.0 ms
+    float reverbDamping = 0.5f; // 0.0 to 1.0
+    float reverbWidth = 1.0f; // 0.0 to 1.0
+    ReverbEffect reverb; // Reverb effect instance
     
     // Temporary buffers for separate oscillator processing
     juce::AudioBuffer<float> osc1Buffer;

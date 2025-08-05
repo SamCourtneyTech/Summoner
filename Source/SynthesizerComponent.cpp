@@ -1593,6 +1593,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbPowerButton.setVisible(true);
     reverbPowerButton.setBounds(68, 65, 80, 25);
     reverbTab->addAndMakeVisible(reverbPowerButton);
+    reverbPowerButton.addListener(this);
     
     reverbMixKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     reverbMixKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -1602,6 +1603,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbMixKnob.setVisible(true);
     reverbMixKnob.setBounds(168, 60, 40, 40);
     reverbTab->addAndMakeVisible(reverbMixKnob);
+    reverbMixKnob.addListener(this);
     
     reverbMixLabel.setText("MIX", juce::dontSendNotification);
     reverbMixLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
@@ -1640,6 +1642,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbLowCutKnob.setVisible(true);
     reverbLowCutKnob.setBounds(89, 185, 50, 50);
     reverbTab->addAndMakeVisible(reverbLowCutKnob);
+    reverbLowCutKnob.addListener(this);
     
     reverbLowCutLabel.setText("LOW CUT", juce::dontSendNotification);
     reverbLowCutLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
@@ -1657,6 +1660,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbHighCutKnob.setVisible(true);
     reverbHighCutKnob.setBounds(159, 185, 50, 50);
     reverbTab->addAndMakeVisible(reverbHighCutKnob);
+    reverbHighCutKnob.addListener(this);
     
     reverbHighCutLabel.setText("HIGH CUT", juce::dontSendNotification);
     reverbHighCutLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
@@ -1675,6 +1679,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbSizeKnob.setVisible(true);
     reverbSizeKnob.setBounds(89, 265, 50, 50);
     reverbTab->addAndMakeVisible(reverbSizeKnob);
+    reverbSizeKnob.addListener(this);
     
     reverbSizeLabel.setText("SIZE", juce::dontSendNotification);
     reverbSizeLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
@@ -1692,6 +1697,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbPreDelayKnob.setVisible(true);
     reverbPreDelayKnob.setBounds(159, 265, 50, 50);
     reverbTab->addAndMakeVisible(reverbPreDelayKnob);
+    reverbPreDelayKnob.addListener(this);
     
     reverbPreDelayLabel.setText("PRE DELAY", juce::dontSendNotification);
     reverbPreDelayLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
@@ -1710,6 +1716,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbDampKnob.setVisible(true);
     reverbDampKnob.setBounds(89, 345, 50, 50);
     reverbTab->addAndMakeVisible(reverbDampKnob);
+    reverbDampKnob.addListener(this);
     
     reverbDampLabel.setText("DAMP", juce::dontSendNotification);
     reverbDampLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
@@ -1727,6 +1734,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     reverbWidthKnob.setVisible(true);
     reverbWidthKnob.setBounds(159, 345, 50, 50);
     reverbTab->addAndMakeVisible(reverbWidthKnob);
+    reverbWidthKnob.addListener(this);
     
     reverbWidthLabel.setText("WIDTH", juce::dontSendNotification);
     reverbWidthLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
@@ -3604,6 +3612,36 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
         audioProcessor.setOsc1PulseWidth(static_cast<float>(pulseWidthSlider.getValue()));
     }
     */
+    
+    // REVERB CONTROLS
+    else if (slider == &reverbMixKnob)
+    {
+        audioProcessor.setReverbMix(static_cast<float>(reverbMixKnob.getValue()));
+    }
+    else if (slider == &reverbLowCutKnob)
+    {
+        audioProcessor.setReverbLowCut(static_cast<float>(reverbLowCutKnob.getValue()));
+    }
+    else if (slider == &reverbHighCutKnob)
+    {
+        audioProcessor.setReverbHighCut(static_cast<float>(reverbHighCutKnob.getValue()));
+    }
+    else if (slider == &reverbSizeKnob)
+    {
+        audioProcessor.setReverbSize(static_cast<float>(reverbSizeKnob.getValue()));
+    }
+    else if (slider == &reverbPreDelayKnob)
+    {
+        audioProcessor.setReverbPreDelay(static_cast<float>(reverbPreDelayKnob.getValue()));
+    }
+    else if (slider == &reverbDampKnob)
+    {
+        audioProcessor.setReverbDamping(static_cast<float>(reverbDampKnob.getValue()));
+    }
+    else if (slider == &reverbWidthKnob)
+    {
+        audioProcessor.setReverbWidth(static_cast<float>(reverbWidthKnob.getValue()));
+    }
 }
 
 void SynthesizerComponent::buttonClicked(juce::Button* button)
@@ -4370,6 +4408,12 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
     {
         audioProcessor.setDelayRDotted(delayRightDotButton.getToggleState());
     }
+    
+    // REVERB CONTROLS
+    else if (button == &reverbPowerButton)
+    {
+        audioProcessor.setReverbEnabled(reverbPowerButton.getToggleState());
+    }
 }
 
 void SynthesizerComponent::mouseDown(const juce::MouseEvent& event)
@@ -4462,6 +4506,7 @@ void SynthesizerComponent::mouseDown(const juce::MouseEvent& event)
         };
         
         reverbTypeValueLabel.setText(reverbTypeNames[reverbTypeValue - 1], juce::dontSendNotification);
+        audioProcessor.setReverbType(reverbTypeValue);
         
         // Set up drag state for drag functionality
         isDraggingReverbType = true;
@@ -4651,7 +4696,7 @@ void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
             // Update text based on type value
             juce::StringArray reverbTypeNames = {"PLATE", "HALL", "VINTAGE", "ROOM", "AMBIENCE"};
             reverbTypeValueLabel.setText(reverbTypeNames[reverbTypeValue - 1], juce::dontSendNotification);
-            // audioProcessor.setReverbType(reverbTypeValue); // Add this when audio processor supports it
+            audioProcessor.setReverbType(reverbTypeValue);
         }
     }
     else if (isDraggingPhaserPoles)

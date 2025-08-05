@@ -207,6 +207,18 @@ void SummonerXSerum2AudioProcessor::prepareToPlay(double sampleRate, int samples
     delay.setFilterFreq(delayFilterFreq);
     delay.setFilterQ(delayFilterQ);
     
+    // Initialize reverb effect
+    reverb.setSampleRate(sampleRate);
+    reverb.setEnabled(reverbEnabled);
+    reverb.setMix(reverbMix / 100.0f); // Convert from percentage to 0-1
+    reverb.setType(static_cast<ReverbEffect::ReverbType>(reverbType));
+    reverb.setLowCut(reverbLowCut);
+    reverb.setHighCut(reverbHighCut);
+    reverb.setSize(reverbSize / 100.0f); // Convert from percentage to 0-1
+    reverb.setPreDelay(reverbPreDelay);
+    reverb.setDamping(reverbDamping / 100.0f); // Convert from percentage to 0-1
+    reverb.setWidth(reverbWidth / 100.0f); // Convert from percentage to 0-1
+    
     // Initialize filter routing for all voices
     updateFilterRouting();
 }
@@ -279,6 +291,9 @@ void SummonerXSerum2AudioProcessor::processBlock(juce::AudioBuffer<float>& buffe
     
     // Apply delay effect
     delay.processBlock(buffer);
+    
+    // Apply reverb effect
+    reverb.processBlock(buffer);
     
     // Apply volume control
     buffer.applyGain(synthVolume);
