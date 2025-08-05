@@ -1145,11 +1145,15 @@ private:
     juce::Label eq1NewFreqLabel;
     juce::Slider eq1NewQKnob;        // New Q knob for band 1
     juce::Label eq1NewQLabel;
+    juce::Slider eq1NewGainKnob;     // New gain knob for band 1
+    juce::Label eq1NewGainLabel;
     
     juce::Slider eq2NewFreqKnob;     // New frequency knob for band 2  
     juce::Label eq2NewFreqLabel;
     juce::Slider eq2NewQKnob;        // New Q knob for band 2
     juce::Label eq2NewQLabel;
+    juce::Slider eq2NewGainKnob;     // New gain knob for band 2
+    juce::Label eq2NewGainLabel;
     
     // Flanger effect controls
     juce::TextButton flangerPowerButton;

@@ -495,6 +495,7 @@ void ParametricEQComponent::updateKnobsFromBand(int bandIndex)
         parentSynthesizer->eq1GainKnob.setValue(bands[0].gain, juce::dontSendNotification);
         parentSynthesizer->eq1NewFreqKnob.setValue(bands[0].frequency, juce::dontSendNotification);
         parentSynthesizer->eq1NewQKnob.setValue(bands[0].q, juce::dontSendNotification);
+        parentSynthesizer->eq1NewGainKnob.setValue(bands[0].gain, juce::dontSendNotification);
         
         // Update audio processor DSP
         parentSynthesizer->audioProcessor.setEQ1Frequency(bands[0].frequency);
@@ -509,6 +510,7 @@ void ParametricEQComponent::updateKnobsFromBand(int bandIndex)
         parentSynthesizer->eq2GainKnob.setValue(bands[1].gain, juce::dontSendNotification);
         parentSynthesizer->eq2NewFreqKnob.setValue(bands[1].frequency, juce::dontSendNotification);
         parentSynthesizer->eq2NewQKnob.setValue(bands[1].q, juce::dontSendNotification);
+        parentSynthesizer->eq2NewGainKnob.setValue(bands[1].gain, juce::dontSendNotification);
         
         // Update audio processor DSP
         parentSynthesizer->audioProcessor.setEQ2Frequency(bands[1].frequency);
@@ -2422,6 +2424,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq1FreqKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     eq1FreqKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     eq1FreqKnob.setRange(20.0, 20000.0, 1.0);
+    eq1FreqKnob.setSkewFactor(0.3f); // Logarithmic scale for frequency
     eq1FreqKnob.setValue(400.0);
     eq1FreqKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     eq1FreqKnob.addListener(this);
@@ -2503,6 +2506,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq2FreqKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     eq2FreqKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     eq2FreqKnob.setRange(20.0, 20000.0, 1.0);
+    eq2FreqKnob.setSkewFactor(0.3f); // Logarithmic scale for frequency
     eq2FreqKnob.setValue(4000.0);
     eq2FreqKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     eq2FreqKnob.addListener(this);
@@ -2547,11 +2551,12 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq1NewFreqKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     eq1NewFreqKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     eq1NewFreqKnob.setRange(20.0, 20000.0, 1.0);
+    eq1NewFreqKnob.setSkewFactor(0.3f); // Logarithmic scale for frequency
     eq1NewFreqKnob.setValue(400.0);
     eq1NewFreqKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     eq1NewFreqKnob.addListener(this);
     eq1NewFreqKnob.setVisible(true);
-    eq1NewFreqKnob.setBounds(30, 400, 45, 45); // New row below existing controls
+    eq1NewFreqKnob.setBounds(8, 400, 35, 35); // New row below existing controls
     equalizerTab->addAndMakeVisible(eq1NewFreqKnob);
     
     eq1NewFreqLabel.setText("FREQ1", juce::dontSendNotification);
@@ -2559,7 +2564,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq1NewFreqLabel.setJustificationType(juce::Justification::centred);
     eq1NewFreqLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     eq1NewFreqLabel.setVisible(true);
-    eq1NewFreqLabel.setBounds(30, 450, 45, 15);
+    eq1NewFreqLabel.setBounds(8, 440, 35, 15);
     equalizerTab->addAndMakeVisible(eq1NewFreqLabel);
     
     // Band 1 new Q knob
@@ -2570,7 +2575,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq1NewQKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     eq1NewQKnob.addListener(this);
     eq1NewQKnob.setVisible(true);
-    eq1NewQKnob.setBounds(85, 400, 45, 45);
+    eq1NewQKnob.setBounds(53, 400, 35, 35);
     equalizerTab->addAndMakeVisible(eq1NewQKnob);
     
     eq1NewQLabel.setText("Q1", juce::dontSendNotification);
@@ -2578,18 +2583,38 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq1NewQLabel.setJustificationType(juce::Justification::centred);
     eq1NewQLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     eq1NewQLabel.setVisible(true);
-    eq1NewQLabel.setBounds(85, 450, 45, 15);
+    eq1NewQLabel.setBounds(53, 440, 35, 15);
     equalizerTab->addAndMakeVisible(eq1NewQLabel);
+    
+    // Band 1 new gain knob
+    eq1NewGainKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    eq1NewGainKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    eq1NewGainKnob.setRange(-15.0, 15.0, 0.1);
+    eq1NewGainKnob.setValue(0.0);
+    eq1NewGainKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    eq1NewGainKnob.addListener(this);
+    eq1NewGainKnob.setVisible(true);
+    eq1NewGainKnob.setBounds(98, 400, 35, 35);
+    equalizerTab->addAndMakeVisible(eq1NewGainKnob);
+    
+    eq1NewGainLabel.setText("GAIN1", juce::dontSendNotification);
+    eq1NewGainLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    eq1NewGainLabel.setJustificationType(juce::Justification::centred);
+    eq1NewGainLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    eq1NewGainLabel.setVisible(true);
+    eq1NewGainLabel.setBounds(98, 440, 35, 15);
+    equalizerTab->addAndMakeVisible(eq1NewGainLabel);
     
     // Band 2 new frequency knob
     eq2NewFreqKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     eq2NewFreqKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     eq2NewFreqKnob.setRange(20.0, 20000.0, 1.0);
+    eq2NewFreqKnob.setSkewFactor(0.3f); // Logarithmic scale for frequency
     eq2NewFreqKnob.setValue(4000.0);
     eq2NewFreqKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     eq2NewFreqKnob.addListener(this);
     eq2NewFreqKnob.setVisible(true);
-    eq2NewFreqKnob.setBounds(170, 400, 45, 45);
+    eq2NewFreqKnob.setBounds(163, 400, 35, 35);
     equalizerTab->addAndMakeVisible(eq2NewFreqKnob);
     
     eq2NewFreqLabel.setText("FREQ2", juce::dontSendNotification);
@@ -2597,7 +2622,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq2NewFreqLabel.setJustificationType(juce::Justification::centred);
     eq2NewFreqLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     eq2NewFreqLabel.setVisible(true);
-    eq2NewFreqLabel.setBounds(170, 450, 45, 15);
+    eq2NewFreqLabel.setBounds(163, 440, 35, 15);
     equalizerTab->addAndMakeVisible(eq2NewFreqLabel);
     
     // Band 2 new Q knob
@@ -2608,7 +2633,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq2NewQKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     eq2NewQKnob.addListener(this);
     eq2NewQKnob.setVisible(true);
-    eq2NewQKnob.setBounds(225, 400, 45, 45);
+    eq2NewQKnob.setBounds(208, 400, 35, 35);
     equalizerTab->addAndMakeVisible(eq2NewQKnob);
     
     eq2NewQLabel.setText("Q2", juce::dontSendNotification);
@@ -2616,8 +2641,27 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq2NewQLabel.setJustificationType(juce::Justification::centred);
     eq2NewQLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     eq2NewQLabel.setVisible(true);
-    eq2NewQLabel.setBounds(225, 450, 45, 15);
+    eq2NewQLabel.setBounds(208, 440, 35, 15);
     equalizerTab->addAndMakeVisible(eq2NewQLabel);
+    
+    // Band 2 new gain knob
+    eq2NewGainKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    eq2NewGainKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    eq2NewGainKnob.setRange(-15.0, 15.0, 0.1);
+    eq2NewGainKnob.setValue(0.0);
+    eq2NewGainKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    eq2NewGainKnob.addListener(this);
+    eq2NewGainKnob.setVisible(true);
+    eq2NewGainKnob.setBounds(253, 400, 35, 35);
+    equalizerTab->addAndMakeVisible(eq2NewGainKnob);
+    
+    eq2NewGainLabel.setText("GAIN2", juce::dontSendNotification);
+    eq2NewGainLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    eq2NewGainLabel.setJustificationType(juce::Justification::centred);
+    eq2NewGainLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    eq2NewGainLabel.setVisible(true);
+    eq2NewGainLabel.setBounds(253, 440, 35, 15);
+    equalizerTab->addAndMakeVisible(eq2NewGainLabel);
     
     // EQ Point labels - positioned above buttons (bracket lines will be painted separately)
     eq1PointLabel.setText("BAND 1", juce::dontSendNotification);
@@ -3833,6 +3877,7 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     {
         audioProcessor.setEQ1Gain(static_cast<float>(eq1GainKnob.getValue()));
         parametricEQ.getBand(0).gain = static_cast<float>(eq1GainKnob.getValue());
+        eq1NewGainKnob.setValue(eq1GainKnob.getValue(), juce::dontSendNotification); // Sync with new knob
         parametricEQ.resized(); // Update visual positions
         parametricEQ.repaint();
     }
@@ -3855,6 +3900,7 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     {
         audioProcessor.setEQ2Gain(static_cast<float>(eq2GainKnob.getValue()));
         parametricEQ.getBand(1).gain = static_cast<float>(eq2GainKnob.getValue());
+        eq2NewGainKnob.setValue(eq2GainKnob.getValue(), juce::dontSendNotification); // Sync with new knob
         parametricEQ.resized(); // Update visual positions
         parametricEQ.repaint();
     }
@@ -3887,6 +3933,20 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
         audioProcessor.setEQ2Q(static_cast<float>(eq2NewQKnob.getValue()));
         parametricEQ.getBand(1).q = static_cast<float>(eq2NewQKnob.getValue());
         eq2QKnob.setValue(eq2NewQKnob.getValue(), juce::dontSendNotification); // Sync with existing knob
+        parametricEQ.repaint();
+    }
+    else if (slider == &eq1NewGainKnob)
+    {
+        audioProcessor.setEQ1Gain(static_cast<float>(eq1NewGainKnob.getValue()));
+        parametricEQ.getBand(0).gain = static_cast<float>(eq1NewGainKnob.getValue());
+        eq1GainKnob.setValue(eq1NewGainKnob.getValue(), juce::dontSendNotification); // Sync with existing knob
+        parametricEQ.repaint();
+    }
+    else if (slider == &eq2NewGainKnob)
+    {
+        audioProcessor.setEQ2Gain(static_cast<float>(eq2NewGainKnob.getValue()));
+        parametricEQ.getBand(1).gain = static_cast<float>(eq2NewGainKnob.getValue());
+        eq2GainKnob.setValue(eq2NewGainKnob.getValue(), juce::dontSendNotification); // Sync with existing knob
         parametricEQ.repaint();
     }
 }
