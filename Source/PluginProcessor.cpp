@@ -222,6 +222,8 @@ void SummonerXSerum2AudioProcessor::prepareToPlay(double sampleRate, int samples
     // Initialize EQ effect
     eq.setSampleRate(sampleRate);
     eq.setEnabled(eqEnabled);
+    eq.setBand1Enabled(eq1Enabled);
+    eq.setBand2Enabled(eq2Enabled);
     eq.setBand1Frequency(eq1Frequency);
     eq.setBand1Q(eq1Q);
     eq.setBand1Gain(eq1Gain);

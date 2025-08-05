@@ -313,6 +313,18 @@ void ParametricEQComponent::drawFrequencyResponse(juce::Graphics& g)
         
         for (int band = 0; band < 2; ++band)
         {
+            // Check if band is enabled via parent synthesizer
+            bool bandEnabled = true;
+            if (parentSynthesizer)
+            {
+                bandEnabled = band == 0 ? parentSynthesizer->audioProcessor.getEQ1Enabled() : 
+                                        parentSynthesizer->audioProcessor.getEQ2Enabled();
+            }
+            
+            // Skip disabled bands
+            if (!bandEnabled)
+                continue;
+                
             float bandGain = 0.0f;
             float centerFreq = bands[band].frequency;
             float q = bands[band].q;
@@ -413,6 +425,18 @@ void ParametricEQComponent::drawFrequencyResponse(juce::Graphics& g)
 
 void ParametricEQComponent::drawBandHandle(juce::Graphics& g, const EQBand& band, int bandIndex)
 {
+    // Check if band is enabled via parent synthesizer
+    bool bandEnabled = true;
+    if (parentSynthesizer)
+    {
+        bandEnabled = bandIndex == 0 ? parentSynthesizer->audioProcessor.getEQ1Enabled() : 
+                                      parentSynthesizer->audioProcessor.getEQ2Enabled();
+    }
+    
+    // Don't draw anything if band is disabled
+    if (!bandEnabled)
+        return;
+    
     float x = frequencyToX(band.frequency);
     float y = gainToY(band.gain);
     
@@ -465,10 +489,12 @@ void ParametricEQComponent::updateKnobsFromBand(int bandIndex)
     
     if (bandIndex == 0)
     {
-        // Update Band 1 knobs
+        // Update Band 1 knobs (both sets)
         parentSynthesizer->eq1FreqKnob.setValue(bands[0].frequency, juce::dontSendNotification);
         parentSynthesizer->eq1QKnob.setValue(bands[0].q, juce::dontSendNotification);
         parentSynthesizer->eq1GainKnob.setValue(bands[0].gain, juce::dontSendNotification);
+        parentSynthesizer->eq1NewFreqKnob.setValue(bands[0].frequency, juce::dontSendNotification);
+        parentSynthesizer->eq1NewQKnob.setValue(bands[0].q, juce::dontSendNotification);
         
         // Update audio processor DSP
         parentSynthesizer->audioProcessor.setEQ1Frequency(bands[0].frequency);
@@ -477,10 +503,12 @@ void ParametricEQComponent::updateKnobsFromBand(int bandIndex)
     }
     else if (bandIndex == 1)
     {
-        // Update Band 2 knobs
+        // Update Band 2 knobs (both sets)
         parentSynthesizer->eq2FreqKnob.setValue(bands[1].frequency, juce::dontSendNotification);
         parentSynthesizer->eq2QKnob.setValue(bands[1].q, juce::dontSendNotification);
         parentSynthesizer->eq2GainKnob.setValue(bands[1].gain, juce::dontSendNotification);
+        parentSynthesizer->eq2NewFreqKnob.setValue(bands[1].frequency, juce::dontSendNotification);
+        parentSynthesizer->eq2NewQKnob.setValue(bands[1].q, juce::dontSendNotification);
         
         // Update audio processor DSP
         parentSynthesizer->audioProcessor.setEQ2Frequency(bands[1].frequency);
@@ -523,6 +551,10 @@ void ParametricEQComponent::syncWithDSPState()
     if (eq2Type == 0) bands[1].filterType = Peak;
     else if (eq2Type == 1) bands[1].filterType = Shelf;
     else if (eq2Type == 2) bands[1].filterType = Pass;
+    
+    // Sync band enable states with UI buttons
+    parentSynthesizer->eq1OnOffButton.setToggleState(parentSynthesizer->audioProcessor.getEQ1Enabled(), juce::dontSendNotification);
+    parentSynthesizer->eq2OnOffButton.setToggleState(parentSynthesizer->audioProcessor.getEQ2Enabled(), juce::dontSendNotification);
     
     // Update visual positions based on frequency/gain
     resized(); // This will update graphPosition for each band
@@ -2376,6 +2408,16 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq1PassButton.setBounds(107, 342, 40, 22);
     equalizerTab->addAndMakeVisible(eq1PassButton);
     
+    // Band 1 on/off button
+    eq1OnOffButton.setButtonText("BAND 1");
+    eq1OnOffButton.setClickingTogglesState(true);
+    eq1OnOffButton.setToggleState(true, juce::dontSendNotification); // Enabled by default
+    eq1OnOffButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    eq1OnOffButton.addListener(this);
+    eq1OnOffButton.setVisible(true);
+    eq1OnOffButton.setBounds(17, 370, 50, 22); // Below filter type buttons
+    equalizerTab->addAndMakeVisible(eq1OnOffButton);
+    
     // Band 1 knobs
     eq1FreqKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     eq1FreqKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -2447,6 +2489,16 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq2PassButton.setBounds(242, 342, 40, 22);
     equalizerTab->addAndMakeVisible(eq2PassButton);
     
+    // Band 2 on/off button
+    eq2OnOffButton.setButtonText("BAND 2");
+    eq2OnOffButton.setClickingTogglesState(true);
+    eq2OnOffButton.setToggleState(true, juce::dontSendNotification); // Enabled by default
+    eq2OnOffButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
+    eq2OnOffButton.addListener(this);
+    eq2OnOffButton.setVisible(true);
+    eq2OnOffButton.setBounds(232, 370, 50, 22); // Below filter type buttons
+    equalizerTab->addAndMakeVisible(eq2OnOffButton);
+    
     // Band 2 knobs
     eq2FreqKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     eq2FreqKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -2489,6 +2541,83 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     eq2GainLabel.setJustificationType(juce::Justification::centred);
     eq2GainLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
     equalizerTab->addAndMakeVisible(eq2GainLabel);
+    
+    // NEW EQ CONTROLS ROW - Additional frequency and Q knobs
+    // Band 1 new frequency knob
+    eq1NewFreqKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    eq1NewFreqKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    eq1NewFreqKnob.setRange(20.0, 20000.0, 1.0);
+    eq1NewFreqKnob.setValue(400.0);
+    eq1NewFreqKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    eq1NewFreqKnob.addListener(this);
+    eq1NewFreqKnob.setVisible(true);
+    eq1NewFreqKnob.setBounds(30, 400, 45, 45); // New row below existing controls
+    equalizerTab->addAndMakeVisible(eq1NewFreqKnob);
+    
+    eq1NewFreqLabel.setText("FREQ1", juce::dontSendNotification);
+    eq1NewFreqLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    eq1NewFreqLabel.setJustificationType(juce::Justification::centred);
+    eq1NewFreqLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    eq1NewFreqLabel.setVisible(true);
+    eq1NewFreqLabel.setBounds(30, 450, 45, 15);
+    equalizerTab->addAndMakeVisible(eq1NewFreqLabel);
+    
+    // Band 1 new Q knob
+    eq1NewQKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    eq1NewQKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    eq1NewQKnob.setRange(0.1, 30.0, 0.1);
+    eq1NewQKnob.setValue(1.0);
+    eq1NewQKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    eq1NewQKnob.addListener(this);
+    eq1NewQKnob.setVisible(true);
+    eq1NewQKnob.setBounds(85, 400, 45, 45);
+    equalizerTab->addAndMakeVisible(eq1NewQKnob);
+    
+    eq1NewQLabel.setText("Q1", juce::dontSendNotification);
+    eq1NewQLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    eq1NewQLabel.setJustificationType(juce::Justification::centred);
+    eq1NewQLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    eq1NewQLabel.setVisible(true);
+    eq1NewQLabel.setBounds(85, 450, 45, 15);
+    equalizerTab->addAndMakeVisible(eq1NewQLabel);
+    
+    // Band 2 new frequency knob
+    eq2NewFreqKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    eq2NewFreqKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    eq2NewFreqKnob.setRange(20.0, 20000.0, 1.0);
+    eq2NewFreqKnob.setValue(4000.0);
+    eq2NewFreqKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    eq2NewFreqKnob.addListener(this);
+    eq2NewFreqKnob.setVisible(true);
+    eq2NewFreqKnob.setBounds(170, 400, 45, 45);
+    equalizerTab->addAndMakeVisible(eq2NewFreqKnob);
+    
+    eq2NewFreqLabel.setText("FREQ2", juce::dontSendNotification);
+    eq2NewFreqLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    eq2NewFreqLabel.setJustificationType(juce::Justification::centred);
+    eq2NewFreqLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    eq2NewFreqLabel.setVisible(true);
+    eq2NewFreqLabel.setBounds(170, 450, 45, 15);
+    equalizerTab->addAndMakeVisible(eq2NewFreqLabel);
+    
+    // Band 2 new Q knob
+    eq2NewQKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    eq2NewQKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    eq2NewQKnob.setRange(0.1, 30.0, 0.1);
+    eq2NewQKnob.setValue(1.0);
+    eq2NewQKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    eq2NewQKnob.addListener(this);
+    eq2NewQKnob.setVisible(true);
+    eq2NewQKnob.setBounds(225, 400, 45, 45);
+    equalizerTab->addAndMakeVisible(eq2NewQKnob);
+    
+    eq2NewQLabel.setText("Q2", juce::dontSendNotification);
+    eq2NewQLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
+    eq2NewQLabel.setJustificationType(juce::Justification::centred);
+    eq2NewQLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
+    eq2NewQLabel.setVisible(true);
+    eq2NewQLabel.setBounds(225, 450, 45, 15);
+    equalizerTab->addAndMakeVisible(eq2NewQLabel);
     
     // EQ Point labels - positioned above buttons (bracket lines will be painted separately)
     eq1PointLabel.setText("BAND 1", juce::dontSendNotification);
@@ -3689,6 +3818,7 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     {
         audioProcessor.setEQ1Frequency(static_cast<float>(eq1FreqKnob.getValue()));
         parametricEQ.getBand(0).frequency = static_cast<float>(eq1FreqKnob.getValue());
+        eq1NewFreqKnob.setValue(eq1FreqKnob.getValue(), juce::dontSendNotification); // Sync with new knob
         parametricEQ.resized(); // Update visual positions
         parametricEQ.repaint();
     }
@@ -3696,6 +3826,7 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     {
         audioProcessor.setEQ1Q(static_cast<float>(eq1QKnob.getValue()));
         parametricEQ.getBand(0).q = static_cast<float>(eq1QKnob.getValue());
+        eq1NewQKnob.setValue(eq1QKnob.getValue(), juce::dontSendNotification); // Sync with new knob
         parametricEQ.repaint();
     }
     else if (slider == &eq1GainKnob)
@@ -3709,6 +3840,7 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     {
         audioProcessor.setEQ2Frequency(static_cast<float>(eq2FreqKnob.getValue()));
         parametricEQ.getBand(1).frequency = static_cast<float>(eq2FreqKnob.getValue());
+        eq2NewFreqKnob.setValue(eq2FreqKnob.getValue(), juce::dontSendNotification); // Sync with new knob
         parametricEQ.resized(); // Update visual positions
         parametricEQ.repaint();
     }
@@ -3716,6 +3848,7 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     {
         audioProcessor.setEQ2Q(static_cast<float>(eq2QKnob.getValue()));
         parametricEQ.getBand(1).q = static_cast<float>(eq2QKnob.getValue());
+        eq2NewQKnob.setValue(eq2QKnob.getValue(), juce::dontSendNotification); // Sync with new knob
         parametricEQ.repaint();
     }
     else if (slider == &eq2GainKnob)
@@ -3723,6 +3856,37 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
         audioProcessor.setEQ2Gain(static_cast<float>(eq2GainKnob.getValue()));
         parametricEQ.getBand(1).gain = static_cast<float>(eq2GainKnob.getValue());
         parametricEQ.resized(); // Update visual positions
+        parametricEQ.repaint();
+    }
+    // NEW EQ KNOBS - Additional controls that auto-sync with graphic
+    else if (slider == &eq1NewFreqKnob)
+    {
+        audioProcessor.setEQ1Frequency(static_cast<float>(eq1NewFreqKnob.getValue()));
+        parametricEQ.getBand(0).frequency = static_cast<float>(eq1NewFreqKnob.getValue());
+        eq1FreqKnob.setValue(eq1NewFreqKnob.getValue(), juce::dontSendNotification); // Sync with existing knob
+        parametricEQ.resized(); // Update visual positions
+        parametricEQ.repaint();
+    }
+    else if (slider == &eq1NewQKnob)
+    {
+        audioProcessor.setEQ1Q(static_cast<float>(eq1NewQKnob.getValue()));
+        parametricEQ.getBand(0).q = static_cast<float>(eq1NewQKnob.getValue());
+        eq1QKnob.setValue(eq1NewQKnob.getValue(), juce::dontSendNotification); // Sync with existing knob
+        parametricEQ.repaint();
+    }
+    else if (slider == &eq2NewFreqKnob)
+    {
+        audioProcessor.setEQ2Frequency(static_cast<float>(eq2NewFreqKnob.getValue()));
+        parametricEQ.getBand(1).frequency = static_cast<float>(eq2NewFreqKnob.getValue());
+        eq2FreqKnob.setValue(eq2NewFreqKnob.getValue(), juce::dontSendNotification); // Sync with existing knob
+        parametricEQ.resized(); // Update visual positions
+        parametricEQ.repaint();
+    }
+    else if (slider == &eq2NewQKnob)
+    {
+        audioProcessor.setEQ2Q(static_cast<float>(eq2NewQKnob.getValue()));
+        parametricEQ.getBand(1).q = static_cast<float>(eq2NewQKnob.getValue());
+        eq2QKnob.setValue(eq2NewQKnob.getValue(), juce::dontSendNotification); // Sync with existing knob
         parametricEQ.repaint();
     }
 }
@@ -4318,6 +4482,17 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
         {
             eq2PassButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
         }
+    }
+    // EQ Band on/off buttons
+    else if (button == &eq1OnOffButton)
+    {
+        audioProcessor.setEQ1Enabled(eq1OnOffButton.getToggleState());
+        parametricEQ.syncWithDSPState();
+    }
+    else if (button == &eq2OnOffButton)
+    {
+        audioProcessor.setEQ2Enabled(eq2OnOffButton.getToggleState());
+        parametricEQ.syncWithDSPState();
     }
     // Chorus effect power button
     else if (button == &chorusPowerButton)

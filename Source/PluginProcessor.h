@@ -2914,6 +2914,8 @@ public:
     }
     
     void setEnabled(bool enabled) { isEnabled = enabled; }
+    void setBand1Enabled(bool enabled) { band1Enabled = enabled; }
+    void setBand2Enabled(bool enabled) { band2Enabled = enabled; }
     
     // Band 1 controls
     void setBand1Type(BiquadFilter::FilterType type)
@@ -2989,10 +2991,15 @@ public:
             for (int sample = 0; sample < numSamples; ++sample)
             {
                 float input = channelData[sample];
+                float output = input;
                 
-                // Process through band 1, then band 2 (series connection)
-                float output = band1Filters[ch].processSample(input);
-                output = band2Filters[ch].processSample(output);
+                // Process through band 1 if enabled
+                if (band1Enabled)
+                    output = band1Filters[ch].processSample(output);
+                    
+                // Process through band 2 if enabled  
+                if (band2Enabled)
+                    output = band2Filters[ch].processSample(output);
                 
                 channelData[sample] = output;
             }
@@ -3001,6 +3008,8 @@ public:
     
 private:
     bool isEnabled = false;
+    bool band1Enabled = true;
+    bool band2Enabled = true;
     double sampleRate = 44100.0;
     
     // Stereo filters for each band
@@ -3711,6 +3720,12 @@ public:
     bool getEQEnabled() const { return eqEnabled; }
     
     // Band 1 controls
+    void setEQ1Enabled(bool enabled) {
+        eq1Enabled = enabled;
+        eq.setBand1Enabled(enabled);
+    }
+    bool getEQ1Enabled() const { return eq1Enabled; }
+    
     void setEQ1Frequency(float freq) {
         eq1Frequency = juce::jlimit(20.0f, 20000.0f, freq);
         eq.setBand1Frequency(eq1Frequency);
@@ -3740,6 +3755,12 @@ public:
     int getEQ1Type() const { return eq1Type; }
     
     // Band 2 controls
+    void setEQ2Enabled(bool enabled) {
+        eq2Enabled = enabled;
+        eq.setBand2Enabled(enabled);
+    }
+    bool getEQ2Enabled() const { return eq2Enabled; }
+    
     void setEQ2Frequency(float freq) {
         eq2Frequency = juce::jlimit(20.0f, 20000.0f, freq);
         eq.setBand2Frequency(eq2Frequency);
@@ -3946,12 +3967,14 @@ private:
     bool eqEnabled = false;
     
     // Band 1 parameters
+    bool eq1Enabled = true; // Individual band 1 enable/disable
     float eq1Frequency = 400.0f; // 20.0 to 20000.0 Hz
     float eq1Q = 1.0f; // 0.1 to 30.0
     float eq1Gain = 0.0f; // -15.0 to +15.0 dB
     int eq1Type = 0; // 0=Peak, 1=Shelf, 2=Pass
     
     // Band 2 parameters  
+    bool eq2Enabled = true; // Individual band 2 enable/disable
     float eq2Frequency = 4000.0f; // 20.0 to 20000.0 Hz
     float eq2Q = 1.0f; // 0.1 to 30.0
     float eq2Gain = 0.0f; // -15.0 to +15.0 dB

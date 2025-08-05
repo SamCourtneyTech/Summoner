@@ -1116,6 +1116,7 @@ private:
     juce::TextButton eq1ShelfButton;
     juce::TextButton eq1PeakButton;
     juce::TextButton eq1PassButton;
+    juce::TextButton eq1OnOffButton;  // Individual band 1 on/off
     juce::Slider eq1FreqKnob;
     juce::Label eq1FreqLabel;
     juce::Slider eq1QKnob;
@@ -1127,6 +1128,7 @@ private:
     juce::TextButton eq2ShelfButton;
     juce::TextButton eq2PeakButton;
     juce::TextButton eq2PassButton;
+    juce::TextButton eq2OnOffButton;  // Individual band 2 on/off
     juce::Slider eq2FreqKnob;
     juce::Label eq2FreqLabel;
     juce::Slider eq2QKnob;
@@ -1137,6 +1139,17 @@ private:
     // EQ Point labels
     juce::Label eq1PointLabel;
     juce::Label eq2PointLabel;
+    
+    // Additional EQ controls in their own row
+    juce::Slider eq1NewFreqKnob;     // New frequency knob for band 1
+    juce::Label eq1NewFreqLabel;
+    juce::Slider eq1NewQKnob;        // New Q knob for band 1
+    juce::Label eq1NewQLabel;
+    
+    juce::Slider eq2NewFreqKnob;     // New frequency knob for band 2  
+    juce::Label eq2NewFreqLabel;
+    juce::Slider eq2NewQKnob;        // New Q knob for band 2
+    juce::Label eq2NewQLabel;
     
     // Flanger effect controls
     juce::TextButton flangerPowerButton;
