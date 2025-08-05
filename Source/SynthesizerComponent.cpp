@@ -1,6 +1,66 @@
 #include "SynthesizerComponent.h"
 #include "PluginProcessor.h"
 
+// DraggableMacroSymbol implementation
+DraggableMacroSymbol::DraggableMacroSymbol(int index) : macroIndex(index)
+{
+    setSize(20, 20); // Small size for the symbol
+}
+
+void DraggableMacroSymbol::paint(juce::Graphics& g)
+{
+    auto bounds = getLocalBounds().toFloat();
+    
+    // Set color based on drag state
+    if (isDragging)
+        g.setColour(juce::Colour(0xff00ff00)); // Bright green when dragging
+    else
+        g.setColour(juce::Colour(0xff888888)); // Gray when idle
+    
+    // Draw the * symbol
+    g.setFont(juce::Font(16.0f, juce::Font::bold));
+    g.drawText("*", bounds, juce::Justification::centred);
+}
+
+void DraggableMacroSymbol::mouseDown(const juce::MouseEvent& event)
+{
+    isDragging = true;
+    dragOffset = event.getPosition();
+    repaint();
+}
+
+void DraggableMacroSymbol::mouseDrag(const juce::MouseEvent& event)
+{
+    if (isDragging)
+    {
+        auto newPosition = getPosition() + event.getPosition() - dragOffset;
+        setTopLeftPosition(newPosition);
+    }
+}
+
+void DraggableMacroSymbol::mouseUp(const juce::MouseEvent& event)
+{
+    if (isDragging)
+    {
+        isDragging = false;
+        repaint();
+        
+        // Auto-return to original position after drop
+        returnToOriginalPosition();
+    }
+}
+
+void DraggableMacroSymbol::returnToOriginalPosition()
+{
+    setTopLeftPosition(originalPosition);
+}
+
+void DraggableMacroSymbol::setOriginalPosition(juce::Point<int> position)
+{
+    originalPosition = position;
+    setTopLeftPosition(position);
+}
+
 ADSREnvelopeComponent::ADSREnvelopeComponent()
 {
 }
@@ -1324,6 +1384,25 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     macro8Label.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
     macro8Label.setLookAndFeel(&engravedLabelLookAndFeel);
     addAndMakeVisible(macro8Label);
+    
+    // Initialize draggable macro symbols
+    macroSymbol1 = std::make_unique<DraggableMacroSymbol>(1);
+    macroSymbol2 = std::make_unique<DraggableMacroSymbol>(2);
+    macroSymbol3 = std::make_unique<DraggableMacroSymbol>(3);
+    macroSymbol4 = std::make_unique<DraggableMacroSymbol>(4);
+    macroSymbol5 = std::make_unique<DraggableMacroSymbol>(5);
+    macroSymbol6 = std::make_unique<DraggableMacroSymbol>(6);
+    macroSymbol7 = std::make_unique<DraggableMacroSymbol>(7);
+    macroSymbol8 = std::make_unique<DraggableMacroSymbol>(8);
+    
+    addAndMakeVisible(*macroSymbol1);
+    addAndMakeVisible(*macroSymbol2);
+    addAndMakeVisible(*macroSymbol3);
+    addAndMakeVisible(*macroSymbol4);
+    addAndMakeVisible(*macroSymbol5);
+    addAndMakeVisible(*macroSymbol6);
+    addAndMakeVisible(*macroSymbol7);
+    addAndMakeVisible(*macroSymbol8);
     
     // ADSR ENVELOPE VISUALIZER GROUP - Row 2 (MOVEABLE)
     addAndMakeVisible(adsrEnvelopeVisualizer);
@@ -3489,6 +3568,22 @@ void SynthesizerComponent::resized()
     auto macro8LabelArea = juce::Rectangle<int>(macroStartX + 3 * (macroKnobSize + macroKnobSpacing) - 7, bottomRowY + macroKnobSize - 6, macroKnobSize + 15, macroLabelHeight);
     macro8Label.setBounds(macro8LabelArea);
     macro8Knob.setBounds(macro8Area.removeFromTop(macroKnobSize));
+    
+    // Position draggable macro symbols to the right of each macro knob
+    auto symbolOffsetX = macroKnobSize + 8; // 8px to the right of each knob
+    auto symbolOffsetY = (macroKnobSize - 20) / 2; // Center vertically with knob
+    
+    // Top row symbols (Macro 1-4)
+    macroSymbol1->setOriginalPosition({macroStartX + symbolOffsetX, topRowY + symbolOffsetY});
+    macroSymbol2->setOriginalPosition({macroStartX + macroKnobSize + macroKnobSpacing + symbolOffsetX, topRowY + symbolOffsetY});
+    macroSymbol3->setOriginalPosition({macroStartX + 2 * (macroKnobSize + macroKnobSpacing) + symbolOffsetX, topRowY + symbolOffsetY});
+    macroSymbol4->setOriginalPosition({macroStartX + 3 * (macroKnobSize + macroKnobSpacing) + symbolOffsetX, topRowY + symbolOffsetY});
+    
+    // Bottom row symbols (Macro 5-8)
+    macroSymbol5->setOriginalPosition({macroStartX + symbolOffsetX, bottomRowY + symbolOffsetY});
+    macroSymbol6->setOriginalPosition({macroStartX + macroKnobSize + macroKnobSpacing + symbolOffsetX, bottomRowY + symbolOffsetY});
+    macroSymbol7->setOriginalPosition({macroStartX + 2 * (macroKnobSize + macroKnobSpacing) + symbolOffsetX, bottomRowY + symbolOffsetY});
+    macroSymbol8->setOriginalPosition({macroStartX + 3 * (macroKnobSize + macroKnobSpacing) + symbolOffsetX, bottomRowY + symbolOffsetY});
 }
 
 void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)

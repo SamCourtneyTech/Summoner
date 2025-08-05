@@ -6,6 +6,29 @@
 class SummonerXSerum2AudioProcessor;
 class SynthesizerComponent;
 
+// Forward declaration for draggable macro symbols
+class DraggableMacroSymbol : public juce::Component
+{
+public:
+    DraggableMacroSymbol(int macroIndex);
+    
+    void paint(juce::Graphics& g) override;
+    void mouseDown(const juce::MouseEvent& event) override;
+    void mouseDrag(const juce::MouseEvent& event) override;
+    void mouseUp(const juce::MouseEvent& event) override;
+    
+    void returnToOriginalPosition();
+    void setOriginalPosition(juce::Point<int> position);
+    
+private:
+    int macroIndex;
+    juce::Point<int> originalPosition;
+    juce::Point<int> dragOffset;
+    bool isDragging = false;
+    
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DraggableMacroSymbol)
+};
+
 class ADSREnvelopeComponent : public juce::Component
 {
 public:
@@ -1024,6 +1047,16 @@ private:
     juce::Label macro7Label;
     juce::Slider macro8Knob;
     juce::Label macro8Label;
+    
+    // Draggable macro mapping symbols
+    std::unique_ptr<DraggableMacroSymbol> macroSymbol1;
+    std::unique_ptr<DraggableMacroSymbol> macroSymbol2;
+    std::unique_ptr<DraggableMacroSymbol> macroSymbol3;
+    std::unique_ptr<DraggableMacroSymbol> macroSymbol4;
+    std::unique_ptr<DraggableMacroSymbol> macroSymbol5;
+    std::unique_ptr<DraggableMacroSymbol> macroSymbol6;
+    std::unique_ptr<DraggableMacroSymbol> macroSymbol7;
+    std::unique_ptr<DraggableMacroSymbol> macroSymbol8;
     
     // Chorus effect controls
     juce::Slider chorusRateKnob;
