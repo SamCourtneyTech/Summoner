@@ -4,7 +4,7 @@
 // DraggableMacroSymbol implementation
 DraggableMacroSymbol::DraggableMacroSymbol(int index) : macroIndex(index)
 {
-    setSize(20, 20); // Small size for the symbol
+    setSize(35, 35); // Even larger size for better visibility
 }
 
 void DraggableMacroSymbol::paint(juce::Graphics& g)
@@ -17,8 +17,8 @@ void DraggableMacroSymbol::paint(juce::Graphics& g)
     else
         g.setColour(juce::Colour(0xff888888)); // Gray when idle
     
-    // Draw the * symbol
-    g.setFont(juce::Font(16.0f, juce::Font::bold));
+    // Draw the * symbol - even larger font for bigger symbol
+    g.setFont(juce::Font(28.0f, juce::Font::bold));
     g.drawText("*", bounds, juce::Justification::centred);
 }
 
@@ -3570,8 +3570,8 @@ void SynthesizerComponent::resized()
     macro8Knob.setBounds(macro8Area.removeFromTop(macroKnobSize));
     
     // Position draggable macro symbols to the right of each macro knob
-    auto symbolOffsetX = macroKnobSize + 8; // 8px to the right of each knob
-    auto symbolOffsetY = (macroKnobSize - 20) / 2; // Center vertically with knob
+    auto symbolOffsetX = macroKnobSize + 8 - 8 - 10 - 3 - 3 - 6 + 3; // 8px to the right of each knob, then 8px left, then 10px more left, then 3px more left, then 3px more left, then 6px more left, then 3px right
+    auto symbolOffsetY = (macroKnobSize - 35) / 2 + 4 + 5 - 1 - 1 - 1; // Center vertically with knob (updated for 35px symbol), then 4px down, then 5px more down, then 1px up, then 1px more up, then 1px more up
     
     // Top row symbols (Macro 1-4)
     macroSymbol1->setOriginalPosition({macroStartX + symbolOffsetX, topRowY + symbolOffsetY});
