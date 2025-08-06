@@ -6988,6 +6988,9 @@ void SynthesizerComponent::updateMacroMappings(int macroIndex, double macroValue
             // Update the target slider value but don't send notification to avoid visual movement
             // We want the parameter to change but the knob to stay visually at its base position
             mapping.targetSlider->setValue(newValue, juce::dontSendNotification);
+            
+            // Manually trigger the parameter update to the audio processor
+            triggerParameterUpdate(mapping.targetSlider, newValue);
         }
     }
     
@@ -7146,6 +7149,122 @@ double SynthesizerComponent::getMacroKnobValue(int macroIndex)
         case 7: return macro7Knob.getValue();
         case 8: return macro8Knob.getValue();
         default: return 0.5; // Default center position
+    }
+}
+
+void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double newValue)
+{
+    // Mirror the logic from sliderValueChanged to update audio processor parameters
+    // without sending slider notifications (to avoid visual movement)
+    
+    if (slider == &volumeControlsVolumeKnob)
+    {
+        audioProcessor.setOsc1Volume(static_cast<float>(newValue));
+    }
+    else if (slider == &volumeControlsDetuneKnob)
+    {
+        audioProcessor.setSynthDetune(static_cast<float>(newValue));
+    }
+    else if (slider == &volumeControlsStereoWidthKnob)
+    {
+        audioProcessor.setSynthStereoWidth(static_cast<float>(newValue));
+    }
+    else if (slider == &volumeControlsPanKnob)
+    {
+        audioProcessor.setSynthPan(static_cast<float>(newValue));
+    }
+    else if (slider == &phaseControlsPhaseKnob)
+    {
+        audioProcessor.setSynthPhase(static_cast<float>(newValue));
+    }
+    else if (slider == &adsrAttackKnob)
+    {
+        audioProcessor.setSynthAttack(static_cast<float>(newValue));
+        
+        // If ADSR is linked, also update oscillator 2
+        if (osc2AdsrLinkButton.getToggleState())
+        {
+            audioProcessor.setOsc2Attack(static_cast<float>(newValue));
+        }
+        
+        updateEnvelopeDisplay();
+    }
+    else if (slider == &adsrDecayKnob)
+    {
+        audioProcessor.setSynthDecay(static_cast<float>(newValue));
+        
+        // If ADSR is linked, also update oscillator 2
+        if (osc2AdsrLinkButton.getToggleState())
+        {
+            audioProcessor.setOsc2Decay(static_cast<float>(newValue));
+        }
+        
+        updateEnvelopeDisplay();
+    }
+    else if (slider == &adsrSustainKnob)
+    {
+        audioProcessor.setSynthSustain(static_cast<float>(newValue));
+        
+        // If ADSR is linked, also update oscillator 2
+        if (osc2AdsrLinkButton.getToggleState())
+        {
+            audioProcessor.setOsc2Sustain(static_cast<float>(newValue));
+        }
+        
+        updateEnvelopeDisplay();
+    }
+    else if (slider == &adsrReleaseKnob)
+    {
+        audioProcessor.setSynthRelease(static_cast<float>(newValue));
+        
+        // If ADSR is linked, also update oscillator 2
+        if (osc2AdsrLinkButton.getToggleState())
+        {
+            audioProcessor.setOsc2Release(static_cast<float>(newValue));
+        }
+        
+        updateEnvelopeDisplay();
+    }
+    // Add more slider checks as needed for other parameters
+    // For now, focusing on the main commonly-used parameters
+    else if (slider == &filterCutoffKnob)
+    {
+        audioProcessor.setFilterCutoff(static_cast<float>(newValue));
+    }
+    else if (slider == &filterResonanceKnob)
+    {
+        audioProcessor.setFilterResonance(static_cast<float>(newValue));
+    }
+    // EQ parameters
+    else if (slider == &eq1FreqKnob)
+    {
+        audioProcessor.setEQ1Frequency(static_cast<float>(newValue));
+        parametricEQ.syncWithDSPState();
+    }
+    else if (slider == &eq1QKnob)
+    {
+        audioProcessor.setEQ1Q(static_cast<float>(newValue));
+        parametricEQ.syncWithDSPState();
+    }
+    else if (slider == &eq1GainKnob)
+    {
+        audioProcessor.setEQ1Gain(static_cast<float>(newValue));
+        parametricEQ.syncWithDSPState();
+    }
+    else if (slider == &eq2FreqKnob)
+    {
+        audioProcessor.setEQ2Frequency(static_cast<float>(newValue));
+        parametricEQ.syncWithDSPState();
+    }
+    else if (slider == &eq2QKnob)
+    {
+        audioProcessor.setEQ2Q(static_cast<float>(newValue));
+        parametricEQ.syncWithDSPState();
+    }
+    else if (slider == &eq2GainKnob)
+    {
+        audioProcessor.setEQ2Gain(static_cast<float>(newValue));
+        parametricEQ.syncWithDSPState();
     }
 }
 

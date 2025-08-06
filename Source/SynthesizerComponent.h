@@ -1100,6 +1100,7 @@ private:
     void drawMacroIndicators(juce::Graphics& g);
     void drawCircularIndicator(juce::Graphics& g, juce::Slider* slider, const MacroMapping& mapping);
     double getMacroKnobValue(int macroIndex);
+    void triggerParameterUpdate(juce::Slider* slider, double newValue);
     
     // Chorus effect controls
     juce::Slider chorusRateKnob;
