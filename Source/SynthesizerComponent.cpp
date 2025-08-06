@@ -2,7 +2,8 @@
 #include "PluginProcessor.h"
 
 // DraggableMacroSymbol implementation
-DraggableMacroSymbol::DraggableMacroSymbol(int index) : macroIndex(index)
+DraggableMacroSymbol::DraggableMacroSymbol(int index, SynthesizerComponent* parent) 
+    : macroIndex(index), parentComponent(parent)
 {
     setSize(35, 35); // Even larger size for better visibility
 }
@@ -44,6 +45,18 @@ void DraggableMacroSymbol::mouseUp(const juce::MouseEvent& event)
     {
         isDragging = false;
         repaint();
+        
+        // Check if we dropped on a slider/knob
+        auto globalPosition = getScreenPosition() + event.getPosition();
+        auto localPosition = parentComponent->getScreenPosition();
+        auto relativePosition = globalPosition - localPosition;
+        
+        // Find if there's a slider at the drop position
+        if (auto* targetSlider = parentComponent->findSliderAt(relativePosition))
+        {
+            // Create macro mapping
+            parentComponent->createMacroMapping(macroIndex, targetSlider);
+        }
         
         // Auto-return to original position after drop
         returnToOriginalPosition();
@@ -1286,6 +1299,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     macro1Knob.setRange(0.0, 1.0, 0.01);
     macro1Knob.setValue(0.5);
     macro1Knob.setLookAndFeel(&simpleKnobLookAndFeel);
+    macro1Knob.addListener(this);
     addAndMakeVisible(macro1Knob);
     
     macro1Label.setText("MACRO 1", juce::dontSendNotification);
@@ -1299,6 +1313,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     macro2Knob.setRange(0.0, 1.0, 0.01);
     macro2Knob.setValue(0.5);
     macro2Knob.setLookAndFeel(&simpleKnobLookAndFeel);
+    macro2Knob.addListener(this);
     addAndMakeVisible(macro2Knob);
     
     macro2Label.setText("MACRO 2", juce::dontSendNotification);
@@ -1312,6 +1327,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     macro3Knob.setRange(0.0, 1.0, 0.01);
     macro3Knob.setValue(0.5);
     macro3Knob.setLookAndFeel(&simpleKnobLookAndFeel);
+    macro3Knob.addListener(this);
     addAndMakeVisible(macro3Knob);
     
     macro3Label.setText("MACRO 3", juce::dontSendNotification);
@@ -1325,6 +1341,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     macro4Knob.setRange(0.0, 1.0, 0.01);
     macro4Knob.setValue(0.5);
     macro4Knob.setLookAndFeel(&simpleKnobLookAndFeel);
+    macro4Knob.addListener(this);
     addAndMakeVisible(macro4Knob);
     
     macro4Label.setText("MACRO 4", juce::dontSendNotification);
@@ -1338,6 +1355,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     macro5Knob.setRange(0.0, 1.0, 0.01);
     macro5Knob.setValue(0.5);
     macro5Knob.setLookAndFeel(&simpleKnobLookAndFeel);
+    macro5Knob.addListener(this);
     addAndMakeVisible(macro5Knob);
     
     macro5Label.setText("MACRO 5", juce::dontSendNotification);
@@ -1351,6 +1369,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     macro6Knob.setRange(0.0, 1.0, 0.01);
     macro6Knob.setValue(0.5);
     macro6Knob.setLookAndFeel(&simpleKnobLookAndFeel);
+    macro6Knob.addListener(this);
     addAndMakeVisible(macro6Knob);
     
     macro6Label.setText("MACRO 6", juce::dontSendNotification);
@@ -1364,6 +1383,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     macro7Knob.setRange(0.0, 1.0, 0.01);
     macro7Knob.setValue(0.5);
     macro7Knob.setLookAndFeel(&simpleKnobLookAndFeel);
+    macro7Knob.addListener(this);
     addAndMakeVisible(macro7Knob);
     
     macro7Label.setText("MACRO 7", juce::dontSendNotification);
@@ -1377,6 +1397,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     macro8Knob.setRange(0.0, 1.0, 0.01);
     macro8Knob.setValue(0.5);
     macro8Knob.setLookAndFeel(&simpleKnobLookAndFeel);
+    macro8Knob.addListener(this);
     addAndMakeVisible(macro8Knob);
     
     macro8Label.setText("MACRO 8", juce::dontSendNotification);
@@ -1386,14 +1407,14 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     addAndMakeVisible(macro8Label);
     
     // Initialize draggable macro symbols
-    macroSymbol1 = std::make_unique<DraggableMacroSymbol>(1);
-    macroSymbol2 = std::make_unique<DraggableMacroSymbol>(2);
-    macroSymbol3 = std::make_unique<DraggableMacroSymbol>(3);
-    macroSymbol4 = std::make_unique<DraggableMacroSymbol>(4);
-    macroSymbol5 = std::make_unique<DraggableMacroSymbol>(5);
-    macroSymbol6 = std::make_unique<DraggableMacroSymbol>(6);
-    macroSymbol7 = std::make_unique<DraggableMacroSymbol>(7);
-    macroSymbol8 = std::make_unique<DraggableMacroSymbol>(8);
+    macroSymbol1 = std::make_unique<DraggableMacroSymbol>(1, this);
+    macroSymbol2 = std::make_unique<DraggableMacroSymbol>(2, this);
+    macroSymbol3 = std::make_unique<DraggableMacroSymbol>(3, this);
+    macroSymbol4 = std::make_unique<DraggableMacroSymbol>(4, this);
+    macroSymbol5 = std::make_unique<DraggableMacroSymbol>(5, this);
+    macroSymbol6 = std::make_unique<DraggableMacroSymbol>(6, this);
+    macroSymbol7 = std::make_unique<DraggableMacroSymbol>(7, this);
+    macroSymbol8 = std::make_unique<DraggableMacroSymbol>(8, this);
     
     addAndMakeVisible(*macroSymbol1);
     addAndMakeVisible(*macroSymbol2);
@@ -3474,6 +3495,9 @@ void SynthesizerComponent::paintOverChildren(juce::Graphics& g)
         g.drawLine(effectsBounds.getX() + 269, effectsBounds.getY() + 350, 
                    effectsBounds.getX() + 269, effectsBounds.getY() + 365, 1.0f);
     }
+    
+    // Draw macro indicators on top of everything
+    drawMacroIndicators(g);
 }
 
 void SynthesizerComponent::resized()
@@ -4043,6 +4067,39 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
         parametricEQ.getBand(1).gain = static_cast<float>(eq2NewGainKnob.getValue());
         eq2GainKnob.setValue(eq2NewGainKnob.getValue(), juce::dontSendNotification); // Sync with existing knob
         parametricEQ.repaint();
+    }
+    // Macro knobs - update all linked parameters
+    else if (slider == &macro1Knob)
+    {
+        updateMacroMappings(1, macro1Knob.getValue());
+    }
+    else if (slider == &macro2Knob)
+    {
+        updateMacroMappings(2, macro2Knob.getValue());
+    }
+    else if (slider == &macro3Knob)
+    {
+        updateMacroMappings(3, macro3Knob.getValue());
+    }
+    else if (slider == &macro4Knob)
+    {
+        updateMacroMappings(4, macro4Knob.getValue());
+    }
+    else if (slider == &macro5Knob)
+    {
+        updateMacroMappings(5, macro5Knob.getValue());
+    }
+    else if (slider == &macro6Knob)
+    {
+        updateMacroMappings(6, macro6Knob.getValue());
+    }
+    else if (slider == &macro7Knob)
+    {
+        updateMacroMappings(7, macro7Knob.getValue());
+    }
+    else if (slider == &macro8Knob)
+    {
+        updateMacroMappings(8, macro8Knob.getValue());
     }
 }
 
@@ -6884,5 +6941,211 @@ void SynthesizerComponent::drawMacroKnobsBackground(juce::Graphics& g, juce::Rec
     // Main text
     g.setColour(juce::Colour(0xff606060));
     g.drawText("MACRO", textBounds, juce::Justification::centred, true);
+}
+
+//==============================================================================
+// Macro Mapping System Implementation
+
+void SynthesizerComponent::createMacroMapping(int macroIndex, juce::Slider* targetSlider)
+{
+    if (!targetSlider) return;
+    
+    // Remove any existing mapping for this macro/slider combination
+    removeMacroMapping(macroIndex, targetSlider);
+    
+    // Create new mapping with current slider value as base
+    double currentValue = targetSlider->getValue();
+    double minRange = targetSlider->getMinimum();
+    double maxRange = targetSlider->getMaximum();
+    
+    macroMappings.emplace_back(macroIndex, targetSlider, currentValue, minRange, maxRange);
+    
+    // Visual feedback - could add a brief highlight or message here
+    DBG("Macro " + juce::String(macroIndex) + " linked to slider at value " + juce::String(currentValue));
+    
+    // Trigger repaint to show new indicator
+    repaint();
+}
+
+void SynthesizerComponent::updateMacroMappings(int macroIndex, double macroValue)
+{
+    // macroValue should be 0.0 to 1.0 (macro knob range)
+    for (auto& mapping : macroMappings)
+    {
+        if (mapping.macroIndex == macroIndex && mapping.targetSlider)
+        {
+            // Calculate proportional offset from base value
+            // When macro = 0.0, target stays at baseValue
+            // When macro = 1.0, target goes to baseValue + (range * direction)
+            
+            double range = mapping.maxRange - mapping.minRange;
+            double offset = (macroValue - 0.5) * range; // -0.5 to +0.5 range for bidirectional control
+            double newValue = mapping.baseValue + offset;
+            
+            // Clamp to slider's valid range
+            newValue = juce::jlimit(mapping.minRange, mapping.maxRange, newValue);
+            
+            // Update the target slider value but don't send notification to avoid visual movement
+            // We want the parameter to change but the knob to stay visually at its base position
+            mapping.targetSlider->setValue(newValue, juce::dontSendNotification);
+        }
+    }
+    
+    // Trigger visual update for the circular indicators
+    repaint();
+}
+
+void SynthesizerComponent::removeMacroMapping(int macroIndex, juce::Slider* targetSlider)
+{
+    auto oldSize = macroMappings.size();
+    macroMappings.erase(
+        std::remove_if(macroMappings.begin(), macroMappings.end(),
+            [macroIndex, targetSlider](const MacroMapping& mapping) {
+                return mapping.macroIndex == macroIndex && mapping.targetSlider == targetSlider;
+            }),
+        macroMappings.end());
+    
+    // If we removed something, trigger repaint to update indicators
+    if (macroMappings.size() != oldSize)
+    {
+        repaint();
+    }
+}
+
+juce::Slider* SynthesizerComponent::findSliderAt(juce::Point<int> position)
+{
+    // List of all sliders to check for drop detection
+    std::vector<juce::Slider*> allSliders = {
+        // Volume and oscillator controls
+        &volumeControlsVolumeKnob, &volumeControlsDetuneKnob, &volumeControlsStereoWidthKnob, &volumeControlsPanKnob,
+        &phaseControlsPhaseKnob, &osc2VolumeKnob, &osc2DetuneKnob, &osc2StereoKnob, &osc2PanKnob, &osc2PhaseKnob,
+        
+        // ADSR controls
+        &adsrAttackKnob, &adsrDecayKnob, &adsrSustainKnob, &adsrReleaseKnob,
+        &osc2AttackKnob, &osc2DecayKnob, &osc2SustainKnob, &osc2ReleaseKnob,
+        
+        // Filter controls
+        &filterCutoffKnob, &filterResonanceKnob,
+        
+        // EQ controls
+        &eq1FreqKnob, &eq1QKnob, &eq1GainKnob, &eq2FreqKnob, &eq2QKnob, &eq2GainKnob,
+        &eq1NewFreqKnob, &eq1NewQKnob, &eq1NewGainKnob, &eq2NewFreqKnob, &eq2NewQKnob, &eq2NewGainKnob,
+        
+        // Effects controls
+        &chorusRateKnob, &chorusDelay1Knob, &chorusDelay2Knob, &chorusDepthKnob, &chorusFeedKnob, &chorusLpfKnob, &chorusMixKnob,
+        &flangerMixKnob, &flangerRateKnob, &flangerDepthKnob, &flangerFeedbackKnob, &flangerPhaseKnob,
+        &phaserMixKnob, &phaserRateKnob, &phaserDepth1Knob, &phaserDepth2Knob, &phaserFeedbackKnob, &phaserPhaseKnob, &phaserFrequencyKnob,
+        &compressorThresholdKnob, &compressorRatioKnob, &compressorAttackKnob, &compressorReleaseKnob, &compressorGainKnob, &compressorMixKnob,
+        &distortionDriveKnob, &distortionMixKnob, &distortionFilterFreqKnob, &distortionFilterQKnob,
+        &delayMixKnob, &delayFeedbackKnob, &delayFilterFreqKnob, &delayFilterQKnob,
+        &reverbMixKnob, &reverbSizeKnob, &reverbPreDelayKnob, &reverbLowCutKnob, &reverbHighCutKnob, &reverbDampKnob, &reverbWidthKnob
+    };
+    
+    // Check each slider to see if the position is within its bounds
+    for (auto* slider : allSliders)
+    {
+        if (slider && slider->isVisible())
+        {
+            auto sliderBounds = slider->getBounds();
+            if (sliderBounds.contains(position))
+            {
+                return slider;
+            }
+        }
+    }
+    
+    return nullptr;
+}
+
+
+void SynthesizerComponent::drawMacroIndicators(juce::Graphics& g)
+{
+    // Draw circular indicators for all mapped sliders
+    for (const auto& mapping : macroMappings)
+    {
+        if (mapping.targetSlider && mapping.targetSlider->isVisible())
+        {
+            drawCircularIndicator(g, mapping.targetSlider, mapping);
+        }
+    }
+}
+
+void SynthesizerComponent::drawCircularIndicator(juce::Graphics& g, juce::Slider* slider, const MacroMapping& mapping)
+{
+    if (!slider) return;
+    
+    auto sliderBounds = slider->getBounds();
+    auto center = sliderBounds.getCentre();
+    
+    // Calculate radius - slightly larger than the knob
+    float radius = std::max(sliderBounds.getWidth(), sliderBounds.getHeight()) * 0.6f;
+    
+    // Get current macro knob value 
+    double macroValue = getMacroKnobValue(mapping.macroIndex);
+    double sliderRange = mapping.maxRange - mapping.minRange;
+    
+    // Calculate the POTENTIAL range the macro can affect from the base value
+    // Macro can move bidirectionally by up to 50% of the total range
+    double maxUpwardTarget = juce::jlimit(mapping.minRange, mapping.maxRange, mapping.baseValue + 0.5 * sliderRange);
+    double maxDownwardTarget = juce::jlimit(mapping.minRange, mapping.maxRange, mapping.baseValue - 0.5 * sliderRange);
+    
+    // The static arc shows the full potential range
+    double potentialMin = std::min(maxUpwardTarget, maxDownwardTarget);
+    double potentialMax = std::max(maxUpwardTarget, maxDownwardTarget);
+    
+    // Convert to normalized positions (0 to 1)
+    double normalizedPotentialMin = (potentialMin - mapping.minRange) / sliderRange;
+    double normalizedPotentialMax = (potentialMax - mapping.minRange) / sliderRange;
+    double normalizedBase = (mapping.baseValue - mapping.minRange) / sliderRange;
+    
+    // Map to typical rotary knob range: 225° to 495° (7 o'clock to 5 o'clock)
+    float knobStartAngle = juce::MathConstants<float>::pi * 1.25f; // 225°
+    float knobEndAngle = juce::MathConstants<float>::pi * 2.75f;   // 495° 
+    float knobRange = knobEndAngle - knobStartAngle;
+    
+    float potentialStartAngle = knobStartAngle + (float)(normalizedPotentialMin * knobRange);
+    float potentialEndAngle = knobStartAngle + (float)(normalizedPotentialMax * knobRange);
+    float baseAngle = knobStartAngle + (float)(normalizedBase * knobRange);
+    
+    // 1. Draw the static potential range arc (thin line)
+    g.setColour(mapping.indicatorColor.withAlpha(0.4f));
+    juce::Path potentialPath;
+    potentialPath.addCentredArc(center.x, center.y, radius, radius, 0.0f, potentialStartAngle, potentialEndAngle, true);
+    g.strokePath(potentialPath, juce::PathStrokeType(2.0f));
+    
+    // 2. Calculate current macro target position for the moving dot
+    double offset = (macroValue - 0.5) * sliderRange;
+    double currentTarget = juce::jlimit(mapping.minRange, mapping.maxRange, mapping.baseValue + offset);
+    double normalizedCurrent = (currentTarget - mapping.minRange) / sliderRange;
+    float currentAngle = knobStartAngle + (float)(normalizedCurrent * knobRange);
+    
+    // 3. Draw moving dot at current macro position
+    g.setColour(mapping.indicatorColor);
+    float dotRadius = 4.0f;
+    float dotX = center.x + radius * std::cos(currentAngle - juce::MathConstants<float>::halfPi);
+    float dotY = center.y + radius * std::sin(currentAngle - juce::MathConstants<float>::halfPi);
+    g.fillEllipse(dotX - dotRadius, dotY - dotRadius, dotRadius * 2, dotRadius * 2);
+    
+    // 4. Draw a subtle base position indicator (where the knob was when linked)
+    g.setColour(mapping.indicatorColor.withAlpha(0.6f));
+    float baseDotRadius = 2.0f;
+    float baseX = center.x + radius * std::cos(baseAngle - juce::MathConstants<float>::halfPi);
+    float baseY = center.y + radius * std::sin(baseAngle - juce::MathConstants<float>::halfPi);
+    g.fillEllipse(baseX - baseDotRadius, baseY - baseDotRadius, baseDotRadius * 2, baseDotRadius * 2);
+}
+
+double SynthesizerComponent::getMacroKnobValue(int macroIndex)
+{
+    switch (macroIndex) {
+        case 1: return macro1Knob.getValue();
+        case 2: return macro2Knob.getValue();
+        case 3: return macro3Knob.getValue();
+        case 4: return macro4Knob.getValue();
+        case 5: return macro5Knob.getValue();
+        case 6: return macro6Knob.getValue();
+        case 7: return macro7Knob.getValue();
+        case 8: return macro8Knob.getValue();
+        default: return 0.5; // Default center position
+    }
 }
 

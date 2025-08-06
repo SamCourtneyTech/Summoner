@@ -10,7 +10,7 @@ class SynthesizerComponent;
 class DraggableMacroSymbol : public juce::Component
 {
 public:
-    DraggableMacroSymbol(int macroIndex);
+    DraggableMacroSymbol(int macroIndex, class SynthesizerComponent* parent);
     
     void paint(juce::Graphics& g) override;
     void mouseDown(const juce::MouseEvent& event) override;
@@ -25,8 +25,37 @@ private:
     juce::Point<int> originalPosition;
     juce::Point<int> dragOffset;
     bool isDragging = false;
+    class SynthesizerComponent* parentComponent;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DraggableMacroSymbol)
+};
+
+// Macro mapping system
+struct MacroMapping
+{
+    int macroIndex;                    // Which macro (1-8)
+    juce::Slider* targetSlider;        // The linked slider/knob
+    double baseValue;                  // Value when link was created
+    double minRange;                   // Target slider's minimum value
+    double maxRange;                   // Target slider's maximum value
+    juce::Colour indicatorColor;       // Color for the visual indicator
+    
+    MacroMapping(int macro, juce::Slider* slider, double base, double min, double max)
+        : macroIndex(macro), targetSlider(slider), baseValue(base), minRange(min), maxRange(max)
+    {
+        // Assign different colors for each macro
+        const juce::Colour macroColors[] = {
+            juce::Colour(0xff00ff00), // Green
+            juce::Colour(0xff0080ff), // Blue
+            juce::Colour(0xffff8000), // Orange
+            juce::Colour(0xffff00ff), // Magenta
+            juce::Colour(0xff00ffff), // Cyan
+            juce::Colour(0xffffff00), // Yellow
+            juce::Colour(0xffff0080), // Pink
+            juce::Colour(0xff8000ff)  // Purple
+        };
+        indicatorColor = macroColors[(macro - 1) % 8];
+    }
 };
 
 class ADSREnvelopeComponent : public juce::Component
@@ -1057,6 +1086,20 @@ private:
     std::unique_ptr<DraggableMacroSymbol> macroSymbol6;
     std::unique_ptr<DraggableMacroSymbol> macroSymbol7;
     std::unique_ptr<DraggableMacroSymbol> macroSymbol8;
+    
+    // Macro mapping system
+    std::vector<MacroMapping> macroMappings;
+    
+public:
+    void createMacroMapping(int macroIndex, juce::Slider* targetSlider);
+    juce::Slider* findSliderAt(juce::Point<int> position);
+    
+private:
+    void updateMacroMappings(int macroIndex, double macroValue);
+    void removeMacroMapping(int macroIndex, juce::Slider* targetSlider);
+    void drawMacroIndicators(juce::Graphics& g);
+    void drawCircularIndicator(juce::Graphics& g, juce::Slider* slider, const MacroMapping& mapping);
+    double getMacroKnobValue(int macroIndex);
     
     // Chorus effect controls
     juce::Slider chorusRateKnob;
