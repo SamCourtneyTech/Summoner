@@ -1,5 +1,6 @@
 #include "SynthesizerComponent.h"
 #include "PluginProcessor.h"
+#include <set>
 
 // DraggableMacroSymbol implementation
 DraggableMacroSymbol::DraggableMacroSymbol(int index, SynthesizerComponent* parent) 
@@ -6954,8 +6955,14 @@ void SynthesizerComponent::createMacroMapping(int macroIndex, juce::Slider* targ
 {
     if (!targetSlider) return;
     
-    // Remove any existing mapping for this macro/slider combination
-    removeMacroMapping(macroIndex, targetSlider);
+    // Remove any existing mapping for this specific macro/slider combination
+    // This allows the same macro to control multiple different sliders
+    macroMappings.erase(
+        std::remove_if(macroMappings.begin(), macroMappings.end(),
+            [macroIndex, targetSlider](const MacroMapping& mapping) {
+                return mapping.macroIndex == macroIndex && mapping.targetSlider == targetSlider;
+            }),
+        macroMappings.end());
     
     // Create new mapping with current slider value as base
     double currentValue = targetSlider->getValue();
@@ -6964,8 +6971,14 @@ void SynthesizerComponent::createMacroMapping(int macroIndex, juce::Slider* targ
     
     macroMappings.emplace_back(macroIndex, targetSlider, currentValue, minRange, maxRange);
     
-    // Visual feedback - could add a brief highlight or message here
-    DBG("Macro " + juce::String(macroIndex) + " linked to slider at value " + juce::String(currentValue));
+    // Debug output to identify duplicate mapping issues
+    juce::String sliderName = "Unknown";
+    if (targetSlider == &flangerMixKnob) sliderName = "flangerMixKnob";
+    else if (targetSlider == &compressorMixKnob) sliderName = "compressorMixKnob";
+    else if (targetSlider == &eq1NewGainKnob) sliderName = "eq1NewGainKnob";
+    else if (targetSlider == &eq2NewGainKnob) sliderName = "eq2NewGainKnob";
+    
+    DBG("Macro " + juce::String(macroIndex) + " linked to " + sliderName + " at value " + juce::String(currentValue));
     
     // Trigger repaint to show new indicator
     repaint();
@@ -7034,8 +7047,7 @@ juce::Slider* SynthesizerComponent::findSliderAt(juce::Point<int> position)
         // Filter controls
         &filterCutoffKnob, &filterResonanceKnob,
         
-        // EQ controls
-        &eq1FreqKnob, &eq1QKnob, &eq1GainKnob, &eq2FreqKnob, &eq2QKnob, &eq2GainKnob,
+        // EQ controls - using only the NEW knobs to avoid duplicates
         &eq1NewFreqKnob, &eq1NewQKnob, &eq1NewGainKnob, &eq2NewFreqKnob, &eq2NewQKnob, &eq2NewGainKnob,
         
         // Effects controls
@@ -7049,6 +7061,10 @@ juce::Slider* SynthesizerComponent::findSliderAt(juce::Point<int> position)
     };
     
     // Check each slider to see if the position is within its bounds
+    // Return the slider with the smallest bounds that contains the position (most specific match)
+    juce::Slider* bestMatch = nullptr;
+    int smallestArea = INT_MAX;
+    
     for (auto* slider : allSliders)
     {
         if (slider && slider->isVisible())
@@ -7057,23 +7073,44 @@ juce::Slider* SynthesizerComponent::findSliderAt(juce::Point<int> position)
             auto sliderBounds = getLocalArea(slider->getParentComponent(), slider->getBounds());
             if (sliderBounds.contains(position))
             {
-                return slider;
+                int area = sliderBounds.getWidth() * sliderBounds.getHeight();
+                if (area < smallestArea)
+                {
+                    smallestArea = area;
+                    bestMatch = slider;
+                }
             }
         }
     }
     
-    return nullptr;
+    return bestMatch;
 }
 
 
 void SynthesizerComponent::drawMacroIndicators(juce::Graphics& g)
 {
-    // Draw circular indicators for all mapped sliders
+    // Draw arcs for all valid mappings (multiple arcs per macro are allowed)
+    // But validate coordinates to prevent phantom arcs from coordinate conversion issues
+    
     for (const auto& mapping : macroMappings)
     {
         if (mapping.targetSlider && mapping.targetSlider->isVisible())
         {
-            drawCircularIndicator(g, mapping.targetSlider, mapping);
+            // Validate the coordinate conversion before drawing
+            auto sliderParent = mapping.targetSlider->getParentComponent();
+            if (sliderParent && sliderParent->isVisible())
+            {
+                // Get converted bounds
+                auto sliderBounds = getLocalArea(sliderParent, mapping.targetSlider->getBounds());
+                
+                // Only draw if bounds are reasonable (not phantom coordinates)
+                if (sliderBounds.getWidth() > 0 && sliderBounds.getHeight() > 0 && 
+                    sliderBounds.getX() >= 0 && sliderBounds.getY() >= 0 &&
+                    sliderBounds.getRight() <= getWidth() && sliderBounds.getBottom() <= getHeight())
+                {
+                    drawCircularIndicator(g, mapping.targetSlider, mapping);
+                }
+            }
         }
     }
 }
@@ -7082,7 +7119,18 @@ void SynthesizerComponent::drawCircularIndicator(juce::Graphics& g, juce::Slider
 {
     if (!slider) return;
     
-    auto sliderBounds = slider->getBounds();
+    // Convert slider bounds to the main component's coordinate system
+    // This is crucial for FX knobs that are in child tab components
+    auto sliderBounds = getLocalArea(slider->getParentComponent(), slider->getBounds());
+    
+    // Additional safety check for phantom coordinates
+    if (sliderBounds.getWidth() <= 0 || sliderBounds.getHeight() <= 0 || 
+        sliderBounds.getX() < 0 || sliderBounds.getY() < 0 ||
+        sliderBounds.getRight() > getWidth() || sliderBounds.getBottom() > getHeight())
+    {
+        return; // Skip drawing for invalid coordinates
+    }
+    
     auto center = sliderBounds.getCentre();
     
     // Calculate radius - slightly larger than the knob
