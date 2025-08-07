@@ -27,6 +27,10 @@ void DraggableMacroSymbol::mouseDown(const juce::MouseEvent& event)
 {
     isDragging = true;
     dragOffset = event.getPosition();
+    
+    // Bring this component to the front so it stays visible over FX modules during drag
+    toFront(true);
+    
     repaint();
 }
 
@@ -47,9 +51,9 @@ void DraggableMacroSymbol::mouseUp(const juce::MouseEvent& event)
         repaint();
         
         // Check if we dropped on a slider/knob
+        // Use more robust coordinate conversion that works with nested components
         auto globalPosition = getScreenPosition() + event.getPosition();
-        auto localPosition = parentComponent->getScreenPosition();
-        auto relativePosition = globalPosition - localPosition;
+        auto relativePosition = parentComponent->getLocalPoint(nullptr, globalPosition);
         
         // Find if there's a slider at the drop position
         if (auto* targetSlider = parentComponent->findSliderAt(relativePosition))
@@ -7049,7 +7053,8 @@ juce::Slider* SynthesizerComponent::findSliderAt(juce::Point<int> position)
     {
         if (slider && slider->isVisible())
         {
-            auto sliderBounds = slider->getBounds();
+            // Convert slider bounds to the main component's coordinate system
+            auto sliderBounds = getLocalArea(slider->getParentComponent(), slider->getBounds());
             if (sliderBounds.contains(position))
             {
                 return slider;
@@ -7265,6 +7270,269 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
     {
         audioProcessor.setEQ2Gain(static_cast<float>(newValue));
         parametricEQ.syncWithDSPState();
+    }
+    // New EQ knobs
+    else if (slider == &eq1NewFreqKnob)
+    {
+        audioProcessor.setEQ1Frequency(static_cast<float>(newValue));
+        parametricEQ.syncWithDSPState();
+    }
+    else if (slider == &eq1NewQKnob)
+    {
+        audioProcessor.setEQ1Q(static_cast<float>(newValue));
+        parametricEQ.syncWithDSPState();
+    }
+    else if (slider == &eq1NewGainKnob)
+    {
+        audioProcessor.setEQ1Gain(static_cast<float>(newValue));
+        parametricEQ.syncWithDSPState();
+    }
+    else if (slider == &eq2NewFreqKnob)
+    {
+        audioProcessor.setEQ2Frequency(static_cast<float>(newValue));
+        parametricEQ.syncWithDSPState();
+    }
+    else if (slider == &eq2NewQKnob)
+    {
+        audioProcessor.setEQ2Q(static_cast<float>(newValue));
+        parametricEQ.syncWithDSPState();
+    }
+    else if (slider == &eq2NewGainKnob)
+    {
+        audioProcessor.setEQ2Gain(static_cast<float>(newValue));
+        parametricEQ.syncWithDSPState();
+    }
+    // Oscillator 2 controls
+    else if (slider == &osc2VolumeKnob)
+    {
+        audioProcessor.setOsc2Volume(static_cast<float>(newValue));
+    }
+    else if (slider == &osc2DetuneKnob)
+    {
+        audioProcessor.setOsc2Detune(static_cast<float>(newValue));
+    }
+    else if (slider == &osc2StereoKnob)
+    {
+        audioProcessor.setOsc2Stereo(static_cast<float>(newValue));
+    }
+    else if (slider == &osc2AttackKnob)
+    {
+        audioProcessor.setOsc2Attack(static_cast<float>(newValue));
+        // If ADSR is linked, also update main ADSR
+        if (osc2AdsrLinkButton.getToggleState())
+        {
+            audioProcessor.setSynthAttack(static_cast<float>(newValue));
+        }
+        updateEnvelopeDisplay();
+    }
+    else if (slider == &osc2DecayKnob)
+    {
+        audioProcessor.setOsc2Decay(static_cast<float>(newValue));
+        // If ADSR is linked, also update main ADSR
+        if (osc2AdsrLinkButton.getToggleState())
+        {
+            audioProcessor.setSynthDecay(static_cast<float>(newValue));
+        }
+        updateEnvelopeDisplay();
+    }
+    else if (slider == &osc2SustainKnob)
+    {
+        audioProcessor.setOsc2Sustain(static_cast<float>(newValue));
+        // If ADSR is linked, also update main ADSR
+        if (osc2AdsrLinkButton.getToggleState())
+        {
+            audioProcessor.setSynthSustain(static_cast<float>(newValue));
+        }
+        updateEnvelopeDisplay();
+    }
+    else if (slider == &osc2ReleaseKnob)
+    {
+        audioProcessor.setOsc2Release(static_cast<float>(newValue));
+        // If ADSR is linked, also update main ADSR
+        if (osc2AdsrLinkButton.getToggleState())
+        {
+            audioProcessor.setSynthRelease(static_cast<float>(newValue));
+        }
+        updateEnvelopeDisplay();
+    }
+    else if (slider == &osc2PanKnob)
+    {
+        audioProcessor.setOsc2Pan(static_cast<float>(newValue));
+    }
+    else if (slider == &osc2PhaseKnob)
+    {
+        audioProcessor.setOsc2Phase(static_cast<float>(newValue));
+    }
+    // Chorus FX
+    else if (slider == &chorusRateKnob)
+    {
+        audioProcessor.setChorusRate(static_cast<float>(newValue));
+    }
+    else if (slider == &chorusDelay1Knob)
+    {
+        audioProcessor.setChorusDelay1(static_cast<float>(newValue));
+    }
+    else if (slider == &chorusDelay2Knob)
+    {
+        audioProcessor.setChorusDelay2(static_cast<float>(newValue));
+    }
+    else if (slider == &chorusDepthKnob)
+    {
+        audioProcessor.setChorusDepth(static_cast<float>(newValue));
+    }
+    else if (slider == &chorusFeedKnob)
+    {
+        audioProcessor.setChorusFeedback(static_cast<float>(newValue));
+    }
+    else if (slider == &chorusLpfKnob)
+    {
+        float filterFreq = juce::jmap(static_cast<float>(newValue), 0.0f, 1.0f, 20.0f, 20000.0f);
+        audioProcessor.setChorusLPF(filterFreq);
+    }
+    else if (slider == &chorusMixKnob)
+    {
+        audioProcessor.setChorusMix(static_cast<float>(newValue));
+    }
+    // Flanger FX
+    else if (slider == &flangerRateKnob)
+    {
+        audioProcessor.setFlangerRate(static_cast<float>(newValue));
+    }
+    else if (slider == &flangerDepthKnob)
+    {
+        audioProcessor.setFlangerDepth(static_cast<float>(newValue));
+    }
+    else if (slider == &flangerFeedbackKnob)
+    {
+        audioProcessor.setFlangerFeedback(static_cast<float>(newValue));
+    }
+    else if (slider == &flangerMixKnob)
+    {
+        audioProcessor.setFlangerMix(static_cast<float>(newValue));
+    }
+    else if (slider == &flangerPhaseKnob)
+    {
+        audioProcessor.setFlangerPhase(static_cast<float>(newValue));
+    }
+    // Phaser FX
+    else if (slider == &phaserRateKnob)
+    {
+        audioProcessor.setPhaserRate(static_cast<float>(newValue));
+    }
+    else if (slider == &phaserDepth1Knob)
+    {
+        audioProcessor.setPhaserDepth1(static_cast<float>(newValue));
+    }
+    else if (slider == &phaserDepth2Knob)
+    {
+        audioProcessor.setPhaserDepth2(static_cast<float>(newValue));
+    }
+    else if (slider == &phaserFeedbackKnob)
+    {
+        audioProcessor.setPhaserFeedback(static_cast<float>(newValue));
+    }
+    else if (slider == &phaserMixKnob)
+    {
+        audioProcessor.setPhaserMix(static_cast<float>(newValue));
+    }
+    else if (slider == &phaserPhaseKnob)
+    {
+        audioProcessor.setPhaserPhase(static_cast<float>(newValue));
+    }
+    else if (slider == &phaserFrequencyKnob)
+    {
+        audioProcessor.setPhaserFrequency(static_cast<float>(newValue));
+    }
+    // Compressor FX
+    else if (slider == &compressorThresholdKnob)
+    {
+        audioProcessor.setCompressorThreshold(static_cast<float>(newValue));
+    }
+    else if (slider == &compressorRatioKnob)
+    {
+        float ratio = juce::jmap(static_cast<float>(newValue), 0.0f, 1.0f, 1.0f, 20.0f);
+        audioProcessor.setCompressorRatio(ratio);
+    }
+    else if (slider == &compressorAttackKnob)
+    {
+        float attack = juce::jmap(static_cast<float>(newValue), 0.0f, 1.0f, 0.1f, 100.0f);
+        audioProcessor.setCompressorAttack(attack);
+    }
+    else if (slider == &compressorReleaseKnob)
+    {
+        float release = juce::jmap(static_cast<float>(newValue), 0.0f, 1.0f, 1.0f, 1000.0f);
+        audioProcessor.setCompressorRelease(release);
+    }
+    else if (slider == &compressorGainKnob)
+    {
+        audioProcessor.setCompressorGain(static_cast<float>(newValue));
+    }
+    else if (slider == &compressorMixKnob)
+    {
+        audioProcessor.setCompressorMix(static_cast<float>(newValue));
+    }
+    // Distortion FX
+    else if (slider == &distortionDriveKnob)
+    {
+        audioProcessor.setDistortionDrive(static_cast<float>(newValue));
+    }
+    else if (slider == &distortionMixKnob)
+    {
+        audioProcessor.setDistortionMix(static_cast<float>(newValue));
+    }
+    else if (slider == &distortionFilterFreqKnob)
+    {
+        audioProcessor.setDistortionFilterFreq(static_cast<float>(newValue));
+    }
+    else if (slider == &distortionFilterQKnob)
+    {
+        audioProcessor.setDistortionFilterQ(static_cast<float>(newValue));
+    }
+    // Delay FX
+    else if (slider == &delayFeedbackKnob)
+    {
+        audioProcessor.setDelayFeedback(static_cast<float>(newValue));
+    }
+    else if (slider == &delayMixKnob)
+    {
+        audioProcessor.setDelayMix(static_cast<float>(newValue));
+    }
+    else if (slider == &delayFilterFreqKnob)
+    {
+        audioProcessor.setDelayFilterFreq(static_cast<float>(newValue));
+    }
+    else if (slider == &delayFilterQKnob)
+    {
+        audioProcessor.setDelayFilterQ(static_cast<float>(newValue));
+    }
+    // Reverb FX
+    else if (slider == &reverbMixKnob)
+    {
+        audioProcessor.setReverbMix(static_cast<float>(newValue));
+    }
+    else if (slider == &reverbLowCutKnob)
+    {
+        audioProcessor.setReverbLowCut(static_cast<float>(newValue));
+    }
+    else if (slider == &reverbHighCutKnob)
+    {
+        audioProcessor.setReverbHighCut(static_cast<float>(newValue));
+    }
+    else if (slider == &reverbSizeKnob)
+    {
+        audioProcessor.setReverbSize(static_cast<float>(newValue));
+    }
+    else if (slider == &reverbPreDelayKnob)
+    {
+        audioProcessor.setReverbPreDelay(static_cast<float>(newValue));
+    }
+    else if (slider == &reverbDampKnob)
+    {
+        audioProcessor.setReverbDamping(static_cast<float>(newValue));
+    }
+    else if (slider == &reverbWidthKnob)
+    {
+        audioProcessor.setReverbWidth(static_cast<float>(newValue));
     }
 }
 
