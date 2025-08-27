@@ -4899,8 +4899,68 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
     }
 }
 
+bool SynthesizerComponent::hitTest(int x, int y)
+{
+    // Check if this click should be handled by arc interaction
+    auto mapping = findMacroMappingAtPosition(juce::Point<int>(x, y));
+    if (mapping != nullptr)
+    {
+        // Arc handle found, this component should handle the event
+        return true;
+    }
+    
+    // For everything else, use default hit testing (sliders will handle their own restricted areas)
+    return juce::Component::hitTest(x, y);
+}
+
 void SynthesizerComponent::mouseDown(const juce::MouseEvent& event)
 {
+    // FIRST: Check for arc interaction before any other mouse handling
+    // This ensures arc handles get priority over other components
+    juce::Logger::writeToLog("Mouse down at position: " + juce::String(event.getPosition().x) + ", " + juce::String(event.getPosition().y));
+    auto mapping = findMacroMappingAtPosition(event.getPosition());
+    if (mapping != nullptr)
+    {
+        juce::Logger::writeToLog("Found mapping for macro " + juce::String(mapping->macroIndex));
+        isDraggingArc = true;
+        draggedMapping = mapping;
+        dragStartPoint = event.getPosition();
+        
+        // Determine which endpoint we're dragging by checking handle positions
+        auto bounds = mapping->targetSlider->getBounds();
+        if (mapping->targetSlider->getParentComponent() != this)
+        {
+            bounds = getLocalArea(mapping->targetSlider->getParentComponent(), bounds);
+        }
+        
+        auto arcCenter = bounds.getCentre().toFloat();
+        float radius = bounds.getWidth() * 0.4f;
+        float handleRadius = 5.0f;
+        
+        float minAngle = juce::jmap(static_cast<float>(mapping->userMinRange), 
+                                  static_cast<float>(mapping->targetSlider->getMinimum()),
+                                  static_cast<float>(mapping->targetSlider->getMaximum()),
+                                  2.35619f, 0.785398f);
+        float maxAngle = juce::jmap(static_cast<float>(mapping->userMaxRange), 
+                                  static_cast<float>(mapping->targetSlider->getMinimum()),
+                                  static_cast<float>(mapping->targetSlider->getMaximum()),
+                                  2.35619f, 0.785398f);
+        
+        float minX = arcCenter.x + radius * std::cos(minAngle - juce::MathConstants<float>::halfPi);
+        float minY = arcCenter.y + radius * std::sin(minAngle - juce::MathConstants<float>::halfPi);
+        float maxX = arcCenter.x + radius * std::cos(maxAngle - juce::MathConstants<float>::halfPi);
+        float maxY = arcCenter.y + radius * std::sin(maxAngle - juce::MathConstants<float>::halfPi);
+        
+        float distToMin = event.getPosition().toFloat().getDistanceFrom(juce::Point<float>(minX, minY));
+        float distToMax = event.getPosition().toFloat().getDistanceFrom(juce::Point<float>(maxX, maxY));
+        
+        draggingMinRange = (distToMin < distToMax);
+        juce::Logger::writeToLog("Dragging " + juce::String(draggingMinRange ? "min" : "max") + " range handle");
+        repaint();
+        return; // Don't process other mouse events when dragging arc
+    }
+    
+    // SECOND: Handle other component-specific mouse events only if no arc was clicked
     if (event.eventComponent == &pitchControlsOctaveValueLabel)
     {
         isDraggingOctave = true;
@@ -5199,6 +5259,64 @@ void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
             // audioProcessor.setPhaserPoles(phaserPolesValue); // Add this when audio processor supports it
         }
     }
+    
+    // Handle arc dragging
+    if (isDraggingArc && draggedMapping != nullptr)
+    {
+        auto bounds = draggedMapping->targetSlider->getBounds();
+        if (draggedMapping->targetSlider->getParentComponent() != this)
+        {
+            bounds = getLocalArea(draggedMapping->targetSlider->getParentComponent(), bounds);
+        }
+        
+        auto arcCenter = bounds.getCentre().toFloat();
+        auto mousePos = event.getPosition().toFloat();
+        auto centerToMouse = mousePos - arcCenter;
+        
+        // Calculate angle from center to mouse position
+        float mouseAngle = std::atan2(centerToMouse.y, centerToMouse.x);
+        
+        // Normalize angle to 0-2π range
+        if (mouseAngle < 0) mouseAngle += 2.0f * juce::MathConstants<float>::pi;
+        
+        // Convert angle to slider value range (adjust for knob's angle mapping)
+        // Knobs typically go from 2.35619f (bottom-left) to 0.785398f (bottom-right)
+        float normalizedAngle;
+        if (mouseAngle > juce::MathConstants<float>::pi)
+        {
+            normalizedAngle = juce::jmap(mouseAngle, 2.35619f, 2.0f * juce::MathConstants<float>::pi, 0.0f, 0.5f);
+        }
+        else
+        {
+            normalizedAngle = juce::jmap(mouseAngle, 0.0f, 0.785398f, 0.5f, 1.0f);
+        }
+        
+        normalizedAngle = juce::jlimit(0.0f, 1.0f, normalizedAngle);
+        
+        // Convert to slider's value range
+        double newValue = juce::jmap(static_cast<double>(normalizedAngle), 
+                                   0.0, 1.0,
+                                   draggedMapping->targetSlider->getMinimum(),
+                                   draggedMapping->targetSlider->getMaximum());
+        
+        // Update the appropriate range
+        if (draggingMinRange)
+        {
+            draggedMapping->userMinRange = newValue;
+            // Ensure min doesn't exceed max
+            if (draggedMapping->userMinRange > draggedMapping->userMaxRange)
+                draggedMapping->userMinRange = draggedMapping->userMaxRange;
+        }
+        else
+        {
+            draggedMapping->userMaxRange = newValue;
+            // Ensure max doesn't go below min
+            if (draggedMapping->userMaxRange < draggedMapping->userMinRange)
+                draggedMapping->userMaxRange = draggedMapping->userMinRange;
+        }
+        
+        repaint();
+    }
 }
 
 void SynthesizerComponent::mouseUp(const juce::MouseEvent& event)
@@ -5215,6 +5333,14 @@ void SynthesizerComponent::mouseUp(const juce::MouseEvent& event)
     isDraggingDistortionType = false;
     isDraggingReverbType = false;
     isDraggingPhaserPoles = false;
+    
+    // Cleanup arc dragging
+    if (isDraggingArc)
+    {
+        isDraggingArc = false;
+        draggedMapping = nullptr;
+        repaint();
+    }
 }
 
 void SynthesizerComponent::updateEnvelopeDisplay()
@@ -6995,12 +7121,13 @@ void SynthesizerComponent::updateMacroMappings(int macroIndex, double macroValue
             // When macro = 0.0, target stays at baseValue
             // When macro = 1.0, target goes to baseValue + (range * direction)
             
-            double range = mapping.maxRange - mapping.minRange;
-            double offset = (macroValue - 0.5) * range; // -0.5 to +0.5 range for bidirectional control
+            // Use user-defined range instead of full slider range
+            double userRange = mapping.userMaxRange - mapping.userMinRange;
+            double offset = (macroValue - 0.5) * userRange; // -0.5 to +0.5 range for bidirectional control
             double newValue = mapping.baseValue + offset;
             
-            // Clamp to slider's valid range
-            newValue = juce::jlimit(mapping.minRange, mapping.maxRange, newValue);
+            // Clamp to user-defined range (which is within slider's valid range)
+            newValue = juce::jlimit(mapping.userMinRange, mapping.userMaxRange, newValue);
             
             // Update the target slider value but don't send notification to avoid visual movement
             // We want the parameter to change but the knob to stay visually at its base position
@@ -7140,14 +7267,9 @@ void SynthesizerComponent::drawCircularIndicator(juce::Graphics& g, juce::Slider
     double macroValue = getMacroKnobValue(mapping.macroIndex);
     double sliderRange = mapping.maxRange - mapping.minRange;
     
-    // Calculate the POTENTIAL range the macro can affect from the base value
-    // Macro can move bidirectionally by up to 50% of the total range
-    double maxUpwardTarget = juce::jlimit(mapping.minRange, mapping.maxRange, mapping.baseValue + 0.5 * sliderRange);
-    double maxDownwardTarget = juce::jlimit(mapping.minRange, mapping.maxRange, mapping.baseValue - 0.5 * sliderRange);
-    
-    // The static arc shows the full potential range
-    double potentialMin = std::min(maxUpwardTarget, maxDownwardTarget);
-    double potentialMax = std::max(maxUpwardTarget, maxDownwardTarget);
+    // Use the user-defined range for the arc (adjustable by dragging)
+    double potentialMin = mapping.userMinRange;
+    double potentialMax = mapping.userMaxRange;
     
     // Convert to normalized positions (0 to 1)
     double normalizedPotentialMin = (potentialMin - mapping.minRange) / sliderRange;
@@ -7188,6 +7310,25 @@ void SynthesizerComponent::drawCircularIndicator(juce::Graphics& g, juce::Slider
     float baseX = center.x + radius * std::cos(baseAngle - juce::MathConstants<float>::halfPi);
     float baseY = center.y + radius * std::sin(baseAngle - juce::MathConstants<float>::halfPi);
     g.fillEllipse(baseX - baseDotRadius, baseY - baseDotRadius, baseDotRadius * 2, baseDotRadius * 2);
+    
+    // 5. Draw drag handles at arc endpoints for easier interaction
+    float handleRadius = 5.0f;
+    
+    // Min range handle
+    float minX = center.x + radius * std::cos(potentialStartAngle - juce::MathConstants<float>::halfPi);
+    float minY = center.y + radius * std::sin(potentialStartAngle - juce::MathConstants<float>::halfPi);
+    g.setColour(mapping.indicatorColor.withAlpha(0.9f));
+    g.fillEllipse(minX - handleRadius, minY - handleRadius, handleRadius * 2, handleRadius * 2);
+    g.setColour(juce::Colours::white.withAlpha(0.4f));
+    g.drawEllipse(minX - handleRadius, minY - handleRadius, handleRadius * 2, handleRadius * 2, 1.5f);
+    
+    // Max range handle
+    float maxX = center.x + radius * std::cos(potentialEndAngle - juce::MathConstants<float>::halfPi);
+    float maxY = center.y + radius * std::sin(potentialEndAngle - juce::MathConstants<float>::halfPi);
+    g.setColour(mapping.indicatorColor.withAlpha(0.9f));
+    g.fillEllipse(maxX - handleRadius, maxY - handleRadius, handleRadius * 2, handleRadius * 2);
+    g.setColour(juce::Colours::white.withAlpha(0.4f));
+    g.drawEllipse(maxX - handleRadius, maxY - handleRadius, handleRadius * 2, handleRadius * 2, 1.5f);
 }
 
 double SynthesizerComponent::getMacroKnobValue(int macroIndex)
@@ -7582,5 +7723,148 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
     {
         audioProcessor.setReverbWidth(static_cast<float>(newValue));
     }
+}
+
+MacroMapping* SynthesizerComponent::findMacroMappingAtPosition(juce::Point<int> position)
+{
+    juce::Logger::writeToLog("Checking " + juce::String(macroMappings.size()) + " macro mappings");
+    for (auto& mapping : macroMappings)
+    {
+        if (mapping.targetSlider && mapping.targetSlider->isVisible())
+        {
+            auto bounds = mapping.targetSlider->getBounds();
+            if (mapping.targetSlider->getParentComponent() != this)
+            {
+                bounds = getLocalArea(mapping.targetSlider->getParentComponent(), bounds);
+            }
+            
+            // Check if clicking on drag handles first (easier to click)
+            auto center = bounds.getCentre();
+            float radius = bounds.getWidth() * 0.4f;
+            float handleRadius = 5.0f;
+            
+            // Calculate handle positions
+            float minAngle = juce::jmap(static_cast<float>(mapping.userMinRange), 
+                                      static_cast<float>(mapping.targetSlider->getMinimum()),
+                                      static_cast<float>(mapping.targetSlider->getMaximum()),
+                                      2.35619f, 0.785398f);
+            float maxAngle = juce::jmap(static_cast<float>(mapping.userMaxRange), 
+                                      static_cast<float>(mapping.targetSlider->getMinimum()),
+                                      static_cast<float>(mapping.targetSlider->getMaximum()),
+                                      2.35619f, 0.785398f);
+            
+            float minX = center.x + radius * std::cos(minAngle - juce::MathConstants<float>::halfPi);
+            float minY = center.y + radius * std::sin(minAngle - juce::MathConstants<float>::halfPi);
+            float maxX = center.x + radius * std::cos(maxAngle - juce::MathConstants<float>::halfPi);
+            float maxY = center.y + radius * std::sin(maxAngle - juce::MathConstants<float>::halfPi);
+            
+            // Check if clicking on min handle
+            if (position.toFloat().getDistanceFrom(juce::Point<float>(minX, minY)) <= handleRadius + 3.0f)
+            {
+                juce::Logger::writeToLog("Clicked on min handle for macro " + juce::String(mapping.macroIndex));
+                return &mapping;
+            }
+            
+            // Check if clicking on max handle
+            if (position.toFloat().getDistanceFrom(juce::Point<float>(maxX, maxY)) <= handleRadius + 3.0f)
+            {
+                juce::Logger::writeToLog("Clicked on max handle for macro " + juce::String(mapping.macroIndex));
+                return &mapping;
+            }
+            
+            // Fallback to arc detection
+            if (isPointOnArc(position, center, radius, minAngle, maxAngle))
+            {
+                juce::Logger::writeToLog("Clicked on arc for macro " + juce::String(mapping.macroIndex));
+                return &mapping;
+            }
+        }
+    }
+    return nullptr;
+}
+
+bool SynthesizerComponent::isPointOnArc(juce::Point<int> point, juce::Point<int> center, float radius, float startAngle, float endAngle)
+{
+    auto pos = point.toFloat();
+    auto centerFloat = center.toFloat();
+    
+    // Check if point is within radius range (with some tolerance)
+    float distance = centerFloat.getDistanceFrom(pos);
+    if (distance < radius - 10.0f || distance > radius + 10.0f)
+        return false;
+    
+    // Calculate angle of the position
+    auto centerToPos = pos - centerFloat;
+    float posAngle = std::atan2(centerToPos.y, centerToPos.x);
+    if (posAngle < 0) posAngle += 2.0f * juce::MathConstants<float>::pi;
+    
+    // Check if position angle is within arc range (considering wrap-around)
+    if (startAngle <= endAngle)
+    {
+        return posAngle >= startAngle && posAngle <= endAngle;
+    }
+    else
+    {
+        return posAngle >= startAngle || posAngle <= endAngle;
+    }
+}
+
+void SynthesizerComponent::updateMappingRange(MacroMapping* mapping, juce::Point<int> dragPosition)
+{
+    if (!mapping || !mapping->targetSlider)
+        return;
+        
+    auto bounds = mapping->targetSlider->getBounds();
+    if (mapping->targetSlider->getParentComponent() != this)
+    {
+        bounds = getLocalArea(mapping->targetSlider->getParentComponent(), bounds);
+    }
+    
+    auto arcCenter = bounds.getCentre().toFloat();
+    auto mousePos = dragPosition.toFloat();
+    auto centerToMouse = mousePos - arcCenter;
+    
+    // Calculate angle from center to mouse position
+    float mouseAngle = std::atan2(centerToMouse.y, centerToMouse.x);
+    
+    // Normalize angle to 0-2π range
+    if (mouseAngle < 0) mouseAngle += 2.0f * juce::MathConstants<float>::pi;
+    
+    // Convert angle to slider value range (adjust for knob's angle mapping)
+    float normalizedAngle;
+    if (mouseAngle > juce::MathConstants<float>::pi)
+    {
+        normalizedAngle = juce::jmap(mouseAngle, 2.35619f, 2.0f * juce::MathConstants<float>::pi, 0.0f, 0.5f);
+    }
+    else
+    {
+        normalizedAngle = juce::jmap(mouseAngle, 0.0f, 0.785398f, 0.5f, 1.0f);
+    }
+    
+    normalizedAngle = juce::jlimit(0.0f, 1.0f, normalizedAngle);
+    
+    // Convert to slider's value range
+    double newValue = juce::jmap(static_cast<double>(normalizedAngle), 
+                               0.0, 1.0,
+                               mapping->targetSlider->getMinimum(),
+                               mapping->targetSlider->getMaximum());
+    
+    // Update the appropriate range
+    if (draggingMinRange)
+    {
+        mapping->userMinRange = newValue;
+        // Ensure min doesn't exceed max
+        if (mapping->userMinRange > mapping->userMaxRange)
+            mapping->userMinRange = mapping->userMaxRange;
+    }
+    else
+    {
+        mapping->userMaxRange = newValue;
+        // Ensure max doesn't go below min
+        if (mapping->userMaxRange < mapping->userMinRange)
+            mapping->userMaxRange = mapping->userMinRange;
+    }
+    
+    repaint();
 }
 

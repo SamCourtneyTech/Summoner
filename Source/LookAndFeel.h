@@ -187,6 +187,31 @@ public:
         g.setColour(juce::Colours::white);
         g.drawText(text, bounds, justification, true);
     }
+    
+};
+
+// Custom slider class that only responds to clicks on the visual knob area
+class RestrictedHitSlider : public juce::Slider
+{
+public:
+    RestrictedHitSlider() : juce::Slider() {}
+    RestrictedHitSlider(SliderStyle style, TextEntryBoxPosition textBoxPosition)
+        : juce::Slider(style, textBoxPosition) {}
+    
+    bool hitTest(int x, int y) override
+    {
+        // Get the bounds reduced by 5 (matching the CustomKnobLookAndFeel)
+        auto bounds = getLocalBounds().toFloat().reduced(5);
+        auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) / 2.0f;
+        auto centreX = bounds.getCentreX();
+        auto centreY = bounds.getCentreY();
+        
+        // Only allow clicks within the visual knob area (30% of full radius)
+        auto knobRadius = radius * 0.30f;
+        auto distanceFromCenter = juce::Point<float>(x, y).getDistanceFrom(juce::Point<float>(centreX, centreY));
+        
+        return distanceFromCenter <= knobRadius;
+    }
 };
 
 class WaveButtonLookAndFeel : public juce::LookAndFeel_V4

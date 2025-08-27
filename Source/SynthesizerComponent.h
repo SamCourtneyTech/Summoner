@@ -38,11 +38,16 @@ struct MacroMapping
     double baseValue;                  // Value when link was created
     double minRange;                   // Target slider's minimum value
     double maxRange;                   // Target slider's maximum value
+    double userMinRange;               // User-adjustable minimum range (for arc sizing)
+    double userMaxRange;               // User-adjustable maximum range (for arc sizing)
     juce::Colour indicatorColor;       // Color for the visual indicator
     
     MacroMapping(int macro, juce::Slider* slider, double base, double min, double max)
         : macroIndex(macro), targetSlider(slider), baseValue(base), minRange(min), maxRange(max)
     {
+        // Initialize user ranges to full slider range (can be adjusted by dragging arc)
+        userMinRange = min;
+        userMaxRange = max;
         // Assign different colors for each macro
         const juce::Colour macroColors[] = {
             juce::Colour(0xff00ff00), // Green
@@ -144,16 +149,17 @@ public:
     void paintOverChildren(juce::Graphics& g) override;
     void resized() override;
     
+    // Mouse interaction for arc resizing
+    bool hitTest(int x, int y) override;
+    void mouseDown(const juce::MouseEvent& event) override;
+    void mouseDrag(const juce::MouseEvent& event) override;
+    void mouseUp(const juce::MouseEvent& event) override;
+    
     // Slider listener
     void sliderValueChanged(juce::Slider* slider) override;
     
     // Button listener
     void buttonClicked(juce::Button* button) override;
-    
-    // Mouse events for octave control
-    void mouseDown(const juce::MouseEvent& event) override;
-    void mouseDrag(const juce::MouseEvent& event) override;
-    void mouseUp(const juce::MouseEvent& event) override;
     
     // Helper method to update envelope display
     void updateEnvelopeDisplay();
@@ -962,25 +968,25 @@ private:
     juce::Label titleLabel;
     juce::Label placeholderLabel;
     // VOLUME CONTROLS GROUP - Row 4 (MOVEABLE)
-    juce::Slider volumeControlsVolumeKnob;
+    RestrictedHitSlider volumeControlsVolumeKnob;
     juce::Label volumeControlsVolumeLabel;
-    juce::Slider volumeControlsDetuneKnob;
+    RestrictedHitSlider volumeControlsDetuneKnob;
     juce::Label volumeControlsDetuneLabel;
-    juce::Slider volumeControlsStereoWidthKnob;
+    RestrictedHitSlider volumeControlsStereoWidthKnob;
     juce::Label volumeControlsStereoWidthLabel;
-    juce::Slider volumeControlsPanKnob;
+    RestrictedHitSlider volumeControlsPanKnob;
     juce::Label volumeControlsPanLabel;
     // PHASE CONTROLS GROUP - (STATIONARY)
-    juce::Slider phaseControlsPhaseKnob;
+    RestrictedHitSlider phaseControlsPhaseKnob;
     juce::Label phaseControlsPhaseLabel;
     // ADSR KNOBS GROUP - Row 3 (MOVEABLE)
-    juce::Slider adsrAttackKnob;
+    RestrictedHitSlider adsrAttackKnob;
     juce::Label adsrAttackLabel;
-    juce::Slider adsrDecayKnob;
+    RestrictedHitSlider adsrDecayKnob;
     juce::Label adsrDecayLabel;
-    juce::Slider adsrSustainKnob;
+    RestrictedHitSlider adsrSustainKnob;
     juce::Label adsrSustainLabel;
-    juce::Slider adsrReleaseKnob;
+    RestrictedHitSlider adsrReleaseKnob;
     juce::Label adsrReleaseLabel;
     
     // Pulse width control
@@ -1060,21 +1066,21 @@ private:
     juce::TextButton filter24dBButton;
     
     // Macro controls
-    juce::Slider macro1Knob;
+    RestrictedHitSlider macro1Knob;
     juce::Label macro1Label;
-    juce::Slider macro2Knob;
+    RestrictedHitSlider macro2Knob;
     juce::Label macro2Label;
-    juce::Slider macro3Knob;
+    RestrictedHitSlider macro3Knob;
     juce::Label macro3Label;
-    juce::Slider macro4Knob;
+    RestrictedHitSlider macro4Knob;
     juce::Label macro4Label;
-    juce::Slider macro5Knob;
+    RestrictedHitSlider macro5Knob;
     juce::Label macro5Label;
-    juce::Slider macro6Knob;
+    RestrictedHitSlider macro6Knob;
     juce::Label macro6Label;
-    juce::Slider macro7Knob;
+    RestrictedHitSlider macro7Knob;
     juce::Label macro7Label;
-    juce::Slider macro8Knob;
+    RestrictedHitSlider macro8Knob;
     juce::Label macro8Label;
     
     // Draggable macro mapping symbols
@@ -1101,6 +1107,18 @@ private:
     void drawCircularIndicator(juce::Graphics& g, juce::Slider* slider, const MacroMapping& mapping);
     double getMacroKnobValue(int macroIndex);
     void triggerParameterUpdate(juce::Slider* slider, double newValue);
+    
+    // Arc interaction methods
+    MacroMapping* findMacroMappingAtPosition(juce::Point<int> position);
+    bool isPointOnArc(juce::Point<int> point, juce::Point<int> center, float radius, float startAngle, float endAngle);
+    void updateMappingRange(MacroMapping* mapping, juce::Point<int> dragPosition);
+    
+    // Arc dragging state
+    MacroMapping* draggedMapping = nullptr;
+    bool isDraggingArc = false;
+    juce::Point<int> dragStartPosition;
+    juce::Point<int> dragStartPoint;
+    bool draggingMinRange = false;
     
     // Chorus effect controls
     juce::Slider chorusRateKnob;

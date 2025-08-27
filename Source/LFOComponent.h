@@ -155,7 +155,7 @@ public:
         if (!isDragging)
             return;
             
-        if (discreteEditMode && selectedControlPoint >= 0)
+        if (discreteEditMode && selectedControlPoint >= 0 && selectedControlPoint < controlPoints.size())
         {
             // Drag control point
             float x = (event.x - waveformArea.getX()) / float(waveformArea.getWidth());
@@ -165,13 +165,30 @@ public:
             
             auto& currentPoint = controlPoints[selectedControlPoint];
             
-            // Only constrain main points to prevent crossing others
+            // Apply constraints to main points to prevent crossing others
             if (currentPoint.type == ControlPointType::Main)
             {
-                x = constrainMainPointX(selectedControlPoint, x);
+                // Store original position in case constraint fails
+                float originalX = currentPoint.x;
+                float constrainedX = constrainMainPointX(selectedControlPoint, x);
+                
+                // Only update if constraint returned a valid position
+                if (constrainedX >= 0.0f && constrainedX <= 1.0f)
+                {
+                    currentPoint.x = constrainedX;
+                }
+                else
+                {
+                    currentPoint.x = originalX; // Keep original position if constraint failed
+                }
+            }
+            else
+            {
+                // Curve points can move freely in x
+                currentPoint.x = x;
             }
             
-            currentPoint.x = x;
+            // Y position is always unconstrained
             currentPoint.y = y;
             
             // If a main point was moved, update positions of associated curve points
@@ -202,34 +219,80 @@ public:
     {
         if (!waveformArea.contains(event.getPosition()) || !discreteEditMode)
             return;
+        
+        // Check if double-clicking on an existing control point to remove it
+        int clickedPointIndex = getControlPointAt(event.getPosition());
+        if (clickedPointIndex >= 0)
+        {
+            // Double-clicked on an existing point - remove it
+            auto& pointToRemove = controlPoints[clickedPointIndex];
             
-        // Double-click always creates a solid main point with straight line connections
-        float x = (event.x - waveformArea.getX()) / float(waveformArea.getWidth());
-        float y = 1.0f - (event.y - waveformArea.getY()) / float(waveformArea.getHeight());
-        x = juce::jlimit(0.0f, 1.0f, x);
-        y = juce::jlimit(0.0f, 1.0f, y);
-        
-        ControlPoint newPoint;
-        newPoint.x = x;
-        newPoint.y = y;
-        newPoint.selected = false;
-        newPoint.type = ControlPointType::Main;
-        newPoint.associatedMainPoint = -1;
-        
-        // Insert in correct position to maintain x-order for main points
-        auto insertPos = std::lower_bound(controlPoints.begin(), controlPoints.end(), newPoint,
-            [](const ControlPoint& a, const ControlPoint& b) { 
-                if (a.type == ControlPointType::Main && b.type == ControlPointType::Main)
-                    return a.x < b.x; 
-                return false;
-            });
-        controlPoints.insert(insertPos, newPoint);
-        
-        // Automatically create curve handles for new segments
-        createCurveHandlesForAllSegments();
-        
-        updateWaveformFromControlPoints();
-        repaint();
+            // Don't remove if it's one of the first or last main points (to keep endpoints)
+            if (pointToRemove.type == ControlPointType::Main)
+            {
+                // Count main points and get their positions
+                std::vector<std::pair<float, int>> mainPoints;
+                for (int i = 0; i < controlPoints.size(); ++i)
+                {
+                    if (controlPoints[i].type == ControlPointType::Main)
+                        mainPoints.push_back({controlPoints[i].x, i});
+                }
+                std::sort(mainPoints.begin(), mainPoints.end());
+                
+                // Don't remove if it's the first or last main point, or if only 2 main points remain
+                if (mainPoints.size() > 2)
+                {
+                    bool isFirstOrLast = (clickedPointIndex == mainPoints[0].second || 
+                                        clickedPointIndex == mainPoints[mainPoints.size()-1].second);
+                    if (!isFirstOrLast)
+                    {
+                        // Remove the point and any associated curve points
+                        removeControlPointAndAssociatedCurves(clickedPointIndex);
+                        updateWaveformFromControlPoints();
+                        repaint();
+                        return;
+                    }
+                }
+            }
+            else if (pointToRemove.type == ControlPointType::Curve)
+            {
+                // Remove curve point (always allowed)
+                controlPoints.erase(controlPoints.begin() + clickedPointIndex);
+                updateWaveformFromControlPoints();
+                repaint();
+                return;
+            }
+        }
+        else
+        {
+            // Double-click on empty space - create a new main point
+            float x = (event.x - waveformArea.getX()) / float(waveformArea.getWidth());
+            float y = 1.0f - (event.y - waveformArea.getY()) / float(waveformArea.getHeight());
+            x = juce::jlimit(0.0f, 1.0f, x);
+            y = juce::jlimit(0.0f, 1.0f, y);
+            
+            ControlPoint newPoint;
+            newPoint.x = x;
+            newPoint.y = y;
+            newPoint.selected = false;
+            newPoint.type = ControlPointType::Main;
+            newPoint.associatedMainPoint = -1;
+            
+            // Insert in correct position to maintain x-order for main points
+            auto insertPos = std::lower_bound(controlPoints.begin(), controlPoints.end(), newPoint,
+                [](const ControlPoint& a, const ControlPoint& b) { 
+                    if (a.type == ControlPointType::Main && b.type == ControlPointType::Main)
+                        return a.x < b.x; 
+                    return false;
+                });
+            controlPoints.insert(insertPos, newPoint);
+            
+            // Automatically create curve handles for new segments
+            createCurveHandlesForAllSegments();
+            
+            updateWaveformFromControlPoints();
+            repaint();
+        }
     }
     
     void mouseDown(const juce::MouseEvent& event) override
@@ -565,45 +628,61 @@ private:
     
     float constrainMainPointX(int pointIndex, float desiredX)
     {
-        // Get all other main points and their x positions
-        std::vector<float> otherMainXPositions;
+        if (pointIndex < 0 || pointIndex >= controlPoints.size())
+            return desiredX;
+            
+        if (controlPoints[pointIndex].type != ControlPointType::Main)
+            return desiredX;
+        
+        // Get all main points with their indices, sorted by x position
+        std::vector<std::pair<float, int>> mainPoints;
         for (int i = 0; i < controlPoints.size(); ++i)
         {
-            if (i != pointIndex && controlPoints[i].type == ControlPointType::Main)
-                otherMainXPositions.push_back(controlPoints[i].x);
+            if (controlPoints[i].type == ControlPointType::Main)
+                mainPoints.push_back({controlPoints[i].x, i});
         }
         
-        // Sort x positions
-        std::sort(otherMainXPositions.begin(), otherMainXPositions.end());
+        // Sort by x position
+        std::sort(mainPoints.begin(), mainPoints.end());
         
-        // Find the constraints (nearest neighbors)
-        float leftConstraint = 0.0f;   // Minimum x
-        float rightConstraint = 1.0f;  // Maximum x
-        
-        for (float xPos : otherMainXPositions)
+        // Find the current point's position in the sorted list
+        int currentPositionInSorted = -1;
+        for (int i = 0; i < mainPoints.size(); ++i)
         {
-            if (xPos < desiredX)
+            if (mainPoints[i].second == pointIndex)
             {
-                // This point is to the left, update left constraint
-                leftConstraint = std::max(leftConstraint, xPos + 0.01f); // Small buffer
-            }
-            else if (xPos > desiredX)
-            {
-                // This point is to the right, update right constraint
-                rightConstraint = std::min(rightConstraint, xPos - 0.01f); // Small buffer
-                break; // Since sorted, this is the closest right neighbor
+                currentPositionInSorted = i;
+                break;
             }
         }
         
-        // Ensure constraints are valid
-        if (leftConstraint >= rightConstraint)
+        if (currentPositionInSorted == -1)
+            return desiredX; // Shouldn't happen, but safety check
+        
+        // Determine left and right boundaries
+        float leftBoundary = 0.0f;
+        float rightBoundary = 1.0f;
+        
+        // Left neighbor constraint
+        if (currentPositionInSorted > 0)
         {
-            // If constraints overlap, keep the original position
-            return controlPoints[pointIndex].x;
+            leftBoundary = mainPoints[currentPositionInSorted - 1].first + 0.01f;
         }
         
-        // Constrain the desired x within the bounds
-        return juce::jlimit(leftConstraint, rightConstraint, desiredX);
+        // Right neighbor constraint  
+        if (currentPositionInSorted < mainPoints.size() - 1)
+        {
+            rightBoundary = mainPoints[currentPositionInSorted + 1].first - 0.01f;
+        }
+        
+        // Ensure we have valid boundaries
+        if (leftBoundary >= rightBoundary)
+        {
+            return controlPoints[pointIndex].x; // Keep current position if constraints invalid
+        }
+        
+        // Constrain the desired position
+        return juce::jlimit(leftBoundary, rightBoundary, desiredX);
     }
     
     void updateCurvePointPositions()
@@ -709,6 +788,59 @@ private:
                 controlPoints.push_back(curveHandle);
             }
         }
+    }
+    
+    void removeControlPointAndAssociatedCurves(int pointIndex)
+    {
+        if (pointIndex < 0 || pointIndex >= controlPoints.size())
+            return;
+            
+        // Remove any curve points associated with this main point
+        for (int i = controlPoints.size() - 1; i >= 0; --i)
+        {
+            if (controlPoints[i].type == ControlPointType::Curve)
+            {
+                // Check if this curve point is between the point being removed and its neighbors
+                float removedX = controlPoints[pointIndex].x;
+                float curveX = controlPoints[i].x;
+                
+                // Get neighboring main points to see if curve point is in affected segment
+                std::vector<float> mainXPositions;
+                for (int j = 0; j < controlPoints.size(); ++j)
+                {
+                    if (j != pointIndex && controlPoints[j].type == ControlPointType::Main)
+                        mainXPositions.push_back(controlPoints[j].x);
+                }
+                std::sort(mainXPositions.begin(), mainXPositions.end());
+                
+                // Find if curve point is in a segment that will be affected
+                bool shouldRemove = false;
+                for (int j = 0; j < mainXPositions.size() - 1; ++j)
+                {
+                    if ((removedX > mainXPositions[j] && removedX < mainXPositions[j + 1]) &&
+                        (curveX > mainXPositions[j] && curveX < mainXPositions[j + 1]))
+                    {
+                        shouldRemove = true;
+                        break;
+                    }
+                }
+                
+                if (shouldRemove)
+                {
+                    controlPoints.erase(controlPoints.begin() + i);
+                    if (i < pointIndex) pointIndex--; // Adjust index if we removed a point before it
+                }
+            }
+        }
+        
+        // Remove the main point
+        if (pointIndex >= 0 && pointIndex < controlPoints.size())
+        {
+            controlPoints.erase(controlPoints.begin() + pointIndex);
+        }
+        
+        // Recreate curve handles for affected segments
+        createCurveHandlesForAllSegments();
     }
     
     void initializeControlPoints()
