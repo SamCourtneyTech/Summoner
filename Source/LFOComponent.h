@@ -184,17 +184,17 @@ public:
             }
             else
             {
-                // Curve points can move freely in x
+                // Curve points can move freely in x and y
                 currentPoint.x = x;
             }
             
             // Y position is always unconstrained
             currentPoint.y = y;
             
-            // If a main point was moved, update positions of associated curve points
+            // If a main point was moved, update curve point associations but preserve their positions
             if (currentPoint.type == ControlPointType::Main)
             {
-                updateCurvePointPositions();
+                updateCurvePointAssociations();
             }
             
             updateWaveformFromControlPoints();
@@ -685,7 +685,7 @@ private:
         return juce::jlimit(leftBoundary, rightBoundary, desiredX);
     }
     
-    void updateCurvePointPositions()
+    void updateCurvePointAssociations()
     {
         // Get sorted main points
         std::vector<ControlPoint*> mainPoints;
@@ -698,43 +698,74 @@ private:
         std::sort(mainPoints.begin(), mainPoints.end(),
             [](const ControlPoint* a, const ControlPoint* b) { return a->x < b->x; });
         
-        // Update each curve point to stay at the midpoint of its segment
+        // Update curve point associations and constrain within segments
+        for (auto& cp : controlPoints)
+        {
+            if (cp.type == ControlPointType::Curve)
+            {
+                // Find which segment this curve point should belong to
+                int correctSegment = -1;
+                for (int i = 0; i < mainPoints.size() - 1; ++i)
+                {
+                    if (cp.x >= mainPoints[i]->x && cp.x <= mainPoints[i + 1]->x)
+                    {
+                        correctSegment = i;
+                        break;
+                    }
+                }
+                
+                // Update association
+                cp.associatedMainPoint = correctSegment;
+                
+                // Only constrain curve point within its segment bounds, don't force to center
+                if (correctSegment >= 0 && correctSegment < mainPoints.size() - 1)
+                {
+                    ControlPoint* leftMain = mainPoints[correctSegment];
+                    ControlPoint* rightMain = mainPoints[correctSegment + 1];
+                    
+                    // Constrain X within segment but preserve user positioning
+                    float leftBound = leftMain->x + 0.01f;
+                    float rightBound = rightMain->x - 0.01f;
+                    
+                    // Only move if outside bounds
+                    if (cp.x < leftBound || cp.x > rightBound)
+                    {
+                        cp.x = juce::jlimit(leftBound, rightBound, cp.x);
+                    }
+                    // Keep Y position unchanged - preserve user adjustments
+                }
+            }
+        }
+    }
+    
+    void centerCurvePointsInSegments()
+    {
+        // Get sorted main points
+        std::vector<ControlPoint*> mainPoints;
+        for (auto& cp : controlPoints)
+        {
+            if (cp.type == ControlPointType::Main)
+                mainPoints.push_back(&cp);
+        }
+        
+        std::sort(mainPoints.begin(), mainPoints.end(),
+            [](const ControlPoint* a, const ControlPoint* b) { return a->x < b->x; });
+        
+        // Force curve points to center - only called when creating new curve points
         for (auto& cp : controlPoints)
         {
             if (cp.type == ControlPointType::Curve)
             {
                 // Find which segment this curve point belongs to
-                int segmentIndex = cp.associatedMainPoint;
-                
-                // Find the actual left and right main points for this segment
-                ControlPoint* leftMain = nullptr;
-                ControlPoint* rightMain = nullptr;
-                
-                if (segmentIndex >= 0 && segmentIndex < mainPoints.size() - 1)
+                int correctSegment = cp.associatedMainPoint;
+                if (correctSegment >= 0 && correctSegment < mainPoints.size() - 1)
                 {
-                    leftMain = mainPoints[segmentIndex];
-                    rightMain = mainPoints[segmentIndex + 1];
-                }
-                else
-                {
-                    // Fallback: find closest main points by x position
-                    for (int i = 0; i < mainPoints.size() - 1; ++i)
-                    {
-                        if (cp.x >= mainPoints[i]->x && cp.x <= mainPoints[i + 1]->x)
-                        {
-                            leftMain = mainPoints[i];
-                            rightMain = mainPoints[i + 1];
-                            cp.associatedMainPoint = i; // Update association
-                            break;
-                        }
-                    }
-                }
-                
-                // Update curve point position to midpoint
-                if (leftMain && rightMain)
-                {
+                    ControlPoint* leftMain = mainPoints[correctSegment];
+                    ControlPoint* rightMain = mainPoints[correctSegment + 1];
+                    
+                    // Center the curve point between its main points
                     cp.x = (leftMain->x + rightMain->x) / 2.0f;
-                    // Keep the y position as is (user can still adjust curve height)
+                    // Keep the y position as is
                 }
             }
         }
@@ -788,6 +819,9 @@ private:
                 controlPoints.push_back(curveHandle);
             }
         }
+        
+        // After creating new curve handles, center the new ones and update associations
+        centerCurvePointsInSegments();
     }
     
     void removeControlPointAndAssociatedCurves(int pointIndex)

@@ -359,9 +359,8 @@ void ChatBarComponent::sendPromptToGenerateParameters(const juce::String& userPr
                 }
 
                 juce::MessageManager::callAsync([this, parameterMap]() {
-                    std::vector<std::map<std::string, std::string>> responses = { parameterMap };
-                    processor.setResponses(responses);
-                    // SerumInterface removed - internal synthesizer will handle response counter
+                    // Apply the AI response parameters to the synthesizer
+                    sendAIResponseToProcessor(parameterMap);
 
                     // Update credits after successful response
                     int credits = fetchUserCredits();
@@ -415,8 +414,43 @@ void ChatBarComponent::sendPromptToGenerateParameters(const juce::String& userPr
 
 void ChatBarComponent::sendAIResponseToProcessor(const std::map<std::string, std::string>& aiResponse)
 {
-    // TODO: Apply AI response to internal synthesizer instead of Serum
-    juce::ignoreUnused(aiResponse);
+    DBG("ChatBarComponent: Sending AI response to processor with " << aiResponse.size() << " parameters");
+    
+    // Apply the parameters directly and get feedback
+    auto [successful, failed] = processor.applyResponseParameters(aiResponse);
+    
+    // Also store it in the processor's response system for navigation (next/prev)
+    std::vector<std::map<std::string, std::string>> responses = { aiResponse };
+    processor.setResponses(responses);
+    
+    DBG("ChatBarComponent: Parameter application complete - " << successful << " successful, " << failed << " failed");
+    
+    // Provide feedback to the UI if callback is set
+    if (onParameterApplicationResult)
+    {
+        onParameterApplicationResult(successful, failed);
+    }
+    
+    // Show alert if there were failures
+    if (failed > 0 && successful == 0)
+    {
+        juce::MessageManager::callAsync([this, failed]() {
+            juce::AlertWindow::showMessageBoxAsync(
+                juce::AlertWindow::WarningIcon,
+                "Parameter Application Failed",
+                "Failed to apply " + juce::String(failed) + " parameters. Check console for details.");
+        });
+    }
+    else if (failed > 0)
+    {
+        juce::MessageManager::callAsync([this, successful, failed]() {
+            juce::AlertWindow::showMessageBoxAsync(
+                juce::AlertWindow::InfoIcon,
+                "Partial Parameter Application",
+                "Applied " + juce::String(successful) + " parameters successfully, but " + 
+                juce::String(failed) + " failed. Check console for details.");
+        });
+    }
 }
 
 void ChatBarComponent::setCredits(int credits)

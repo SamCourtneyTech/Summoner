@@ -2806,12 +2806,34 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     effectsPresetLoadButton.setLookAndFeel(&customWaveButtonLookAndFeel);
     addAndMakeVisible(effectsPresetLoadButton);
     
+    // Set up preset button callbacks
+    effectsPresetSaveButton.onClick = [this]() {
+        showSavePresetDialog();
+    };
+    
+    effectsPresetLoadButton.onClick = [this]() {
+        showLoadPresetDialog();
+    };
+    
+    effectsPresetPrevButton.onClick = [this]() {
+        audioProcessor.previousPreset();
+        updatePresetDisplay();
+    };
+    
+    effectsPresetNextButton.onClick = [this]() {
+        audioProcessor.nextPreset();
+        updatePresetDisplay();
+    };
+    
     // Add border component behind effects module
     addAndMakeVisible(effectsBorder);
     addAndMakeVisible(effectsModule);
     
     // Initialize envelope display with default values
     updateEnvelopeDisplay();
+    
+    // Initialize preset display
+    updatePresetDisplay();
 }
 
 SynthesizerComponent::~SynthesizerComponent()
@@ -7865,6 +7887,115 @@ void SynthesizerComponent::updateMappingRange(MacroMapping* mapping, juce::Point
             mapping->userMaxRange = mapping->userMinRange;
     }
     
+    repaint();
+}
+
+// Preset Management Implementation
+
+void SynthesizerComponent::showSavePresetDialog()
+{
+    // Create default filename with timestamp
+    juce::String defaultName = "MyPreset_" + juce::String(juce::Time::getCurrentTime().formatted("%Y%m%d_%H%M%S"));
+    juce::File defaultFile = audioProcessor.getPresetDirectory().getChildFile(defaultName + ".sxs2");
+    
+    auto chooser = std::make_shared<juce::FileChooser>("Save Preset",
+                                                       defaultFile,
+                                                       "*.sxs2",
+                                                       true);
+    
+    chooser->launchAsync(juce::FileBrowserComponent::saveMode | juce::FileBrowserComponent::canSelectFiles,
+                        [this, chooser](const juce::FileChooser& fc) mutable
+                        {
+                            auto file = fc.getResult();
+                            if (file == juce::File{})
+                                return;
+                                
+                            if (file.existsAsFile())
+                            {
+                                // File already exists, ask for confirmation
+                                int result = juce::AlertWindow::showYesNoCancelBox(
+                                    juce::AlertWindow::QuestionIcon,
+                                    "File Exists",
+                                    "The file \"" + file.getFileName() + "\" already exists. Do you want to replace it?",
+                                    "Replace",
+                                    "Cancel",
+                                    "",
+                                    nullptr,
+                                    nullptr);
+                                    
+                                if (result != 1) // If not "Replace"
+                                    return;
+                            }
+                            
+                            // Ensure the file has the correct extension
+                            if (!file.hasFileExtension(".sxs2"))
+                            {
+                                file = file.withFileExtension(".sxs2");
+                            }
+                            
+                            // Save the preset
+                            if (audioProcessor.savePresetToFile(file, "User created preset"))
+                            {
+                                juce::MessageManager::callAsync([this, file]() {
+                                    updatePresetDisplay();
+                                    juce::AlertWindow::showMessageBoxAsync(
+                                        juce::AlertWindow::InfoIcon,
+                                        "Success",
+                                        "Preset saved successfully to:\n" + file.getFullPathName());
+                                });
+                            }
+                            else
+                            {
+                                juce::MessageManager::callAsync([file]() {
+                                    juce::AlertWindow::showMessageBoxAsync(
+                                        juce::AlertWindow::WarningIcon,
+                                        "Error",
+                                        "Failed to save preset to:\n" + file.getFullPathName());
+                                });
+                            }
+                        });
+}
+
+void SynthesizerComponent::showLoadPresetDialog()
+{
+    auto chooser = std::make_shared<juce::FileChooser>("Load Preset",
+                                                       audioProcessor.getPresetDirectory(),
+                                                       "*.sxs2",
+                                                       true);
+    
+    chooser->launchAsync(juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles,
+                        [this, chooser](const juce::FileChooser& fc) mutable
+                        {
+                            auto file = fc.getResult();
+                            if (file == juce::File{})
+                                return;
+                                
+                            if (audioProcessor.loadPreset(file.getFullPathName()))
+                            {
+                                juce::MessageManager::callAsync([this, file]() {
+                                    updatePresetDisplay();
+                                    juce::AlertWindow::showMessageBoxAsync(
+                                        juce::AlertWindow::InfoIcon,
+                                        "Success",
+                                        "Preset '" + file.getFileNameWithoutExtension() + "' loaded successfully!");
+                                });
+                            }
+                            else
+                            {
+                                juce::MessageManager::callAsync([file]() {
+                                    juce::AlertWindow::showMessageBoxAsync(
+                                        juce::AlertWindow::WarningIcon,
+                                        "Error",
+                                        "Failed to load preset: " + file.getFileName());
+                                });
+                            }
+                        });
+}
+
+void SynthesizerComponent::updatePresetDisplay()
+{
+    effectsPresetNameLabel.setText(audioProcessor.getCurrentPresetName(), 
+                                 juce::dontSendNotification);
     repaint();
 }
 

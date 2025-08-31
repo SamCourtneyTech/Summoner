@@ -3788,12 +3788,47 @@ public:
         eq.setBand2Type(filterType);
     }
     int getEQ2Type() const { return eq2Type; }
+    
+    // Parameter application system - public interface
+    std::pair<int, int> applyResponseParameters(const std::map<std::string, std::string>& response);
+    
+    // Preset management system
+    struct PresetData {
+        juce::String name;
+        juce::String description;
+        juce::ValueTree parameters;
+        juce::Time creationTime;
+    };
+    
+    bool savePreset(const juce::String& name, const juce::String& description = "");
+    bool savePresetToFile(const juce::File& file, const juce::String& description = "");
+    bool loadPreset(const juce::String& presetPath);
+    bool loadPresetByIndex(int index);
+    std::vector<juce::File> getAvailablePresets();
+    juce::String getCurrentPresetName() const { return currentPresetName; }
+    int getCurrentPresetIndex() const { return currentPresetIndex; }
+    bool hasNextPreset() const { return currentPresetIndex < (int)availablePresets.size() - 1; }
+    bool hasPreviousPreset() const { return currentPresetIndex > 0; }
+    bool nextPreset();
+    bool previousPreset();
+    void refreshPresetList();
+    juce::File getPresetDirectory();
 
 private:
-    std::map<std::string, int> parameterMap;
-    void enumerateParameters();
-    void setParameterByName(const std::pair<std::string, float>& paramData);
-    float parseValue(const std::string& value);
+    // Parameter mapping system for AI response application
+    struct ParameterInfo {
+        enum Type { FLOAT, INT, BOOL } type;
+        float minValue;
+        float maxValue;
+        std::function<void(float)> setter;
+    };
+    
+    std::map<std::string, ParameterInfo> parameterMap;
+    void initializeParameterMap();
+    bool setParameterByName(const std::string& name, const std::string& value);
+    bool setParameterByName(const std::string& name, float value);
+    float parseStringValue(const std::string& value);
+    bool validateParameterValue(const std::string& name, float value);
     
     void updateEnvelopeParameters();
     void updateOsc1Type();
@@ -4584,6 +4619,17 @@ private:
         SimpleStableFilter voiceOsc1Filter;
         SimpleStableFilter voiceOsc2Filter;
     };
+    
+    // Preset management system - private members
+    juce::String currentPresetName = "DEFAULT";
+    int currentPresetIndex = -1;
+    std::vector<juce::File> availablePresets;
+    juce::File presetDirectory;
+    
+    // Preset helper functions
+    juce::ValueTree createPresetData();
+    bool applyPresetData(const juce::ValueTree& presetData);
+    void updatePresetDisplay();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SummonerXSerum2AudioProcessor)
 };

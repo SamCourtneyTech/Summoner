@@ -26,6 +26,7 @@ public:
     std::function<void(bool)> onLoadingStateChanged;
     std::function<void()> onRefreshTokenRequested;
     std::function<void(int)> onCreditsUpdated;
+    std::function<void(int, int)> onParameterApplicationResult; // (successful, failed) counts
     
     // Skin management
     void setHackerSkin(bool enabled);

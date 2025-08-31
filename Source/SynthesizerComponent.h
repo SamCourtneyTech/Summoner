@@ -1100,6 +1100,11 @@ public:
     void createMacroMapping(int macroIndex, juce::Slider* targetSlider);
     juce::Slider* findSliderAt(juce::Point<int> position);
     
+    // Preset management functions
+    void showSavePresetDialog();
+    void showLoadPresetDialog();
+    void updatePresetDisplay();
+    
 private:
     void updateMacroMappings(int macroIndex, double macroValue);
     void removeMacroMapping(int macroIndex, juce::Slider* targetSlider);
