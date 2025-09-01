@@ -3813,6 +3813,9 @@ public:
     bool previousPreset();
     void refreshPresetList();
     juce::File getPresetDirectory();
+    
+    // Callback for GUI updates when presets change
+    std::function<void()> onPresetChanged;
 
 private:
     // Parameter mapping system for AI response application

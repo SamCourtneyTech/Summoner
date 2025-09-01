@@ -7999,3 +7999,153 @@ void SynthesizerComponent::updatePresetDisplay()
     repaint();
 }
 
+void SynthesizerComponent::updateAllGuiControls()
+{
+    // Main synthesizer controls (using correct control names)
+    volumeControlsVolumeKnob.setValue(audioProcessor.getSynthVolume(), juce::dontSendNotification);
+    volumeControlsDetuneKnob.setValue(audioProcessor.getSynthDetune(), juce::dontSendNotification);
+    volumeControlsStereoWidthKnob.setValue(audioProcessor.getSynthStereoWidth(), juce::dontSendNotification);
+    volumeControlsPanKnob.setValue(audioProcessor.getSynthPan(), juce::dontSendNotification);
+    phaseControlsPhaseKnob.setValue(audioProcessor.getSynthPhase(), juce::dontSendNotification);
+    
+    // Main ADSR envelope
+    adsrAttackKnob.setValue(audioProcessor.getSynthAttack(), juce::dontSendNotification);
+    adsrDecayKnob.setValue(audioProcessor.getSynthDecay(), juce::dontSendNotification);
+    adsrSustainKnob.setValue(audioProcessor.getSynthSustain(), juce::dontSendNotification);
+    adsrReleaseKnob.setValue(audioProcessor.getSynthRelease(), juce::dontSendNotification);
+    
+    // Oscillator 1 controls
+    pulseWidthSlider.setValue(audioProcessor.getOsc1PulseWidth(), juce::dontSendNotification);
+    
+    // Update oscillator 1 wave type buttons
+    int osc1Type = audioProcessor.getOsc1Type();
+    waveTypeSineButton.setToggleState(osc1Type == 0, juce::dontSendNotification);
+    waveTypeSawButton.setToggleState(osc1Type == 1, juce::dontSendNotification);
+    waveTypeSquareButton.setToggleState(osc1Type == 2, juce::dontSendNotification);
+    waveTypeTriangleButton.setToggleState(osc1Type == 3, juce::dontSendNotification);
+    waveTypeWhiteNoiseButton.setToggleState(osc1Type == 4, juce::dontSendNotification);
+    waveTypePinkNoiseButton.setToggleState(osc1Type == 5, juce::dontSendNotification);
+    waveTypeRandomPhaseButton.setToggleState(osc1Type == 6, juce::dontSendNotification);
+    
+    // Oscillator 2 controls
+    osc2VolumeKnob.setValue(audioProcessor.getOsc2Volume(), juce::dontSendNotification);
+    osc2DetuneKnob.setValue(audioProcessor.getOsc2Detune(), juce::dontSendNotification);
+    osc2StereoKnob.setValue(audioProcessor.getOsc2Stereo(), juce::dontSendNotification);
+    osc2PanKnob.setValue(audioProcessor.getOsc2Pan(), juce::dontSendNotification);
+    osc2PhaseKnob.setValue(audioProcessor.getOsc2Phase(), juce::dontSendNotification);
+    osc2RandomPhaseButton.setToggleState(audioProcessor.getOsc2RandomPhase(), juce::dontSendNotification);
+    
+    // Oscillator 2 ADSR
+    osc2AttackKnob.setValue(audioProcessor.getOsc2Attack(), juce::dontSendNotification);
+    osc2DecayKnob.setValue(audioProcessor.getOsc2Decay(), juce::dontSendNotification);
+    osc2SustainKnob.setValue(audioProcessor.getOsc2Sustain(), juce::dontSendNotification);
+    osc2ReleaseKnob.setValue(audioProcessor.getOsc2Release(), juce::dontSendNotification);
+    
+    // Update oscillator 2 wave type buttons
+    int osc2Type = audioProcessor.getOsc2Type();
+    osc2SineButton.setToggleState(osc2Type == 0, juce::dontSendNotification);
+    osc2SawButton.setToggleState(osc2Type == 1, juce::dontSendNotification);
+    osc2SquareButton.setToggleState(osc2Type == 2, juce::dontSendNotification);
+    osc2TriangleButton.setToggleState(osc2Type == 3, juce::dontSendNotification);
+    osc2WhiteNoiseButton.setToggleState(osc2Type == 4, juce::dontSendNotification);
+    osc2PinkNoiseButton.setToggleState(osc2Type == 5, juce::dontSendNotification);
+    
+    // Filter controls
+    filterCutoffKnob.setValue(audioProcessor.getFilterCutoff(), juce::dontSendNotification);
+    filterResonanceKnob.setValue(audioProcessor.getFilterResonance(), juce::dontSendNotification);
+    osc1FilterEnableButton.setToggleState(audioProcessor.getOsc1FilterEnabled(), juce::dontSendNotification);
+    osc2FilterEnableButton.setToggleState(audioProcessor.getOsc2FilterEnabled(), juce::dontSendNotification);
+    
+    // Effects controls - update the knobs with loaded preset values
+    
+    // Chorus controls
+    chorusRateKnob.setValue(audioProcessor.getChorusRate(), juce::dontSendNotification);
+    chorusDelay1Knob.setValue(audioProcessor.getChorusDelay1(), juce::dontSendNotification);
+    chorusDelay2Knob.setValue(audioProcessor.getChorusDelay2(), juce::dontSendNotification);
+    chorusDepthKnob.setValue(audioProcessor.getChorusDepth(), juce::dontSendNotification);
+    chorusFeedKnob.setValue(audioProcessor.getChorusFeedback(), juce::dontSendNotification);
+    chorusLpfKnob.setValue(audioProcessor.getChorusLPF(), juce::dontSendNotification);
+    chorusMixKnob.setValue(audioProcessor.getChorusMix(), juce::dontSendNotification);
+    chorusPowerButton.setToggleState(audioProcessor.getChorusEnabled(), juce::dontSendNotification);
+    
+    // Compressor controls
+    compressorThresholdKnob.setValue(audioProcessor.getCompressorThreshold(), juce::dontSendNotification);
+    compressorRatioKnob.setValue(audioProcessor.getCompressorRatio(), juce::dontSendNotification);
+    compressorAttackKnob.setValue(audioProcessor.getCompressorAttack(), juce::dontSendNotification);
+    compressorReleaseKnob.setValue(audioProcessor.getCompressorRelease(), juce::dontSendNotification);
+    compressorGainKnob.setValue(audioProcessor.getCompressorGain(), juce::dontSendNotification);
+    compressorMixKnob.setValue(audioProcessor.getCompressorMix(), juce::dontSendNotification);
+    compressorPowerButton.setToggleState(audioProcessor.getCompressorEnabled(), juce::dontSendNotification);
+    compressorMultibandButton.setToggleState(audioProcessor.getCompressorMultiband(), juce::dontSendNotification);
+    
+    // Delay controls
+    delayFeedbackKnob.setValue(audioProcessor.getDelayFeedback(), juce::dontSendNotification);
+    delayFilterFreqKnob.setValue(audioProcessor.getDelayFilterFreq(), juce::dontSendNotification);
+    delayFilterQKnob.setValue(audioProcessor.getDelayFilterQ(), juce::dontSendNotification);
+    delayMixKnob.setValue(audioProcessor.getDelayMix(), juce::dontSendNotification);
+    delayPowerButton.setToggleState(audioProcessor.getDelayEnabled(), juce::dontSendNotification);
+    
+    // Distortion controls
+    distortionDriveKnob.setValue(audioProcessor.getDistortionDrive(), juce::dontSendNotification);
+    distortionMixKnob.setValue(audioProcessor.getDistortionMix(), juce::dontSendNotification);
+    distortionFilterFreqKnob.setValue(audioProcessor.getDistortionFilterFreq(), juce::dontSendNotification);
+    distortionFilterQKnob.setValue(audioProcessor.getDistortionFilterQ(), juce::dontSendNotification);
+    distortionPowerButton.setToggleState(audioProcessor.getDistortionEnabled(), juce::dontSendNotification);
+    
+    // EQ controls
+    eq1FreqKnob.setValue(audioProcessor.getEQ1Frequency(), juce::dontSendNotification);
+    eq1QKnob.setValue(audioProcessor.getEQ1Q(), juce::dontSendNotification);
+    eq1GainKnob.setValue(audioProcessor.getEQ1Gain(), juce::dontSendNotification);
+    eq2FreqKnob.setValue(audioProcessor.getEQ2Frequency(), juce::dontSendNotification);
+    eq2QKnob.setValue(audioProcessor.getEQ2Q(), juce::dontSendNotification);
+    eq2GainKnob.setValue(audioProcessor.getEQ2Gain(), juce::dontSendNotification);
+    eqOnOffButton.setToggleState(audioProcessor.getEQEnabled(), juce::dontSendNotification);
+    
+    // Flanger controls
+    flangerMixKnob.setValue(audioProcessor.getFlangerMix(), juce::dontSendNotification);
+    flangerRateKnob.setValue(audioProcessor.getFlangerRate(), juce::dontSendNotification);
+    flangerDepthKnob.setValue(audioProcessor.getFlangerDepth(), juce::dontSendNotification);
+    flangerFeedbackKnob.setValue(audioProcessor.getFlangerFeedback(), juce::dontSendNotification);
+    flangerPhaseKnob.setValue(audioProcessor.getFlangerPhase(), juce::dontSendNotification);
+    flangerPowerButton.setToggleState(audioProcessor.getFlangerEnabled(), juce::dontSendNotification);
+    
+    // Phaser controls
+    phaserMixKnob.setValue(audioProcessor.getPhaserMix(), juce::dontSendNotification);
+    phaserRateKnob.setValue(audioProcessor.getPhaserRate(), juce::dontSendNotification);
+    phaserDepth1Knob.setValue(audioProcessor.getPhaserDepth1(), juce::dontSendNotification);
+    phaserDepth2Knob.setValue(audioProcessor.getPhaserDepth2(), juce::dontSendNotification);
+    phaserFrequencyKnob.setValue(audioProcessor.getPhaserFrequency(), juce::dontSendNotification);
+    phaserFeedbackKnob.setValue(audioProcessor.getPhaserFeedback(), juce::dontSendNotification);
+    phaserPhaseKnob.setValue(audioProcessor.getPhaserPhase(), juce::dontSendNotification);
+    phaserPowerButton.setToggleState(audioProcessor.getPhaserEnabled(), juce::dontSendNotification);
+    
+    // Reverb controls
+    reverbMixKnob.setValue(audioProcessor.getReverbMix(), juce::dontSendNotification);
+    reverbLowCutKnob.setValue(audioProcessor.getReverbLowCut(), juce::dontSendNotification);
+    reverbHighCutKnob.setValue(audioProcessor.getReverbHighCut(), juce::dontSendNotification);
+    reverbSizeKnob.setValue(audioProcessor.getReverbSize(), juce::dontSendNotification);
+    reverbPreDelayKnob.setValue(audioProcessor.getReverbPreDelay(), juce::dontSendNotification);
+    reverbDampKnob.setValue(audioProcessor.getReverbDamping(), juce::dontSendNotification);
+    reverbWidthKnob.setValue(audioProcessor.getReverbWidth(), juce::dontSendNotification);
+    reverbPowerButton.setToggleState(audioProcessor.getReverbEnabled(), juce::dontSendNotification);
+    
+    // Macro controls (commented out - not implemented in processor)
+    // macro1Knob.setValue(audioProcessor.getMacro1(), juce::dontSendNotification);
+    // macro2Knob.setValue(audioProcessor.getMacro2(), juce::dontSendNotification);
+    // macro3Knob.setValue(audioProcessor.getMacro3(), juce::dontSendNotification);
+    // macro4Knob.setValue(audioProcessor.getMacro4(), juce::dontSendNotification);
+    // macro5Knob.setValue(audioProcessor.getMacro5(), juce::dontSendNotification);
+    // macro6Knob.setValue(audioProcessor.getMacro6(), juce::dontSendNotification);
+    // macro7Knob.setValue(audioProcessor.getMacro7(), juce::dontSendNotification);
+    // macro8Knob.setValue(audioProcessor.getMacro8(), juce::dontSendNotification);
+    
+    // Update envelope display
+    updateEnvelopeDisplay();
+    
+    // Update preset display
+    updatePresetDisplay();
+    
+    // Trigger a repaint to update the visuals
+    repaint();
+}
+

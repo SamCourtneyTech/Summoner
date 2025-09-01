@@ -141,6 +141,11 @@ SummonerXSerum2AudioProcessorEditor::SummonerXSerum2AudioProcessorEditor(Summone
         tabs.setCurrentTabIndex(1);
         };
 
+    audioProcessor.onPresetChanged = [this]() {
+        // Update all GUI controls to reflect the loaded preset
+        synthesizer.updateAllGuiControls();
+        };
+
     auto initialPath = settings.loadSavedPath();
     settings.updatePathDisplay(initialPath);
     // TODO: Initialize internal synthesizer with path

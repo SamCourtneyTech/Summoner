@@ -1142,7 +1142,7 @@ bool SummonerXSerum2AudioProcessor::applyPresetData(const juce::ValueTree& prese
     if (params.hasProperty("chorusLPF")) setChorusLPF(params.getProperty("chorusLPF"));
     if (params.hasProperty("chorusMix")) setChorusMix(params.getProperty("chorusMix"));
     
-    // Effects parameters - All other effects (continuing pattern)
+    // Effects parameters - Flanger
     if (params.hasProperty("flangerEnabled")) setFlangerEnabled(params.getProperty("flangerEnabled"));
     if (params.hasProperty("flangerRate")) setFlangerRate(params.getProperty("flangerRate"));
     if (params.hasProperty("flangerDepth")) setFlangerDepth(params.getProperty("flangerDepth"));
@@ -1150,12 +1150,82 @@ bool SummonerXSerum2AudioProcessor::applyPresetData(const juce::ValueTree& prese
     if (params.hasProperty("flangerMix")) setFlangerMix(params.getProperty("flangerMix"));
     if (params.hasProperty("flangerPhase")) setFlangerPhase(params.getProperty("flangerPhase"));
     
-    // Continue with remaining effects parameters... (truncated for brevity but all 106 parameters would be here)
+    // Effects parameters - Phaser
+    if (params.hasProperty("phaserEnabled")) setPhaserEnabled(params.getProperty("phaserEnabled"));
+    if (params.hasProperty("phaserRate")) setPhaserRate(params.getProperty("phaserRate"));
+    if (params.hasProperty("phaserDepth1")) setPhaserDepth1(params.getProperty("phaserDepth1"));
+    if (params.hasProperty("phaserDepth2")) setPhaserDepth2(params.getProperty("phaserDepth2"));
+    if (params.hasProperty("phaserFeedback")) setPhaserFeedback(params.getProperty("phaserFeedback"));
+    if (params.hasProperty("phaserMix")) setPhaserMix(params.getProperty("phaserMix"));
+    if (params.hasProperty("phaserPhase")) setPhaserPhase(params.getProperty("phaserPhase"));
+    if (params.hasProperty("phaserFrequency")) setPhaserFrequency(params.getProperty("phaserFrequency"));
+    if (params.hasProperty("phaserPoles")) setPhaserPoles(params.getProperty("phaserPoles"));
+    
+    // Effects parameters - Compressor
+    if (params.hasProperty("compressorEnabled")) setCompressorEnabled(params.getProperty("compressorEnabled"));
+    if (params.hasProperty("compressorThreshold")) setCompressorThreshold(params.getProperty("compressorThreshold"));
+    if (params.hasProperty("compressorRatio")) setCompressorRatio(params.getProperty("compressorRatio"));
+    if (params.hasProperty("compressorAttack")) setCompressorAttack(params.getProperty("compressorAttack"));
+    if (params.hasProperty("compressorRelease")) setCompressorRelease(params.getProperty("compressorRelease"));
+    if (params.hasProperty("compressorGain")) setCompressorGain(params.getProperty("compressorGain"));
+    if (params.hasProperty("compressorMix")) setCompressorMix(params.getProperty("compressorMix"));
+    if (params.hasProperty("compressorMultiband")) setCompressorMultiband(params.getProperty("compressorMultiband"));
+    
+    // Effects parameters - Distortion
+    if (params.hasProperty("distortionEnabled")) setDistortionEnabled(params.getProperty("distortionEnabled"));
+    if (params.hasProperty("distortionType")) setDistortionType(params.getProperty("distortionType"));
+    if (params.hasProperty("distortionDrive")) setDistortionDrive(params.getProperty("distortionDrive"));
+    if (params.hasProperty("distortionMix")) setDistortionMix(params.getProperty("distortionMix"));
+    if (params.hasProperty("distortionFilterPosition")) setDistortionFilterPosition(params.getProperty("distortionFilterPosition"));
+    if (params.hasProperty("distortionFilterType")) setDistortionFilterType(params.getProperty("distortionFilterType"));
+    if (params.hasProperty("distortionFilterFreq")) setDistortionFilterFreq(params.getProperty("distortionFilterFreq"));
+    if (params.hasProperty("distortionFilterQ")) setDistortionFilterQ(params.getProperty("distortionFilterQ"));
+    
+    // Effects parameters - Delay
+    if (params.hasProperty("delayEnabled")) setDelayEnabled(params.getProperty("delayEnabled"));
+    if (params.hasProperty("delayFeedback")) setDelayFeedback(params.getProperty("delayFeedback"));
+    if (params.hasProperty("delayMix")) setDelayMix(params.getProperty("delayMix"));
+    if (params.hasProperty("delayPingPong")) setDelayPingPong(params.getProperty("delayPingPong"));
+    if (params.hasProperty("delayLeftTime")) setDelayLeftTime(params.getProperty("delayLeftTime"));
+    if (params.hasProperty("delayRightTime")) setDelayRightTime(params.getProperty("delayRightTime"));
+    if (params.hasProperty("delaySync")) setDelaySync(params.getProperty("delaySync"));
+    if (params.hasProperty("delayTriplet")) setDelayTriplet(params.getProperty("delayTriplet"));
+    if (params.hasProperty("delayDotted")) setDelayDotted(params.getProperty("delayDotted"));
+    if (params.hasProperty("delayRTriplet")) setDelayRTriplet(params.getProperty("delayRTriplet"));
+    if (params.hasProperty("delayRDotted")) setDelayRDotted(params.getProperty("delayRDotted"));
+    if (params.hasProperty("delayFilterFreq")) setDelayFilterFreq(params.getProperty("delayFilterFreq"));
+    if (params.hasProperty("delayFilterQ")) setDelayFilterQ(params.getProperty("delayFilterQ"));
+    
+    // Effects parameters - Reverb
+    if (params.hasProperty("reverbEnabled")) setReverbEnabled(params.getProperty("reverbEnabled"));
+    if (params.hasProperty("reverbMix")) setReverbMix(params.getProperty("reverbMix"));
+    if (params.hasProperty("reverbType")) setReverbType(params.getProperty("reverbType"));
+    if (params.hasProperty("reverbLowCut")) setReverbLowCut(params.getProperty("reverbLowCut"));
+    if (params.hasProperty("reverbHighCut")) setReverbHighCut(params.getProperty("reverbHighCut"));
+    if (params.hasProperty("reverbSize")) setReverbSize(params.getProperty("reverbSize"));
+    if (params.hasProperty("reverbPreDelay")) setReverbPreDelay(params.getProperty("reverbPreDelay"));
+    if (params.hasProperty("reverbDamping")) setReverbDamping(params.getProperty("reverbDamping"));
+    if (params.hasProperty("reverbWidth")) setReverbWidth(params.getProperty("reverbWidth"));
+    
+    // Effects parameters - EQ
+    if (params.hasProperty("eqEnabled")) setEQEnabled(params.getProperty("eqEnabled"));
+    if (params.hasProperty("eq1Enabled")) setEQ1Enabled(params.getProperty("eq1Enabled"));
+    if (params.hasProperty("eq1Frequency")) setEQ1Frequency(params.getProperty("eq1Frequency"));
+    if (params.hasProperty("eq1Q")) setEQ1Q(params.getProperty("eq1Q"));
+    if (params.hasProperty("eq1Gain")) setEQ1Gain(params.getProperty("eq1Gain"));
+    if (params.hasProperty("eq1Type")) setEQ1Type(params.getProperty("eq1Type"));
+    if (params.hasProperty("eq2Enabled")) setEQ2Enabled(params.getProperty("eq2Enabled"));
+    if (params.hasProperty("eq2Frequency")) setEQ2Frequency(params.getProperty("eq2Frequency"));
+    if (params.hasProperty("eq2Q")) setEQ2Q(params.getProperty("eq2Q"));
+    if (params.hasProperty("eq2Gain")) setEQ2Gain(params.getProperty("eq2Gain"));
+    if (params.hasProperty("eq2Type")) setEQ2Type(params.getProperty("eq2Type"));
     
     // Trigger UI update
     updateHostDisplay();
     if (onPresetApplied)
         onPresetApplied();
+    if (onPresetChanged)
+        onPresetChanged();
         
     return true;
 }

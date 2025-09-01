@@ -1104,6 +1104,7 @@ public:
     void showSavePresetDialog();
     void showLoadPresetDialog();
     void updatePresetDisplay();
+    void updateAllGuiControls();
     
 private:
     void updateMacroMappings(int macroIndex, double macroValue);
