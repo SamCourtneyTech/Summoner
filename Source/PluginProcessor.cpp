@@ -328,7 +328,7 @@ void SummonerXSerum2AudioProcessor::processBlock(juce::AudioBuffer<float>& buffe
     eq.processBlock(buffer);
     
     // Apply volume control
-    buffer.applyGain(synthVolume);
+    buffer.applyGain(masterVolume);
 }
 
 void SummonerXSerum2AudioProcessor::updateEnvelopeParameters()
@@ -337,7 +337,7 @@ void SummonerXSerum2AudioProcessor::updateEnvelopeParameters()
     {
         if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
         {
-            voice->setEnvelopeParameters(synthAttack, synthDecay, synthSustain, synthRelease);
+            voice->setEnvelopeParameters(osc1Attack, osc1Decay, osc1Sustain, osc1Release);
         }
     }
 }
@@ -438,7 +438,7 @@ void SummonerXSerum2AudioProcessor::updateDetune()
     {
         if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
         {
-            voice->setDetune(synthDetune);
+            voice->setDetune(osc1Detune);
         }
     }
 }
@@ -629,16 +629,16 @@ void SummonerXSerum2AudioProcessor::setStateInformation(const void* data, int si
 
 void SummonerXSerum2AudioProcessor::initializeParameterMap()
 {
-    // Main Synth Parameters (9)
-    parameterMap["synthVolume"] = {ParameterInfo::FLOAT, 0.0f, 1.0f, [this](float v) { setSynthVolume(v); }};
-    parameterMap["synthDetune"] = {ParameterInfo::FLOAT, 0.0f, 100.0f, [this](float v) { setSynthDetune(v); }};
-    parameterMap["synthStereoWidth"] = {ParameterInfo::FLOAT, 0.0f, 1.0f, [this](float v) { setSynthStereoWidth(v); }};
-    parameterMap["synthPan"] = {ParameterInfo::FLOAT, -1.0f, 1.0f, [this](float v) { setSynthPan(v); }};
-    parameterMap["synthPhase"] = {ParameterInfo::FLOAT, 0.0f, 360.0f, [this](float v) { setSynthPhase(v); }};
-    parameterMap["synthAttack"] = {ParameterInfo::FLOAT, 0.0f, 10.0f, [this](float v) { setSynthAttack(v); }};
-    parameterMap["synthDecay"] = {ParameterInfo::FLOAT, 0.0f, 10.0f, [this](float v) { setSynthDecay(v); }};
-    parameterMap["synthSustain"] = {ParameterInfo::FLOAT, 0.0f, 1.0f, [this](float v) { setSynthSustain(v); }};
-    parameterMap["synthRelease"] = {ParameterInfo::FLOAT, 0.0f, 10.0f, [this](float v) { setSynthRelease(v); }};
+    // Main Oscillator 1 Parameters (9)
+    parameterMap["masterVolume"] = {ParameterInfo::FLOAT, 0.0f, 5.0f, [this](float v) { setMasterVolume(v); }};
+    parameterMap["osc1Detune"] = {ParameterInfo::FLOAT, 0.0f, 100.0f, [this](float v) { setOsc1Detune(v); }};
+    parameterMap["osc1StereoWidth"] = {ParameterInfo::FLOAT, 0.0f, 1.0f, [this](float v) { setSynthStereoWidth(v); }};
+    parameterMap["osc1Pan"] = {ParameterInfo::FLOAT, -1.0f, 1.0f, [this](float v) { setSynthPan(v); }};
+    parameterMap["osc1Phase"] = {ParameterInfo::FLOAT, 0.0f, 360.0f, [this](float v) { setSynthPhase(v); }};
+    parameterMap["osc1Attack"] = {ParameterInfo::FLOAT, 0.0f, 10.0f, [this](float v) { setOsc1Attack(v); }};
+    parameterMap["osc1Decay"] = {ParameterInfo::FLOAT, 0.0f, 10.0f, [this](float v) { setOsc1Decay(v); }};
+    parameterMap["osc1Sustain"] = {ParameterInfo::FLOAT, 0.0f, 1.0f, [this](float v) { setOsc1Sustain(v); }};
+    parameterMap["osc1Release"] = {ParameterInfo::FLOAT, 0.0f, 10.0f, [this](float v) { setOsc1Release(v); }};
 
     // Oscillator 1 Parameters (8)
     parameterMap["osc1Type"] = {ParameterInfo::INT, 0.0f, 10.0f, [this](float v) { setOsc1Type((int)v); }};
@@ -922,19 +922,159 @@ juce::ValueTree SummonerXSerum2AudioProcessor::createPresetData()
     preset.setProperty("creationTime", juce::Time::getCurrentTime().toISO8601(false), nullptr);
     preset.setProperty("version", "1.0", nullptr);
     
-    // Add all synthesizer parameters
+    // Add ALL synthesizer parameters - use parameter map to ensure completeness
     juce::ValueTree params("PARAMETERS");
     
-    // Main synth parameters
-    params.setProperty("synthVolume", synthVolume, nullptr);
-    params.setProperty("synthDetune", synthDetune, nullptr);
-    params.setProperty("synthStereoWidth", synthStereoWidth, nullptr);
-    params.setProperty("synthPan", synthPan, nullptr);
-    params.setProperty("synthPhase", synthPhase, nullptr);
-    params.setProperty("synthAttack", synthAttack, nullptr);
-    params.setProperty("synthDecay", synthDecay, nullptr);
-    params.setProperty("synthSustain", synthSustain, nullptr);
-    params.setProperty("synthRelease", synthRelease, nullptr);
+    // Save every single parameter from the parameter map
+    for (const auto& param : parameterMap)
+    {
+        const std::string& paramName = param.first;
+        // Get current value using the getter methods
+        if (paramName == "masterVolume") params.setProperty("masterVolume", masterVolume, nullptr);
+        else if (paramName == "osc1Detune") params.setProperty("osc1Detune", osc1Detune, nullptr);
+        else if (paramName == "osc1StereoWidth") params.setProperty("osc1StereoWidth", synthStereoWidth, nullptr);
+        else if (paramName == "osc1Pan") params.setProperty("osc1Pan", synthPan, nullptr);
+        else if (paramName == "osc1Phase") params.setProperty("osc1Phase", synthPhase, nullptr);
+        else if (paramName == "osc1Attack") params.setProperty("osc1Attack", osc1Attack, nullptr);
+        else if (paramName == "osc1Decay") params.setProperty("osc1Decay", osc1Decay, nullptr);
+        else if (paramName == "osc1Sustain") params.setProperty("osc1Sustain", osc1Sustain, nullptr);
+        else if (paramName == "osc1Release") params.setProperty("osc1Release", osc1Release, nullptr);
+        
+        else if (paramName == "osc1Type") params.setProperty("osc1Type", osc1Type, nullptr);
+        else if (paramName == "osc1PulseWidth") params.setProperty("osc1PulseWidth", osc1PulseWidth, nullptr);
+        else if (paramName == "osc1Octave") params.setProperty("osc1Octave", osc1Octave, nullptr);
+        else if (paramName == "osc1Semitone") params.setProperty("osc1Semitone", osc1Semitone, nullptr);
+        else if (paramName == "osc1FineTune") params.setProperty("osc1FineTune", osc1FineTune, nullptr);
+        else if (paramName == "osc1RandomPhase") params.setProperty("osc1RandomPhase", osc1RandomPhase, nullptr);
+        else if (paramName == "osc1VoiceCount") params.setProperty("osc1VoiceCount", osc1VoiceCount, nullptr);
+        else if (paramName == "osc1Volume") params.setProperty("osc1Volume", osc1Volume, nullptr);
+        
+        else if (paramName == "osc2Enabled") params.setProperty("osc2Enabled", osc2Enabled, nullptr);
+        else if (paramName == "osc2Type") params.setProperty("osc2Type", osc2Type, nullptr);
+        else if (paramName == "osc2Volume") params.setProperty("osc2Volume", osc2Volume, nullptr);
+        else if (paramName == "osc2Detune") params.setProperty("osc2Detune", osc2Detune, nullptr);
+        else if (paramName == "osc2Stereo") params.setProperty("osc2Stereo", osc2Stereo, nullptr);
+        else if (paramName == "osc2Pan") params.setProperty("osc2Pan", osc2Pan, nullptr);
+        else if (paramName == "osc2Octave") params.setProperty("osc2Octave", osc2Octave, nullptr);
+        else if (paramName == "osc2Semitone") params.setProperty("osc2Semitone", osc2Semitone, nullptr);
+        else if (paramName == "osc2FineTune") params.setProperty("osc2FineTune", osc2FineTune, nullptr);
+        else if (paramName == "osc2RandomPhase") params.setProperty("osc2RandomPhase", osc2RandomPhase, nullptr);
+        else if (paramName == "osc2Phase") params.setProperty("osc2Phase", osc2Phase, nullptr);
+        else if (paramName == "osc2Attack") params.setProperty("osc2Attack", osc2Attack, nullptr);
+        else if (paramName == "osc2Decay") params.setProperty("osc2Decay", osc2Decay, nullptr);
+        else if (paramName == "osc2Sustain") params.setProperty("osc2Sustain", osc2Sustain, nullptr);
+        else if (paramName == "osc2Release") params.setProperty("osc2Release", osc2Release, nullptr);
+        else if (paramName == "osc2VoiceCount") params.setProperty("osc2VoiceCount", osc2VoiceCount, nullptr);
+        
+        else if (paramName == "filterCutoff") params.setProperty("filterCutoff", filterCutoff, nullptr);
+        else if (paramName == "filterResonance") params.setProperty("filterResonance", filterResonance, nullptr);
+        else if (paramName == "osc1FilterEnabled") params.setProperty("osc1FilterEnabled", osc1FilterEnabled, nullptr);
+        else if (paramName == "osc2FilterEnabled") params.setProperty("osc2FilterEnabled", osc2FilterEnabled, nullptr);
+        else if (paramName == "filterLPEnabled") params.setProperty("filterLPEnabled", filterLPEnabled, nullptr);
+        else if (paramName == "filterHPEnabled") params.setProperty("filterHPEnabled", filterHPEnabled, nullptr);
+        else if (paramName == "filterBPEnabled") params.setProperty("filterBPEnabled", filterBPEnabled, nullptr);
+        else if (paramName == "filterNotchEnabled") params.setProperty("filterNotchEnabled", filterNotchEnabled, nullptr);
+        else if (paramName == "filterCombEnabled") params.setProperty("filterCombEnabled", filterCombEnabled, nullptr);
+        else if (paramName == "filterFormantEnabled") params.setProperty("filterFormantEnabled", filterFormantEnabled, nullptr);
+        else if (paramName == "filter12dBEnabled") params.setProperty("filter12dBEnabled", filter12dBEnabled, nullptr);
+        else if (paramName == "filter24dBEnabled") params.setProperty("filter24dBEnabled", filter24dBEnabled, nullptr);
+        
+        else if (paramName == "chorusEnabled") params.setProperty("chorusEnabled", chorusEnabled, nullptr);
+        else if (paramName == "chorusRate") params.setProperty("chorusRate", chorusRate, nullptr);
+        else if (paramName == "chorusDelay1") params.setProperty("chorusDelay1", chorusDelay1, nullptr);
+        else if (paramName == "chorusDelay2") params.setProperty("chorusDelay2", chorusDelay2, nullptr);
+        else if (paramName == "chorusDepth") params.setProperty("chorusDepth", chorusDepth, nullptr);
+        else if (paramName == "chorusFeedback") params.setProperty("chorusFeedback", chorusFeedback, nullptr);
+        else if (paramName == "chorusLPF") params.setProperty("chorusLPF", chorusLPF, nullptr);
+        else if (paramName == "chorusMix") params.setProperty("chorusMix", chorusMix, nullptr);
+        
+        else if (paramName == "flangerEnabled") params.setProperty("flangerEnabled", flangerEnabled, nullptr);
+        else if (paramName == "flangerRate") params.setProperty("flangerRate", flangerRate, nullptr);
+        else if (paramName == "flangerDepth") params.setProperty("flangerDepth", flangerDepth, nullptr);
+        else if (paramName == "flangerFeedback") params.setProperty("flangerFeedback", flangerFeedback, nullptr);
+        else if (paramName == "flangerMix") params.setProperty("flangerMix", flangerMix, nullptr);
+        else if (paramName == "flangerPhase") params.setProperty("flangerPhase", flangerPhase, nullptr);
+        
+        else if (paramName == "phaserEnabled") params.setProperty("phaserEnabled", phaserEnabled, nullptr);
+        else if (paramName == "phaserRate") params.setProperty("phaserRate", phaserRate, nullptr);
+        else if (paramName == "phaserDepth1") params.setProperty("phaserDepth1", phaserDepth1, nullptr);
+        else if (paramName == "phaserDepth2") params.setProperty("phaserDepth2", phaserDepth2, nullptr);
+        else if (paramName == "phaserFeedback") params.setProperty("phaserFeedback", phaserFeedback, nullptr);
+        else if (paramName == "phaserMix") params.setProperty("phaserMix", phaserMix, nullptr);
+        else if (paramName == "phaserPhase") params.setProperty("phaserPhase", phaserPhase, nullptr);
+        else if (paramName == "phaserFrequency") params.setProperty("phaserFrequency", phaserFrequency, nullptr);
+        else if (paramName == "phaserPoles") params.setProperty("phaserPoles", phaserPoles, nullptr);
+        
+        else if (paramName == "compressorEnabled") params.setProperty("compressorEnabled", compressorEnabled, nullptr);
+        else if (paramName == "compressorThreshold") params.setProperty("compressorThreshold", compressorThreshold, nullptr);
+        else if (paramName == "compressorRatio") params.setProperty("compressorRatio", compressorRatio, nullptr);
+        else if (paramName == "compressorAttack") params.setProperty("compressorAttack", compressorAttack, nullptr);
+        else if (paramName == "compressorRelease") params.setProperty("compressorRelease", compressorRelease, nullptr);
+        else if (paramName == "compressorGain") params.setProperty("compressorGain", compressorGain, nullptr);
+        else if (paramName == "compressorMix") params.setProperty("compressorMix", compressorMix, nullptr);
+        else if (paramName == "compressorMultiband") params.setProperty("compressorMultiband", compressorMultiband, nullptr);
+        
+        else if (paramName == "distortionEnabled") params.setProperty("distortionEnabled", distortionEnabled, nullptr);
+        else if (paramName == "distortionType") params.setProperty("distortionType", distortionType, nullptr);
+        else if (paramName == "distortionDrive") params.setProperty("distortionDrive", distortionDrive, nullptr);
+        else if (paramName == "distortionMix") params.setProperty("distortionMix", distortionMix, nullptr);
+        else if (paramName == "distortionFilterPosition") params.setProperty("distortionFilterPosition", distortionFilterPosition, nullptr);
+        else if (paramName == "distortionFilterType") params.setProperty("distortionFilterType", distortionFilterType, nullptr);
+        else if (paramName == "distortionFilterFreq") params.setProperty("distortionFilterFreq", distortionFilterFreq, nullptr);
+        else if (paramName == "distortionFilterQ") params.setProperty("distortionFilterQ", distortionFilterQ, nullptr);
+        
+        else if (paramName == "delayEnabled") params.setProperty("delayEnabled", delayEnabled, nullptr);
+        else if (paramName == "delayFeedback") params.setProperty("delayFeedback", delayFeedback, nullptr);
+        else if (paramName == "delayMix") params.setProperty("delayMix", delayMix, nullptr);
+        else if (paramName == "delayPingPong") params.setProperty("delayPingPong", delayPingPong, nullptr);
+        else if (paramName == "delayLeftTime") params.setProperty("delayLeftTime", delayLeftTime, nullptr);
+        else if (paramName == "delayRightTime") params.setProperty("delayRightTime", delayRightTime, nullptr);
+        else if (paramName == "delaySync") params.setProperty("delaySync", delaySync, nullptr);
+        else if (paramName == "delayTriplet") params.setProperty("delayTriplet", delayTriplet, nullptr);
+        else if (paramName == "delayDotted") params.setProperty("delayDotted", delayDotted, nullptr);
+        else if (paramName == "delayRTriplet") params.setProperty("delayRTriplet", delayRTriplet, nullptr);
+        else if (paramName == "delayRDotted") params.setProperty("delayRDotted", delayRDotted, nullptr);
+        else if (paramName == "delayFilterFreq") params.setProperty("delayFilterFreq", delayFilterFreq, nullptr);
+        else if (paramName == "delayFilterQ") params.setProperty("delayFilterQ", delayFilterQ, nullptr);
+        
+        else if (paramName == "reverbEnabled") params.setProperty("reverbEnabled", reverbEnabled, nullptr);
+        else if (paramName == "reverbMix") params.setProperty("reverbMix", reverbMix, nullptr);
+        else if (paramName == "reverbType") params.setProperty("reverbType", reverbType, nullptr);
+        else if (paramName == "reverbLowCut") params.setProperty("reverbLowCut", reverbLowCut, nullptr);
+        else if (paramName == "reverbHighCut") params.setProperty("reverbHighCut", reverbHighCut, nullptr);
+        else if (paramName == "reverbSize") params.setProperty("reverbSize", reverbSize, nullptr);
+        else if (paramName == "reverbPreDelay") params.setProperty("reverbPreDelay", reverbPreDelay, nullptr);
+        else if (paramName == "reverbDamping") params.setProperty("reverbDamping", reverbDamping, nullptr);
+        else if (paramName == "reverbWidth") params.setProperty("reverbWidth", reverbWidth, nullptr);
+        
+        else if (paramName == "eqEnabled") params.setProperty("eqEnabled", eqEnabled, nullptr);
+        else if (paramName == "eq1Enabled") params.setProperty("eq1Enabled", eq1Enabled, nullptr);
+        else if (paramName == "eq1Frequency") params.setProperty("eq1Frequency", eq1Frequency, nullptr);
+        else if (paramName == "eq1Q") params.setProperty("eq1Q", eq1Q, nullptr);
+        else if (paramName == "eq1Gain") params.setProperty("eq1Gain", eq1Gain, nullptr);
+        else if (paramName == "eq1Type") params.setProperty("eq1Type", eq1Type, nullptr);
+        else if (paramName == "eq2Enabled") params.setProperty("eq2Enabled", eq2Enabled, nullptr);
+        else if (paramName == "eq2Frequency") params.setProperty("eq2Frequency", eq2Frequency, nullptr);
+        else if (paramName == "eq2Q") params.setProperty("eq2Q", eq2Q, nullptr);
+        else if (paramName == "eq2Gain") params.setProperty("eq2Gain", eq2Gain, nullptr);
+        else if (paramName == "eq2Type") params.setProperty("eq2Type", eq2Type, nullptr);
+        else
+        {
+            // Debug output for any missed parameters
+            DBG("Warning: Parameter not saved in preset: " << paramName);
+        }
+    }
+    
+    // Main oscillator 1 parameters
+    params.setProperty("masterVolume", masterVolume, nullptr);
+    params.setProperty("osc1Detune", osc1Detune, nullptr);
+    params.setProperty("osc1StereoWidth", synthStereoWidth, nullptr);
+    params.setProperty("osc1Pan", synthPan, nullptr);
+    params.setProperty("osc1Phase", synthPhase, nullptr);
+    params.setProperty("osc1Attack", osc1Attack, nullptr);
+    params.setProperty("osc1Decay", osc1Decay, nullptr);
+    params.setProperty("osc1Sustain", osc1Sustain, nullptr);
+    params.setProperty("osc1Release", osc1Release, nullptr);
     
     // Oscillator 1 parameters
     params.setProperty("osc1Type", osc1Type, nullptr);
@@ -1080,15 +1220,34 @@ bool SummonerXSerum2AudioProcessor::applyPresetData(const juce::ValueTree& prese
         return false;
     
     // Apply all parameters - using the property accessors to ensure proper updating
-    if (params.hasProperty("synthVolume")) setSynthVolume(params.getProperty("synthVolume"));
-    if (params.hasProperty("synthDetune")) setSynthDetune(params.getProperty("synthDetune"));
-    if (params.hasProperty("synthStereoWidth")) setSynthStereoWidth(params.getProperty("synthStereoWidth"));
-    if (params.hasProperty("synthPan")) setSynthPan(params.getProperty("synthPan"));
-    if (params.hasProperty("synthPhase")) setSynthPhase(params.getProperty("synthPhase"));
-    if (params.hasProperty("synthAttack")) setSynthAttack(params.getProperty("synthAttack"));
-    if (params.hasProperty("synthDecay")) setSynthDecay(params.getProperty("synthDecay"));
-    if (params.hasProperty("synthSustain")) setSynthSustain(params.getProperty("synthSustain"));
-    if (params.hasProperty("synthRelease")) setSynthRelease(params.getProperty("synthRelease"));
+    // Support both new and old parameter names for backward compatibility
+    if (params.hasProperty("masterVolume")) setMasterVolume(params.getProperty("masterVolume"));
+    else if (params.hasProperty("osc1MainVolume")) setMasterVolume(params.getProperty("osc1MainVolume"));
+    else if (params.hasProperty("synthVolume")) setMasterVolume(params.getProperty("synthVolume"));
+    
+    if (params.hasProperty("osc1Detune")) setOsc1Detune(params.getProperty("osc1Detune"));
+    else if (params.hasProperty("synthDetune")) setOsc1Detune(params.getProperty("synthDetune"));
+    
+    if (params.hasProperty("osc1StereoWidth")) setSynthStereoWidth(params.getProperty("osc1StereoWidth"));
+    else if (params.hasProperty("synthStereoWidth")) setSynthStereoWidth(params.getProperty("synthStereoWidth"));
+    
+    if (params.hasProperty("osc1Pan")) setSynthPan(params.getProperty("osc1Pan"));
+    else if (params.hasProperty("synthPan")) setSynthPan(params.getProperty("synthPan"));
+    
+    if (params.hasProperty("osc1Phase")) setSynthPhase(params.getProperty("osc1Phase"));
+    else if (params.hasProperty("synthPhase")) setSynthPhase(params.getProperty("synthPhase"));
+    
+    if (params.hasProperty("osc1Attack")) setOsc1Attack(params.getProperty("osc1Attack"));
+    else if (params.hasProperty("synthAttack")) setOsc1Attack(params.getProperty("synthAttack"));
+    
+    if (params.hasProperty("osc1Decay")) setOsc1Decay(params.getProperty("osc1Decay"));
+    else if (params.hasProperty("synthDecay")) setOsc1Decay(params.getProperty("synthDecay"));
+    
+    if (params.hasProperty("osc1Sustain")) setOsc1Sustain(params.getProperty("osc1Sustain"));
+    else if (params.hasProperty("synthSustain")) setOsc1Sustain(params.getProperty("synthSustain"));
+    
+    if (params.hasProperty("osc1Release")) setOsc1Release(params.getProperty("osc1Release"));
+    else if (params.hasProperty("synthRelease")) setOsc1Release(params.getProperty("synthRelease"));
     
     // Oscillator 1 parameters
     if (params.hasProperty("osc1Type")) setOsc1Type(params.getProperty("osc1Type"));
@@ -1223,9 +1382,9 @@ bool SummonerXSerum2AudioProcessor::applyPresetData(const juce::ValueTree& prese
     // Trigger UI update
     updateHostDisplay();
     if (onPresetApplied)
-        onPresetApplied();
+        juce::MessageManager::callAsync([this]() { onPresetApplied(); });
     if (onPresetChanged)
-        onPresetChanged();
+        juce::MessageManager::callAsync([this]() { onPresetChanged(); });
         
     return true;
 }
@@ -1330,6 +1489,106 @@ bool SummonerXSerum2AudioProcessor::previousPreset()
         return loadPresetByIndex(currentPresetIndex - 1);
     }
     return false;
+}
+
+bool SummonerXSerum2AudioProcessor::initializeAllParameters()
+{
+    // Reset ALL parameters to their actual startup default values
+    std::map<std::string, float> startupDefaults = {
+        // Main Oscillator 1 Parameters
+        {"osc1MainVolume", 3.0f},
+        {"osc1Detune", 0.0f},
+        {"osc1StereoWidth", 0.5f},
+        {"osc1Pan", 0.0f},
+        {"osc1Phase", 0.0f},
+        {"osc1Attack", 0.1f},
+        {"osc1Decay", 0.2f},
+        {"osc1Sustain", 0.7f},
+        {"osc1Release", 0.3f},
+        
+        // Oscillator 1 Parameters
+        {"osc1Type", 1.0f},  // Saw wave
+        {"osc1PulseWidth", 0.5f},
+        {"osc1Octave", 0.0f},
+        {"osc1Semitone", 0.0f},
+        {"osc1FineTune", 0.0f},
+        {"osc1RandomPhase", 1.0f},  // true
+        {"osc1VoiceCount", 1.0f},
+        {"osc1Volume", 0.5f},
+        
+        // Oscillator 2 Parameters
+        {"osc2Enabled", 1.0f},  // true
+        {"osc2Type", 1.0f},  // Saw wave
+        {"osc2Volume", 0.0f},  // starts silent
+        {"osc2Detune", 0.0f},
+        {"osc2Stereo", 0.5f},
+        {"osc2Pan", 0.0f},
+        {"osc2Octave", 0.0f},
+        {"osc2Semitone", 0.0f},
+        {"osc2FineTune", 0.0f},
+        {"osc2RandomPhase", 1.0f},  // true
+        {"osc2Phase", 0.0f},
+        {"osc2Attack", 0.1f},
+        {"osc2Decay", 0.2f},
+        {"osc2Sustain", 0.7f},
+        {"osc2Release", 0.3f},
+        {"osc2VoiceCount", 1.0f},
+        
+        // Filter Parameters
+        {"filterCutoff", 1000.0f},
+        {"filterResonance", 0.0f},
+        {"osc1FilterEnabled", 0.0f},  // false
+        {"osc2FilterEnabled", 0.0f},  // false
+        {"filterLPEnabled", 1.0f},  // true
+        {"filterHPEnabled", 0.0f},
+        {"filterBPEnabled", 0.0f},
+        {"filterNotchEnabled", 0.0f},
+        {"filterCombEnabled", 0.0f},
+        {"filterFormantEnabled", 0.0f},
+        {"filter12dBEnabled", 1.0f},  // true
+        {"filter24dBEnabled", 0.0f}
+    };
+    
+    // Apply startup defaults for all parameters
+    for (const auto& param : parameterMap)
+    {
+        const std::string& paramName = param.first;
+        const ParameterInfo& info = param.second;
+        float defaultValue = 0.0f;
+        
+        // Use startup default if available
+        if (startupDefaults.find(paramName) != startupDefaults.end())
+        {
+            defaultValue = startupDefaults[paramName];
+        }
+        else
+        {
+            // For parameters not explicitly set, use safe defaults
+            if (paramName.find("Enabled") != std::string::npos)
+                defaultValue = 0.0f; // Disable all effects by default
+            else if (info.type == ParameterInfo::BOOL)
+                defaultValue = 0.0f;
+            else if (info.type == ParameterInfo::INT)
+                defaultValue = info.minValue;
+            else if (info.type == ParameterInfo::FLOAT)
+                defaultValue = info.minValue;
+        }
+        
+        // Clamp to valid range
+        defaultValue = juce::jlimit(info.minValue, info.maxValue, defaultValue);
+        
+        // Apply the default value using the setter
+        info.setter(defaultValue);
+    }
+    
+    // Update preset name and trigger callbacks
+    currentPresetName = "Init";
+    updateHostDisplay();
+    
+    if (onPresetChanged)
+        juce::MessageManager::callAsync([this]() { onPresetChanged(); });
+    
+    return true;
 }
 
 void SummonerXSerum2AudioProcessor::updatePresetDisplay()

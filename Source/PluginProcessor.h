@@ -3062,14 +3062,14 @@ public:
     }
     
     // Synthesizer controls
-    void setSynthVolume(float volume) { synthVolume = volume; }
-    float getSynthVolume() const { return synthVolume; }
+    void setMasterVolume(float volume) { masterVolume = volume; }
+    float getMasterVolume() const { return masterVolume; }
     
-    void setSynthDetune(float detune) { 
-        synthDetune = detune; 
+    void setOsc1Detune(float detune) { 
+        osc1Detune = detune; 
         updateDetune();
     }
-    float getSynthDetune() const { return synthDetune; }
+    float getOsc1Detune() const { return osc1Detune; }
     
     void setSynthStereoWidth(float width) { 
         synthStereoWidth = width; 
@@ -3089,29 +3089,29 @@ public:
     }
     float getSynthPhase() const { return synthPhase; }
     
-    void setSynthAttack(float attack) { 
-        synthAttack = attack; 
+    void setOsc1Attack(float attack) { 
+        osc1Attack = attack; 
         updateEnvelopeParameters();
     }
-    float getSynthAttack() const { return synthAttack; }
+    float getOsc1Attack() const { return osc1Attack; }
     
-    void setSynthDecay(float decay) { 
-        synthDecay = decay; 
+    void setOsc1Decay(float decay) { 
+        osc1Decay = decay; 
         updateEnvelopeParameters();
     }
-    float getSynthDecay() const { return synthDecay; }
+    float getOsc1Decay() const { return osc1Decay; }
     
-    void setSynthSustain(float sustain) { 
-        synthSustain = sustain; 
+    void setOsc1Sustain(float sustain) { 
+        osc1Sustain = sustain; 
         updateEnvelopeParameters();
     }
-    float getSynthSustain() const { return synthSustain; }
+    float getOsc1Sustain() const { return osc1Sustain; }
     
-    void setSynthRelease(float release) { 
-        synthRelease = release; 
+    void setOsc1Release(float release) { 
+        osc1Release = release; 
         updateEnvelopeParameters();
     }
-    float getSynthRelease() const { return synthRelease; }
+    float getOsc1Release() const { return osc1Release; }
     
     // Oscillator 1 controls
     void setOsc1Type(int type) { 
@@ -3813,6 +3813,7 @@ public:
     bool previousPreset();
     void refreshPresetList();
     juce::File getPresetDirectory();
+    bool initializeAllParameters();
     
     // Callback for GUI updates when presets change
     std::function<void()> onPresetChanged;
@@ -3865,15 +3866,15 @@ private:
 
     // Synthesizer components
     juce::Synthesiser synthesiser;
-    float synthVolume = 3.0f; // +25 dB louder (approximately)
-    float synthDetune = 0.0f;
+    float masterVolume = 3.0f; // +25 dB louder (approximately)
+    float osc1Detune = 0.0f;
     float synthStereoWidth = 0.5f;
     float synthPan = 0.0f;
     float synthPhase = 0.0f;
-    float synthAttack = 0.01f;
-    float synthDecay = 0.2f;
-    float synthSustain = 0.7f;
-    float synthRelease = 0.3f;
+    float osc1Attack = 0.01f;
+    float osc1Decay = 0.2f;
+    float osc1Sustain = 0.7f;
+    float osc1Release = 0.3f;
     
     // Oscillator 1 parameters
     float osc1PulseWidth = 0.5f;

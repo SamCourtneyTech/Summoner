@@ -2806,6 +2806,10 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     effectsPresetLoadButton.setLookAndFeel(&customWaveButtonLookAndFeel);
     addAndMakeVisible(effectsPresetLoadButton);
     
+    effectsPresetInitButton.setButtonText("INIT");
+    effectsPresetInitButton.setLookAndFeel(&customWaveButtonLookAndFeel);
+    addAndMakeVisible(effectsPresetInitButton);
+    
     // Set up preset button callbacks
     effectsPresetSaveButton.onClick = [this]() {
         showSavePresetDialog();
@@ -2813,6 +2817,10 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     effectsPresetLoadButton.onClick = [this]() {
         showLoadPresetDialog();
+    };
+    
+    effectsPresetInitButton.onClick = [this]() {
+        showInitPresetDialog();
     };
     
     effectsPresetPrevButton.onClick = [this]() {
@@ -2937,6 +2945,7 @@ SynthesizerComponent::~SynthesizerComponent()
     effectsPresetNextButton.setLookAndFeel(nullptr);
     effectsPresetSaveButton.setLookAndFeel(nullptr);
     effectsPresetLoadButton.setLookAndFeel(nullptr);
+    effectsPresetInitButton.setLookAndFeel(nullptr);
     
     // pulseWidthSlider.setLookAndFeel(nullptr); // commented out
 }
@@ -3645,7 +3654,7 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     }
     else if (slider == &volumeControlsDetuneKnob)
     {
-        audioProcessor.setSynthDetune(static_cast<float>(volumeControlsDetuneKnob.getValue()));
+        audioProcessor.setOsc1Detune(static_cast<float>(volumeControlsDetuneKnob.getValue()));
     }
     else if (slider == &volumeControlsStereoWidthKnob)
     {
@@ -3661,7 +3670,7 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     }
     else if (slider == &adsrAttackKnob)
     {
-        audioProcessor.setSynthAttack(static_cast<float>(adsrAttackKnob.getValue()));
+        audioProcessor.setOsc1Attack(static_cast<float>(adsrAttackKnob.getValue()));
         
         // If ADSR is linked, also update oscillator 2
         if (osc2AdsrLinkButton.getToggleState())
@@ -3674,7 +3683,7 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     }
     else if (slider == &adsrDecayKnob)
     {
-        audioProcessor.setSynthDecay(static_cast<float>(adsrDecayKnob.getValue()));
+        audioProcessor.setOsc1Decay(static_cast<float>(adsrDecayKnob.getValue()));
         
         // If ADSR is linked, also update oscillator 2
         if (osc2AdsrLinkButton.getToggleState())
@@ -3687,7 +3696,7 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     }
     else if (slider == &adsrSustainKnob)
     {
-        audioProcessor.setSynthSustain(static_cast<float>(adsrSustainKnob.getValue()));
+        audioProcessor.setOsc1Sustain(static_cast<float>(adsrSustainKnob.getValue()));
         
         // If ADSR is linked, also update oscillator 2
         if (osc2AdsrLinkButton.getToggleState())
@@ -3700,7 +3709,7 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     }
     else if (slider == &adsrReleaseKnob)
     {
-        audioProcessor.setSynthRelease(static_cast<float>(adsrReleaseKnob.getValue()));
+        audioProcessor.setOsc1Release(static_cast<float>(adsrReleaseKnob.getValue()));
         
         // If ADSR is linked, also update oscillator 2
         if (osc2AdsrLinkButton.getToggleState())
@@ -3731,7 +3740,7 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
         if (osc2AdsrLinkButton.getToggleState())
         {
             adsrAttackKnob.setValue(osc2AttackKnob.getValue(), juce::dontSendNotification);
-            audioProcessor.setSynthAttack(static_cast<float>(osc2AttackKnob.getValue()));
+            audioProcessor.setOsc2Attack(static_cast<float>(osc2AttackKnob.getValue()));
         }
         
         updateEnvelopeDisplay();
@@ -3744,7 +3753,7 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
         if (osc2AdsrLinkButton.getToggleState())
         {
             adsrDecayKnob.setValue(osc2DecayKnob.getValue(), juce::dontSendNotification);
-            audioProcessor.setSynthDecay(static_cast<float>(osc2DecayKnob.getValue()));
+            audioProcessor.setOsc2Decay(static_cast<float>(osc2DecayKnob.getValue()));
         }
         
         updateEnvelopeDisplay();
@@ -3757,7 +3766,7 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
         if (osc2AdsrLinkButton.getToggleState())
         {
             adsrSustainKnob.setValue(osc2SustainKnob.getValue(), juce::dontSendNotification);
-            audioProcessor.setSynthSustain(static_cast<float>(osc2SustainKnob.getValue()));
+            audioProcessor.setOsc2Sustain(static_cast<float>(osc2SustainKnob.getValue()));
         }
         
         updateEnvelopeDisplay();
@@ -3770,7 +3779,7 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
         if (osc2AdsrLinkButton.getToggleState())
         {
             adsrReleaseKnob.setValue(osc2ReleaseKnob.getValue(), juce::dontSendNotification);
-            audioProcessor.setSynthRelease(static_cast<float>(osc2ReleaseKnob.getValue()));
+            audioProcessor.setOsc2Release(static_cast<float>(osc2ReleaseKnob.getValue()));
         }
         
         updateEnvelopeDisplay();
@@ -5642,6 +5651,10 @@ void SynthesizerComponent::layoutEffectsModule(juce::Rectangle<int>& bounds)
     
     // Load button
     effectsPresetLoadButton.setBounds(presetStartX, presetY + 5, buttonWidth, buttonHeight);
+    presetStartX += buttonWidth + spacing;
+    
+    // Init button
+    effectsPresetInitButton.setBounds(presetStartX, presetY + 5, buttonWidth, buttonHeight);
     
     // Position border component (larger to encompass effects module)
     auto borderArea = juce::Rectangle<int>(centerX, centerY, effectsWidth + borderPadding * 2, effectsHeight + borderPadding * 2);
@@ -7379,7 +7392,7 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
     }
     else if (slider == &volumeControlsDetuneKnob)
     {
-        audioProcessor.setSynthDetune(static_cast<float>(newValue));
+        audioProcessor.setOsc1Detune(static_cast<float>(newValue));
     }
     else if (slider == &volumeControlsStereoWidthKnob)
     {
@@ -7395,7 +7408,7 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
     }
     else if (slider == &adsrAttackKnob)
     {
-        audioProcessor.setSynthAttack(static_cast<float>(newValue));
+        audioProcessor.setOsc1Attack(static_cast<float>(newValue));
         
         // If ADSR is linked, also update oscillator 2
         if (osc2AdsrLinkButton.getToggleState())
@@ -7407,7 +7420,7 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
     }
     else if (slider == &adsrDecayKnob)
     {
-        audioProcessor.setSynthDecay(static_cast<float>(newValue));
+        audioProcessor.setOsc1Decay(static_cast<float>(newValue));
         
         // If ADSR is linked, also update oscillator 2
         if (osc2AdsrLinkButton.getToggleState())
@@ -7419,7 +7432,7 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
     }
     else if (slider == &adsrSustainKnob)
     {
-        audioProcessor.setSynthSustain(static_cast<float>(newValue));
+        audioProcessor.setOsc1Sustain(static_cast<float>(newValue));
         
         // If ADSR is linked, also update oscillator 2
         if (osc2AdsrLinkButton.getToggleState())
@@ -7431,7 +7444,7 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
     }
     else if (slider == &adsrReleaseKnob)
     {
-        audioProcessor.setSynthRelease(static_cast<float>(newValue));
+        audioProcessor.setOsc1Release(static_cast<float>(newValue));
         
         // If ADSR is linked, also update oscillator 2
         if (osc2AdsrLinkButton.getToggleState())
@@ -7532,7 +7545,7 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
         // If ADSR is linked, also update main ADSR
         if (osc2AdsrLinkButton.getToggleState())
         {
-            audioProcessor.setSynthAttack(static_cast<float>(newValue));
+            audioProcessor.setOsc1Attack(static_cast<float>(newValue));
         }
         updateEnvelopeDisplay();
     }
@@ -7542,7 +7555,7 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
         // If ADSR is linked, also update main ADSR
         if (osc2AdsrLinkButton.getToggleState())
         {
-            audioProcessor.setSynthDecay(static_cast<float>(newValue));
+            audioProcessor.setOsc1Decay(static_cast<float>(newValue));
         }
         updateEnvelopeDisplay();
     }
@@ -7552,7 +7565,7 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
         // If ADSR is linked, also update main ADSR
         if (osc2AdsrLinkButton.getToggleState())
         {
-            audioProcessor.setSynthSustain(static_cast<float>(newValue));
+            audioProcessor.setOsc1Sustain(static_cast<float>(newValue));
         }
         updateEnvelopeDisplay();
     }
@@ -7562,7 +7575,7 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
         // If ADSR is linked, also update main ADSR
         if (osc2AdsrLinkButton.getToggleState())
         {
-            audioProcessor.setSynthRelease(static_cast<float>(newValue));
+            audioProcessor.setOsc1Release(static_cast<float>(newValue));
         }
         updateEnvelopeDisplay();
     }
@@ -7992,6 +8005,26 @@ void SynthesizerComponent::showLoadPresetDialog()
                         });
 }
 
+void SynthesizerComponent::showInitPresetDialog()
+{
+    juce::AlertWindow::showYesNoCancelBox(
+        juce::AlertWindow::QuestionIcon,
+        "Initialize Synthesizer",
+        "This will reset all parameters to their default values. Any unsaved changes will be lost.\n\nAre you sure you want to continue?",
+        "Yes, Initialize",
+        "Cancel",
+        juce::String(),
+        this,
+        juce::ModalCallbackFunction::create([this](int result) {
+            if (result == 1) // Yes button clicked
+            {
+                audioProcessor.initializeAllParameters();
+                updatePresetDisplay();
+            }
+        })
+    );
+}
+
 void SynthesizerComponent::updatePresetDisplay()
 {
     effectsPresetNameLabel.setText(audioProcessor.getCurrentPresetName(), 
@@ -8002,17 +8035,17 @@ void SynthesizerComponent::updatePresetDisplay()
 void SynthesizerComponent::updateAllGuiControls()
 {
     // Main synthesizer controls (using correct control names)
-    volumeControlsVolumeKnob.setValue(audioProcessor.getSynthVolume(), juce::dontSendNotification);
-    volumeControlsDetuneKnob.setValue(audioProcessor.getSynthDetune(), juce::dontSendNotification);
+    volumeControlsVolumeKnob.setValue(audioProcessor.getMasterVolume(), juce::dontSendNotification);
+    volumeControlsDetuneKnob.setValue(audioProcessor.getOsc1Detune(), juce::dontSendNotification);
     volumeControlsStereoWidthKnob.setValue(audioProcessor.getSynthStereoWidth(), juce::dontSendNotification);
     volumeControlsPanKnob.setValue(audioProcessor.getSynthPan(), juce::dontSendNotification);
     phaseControlsPhaseKnob.setValue(audioProcessor.getSynthPhase(), juce::dontSendNotification);
     
     // Main ADSR envelope
-    adsrAttackKnob.setValue(audioProcessor.getSynthAttack(), juce::dontSendNotification);
-    adsrDecayKnob.setValue(audioProcessor.getSynthDecay(), juce::dontSendNotification);
-    adsrSustainKnob.setValue(audioProcessor.getSynthSustain(), juce::dontSendNotification);
-    adsrReleaseKnob.setValue(audioProcessor.getSynthRelease(), juce::dontSendNotification);
+    adsrAttackKnob.setValue(audioProcessor.getOsc1Attack(), juce::dontSendNotification);
+    adsrDecayKnob.setValue(audioProcessor.getOsc1Decay(), juce::dontSendNotification);
+    adsrSustainKnob.setValue(audioProcessor.getOsc1Sustain(), juce::dontSendNotification);
+    adsrReleaseKnob.setValue(audioProcessor.getOsc1Release(), juce::dontSendNotification);
     
     // Oscillator 1 controls
     pulseWidthSlider.setValue(audioProcessor.getOsc1PulseWidth(), juce::dontSendNotification);

@@ -930,6 +930,7 @@ private:
     juce::Label effectsPresetNameLabel;
     juce::TextButton effectsPresetSaveButton;
     juce::TextButton effectsPresetLoadButton;
+    juce::TextButton effectsPresetInitButton;
     
     // Effects module border component
     class EffectsBorderComponent : public juce::Component
@@ -1103,6 +1104,7 @@ public:
     // Preset management functions
     void showSavePresetDialog();
     void showLoadPresetDialog();
+    void showInitPresetDialog();
     void updatePresetDisplay();
     void updateAllGuiControls();
     
