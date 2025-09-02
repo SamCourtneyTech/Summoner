@@ -3658,15 +3658,15 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     }
     else if (slider == &volumeControlsStereoWidthKnob)
     {
-        audioProcessor.setSynthStereoWidth(static_cast<float>(volumeControlsStereoWidthKnob.getValue()));
+        audioProcessor.setOsc1StereoWidth(static_cast<float>(volumeControlsStereoWidthKnob.getValue()));
     }
     else if (slider == &volumeControlsPanKnob)
     {
-        audioProcessor.setSynthPan(static_cast<float>(volumeControlsPanKnob.getValue()));
+        audioProcessor.setOsc1Pan(static_cast<float>(volumeControlsPanKnob.getValue()));
     }
     else if (slider == &phaseControlsPhaseKnob)
     {
-        audioProcessor.setSynthPhase(static_cast<float>(phaseControlsPhaseKnob.getValue()));
+        audioProcessor.setOsc1Phase(static_cast<float>(phaseControlsPhaseKnob.getValue()));
     }
     else if (slider == &adsrAttackKnob)
     {
@@ -7396,15 +7396,15 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
     }
     else if (slider == &volumeControlsStereoWidthKnob)
     {
-        audioProcessor.setSynthStereoWidth(static_cast<float>(newValue));
+        audioProcessor.setOsc1StereoWidth(static_cast<float>(newValue));
     }
     else if (slider == &volumeControlsPanKnob)
     {
-        audioProcessor.setSynthPan(static_cast<float>(newValue));
+        audioProcessor.setOsc1Pan(static_cast<float>(newValue));
     }
     else if (slider == &phaseControlsPhaseKnob)
     {
-        audioProcessor.setSynthPhase(static_cast<float>(newValue));
+        audioProcessor.setOsc1Phase(static_cast<float>(newValue));
     }
     else if (slider == &adsrAttackKnob)
     {
@@ -8037,9 +8037,9 @@ void SynthesizerComponent::updateAllGuiControls()
     // Main synthesizer controls (using correct control names)
     volumeControlsVolumeKnob.setValue(audioProcessor.getMasterVolume(), juce::dontSendNotification);
     volumeControlsDetuneKnob.setValue(audioProcessor.getOsc1Detune(), juce::dontSendNotification);
-    volumeControlsStereoWidthKnob.setValue(audioProcessor.getSynthStereoWidth(), juce::dontSendNotification);
-    volumeControlsPanKnob.setValue(audioProcessor.getSynthPan(), juce::dontSendNotification);
-    phaseControlsPhaseKnob.setValue(audioProcessor.getSynthPhase(), juce::dontSendNotification);
+    volumeControlsStereoWidthKnob.setValue(audioProcessor.getOsc1StereoWidth(), juce::dontSendNotification);
+    volumeControlsPanKnob.setValue(audioProcessor.getOsc1Pan(), juce::dontSendNotification);
+    phaseControlsPhaseKnob.setValue(audioProcessor.getOsc1Phase(), juce::dontSendNotification);
     
     // Main ADSR envelope
     adsrAttackKnob.setValue(audioProcessor.getOsc1Attack(), juce::dontSendNotification);

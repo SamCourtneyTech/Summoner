@@ -450,7 +450,7 @@ void SummonerXSerum2AudioProcessor::updateStereoWidth()
     {
         if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
         {
-            voice->setStereoWidth(synthStereoWidth);
+            voice->setStereoWidth(osc1StereoWidth);
         }
     }
 }
@@ -462,7 +462,7 @@ void SummonerXSerum2AudioProcessor::updatePan()
     {
         if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
         {
-            voice->setPan(synthPan);
+            voice->setPan(osc1Pan);
         }
     }
 }
@@ -474,7 +474,7 @@ void SummonerXSerum2AudioProcessor::updatePhase()
     {
         if (auto* voice = dynamic_cast<SineWaveVoice*>(synthesiser.getVoice(i)))
         {
-            voice->setPhase(synthPhase);
+            voice->setPhase(osc1Phase);
         }
     }
 }
@@ -632,9 +632,9 @@ void SummonerXSerum2AudioProcessor::initializeParameterMap()
     // Main Oscillator 1 Parameters (9)
     parameterMap["masterVolume"] = {ParameterInfo::FLOAT, 0.0f, 5.0f, [this](float v) { setMasterVolume(v); }};
     parameterMap["osc1Detune"] = {ParameterInfo::FLOAT, 0.0f, 100.0f, [this](float v) { setOsc1Detune(v); }};
-    parameterMap["osc1StereoWidth"] = {ParameterInfo::FLOAT, 0.0f, 1.0f, [this](float v) { setSynthStereoWidth(v); }};
-    parameterMap["osc1Pan"] = {ParameterInfo::FLOAT, -1.0f, 1.0f, [this](float v) { setSynthPan(v); }};
-    parameterMap["osc1Phase"] = {ParameterInfo::FLOAT, 0.0f, 360.0f, [this](float v) { setSynthPhase(v); }};
+    parameterMap["osc1StereoWidth"] = {ParameterInfo::FLOAT, 0.0f, 1.0f, [this](float v) { setOsc1StereoWidth(v); }};
+    parameterMap["osc1Pan"] = {ParameterInfo::FLOAT, -1.0f, 1.0f, [this](float v) { setOsc1Pan(v); }};
+    parameterMap["osc1Phase"] = {ParameterInfo::FLOAT, 0.0f, 360.0f, [this](float v) { setOsc1Phase(v); }};
     parameterMap["osc1Attack"] = {ParameterInfo::FLOAT, 0.0f, 10.0f, [this](float v) { setOsc1Attack(v); }};
     parameterMap["osc1Decay"] = {ParameterInfo::FLOAT, 0.0f, 10.0f, [this](float v) { setOsc1Decay(v); }};
     parameterMap["osc1Sustain"] = {ParameterInfo::FLOAT, 0.0f, 1.0f, [this](float v) { setOsc1Sustain(v); }};
@@ -932,9 +932,9 @@ juce::ValueTree SummonerXSerum2AudioProcessor::createPresetData()
         // Get current value using the getter methods
         if (paramName == "masterVolume") params.setProperty("masterVolume", masterVolume, nullptr);
         else if (paramName == "osc1Detune") params.setProperty("osc1Detune", osc1Detune, nullptr);
-        else if (paramName == "osc1StereoWidth") params.setProperty("osc1StereoWidth", synthStereoWidth, nullptr);
-        else if (paramName == "osc1Pan") params.setProperty("osc1Pan", synthPan, nullptr);
-        else if (paramName == "osc1Phase") params.setProperty("osc1Phase", synthPhase, nullptr);
+        else if (paramName == "osc1StereoWidth") params.setProperty("osc1StereoWidth", osc1StereoWidth, nullptr);
+        else if (paramName == "osc1Pan") params.setProperty("osc1Pan", osc1Pan, nullptr);
+        else if (paramName == "osc1Phase") params.setProperty("osc1Phase", osc1Phase, nullptr);
         else if (paramName == "osc1Attack") params.setProperty("osc1Attack", osc1Attack, nullptr);
         else if (paramName == "osc1Decay") params.setProperty("osc1Decay", osc1Decay, nullptr);
         else if (paramName == "osc1Sustain") params.setProperty("osc1Sustain", osc1Sustain, nullptr);
@@ -1068,9 +1068,9 @@ juce::ValueTree SummonerXSerum2AudioProcessor::createPresetData()
     // Main oscillator 1 parameters
     params.setProperty("masterVolume", masterVolume, nullptr);
     params.setProperty("osc1Detune", osc1Detune, nullptr);
-    params.setProperty("osc1StereoWidth", synthStereoWidth, nullptr);
-    params.setProperty("osc1Pan", synthPan, nullptr);
-    params.setProperty("osc1Phase", synthPhase, nullptr);
+    params.setProperty("osc1StereoWidth", osc1StereoWidth, nullptr);
+    params.setProperty("osc1Pan", osc1Pan, nullptr);
+    params.setProperty("osc1Phase", osc1Phase, nullptr);
     params.setProperty("osc1Attack", osc1Attack, nullptr);
     params.setProperty("osc1Decay", osc1Decay, nullptr);
     params.setProperty("osc1Sustain", osc1Sustain, nullptr);
@@ -1221,21 +1221,22 @@ bool SummonerXSerum2AudioProcessor::applyPresetData(const juce::ValueTree& prese
     
     // Apply all parameters - using the property accessors to ensure proper updating
     // Support both new and old parameter names for backward compatibility
-    if (params.hasProperty("masterVolume")) setMasterVolume(params.getProperty("masterVolume"));
-    else if (params.hasProperty("osc1MainVolume")) setMasterVolume(params.getProperty("osc1MainVolume"));
-    else if (params.hasProperty("synthVolume")) setMasterVolume(params.getProperty("synthVolume"));
+    // NOTE: masterVolume is intentionally preserved during preset loading
+    // if (params.hasProperty("masterVolume")) setMasterVolume(params.getProperty("masterVolume"));
+    // else if (params.hasProperty("osc1MainVolume")) setMasterVolume(params.getProperty("osc1MainVolume"));
+    // else if (params.hasProperty("synthVolume")) setMasterVolume(params.getProperty("synthVolume"));
     
     if (params.hasProperty("osc1Detune")) setOsc1Detune(params.getProperty("osc1Detune"));
     else if (params.hasProperty("synthDetune")) setOsc1Detune(params.getProperty("synthDetune"));
     
-    if (params.hasProperty("osc1StereoWidth")) setSynthStereoWidth(params.getProperty("osc1StereoWidth"));
-    else if (params.hasProperty("synthStereoWidth")) setSynthStereoWidth(params.getProperty("synthStereoWidth"));
+    if (params.hasProperty("osc1StereoWidth")) setOsc1StereoWidth(params.getProperty("osc1StereoWidth"));
+    else if (params.hasProperty("synthStereoWidth")) setOsc1StereoWidth(params.getProperty("synthStereoWidth"));
     
-    if (params.hasProperty("osc1Pan")) setSynthPan(params.getProperty("osc1Pan"));
-    else if (params.hasProperty("synthPan")) setSynthPan(params.getProperty("synthPan"));
+    if (params.hasProperty("osc1Pan")) setOsc1Pan(params.getProperty("osc1Pan"));
+    else if (params.hasProperty("synthPan")) setOsc1Pan(params.getProperty("synthPan"));
     
-    if (params.hasProperty("osc1Phase")) setSynthPhase(params.getProperty("osc1Phase"));
-    else if (params.hasProperty("synthPhase")) setSynthPhase(params.getProperty("synthPhase"));
+    if (params.hasProperty("osc1Phase")) setOsc1Phase(params.getProperty("osc1Phase"));
+    else if (params.hasProperty("synthPhase")) setOsc1Phase(params.getProperty("synthPhase"));
     
     if (params.hasProperty("osc1Attack")) setOsc1Attack(params.getProperty("osc1Attack"));
     else if (params.hasProperty("synthAttack")) setOsc1Attack(params.getProperty("synthAttack"));
@@ -1496,7 +1497,7 @@ bool SummonerXSerum2AudioProcessor::initializeAllParameters()
     // Reset ALL parameters to their actual startup default values
     std::map<std::string, float> startupDefaults = {
         // Main Oscillator 1 Parameters
-        {"osc1MainVolume", 3.0f},
+        {"masterVolume", 3.0f},
         {"osc1Detune", 0.0f},
         {"osc1StereoWidth", 0.5f},
         {"osc1Pan", 0.0f},

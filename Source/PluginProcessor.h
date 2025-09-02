@@ -3071,23 +3071,23 @@ public:
     }
     float getOsc1Detune() const { return osc1Detune; }
     
-    void setSynthStereoWidth(float width) { 
-        synthStereoWidth = width; 
+    void setOsc1StereoWidth(float width) { 
+        osc1StereoWidth = width; 
         updateStereoWidth();
     }
-    float getSynthStereoWidth() const { return synthStereoWidth; }
+    float getOsc1StereoWidth() const { return osc1StereoWidth; }
     
-    void setSynthPan(float pan) { 
-        synthPan = pan; 
+    void setOsc1Pan(float pan) { 
+        osc1Pan = pan; 
         updatePan();
     }
-    float getSynthPan() const { return synthPan; }
+    float getOsc1Pan() const { return osc1Pan; }
     
-    void setSynthPhase(float phase) { 
-        synthPhase = phase; 
+    void setOsc1Phase(float phase) { 
+        osc1Phase = phase; 
         updatePhase();
     }
-    float getSynthPhase() const { return synthPhase; }
+    float getOsc1Phase() const { return osc1Phase; }
     
     void setOsc1Attack(float attack) { 
         osc1Attack = attack; 
@@ -3868,9 +3868,9 @@ private:
     juce::Synthesiser synthesiser;
     float masterVolume = 3.0f; // +25 dB louder (approximately)
     float osc1Detune = 0.0f;
-    float synthStereoWidth = 0.5f;
-    float synthPan = 0.0f;
-    float synthPhase = 0.0f;
+    float osc1StereoWidth = 0.5f;
+    float osc1Pan = 0.0f;
+    float osc1Phase = 0.0f;
     float osc1Attack = 0.01f;
     float osc1Decay = 0.2f;
     float osc1Sustain = 0.7f;
