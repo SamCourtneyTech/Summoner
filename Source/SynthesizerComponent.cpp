@@ -8035,7 +8035,7 @@ void SynthesizerComponent::updatePresetDisplay()
 void SynthesizerComponent::updateAllGuiControls()
 {
     // Main synthesizer controls (using correct control names)
-    volumeControlsVolumeKnob.setValue(audioProcessor.getMasterVolume(), juce::dontSendNotification);
+    volumeControlsVolumeKnob.setValue(audioProcessor.getOsc1Volume(), juce::dontSendNotification);
     volumeControlsDetuneKnob.setValue(audioProcessor.getOsc1Detune(), juce::dontSendNotification);
     volumeControlsStereoWidthKnob.setValue(audioProcessor.getOsc1StereoWidth(), juce::dontSendNotification);
     volumeControlsPanKnob.setValue(audioProcessor.getOsc1Pan(), juce::dontSendNotification);

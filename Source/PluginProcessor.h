@@ -4634,6 +4634,18 @@ private:
     juce::ValueTree createPresetData();
     bool applyPresetData(const juce::ValueTree& presetData);
     void updatePresetDisplay();
+    
+    // ============================================================================
+    // TEST SECTION: LLM Response Testing Function Declarations
+    // ============================================================================
+    // Uncomment these declarations when using the test functions in PluginProcessor.cpp
+    /*
+    bool testApplyLLMResponse();
+    bool testApplyCustomLLMParams(float osc1Attack, float osc1Decay, float osc1Sustain, 
+                                  float osc1Release, int osc1Type, float osc1Volume, 
+                                  bool enableOsc2, float filterCutoff);
+    */
+    // ============================================================================
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SummonerXSerum2AudioProcessor)
 };

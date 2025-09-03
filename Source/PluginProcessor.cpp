@@ -1390,6 +1390,116 @@ bool SummonerXSerum2AudioProcessor::applyPresetData(const juce::ValueTree& prese
     return true;
 }
 
+// ============================================================================
+// TEST SECTION: Manual LLM Response Testing
+// ============================================================================
+// Uncomment the section below to test LLM response application manually
+/*
+bool SummonerXSerum2AudioProcessor::testApplyLLMResponse()
+{
+    // Create a test ValueTree that simulates an LLM response
+    // This mimics what would come from an AI model's parameter suggestions
+    juce::ValueTree testPresetData("PRESET");
+    testPresetData.setProperty("name", "LLM_Test_Preset", nullptr);
+    testPresetData.setProperty("description", "Test preset from simulated LLM response", nullptr);
+    
+    juce::ValueTree testParams("PARAMETERS");
+    
+    // Example parameter values that an LLM might suggest for a "warm pad" sound
+    // Modify these values to test different parameter combinations
+    testParams.setProperty("osc1Type", 3, nullptr);           // Sawtooth wave
+    testParams.setProperty("osc1Attack", 0.2f, nullptr);      // Slow attack
+    testParams.setProperty("osc1Decay", 0.3f, nullptr);       // Medium decay
+    testParams.setProperty("osc1Sustain", 0.8f, nullptr);     // High sustain
+    testParams.setProperty("osc1Release", 0.6f, nullptr);     // Medium release
+    testParams.setProperty("osc1Volume", 0.7f, nullptr);      // Moderate volume
+    testParams.setProperty("osc1Detune", 0.05f, nullptr);     // Slight detune
+    
+    // Enable and configure oscillator 2 for richness
+    testParams.setProperty("osc2Enabled", true, nullptr);
+    testParams.setProperty("osc2Type", 1, nullptr);           // Triangle wave
+    testParams.setProperty("osc2Volume", 0.4f, nullptr);      // Lower volume for layering
+    testParams.setProperty("osc2Octave", -1, nullptr);        // One octave lower
+    testParams.setProperty("osc2Pan", -0.2f, nullptr);        // Pan slightly left
+    
+    // Configure filter for warmth
+    testParams.setProperty("filterCutoff", 0.6f, nullptr);    // Mid-range cutoff
+    testParams.setProperty("filterResonance", 0.2f, nullptr); // Low resonance
+    testParams.setProperty("osc1FilterEnabled", true, nullptr);
+    testParams.setProperty("osc2FilterEnabled", true, nullptr);
+    testParams.setProperty("filterLPEnabled", true, nullptr);  // Low-pass filter
+    testParams.setProperty("filter24dBEnabled", true, nullptr); // 24dB slope
+    
+    // Add some chorus for width
+    testParams.setProperty("chorusEnabled", true, nullptr);
+    testParams.setProperty("chorusRate", 0.3f, nullptr);      // Slow chorus
+    testParams.setProperty("chorusDepth", 0.4f, nullptr);     // Moderate depth
+    testParams.setProperty("chorusMix", 0.3f, nullptr);       // Subtle mix
+    
+    // Add reverb for space
+    testParams.setProperty("reverbEnabled", true, nullptr);
+    testParams.setProperty("reverbMix", 0.25f, nullptr);      // Subtle reverb
+    testParams.setProperty("reverbSize", 0.7f, nullptr);      // Large room
+    testParams.setProperty("reverbType", 1, nullptr);         // Room reverb
+    
+    testPresetData.appendChild(testParams, nullptr);
+    
+    // Apply the test preset data (this is what would happen with real LLM response)
+    bool success = applyPresetData(testPresetData);
+    
+    if (success)
+    {
+        DBG("LLM Test Response Applied Successfully!");
+        DBG("Test preset 'warm pad' parameters have been applied to the synthesizer.");
+        
+        // Optional: Save this test preset to disk for comparison
+        // savePreset("LLM_Test_WarmPad", "Generated from LLM response test");
+    }
+    else
+    {
+        DBG("Failed to apply LLM test response!");
+    }
+    
+    return success;
+}
+
+// Alternative test function that accepts custom parameters
+// Use this to test specific parameter combinations from LLM responses
+bool SummonerXSerum2AudioProcessor::testApplyCustomLLMParams(
+    float osc1Attack, float osc1Decay, float osc1Sustain, float osc1Release,
+    int osc1Type, float osc1Volume, bool enableOsc2, float filterCutoff)
+{
+    juce::ValueTree testPresetData("PRESET");
+    testPresetData.setProperty("name", "Custom_LLM_Test", nullptr);
+    testPresetData.setProperty("description", "Custom parameter test from LLM", nullptr);
+    
+    juce::ValueTree testParams("PARAMETERS");
+    
+    // Apply the provided parameters
+    testParams.setProperty("osc1Attack", osc1Attack, nullptr);
+    testParams.setProperty("osc1Decay", osc1Decay, nullptr);
+    testParams.setProperty("osc1Sustain", osc1Sustain, nullptr);
+    testParams.setProperty("osc1Release", osc1Release, nullptr);
+    testParams.setProperty("osc1Type", osc1Type, nullptr);
+    testParams.setProperty("osc1Volume", osc1Volume, nullptr);
+    testParams.setProperty("osc2Enabled", enableOsc2, nullptr);
+    testParams.setProperty("filterCutoff", filterCutoff, nullptr);
+    testParams.setProperty("osc1FilterEnabled", true, nullptr);
+    testParams.setProperty("filterLPEnabled", true, nullptr);
+    
+    testPresetData.appendChild(testParams, nullptr);
+    
+    bool success = applyPresetData(testPresetData);
+    
+    DBG("Custom LLM parameters applied: " + juce::String(success ? "SUCCESS" : "FAILED"));
+    
+    return success;
+}
+*/
+// ============================================================================
+// END TEST SECTION
+// ============================================================================
+
 bool SummonerXSerum2AudioProcessor::savePreset(const juce::String& name, const juce::String& description)
 {
     if (name.isEmpty())
