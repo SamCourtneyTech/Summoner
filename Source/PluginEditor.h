@@ -50,7 +50,6 @@ private:
     
     std::atomic<bool> creditsFetchInProgress{false};
 
-    void loadPluginFromSettings(const juce::String& path);
     void fetchAndUpdateCredits(const juce::String& accessToken);
     void bringPluginToFront();
 

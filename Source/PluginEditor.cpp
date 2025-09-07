@@ -37,10 +37,6 @@ SummonerXSerum2AudioProcessorEditor::SummonerXSerum2AudioProcessorEditor(Summone
     };
 
 
-    settings.onPathChanged = [this](const juce::String& newPath) {
-        DBG("onPathChanged triggered with path: " + newPath);
-        // TODO: Apply path to internal synthesizer instead of Serum
-        };
 
     settings.onSkinChanged = [this](bool isHackerSkin) {
         chatBar.setHackerSkin(isHackerSkin);
@@ -55,9 +51,7 @@ SummonerXSerum2AudioProcessorEditor::SummonerXSerum2AudioProcessorEditor(Summone
         synthesizer.updateAllGuiControls();
         };
 
-    auto initialPath = settings.loadSavedPath();
-    settings.updatePathDisplay(initialPath);
-    // TODO: Initialize internal synthesizer with path
+    // Settings initialized
 }
 
 SummonerXSerum2AudioProcessorEditor::~SummonerXSerum2AudioProcessorEditor()
@@ -83,19 +77,6 @@ void SummonerXSerum2AudioProcessorEditor::resized()
     tabs.setBounds(bounds);
 }
 
-void SummonerXSerum2AudioProcessorEditor::loadPluginFromSettings(const juce::String& path)
-{
-    juce::File pluginFile(path);
-    if (pluginFile.existsAsFile())
-    {
-        // TODO: Load internal synthesizer instead of Serum
-        DBG("Loaded plugin from: " + path);
-    }
-    else
-    {
-        DBG("Invalid plugin path: " + path);
-    }
-}
 
 void SummonerXSerum2AudioProcessorEditor::showLoadingScreen(bool show)
 {

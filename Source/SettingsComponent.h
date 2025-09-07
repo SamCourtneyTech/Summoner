@@ -7,23 +7,11 @@ class SummonerXSerum2AudioProcessor;
 class SettingsComponent : public juce::Component, public juce::Timer
 {
 public:
-    void updatePathDisplay(const juce::String& newPath)
-    {
-        pathDisplay.setText(newPath, juce::dontSendNotification);
-    }
-    juce::String getPathDisplayText() const
-    {
-        return pathDisplay.getText();
-    }
     explicit SettingsComponent(SummonerXSerum2AudioProcessor& processor);
     ~SettingsComponent() override;
 
     void paint(juce::Graphics&) override;
     void resized() override;
-    void resetSavedPath();
-    std::function<void(const juce::String&)> onPathChanged;
-    juce::String loadSavedPath();
-    juce::String getPluginPath() const;
 
     std::function<void(bool)> onSkinChanged;
     void timerCallback() override;
@@ -65,17 +53,7 @@ private:
     void initializeMatrixColumns();
     char getRandomMatrixCharacter();
     juce::Random random;
-    juce::Label pathLabel;
-    juce::Label pathDisplay;
-    juce::TextButton browseButton;
-    juce::TextButton resetButton;
     juce::ApplicationProperties applicationProperties;
-    juce::String defaultPath;
-    std::unique_ptr<juce::FileChooser> fileChooser;
-    juce::String savedPath;
-    void browseForPath();
-    void savePath(const juce::String& path);
-    juce::Label pluginPathLabel;
     // Direct API access - no authentication needed
     
     // Skin selection buttons
