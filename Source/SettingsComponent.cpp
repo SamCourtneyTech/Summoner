@@ -69,41 +69,6 @@ SettingsComponent::SettingsComponent(SummonerXSerum2AudioProcessor& processor)
     resetButton.setColour(juce::TextButton::textColourOffId, juce::Colours::black);
     DBG("SettingsComponent constructed with path: " << loadSavedPath());
 
-    logoutButton.setLookAndFeel(&customSettingsButtons);
-    logoutButton.setButtonText("Logout");
-    logoutButton.setColour(juce::TextButton::buttonColourId, juce::Colours::red);
-    logoutButton.setColour(juce::TextButton::textColourOnId, juce::Colours::white);
-    logoutButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
-    logoutButton.onClick = [this]() {
-        if (logoutButton.getButtonText() == "Logout" && onLogout) {
-            onLogout();
-        } else if (logoutButton.getButtonText() == "Login" && onLogin) {
-            onLogin();
-        }
-        };
-    addAndMakeVisible(logoutButton);
-
-    // Credits label
-    creditsLabel.setText("Credits: 0", juce::dontSendNotification);
-    creditsLabel.setFont(juce::Font("Press Start 2P", 12.0f, juce::Font::plain));
-    creditsLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    addAndMakeVisible(creditsLabel);
-
-    // Purchase credits button
-    purchaseCreditsButton.setLookAndFeel(&customSettingsButtons);
-    purchaseCreditsButton.setButtonText("Purchase Credits");
-    purchaseCreditsButton.setColour(juce::TextButton::buttonColourId, juce::Colours::white);
-    purchaseCreditsButton.setColour(juce::TextButton::textColourOnId, juce::Colours::black);
-    purchaseCreditsButton.setColour(juce::TextButton::textColourOffId, juce::Colours::black);
-    purchaseCreditsButton.onClick = [this]() {
-        // Placeholder for future implementation
-        juce::AlertWindow::showMessageBoxAsync(
-            juce::AlertWindow::InfoIcon,
-            "Purchase Credits",
-            "Credit purchasing functionality will be implemented soon!");
-    };
-    addAndMakeVisible(purchaseCreditsButton);
-
     // Skin selection label
     skinLabel.setText("Skin:", juce::dontSendNotification);
     skinLabel.setFont(juce::Font("Press Start 2P", 12.0f, juce::Font::plain));
@@ -146,6 +111,56 @@ SettingsComponent::SettingsComponent(SummonerXSerum2AudioProcessor& processor)
         repaint();
     };
     addAndMakeVisible(hackerSkinButton);
+    
+    // OpenAI API Key input
+    apiKeyLabel.setText("OpenAI API Key:", juce::dontSendNotification);
+    apiKeyLabel.setFont(juce::Font("Press Start 2P", 12.0f, juce::Font::plain));
+    apiKeyLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    addAndMakeVisible(apiKeyLabel);
+    
+    apiKeyInput.setColour(juce::TextEditor::backgroundColourId, juce::Colours::black);
+    apiKeyInput.setColour(juce::TextEditor::textColourId, juce::Colours::white);
+    apiKeyInput.setColour(juce::TextEditor::outlineColourId, juce::Colours::dimgrey);
+    apiKeyInput.setColour(juce::TextEditor::focusedOutlineColourId, juce::Colours::whitesmoke);
+    apiKeyInput.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
+    apiKeyInput.setBorder(juce::BorderSize<int>(2));
+    apiKeyInput.setTextToShowWhenEmpty("Enter your OpenAI API key here...", juce::Colours::grey);
+    apiKeyInput.setPasswordCharacter('*'); // Hide API key for security
+    
+    // Load saved API key
+    juce::String savedApiKey = applicationProperties.getUserSettings()->getValue("openai_api_key", "");
+    if (!savedApiKey.isEmpty())
+    {
+        apiKeyInput.setText(savedApiKey, juce::dontSendNotification);
+    }
+    addAndMakeVisible(apiKeyInput);
+    
+    saveApiKeyButton.setLookAndFeel(&customSettingsButtons);
+    saveApiKeyButton.setButtonText("Save API Key");
+    saveApiKeyButton.setColour(juce::TextButton::buttonColourId, juce::Colours::darkgreen);
+    saveApiKeyButton.setColour(juce::TextButton::textColourOnId, juce::Colours::white);
+    saveApiKeyButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+    saveApiKeyButton.onClick = [this]() {
+        juce::String apiKey = apiKeyInput.getText();
+        if (!apiKey.isEmpty())
+        {
+            applicationProperties.getUserSettings()->setValue("openai_api_key", apiKey);
+            applicationProperties.getUserSettings()->save();
+            
+            juce::AlertWindow::showMessageBoxAsync(
+                juce::AlertWindow::InfoIcon,
+                "API Key Saved",
+                "Your OpenAI API key has been saved successfully!");
+        }
+        else
+        {
+            juce::AlertWindow::showMessageBoxAsync(
+                juce::AlertWindow::WarningIcon,
+                "Empty API Key",
+                "Please enter a valid OpenAI API key.");
+        }
+    };
+    addAndMakeVisible(saveApiKeyButton);
 
     // Initialize mystical floating boxes effect
     floatingBoxes.reserve(40); // Reserve space for up to 40 boxes
@@ -161,10 +176,9 @@ SettingsComponent::~SettingsComponent()
     stopTimer();
     browseButton.setLookAndFeel(nullptr);
     resetButton.setLookAndFeel(nullptr);
-    logoutButton.setLookAndFeel(nullptr);
-    purchaseCreditsButton.setLookAndFeel(nullptr);
     defaultSkinButton.setLookAndFeel(nullptr);
     hackerSkinButton.setLookAndFeel(nullptr);
+    saveApiKeyButton.setLookAndFeel(nullptr);
 }
 
 void SettingsComponent::resetSavedPath()
@@ -318,16 +332,8 @@ void SettingsComponent::resized()
     browseButton.setBounds(topButtonArea.getX(), topButtonArea.getY(), buttonWidth, buttonHeight);
     resetButton.setBounds(topButtonArea.getX() + buttonWidth + buttonSpacing, topButtonArea.getY(), buttonWidth, buttonHeight);
 
-    // Spacer between path section and credits section
-    bounds.removeFromTop(buttonSpacing * 5);
-
-    // Credits section
-    creditsLabel.setBounds(bounds.getX(), bounds.getY(), buttonWidth * 2, buttonHeight);
-    bounds.removeFromTop(buttonHeight + buttonSpacing);
-
-    // Purchase credits button (original size)
-    purchaseCreditsButton.setBounds(bounds.getX(), bounds.getY(), buttonWidth * 2, buttonHeight);
-    bounds.removeFromTop(buttonHeight + buttonSpacing * 3);
+    // Spacer between path section and settings
+    bounds.removeFromTop(buttonSpacing * 3);
 
     // Skin selection section
     skinLabel.setBounds(bounds.getX(), bounds.getY(), buttonWidth * 2, 20);
@@ -339,8 +345,14 @@ void SettingsComponent::resized()
     hackerSkinButton.setBounds(skinButtonArea.getX() + buttonWidth + buttonSpacing, skinButtonArea.getY(), buttonWidth, buttonHeight);
     bounds.removeFromTop(buttonSpacing * 3);
 
-    // Logout button
-    logoutButton.setBounds(bounds.getX(), bounds.getY(), buttonWidth, buttonHeight);
+    // OpenAI API Key section
+    apiKeyLabel.setBounds(bounds.getX(), bounds.getY(), buttonWidth * 2, 20);
+    bounds.removeFromTop(20 + buttonSpacing);
+    
+    apiKeyInput.setBounds(bounds.getX(), bounds.getY(), buttonWidth * 2, buttonHeight);
+    bounds.removeFromTop(buttonHeight + buttonSpacing);
+    
+    saveApiKeyButton.setBounds(bounds.getX(), bounds.getY(), buttonWidth, buttonHeight);
     
     // Reinitialize Matrix columns when component is resized (if hacker skin is active)
     if (isHackerSkin)
@@ -365,34 +377,6 @@ juce::String SettingsComponent::loadSavedPath()
     return path;
 }
 
-void SettingsComponent::updateLoginState(bool isLoggedIn)
-{
-    if (isLoggedIn) {
-        logoutButton.setButtonText("Logout");
-        logoutButton.setColour(juce::TextButton::buttonColourId, juce::Colours::red);
-    } else {
-        logoutButton.setButtonText("Login");
-        logoutButton.setColour(juce::TextButton::buttonColourId, juce::Colours::blue);
-    }
-}
-
-void SettingsComponent::setCredits(int credits)
-{
-    currentCredits = credits;
-    creditsLabel.setText("Credits: " + juce::String(credits), juce::dontSendNotification);
-    
-    // Set color to red if credits are 0, otherwise white
-    if (credits == 0) {
-        creditsLabel.setColour(juce::Label::textColourId, juce::Colours::red);
-    } else {
-        creditsLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    }
-}
-
-int SettingsComponent::getCredits() const
-{
-    return currentCredits;
-}
 
 void SettingsComponent::timerCallback()
 {

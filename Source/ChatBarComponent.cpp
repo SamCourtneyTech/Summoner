@@ -58,14 +58,7 @@ ChatBarComponent::ChatBarComponent(SummonerXSerum2AudioProcessor& p) : processor
     sendButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
     sendButton.setLookAndFeel(&customSummonButton);
 
-    addAndMakeVisible(creditsLabel);
-    creditsLabel.setText("Credits: 0", juce::dontSendNotification);
-    creditsLabel.setFont(juce::Font("Press Start 2P", 12.0f, juce::Font::plain));
-    creditsLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    
-    // Make credits label clickable
-    creditsLabel.setInterceptsMouseClicks(true, false);
-    creditsLabel.addMouseListener(this, false);
+    // No credits system needed
 
     sendButton.onClick = [this]() {
         if (requestInProgress)
@@ -159,25 +152,7 @@ void ChatBarComponent::paint(juce::Graphics& g)
         }
     }
     
-    // Draw hover background for credits label
-    if (creditsLabelHovered)
-    {
-        auto creditsBounds = creditsLabel.getBounds();
-        auto font = creditsLabel.getFont();
-        auto textWidth = font.getStringWidth(creditsLabel.getText());
-        auto textHeight = font.getHeight();
-        
-        // Create bounds around the actual text with more visible padding
-        juce::Rectangle<float> textBounds(
-            creditsBounds.getX() - 2, 
-            creditsBounds.getY() + (creditsBounds.getHeight() - textHeight) / 2 - 3,
-            textWidth + 8, 
-            textHeight + 6
-        );
-        
-        g.setColour(juce::Colours::grey);
-        g.fillRoundedRectangle(textBounds, 3.0f);
-    }
+    // No credits display needed
 }
 
 void ChatBarComponent::resized()
@@ -189,7 +164,7 @@ void ChatBarComponent::resized()
     auto yPosition = (getHeight() - chatBarHeight) / 2;
     chatInput.setBounds((getWidth() - chatBarWidth - buttonWidth - 10) / 2, yPosition + -50, chatBarWidth, chatBarHeight);
     sendButton.setBounds(chatInput.getRight() + 10, yPosition - 50, buttonWidth, chatBarHeight);
-    creditsLabel.setBounds(10, 20, 200, 30);
+    // No credits label to position
     
     // Reinitialize Matrix columns when component is resized (if hacker skin is active)
     if (isHackerSkin)
@@ -203,23 +178,45 @@ void ChatBarComponent::sendPromptToGenerateParameters(const juce::String& userPr
     requestInProgress = true;
 
     std::thread([this, userPrompt]() {
-        // Force reload properties to ensure we have the latest values
-        appProps.getUserSettings()->reload();
+        // Direct API call - no authentication system needed beyond API key
+
+        // Use OpenAI API directly
+        juce::URL endpoint("https://api.openai.com/v1/chat/completions");
+
+        // Create OpenAI API request body
+        juce::DynamicObject::Ptr requestBody = new juce::DynamicObject();
+        requestBody->setProperty("model", "gpt-3.5-turbo");
+        requestBody->setProperty("max_tokens", 4096);
+        requestBody->setProperty("temperature", 0.7);
         
-        juce::String accessToken = appProps.getUserSettings()->getValue("accessToken", "");
-        bool isLoggedIn = appProps.getUserSettings()->getBoolValue("isLoggedIn", false);
-        int credits = appProps.getUserSettings()->getIntValue("credits", 0);
+        // Create messages array
+        juce::Array<juce::var> messages;
+        juce::DynamicObject::Ptr systemMessage = new juce::DynamicObject();
+        systemMessage->setProperty("role", "system");
+        systemMessage->setProperty("content", """Interpret the user's request with creativity within the specified ranges and default values, leveraging sound design knowledge to produce engaging and innovative soundscapes using the provided parameters of a Synth VST. While every response should include all 117 parameters in order formatted as {{\"Parameter Name\", \"Value\"}} in a consistent list, allow for variations that reflect musicality and style. The user's request will be inputted at the bottom of this prompt. Follow these guidelines: Use the full spectrum of provided values and descriptions to address specific or abstract prompts (e.g., \"bright and plucky\", \"deep and textured\") while staying within bounds. Be imaginative in assigning values to create sound textures that meet the user's description, but adhere strictly to parameter names and ensure all 117 parameters are included every time. Return the parameters in the format {{\"Parameter Name\", \"Value\"}}, even if a parameter's default value remains unchanged. Here are the 117 parameters and their default values: [{\"masterVolume\", \"3.0\"}, {\"osc1Detune\", \"0.0 cents\"}, {\"osc1StereoWidth\", \"0.5\"}, {\"osc1Pan\", \"0.0\"}, {\"osc1Phase\", \"0.0 degrees\"}, {\"osc1Attack\", \"0.1 s\"}, {\"osc1Decay\", \"0.2 s\"}, {\"osc1Sustain\", \"0.7\"}, {\"osc1Release\", \"0.3 s\"}, {\"osc1Type\", \"Saw\"}, {\"osc1PulseWidth\", \"0.5\"}, {\"osc1Octave\", \"0 Oct\"}, {\"osc1Semitone\", \"0 semitones\"}, {\"osc1FineTune\", \"0 cents\"}, {\"osc1RandomPhase\", \"on\"}, {\"osc1VoiceCount\", \"1\"}, {\"osc1Volume\", \"0.5\"}, {\"osc2Enabled\", \"on\"},{\"osc2Type\", \"Saw\"}, {\"osc2Volume\", \"0.0\"}, {\"osc2Detune\", \"0.0 cents\"}, {\"osc2Stereo\", \"0.5\"}, {\"osc2Pan\", \"0.0\"}, {\"osc2Octave\", \"0 Oct\"}, {\"osc2Semitone\", \"0 semitones\"}, {\"osc2FineTune\", \"0 cents\"}, {\"osc2RandomPhase\", \"on\"}, {\"osc2Phase\", \"0.0 degrees\"}, {\"osc2Attack\", \"0.1 s\"}, {\"osc2Decay\", \"0.2 s\"}, {\"osc2Sustain\", \"0.7\"}, {\"osc2Release\", \"0.3 s\"}, {\"osc2VoiceCount\", \"1\"} {\"filterCutoff\", \"1000 Hz\"}, {\"filterResonance\", \"0.0\"}, {\"osc1FilterEnabled\", \"off\"}, {\"osc2FilterEnabled\", \"off\"}, {\"filterLPEnabled\", \"on\"}, {\"filterHPEnabled\", \"off\"}, {\"filterBPEnabled\", \"off\"}, {\"filterNotchEnabled\", \"off\"}, {\"filterCombEnabled\", \"off\"}, {\"filterFormantEnabled\", \"off\"}, {\"filter12dBEnabled\", \"on\"}, {\"filter24dBEnabled\", \"off\"}, {\"chorusEnabled\", \"off\"}, {\"chorusRate\", \"2.0 Hz\"}, {\"chorusDelay1\", \"20.0 ms\"}, {\"chorusDelay2\", \"30.0 ms\"}, {\"chorusDepth\", \"5.0\"}, {\"chorusFeedback\", \"0.2\"}, {\"chorusLPF\", \"20000 Hz\"}, {\"chorusMix\", \"0.5\"}, {\"flangerEnabled\", \"off\"}, {\"flangerRate\", \"1.0 Hz\"}, {\"flangerDepth\", \"2.0\"}, {\"flangerFeedback\", \"25.0\"}, {\"flangerMix\", \"50.0\"}, {\"flangerPhase\", \"0.0 degrees\"}, {\"phaserEnabled\", \"off\"}, {\"phaserRate\", \"1.0 Hz\"}, {\"phaserDepth1\", \"50.0\"}, {\"phaserDepth2\", \"30.0\"}, {\"phaserFeedback\", \"25.0\"}, {\"phaserMix\", \"50.0\"}, {\"phaserPhase\", \"0.0 degrees\"}, {\"phaserFrequency\", \"500 Hz\"}, {\"phaserPoles\", \"4\"}, {\"compressorEnabled\", \"off\"}, {\"compressorThreshold\", \"-20.0 dB\"}, {\"compressorRatio\", \"4.0\"}, {\"compressorAttack\", \"5.0 ms\"}, {\"compressorRelease\", \"100.0 ms\"}, {\"compressorGain\", \"0.0 dB\"}, {\"compressorMix\", \"1.0\"}, {\"compressorMultiband\", \"off\"}, {\"distortionEnabled\", \"off\"}, {\"distortionType\", \"Tube\"}, {\"distortionDrive\", \"50.0\"}, {\"distortionMix\", \"1.0\"}, {\"distortionFilterPosition\", \"Off\"}, {\"distortionFilterType\", \"Low Pass\"}, {\"distortionFilterFreq\", \"1000 Hz\"}, {\"distortionFilterQ\", \"0.707\"}, {\"delayEnabled\", \"off\"}, {\"delayFeedback\", \"0.3\"}, {\"delayMix\", \"0.3\"}, {\"delayPingPong\", \"off\"}, {\"delayLeftTime\", \"250.0 ms\"}, {\"delayRightTime\", \"250.0 ms\"}, {\"delaySync\", \"off\"}, {\"delayTriplet\", \"off\"}, {\"delayDotted\", \"off\"}, {\"delayRTriplet\", \"off\"}, {\"delayRDotted\", \"off\"}, {\"delayFilterFreq\", \"8000 Hz\"}, {\"delayFilterQ\", \"0.707\"}, {\"reverbEnabled\", \"off\"}, {\"reverbMix\", \"0.3\"}, {\"reverbType\", \"Hall\"}, {\"reverbLowCut\", \"80 Hz\"}, {\"reverbHighCut\", \"8000 Hz\"}, {\"reverbSize\", \"0.5\"}, {\"reverbPreDelay\", \"20.0 ms\"}, {\"reverbDamping\", \"0.5\"}, {\"reverbWidth\", \"1.0\"}, {\"eqEnabled\", \"off\"}, {\"eq1Enabled\", \"on\"}, {\"eq1Frequency\", \"400 Hz\"}, {\"eq1Q\", \"1.0\"}, {\"eq1Gain\", \"0.0 dB\"}, {\"eq1Type\", \"Peak\"}, {\"eq2Enabled\", \"on\"}, {\"eq2Frequency\", \"4000 Hz\"}, {\"eq2Q\", \"1.0\"}, {\"eq2Gain\", \"0.0 dB\"}, {\"eq2Type\", \"Peak\"}]] Here are those 117 parameter's respective ranges that you can choose from: [{\"masterVolume\", \"0.0 - 5.0\"}, {\"osc1Detune\", \"0.0 - 100.0 cents\"}, {\"osc1StereoWidth\", \"0.0 - 1.0\"}, {\"osc1Pan\", \"-1.0 - 1.0\"}, {\"osc1Phase\", \"0.0 - 360.0 degrees\"}, {\"osc1Attack\", \"0.0 s - 10.0 s\"}, {\"osc1Decay\", \"0.0 s - 10.0 s\"}, {\"osc1Sustain\", \"0.0 - 1.0\"}, {\"osc1Release\", \"0.0 s - 10.0 s\"}, {\"osc1Type\", \"Sine, Saw, Square, Triangle, White Noise, Pink Noise\"}, {\"osc1PulseWidth\", \"0.0 - 1.0\"}, {\"osc1Octave\", \"-4 Oct - +4 Oct\"}, {\"osc1Semitone\", \"-12 semitones - +12 semitones\"}, {\"osc1FineTune\", \"-100 cents - +100 cents\"}, {\"osc1RandomPhase\", \"off, on\"}, {\"osc1VoiceCount\", \"1 - 16\"}, {\"osc1Volume\", \"0.0 - 1.0\"}, {\"osc2Enabled\", \"off, on\"}, {\"osc2Type\", \"Sine, Saw, Square, Triangle, White Noise, Pink Noise\"}, {\"osc2Volume\", \"0.0 - 1.0\"}, {\"osc2Detune\", \"0.0 - 100.0 cents\"}, {\"osc2Stereo\", \"0.0 - 1.0\"}, {\"osc2Pan\", \"-1.0 - 1.0\"}, {\"osc2Octave\", \"-4 Oct - +4 Oct\"}, {\"osc2Semitone\", \"-12 semitones - +12 semitones\"}, {\"osc2FineTune\", \"-100 cents - +100 cents\"}, {\"osc2RandomPhase\", \"off, on\"}, {\"osc2Phase\", \"0.0 - 360.0 degrees\"}, {\"osc2Attack\", \"0.0 s - 10.0 s\"}, {\"osc2Decay\", \"0.0 s - 10.0 s\"}, {\"osc2Sustain\", \"0.0 - 1.0\"}, {\"osc2Release\", \"0.0 s - 10.0 s\"}, {\"osc2VoiceCount\", \"1 - 16\"}, {\"filterCutoff\", \"20 Hz - 20000 Hz\"}, {\"filterResonance\", \"0.0 - 1.0\"}, {\"osc1FilterEnabled\", \"off, on\"}, {\"osc2FilterEnabled\", \"off, on\"}, {\"filterLPEnabled\", \"off, on\"}, {\"filterHPEnabled\", \"off, on\"},  {\"filterBPEnabled\", \"off, on\"}, {\"filterNotchEnabled\", \"off, on\"}, {\"filterCombEnabled\", \"off, on\"}, {\"filterFormantEnabled\", \"off, on\"}, {\"filter12dBEnabled\", \"off, on\"}, {\"filter24dBEnabled\", \"off, on\"}, {\"chorusEnabled\", \"off, on\"}, {\"chorusRate\", \"0.1 Hz - 10.0 Hz\"}, {\"chorusDelay1\", \"1.0 ms - 50.0 ms\"}, {\"chorusDelay2\", \"1.0 ms - 50.0 ms\"}, {\"chorusDepth\", \"0.0 - 20.0\"}, {\"chorusFeedback\", \"0.0 - 0.95\"}, {\"chorusLPF\", \"200 Hz - 20000 Hz\"}, {\"chorusMix\", \"0.0 - 1.0\"}, {\"flangerEnabled\", \"off, on\"}, {\"flangerRate\", \"0.1 Hz - 10.0 Hz\"}, {\"flangerDepth\", \"0.1 - 10.0\"}, {\"flangerFeedback\", \"0.0 - 100.0\"}, {\"flangerMix\", \"0.0 - 100.0\"}, {\"flangerPhase\", \"0.0 - 360.0 degrees\"}, {\"phaserEnabled\", \"off, on\"}, {\"phaserRate\", \"0.1 Hz - 10.0 Hz\"}, {\"phaserDepth1\", \"0.0 - 100.0\"}, {\"phaserDepth2\", \"0.0 - 100.0\"}, {\"phaserFeedback\", \"0.0 - 100.0\"}, {\"phaserMix\", \"0.0 - 100.0\"}, {\"phaserPhase\", \"0.0 - 360.0 degrees\"}, {\"phaserFrequency\", \"20 Hz - 2000 Hz\"}, {\"phaserPoles\", \"1 - 16\"}, {\"compressorEnabled\", \"off, on\"}, {\"compressorThreshold\", \"-60.0 dB - 0.0 dB\"}, {\"compressorRatio\", \"1.0 - 20.0\"}, {\"compressorAttack\", \"0.1 ms - 100.0 ms\"}, {\"compressorRelease\", \"10.0 ms - 1000.0 ms\"}, {\"compressorGain\", \"0.0 dB - 30.0 dB\"}, {\"compressorMix\", \"0.0 - 1.0\"}, {\"compressorMultiband\", \"off, on\"}, {\"distortionEnabled\", \"off, on\"}, {\"distortionType\", \"Tube, SoftClip, HardClip, Diode 1, Diode 2, Linear Fold, Sine Fold, Zero-Square, Downsample, Asymmetric, Rectify, Sine Shaper, Stomp Box, Tape Sat, Overdrive, Soft Sat\"}, {\"distortionDrive\", \"0.0 - 100.0\"},  {\"distortionMix\", \"0.0 - 1.0\"}, {\"distortionFilterPosition\", \"Off, Pre, Post\"}, {\"distortionFilterType\", \"Low Pass, High Pass, Band Pass\"}, {\"distortionFilterFreq\", \"20 Hz - 20000 Hz\"}, {\"distortionFilterQ\", \"0.1 - 30.0\"}, {\"delayEnabled\", \"off, on\"}, {\"delayFeedback\", \"0.0 - 0.95\"}, {\"delayMix\", \"0.0 - 1.0\"}, {\"delayPingPong\", \"off, on\"}, {\"delayLeftTime\", \"1.0 ms - 2000.0 ms\"}, {\"delayRightTime\", \"1.0 ms - 2000.0 ms\"}, {\"delaySync\", \"off, on\"}, {\"delayTriplet\", \"off, on\"}, {\"delayDotted\", \"off, on\"}, {\"delayRTriplet\", \"off, on\"}, {\"delayRDotted\", \"off, on\"}, {\"delayFilterFreq\", \"20 Hz - 20000 Hz\"}, {\"delayFilterQ\", \"0.1 - 30.0\"}, {\"reverbEnabled\", \"off, on\"}, {\"reverbMix\", \"0.0 - 100.0\"}, {\"reverbType\", \"Plate, Hall, Vintage, Room, Ambience\"}, {\"reverbLowCut\", \"20 Hz - 1000 Hz\"}, {\"reverbHighCut\", \"1000 Hz - 20000 Hz\"}, {\"reverbSize\", \"0.0 - 100.0\"}, {\"reverbPreDelay\", \"0.0 ms - 200.0 ms\"}, {\"reverbDamping\", \"0.0 - 100.0\"}, {\"reverbWidth\", \"0.0 - 100.0\"}, {\"eqEnabled\", \"off, on\"}, {\"eq1Enabled\", \"off, on\"}, {\"eq1Frequency\", \"20 Hz - 20000 Hz\"}, {\"eq1Q\", \"0.1 - 30.0\"}, {\"eq1Gain\", \"-15.0 dB - 15.0 dB\"}, {\"eq1Type\", \"Peak, Low Shelf, High Shelf\"}, {\"eq2Enabled\", \"off, on\"}, {\"eq2Frequency\", \"20 Hz - 20000 Hz\"}, {\"eq2Q\", \"0.1 - 30.0\"}, {\"eq2Gain\", \"-15.0 dB - 15.0 dB\"}, {\"eq2Type\", \"Peak, Low Shelf, High Shelf\"}] Here are those 117 parameter's respective ranges that you can choose from: [{\"masterVolume\", \"0.0 - 5.0\"}, {\"osc1Detune\", \"0.0 - 100.0 cents\"}, {\"osc1StereoWidth\", \"0.0 - 1.0\"}, {\"osc1Pan\", \"-1.0 - 1.0\"}, {\"osc1Phase\", \"0.0 - 360.0 degrees\"}, {\"osc1Attack\", \"0.0 s - 10.0 s\"}, {\"osc1Decay\", \"0.0 s - 10.0 s\"}, {\"osc1Sustain\", \"0.0 - 1.0\"}, {\"osc1Release\", \"0.0 s - 10.0 s\"}, {\"osc1Type\", \"Sine, Saw, Square, Triangle, White Noise, Pink Noise\"}, {\"osc1PulseWidth\", \"0.0 - 1.0\"}, {\"osc1Octave\", \"-4 Oct - +4 Oct\"}, {\"osc1Semitone\", \"-12 semitones - +12 semitones\"}, {\"osc1FineTune\", \"-100 cents - +100 cents\"}, {\"osc1RandomPhase\", \"off, on\"}, {\"osc1VoiceCount\", \"1 - 16\"}, {\"osc1Volume\", \"0.0 - 1.0\"}, {\"osc2Enabled\", \"off, on\"}, {\"osc2Type\", \"Sine, Saw, Square, Triangle, White Noise, Pink Noise\"}, {\"osc2Volume\", \"0.0 - 1.0\"}, {\"osc2Detune\", \"0.0 - 100.0 cents\"}, {\"osc2Stereo\", \"0.0 - 1.0\"}, {\"osc2Pan\", \"-1.0 - 1.0\"}, {\"osc2Octave\", \"-4 Oct - +4 Oct\"}, {\"osc2Semitone\", \"-12 semitones - +12 semitones\"}, {\"osc2FineTune\", \"-100 cents - +100 cents\"}, {\"osc2RandomPhase\", \"off, on\"}, {\"osc2Phase\", \"0.0 - 360.0 degrees\"}, {\"osc2Attack\", \"0.0 s - 10.0 s\"}, {\"osc2Decay\", \"0.0 s - 10.0 s\"}, {\"osc2Sustain\", \"0.0 - 1.0\"}, {\"osc2Release\", \"0.0 s - 10.0 s\"}, {\"osc2VoiceCount\", \"1 - 16\"}, {\"filterCutoff\", \"20 Hz - 20000 Hz\"}, {\"filterResonance\", \"0.0 - 1.0\"}, {\"osc1FilterEnabled\", \"off, on\"}, {\"osc2FilterEnabled\", \"off, on\"}, {\"filterLPEnabled\", \"off, on\"}, {\"filterHPEnabled\", \"off, on\"},  {\"filterBPEnabled\", \"off, on\"}, {\"filterNotchEnabled\", \"off, on\"}, {\"filterCombEnabled\", \"off, on\"}, {\"filterFormantEnabled\", \"off, on\"}, {\"filter12dBEnabled\", \"off, on\"}, {\"filter24dBEnabled\", \"off, on\"}, {\"chorusEnabled\", \"off, on\"}, {\"chorusRate\", \"0.1 Hz - 10.0 Hz\"}, {\"chorusDelay1\", \"1.0 ms - 50.0 ms\"}, {\"chorusDelay2\", \"1.0 ms - 50.0 ms\"}, {\"chorusDepth\", \"0.0 - 20.0\"}, {\"chorusFeedback\", \"0.0 - 0.95\"}, {\"chorusLPF\", \"200 Hz - 20000 Hz\"}, {\"chorusMix\", \"0.0 - 1.0\"}, {\"flangerEnabled\", \"off, on\"}, {\"flangerRate\", \"0.1 Hz - 10.0 Hz\"}, {\"flangerDepth\", \"0.1 - 10.0\"}, {\"flangerFeedback\", \"0.0 - 100.0\"}, {\"flangerMix\", \"0.0 - 100.0\"}, {\"flangerPhase\", \"0.0 - 360.0 degrees\"}, {\"phaserEnabled\", \"off, on\"}, {\"phaserRate\", \"0.1 Hz - 10.0 Hz\"}, {\"phaserDepth1\", \"0.0 - 100.0\"}, {\"phaserDepth2\", \"0.0 - 100.0\"}, {\"phaserFeedback\", \"0.0 - 100.0\"}, {\"phaserMix\", \"0.0 - 100.0\"}, {\"phaserPhase\", \"0.0 - 360.0 degrees\"}, {\"phaserFrequency\", \"20 Hz - 2000 Hz\"}, {\"phaserPoles\", \"1 - 16\"}, {\"compressorEnabled\", \"off, on\"}, {\"compressorThreshold\", \"-60.0 dB - 0.0 dB\"}, {\"compressorRatio\", \"1.0 - 20.0\"}, {\"compressorAttack\", \"0.1 ms - 100.0 ms\"}, {\"compressorRelease\", \"10.0 ms - 1000.0 ms\"}, {\"compressorGain\", \"0.0 dB - 30.0 dB\"}, {\"compressorMix\", \"0.0 - 1.0\"}, {\"compressorMultiband\", \"off, on\"}, {\"distortionEnabled\", \"off, on\"}, {\"distortionType\", \"Tube, SoftClip, HardClip, Diode 1, Diode 2, Linear Fold, Sine Fold, Zero-Square, Downsample, Asymmetric, Rectify, Sine Shaper, Stomp Box, Tape Sat, Overdrive, Soft Sat\"}, {\"distortionDrive\", \"0.0 - 100.0\"},  {\"distortionMix\", \"0.0 - 1.0\"}, {\"distortionFilterPosition\", \"Off, Pre, Post\"}, {\"distortionFilterType\", \"Low Pass, High Pass, Band Pass\"}, {\"distortionFilterFreq\", \"20 Hz - 20000 Hz\"}, {\"distortionFilterQ\", \"0.1 - 30.0\"}, {\"delayEnabled\", \"off, on\"}, {\"delayFeedback\", \"0.0 - 0.95\"}, {\"delayMix\", \"0.0 - 1.0\"}, {\"delayPingPong\", \"off, on\"}, {\"delayLeftTime\", \"1.0 ms - 2000.0 ms\"}, {\"delayRightTime\", \"1.0 ms - 2000.0 ms\"}, {\"delaySync\", \"off, on\"}, {\"delayTriplet\", \"off, on\"}, {\"delayDotted\", \"off, on\"}, {\"delayRTriplet\", \"off, on\"}, {\"delayRDotted\", \"off, on\"}, {\"delayFilterFreq\", \"20 Hz - 20000 Hz\"}, {\"delayFilterQ\", \"0.1 - 30.0\"}, {\"reverbEnabled\", \"off, on\"}, {\"reverbMix\", \"0.0 - 100.0\"}, {\"reverbType\", \"Plate, Hall, Vintage, Room, Ambience\"}, {\"reverbLowCut\", \"20 Hz - 1000 Hz\"}, {\"reverbHighCut\", \"1000 Hz - 20000 Hz\"}, {\"reverbSize\", \"0.0 - 100.0\"}, {\"reverbPreDelay\", \"0.0 ms - 200.0 ms\"}, {\"reverbDamping\", \"0.0 - 100.0\"}, {\"reverbWidth\", \"0.0 - 100.0\"}, {\"eqEnabled\", \"off, on\"}, {\"eq1Enabled\", \"off, on\"}, {\"eq1Frequency\", \"20 Hz - 20000 Hz\"}, {\"eq1Q\", \"0.1 - 30.0\"}, {\"eq1Gain\", \"-15.0 dB - 15.0 dB\"}, {\"eq1Type\", \"Peak, Low Shelf, High Shelf\"}, {\"eq2Enabled\", \"off, on\"}, {\"eq2Frequency\", \"20 Hz - 20000 Hz\"}, {\"eq2Q\", \"0.1 - 30.0\"}, {\"eq2Gain\", \"-15.0 dB - 15.0 dB\"}, {\"eq2Type\", \"Peak, Low Shelf, High Shelf\"}] To facilitate accurate parsing and handling of your requests, please provide parameter adjustments in JSON format when possible. This ensures the correct interpretation and application of your specifications for this C++ program. Don't add newline characters. Even if the request doesn't seem to be related to the sound designing task, respond with the list: DO NOT RESPOND WITH ANYTHING BUT THE LIST! User input: {user_input.input}. Return as JSON.""");
+        messages.add(juce::var(systemMessage.get()));
         
-        DBG("Token retrieval debug - isLoggedIn: " << (isLoggedIn ? "true" : "false") 
-            << ", accessToken length: " << accessToken.length() 
-            << ", credits: " << credits);
-            
-        // Check if user has credits before making request
-        if (credits <= 0)
+        juce::DynamicObject::Ptr userMessage = new juce::DynamicObject();
+        userMessage->setProperty("role", "user");
+        userMessage->setProperty("content", userPrompt);
+        messages.add(juce::var(userMessage.get()));
+        
+        requestBody->setProperty("messages", messages);
+        
+        juce::String postData = juce::JSON::toString(requestBody.get());
+        DBG("Sending POST request to OpenAI API with data: " + postData);
+
+        juce::URL urlWithPostData = endpoint.withPOSTData(postData);
+
+        // Get OpenAI API key from settings (you'll need to add this)
+        juce::String apiKey = appProps.getUserSettings()->getValue("openai_api_key", "");
+        if (apiKey.isEmpty())
         {
-            DBG("No credits available - showing out of credits modal");
             juce::MessageManager::callAsync([this]() {
-                showOutOfCreditsModal();
+                juce::AlertWindow::showMessageBoxAsync(
+                    juce::AlertWindow::WarningIcon,
+                    "API Key Missing",
+                    "Please set your OpenAI API key in Settings.");
                 if (onLoadingStateChanged)
                 {
                     onLoadingStateChanged(false);
@@ -228,58 +225,9 @@ void ChatBarComponent::sendPromptToGenerateParameters(const juce::String& userPr
             });
             return;
         }
-            
-        if (accessToken.isEmpty())
-        {
-            DBG("Access token is empty - login state: " << (isLoggedIn ? "logged in" : "not logged in"));
-            juce::MessageManager::callAsync([this]() {
-                // Try to refresh token first before showing error
-                if (onRefreshTokenRequested)
-                {
-                    onRefreshTokenRequested();
-                    
-                    // Give it a moment then check again
-                    juce::Timer::callAfterDelay(2000, [this]() {
-                        juce::String refreshedToken = appProps.getUserSettings()->getValue("accessToken", "");
-                        if (refreshedToken.isEmpty()) {
-                            juce::AlertWindow::showMessageBoxAsync(
-                                juce::AlertWindow::WarningIcon,
-                                "Authentication Error",
-                                "No access token found. Please log in again.");
-                        }
-                        if (onLoadingStateChanged)
-                        {
-                            onLoadingStateChanged(false);
-                        }
-                        requestInProgress = false;
-                    });
-                }
-                else
-                {
-                    juce::AlertWindow::showMessageBoxAsync(
-                        juce::AlertWindow::WarningIcon,
-                        "Authentication Error", 
-                        "No access token found. Please log in again.");
-                    requestInProgress = false;
-                }
-                });
-            return;
-        }
-        
-        DBG("Using access token for request: " << accessToken.substring(0, 10) << "...[truncated]");
-
-        juce::URL endpoint("https://ydr97n8vxe.execute-api.us-east-2.amazonaws.com/prod/generate-parameters");
-
-        // Create JSON body
-        juce::DynamicObject::Ptr jsonObject = new juce::DynamicObject();
-        jsonObject->setProperty("input", userPrompt);
-        juce::String postData = juce::JSON::toString(jsonObject.get());
-        DBG("Sending POST request to /generate-parameters with JSON data: " + postData);
-
-        juce::URL urlWithPostData = endpoint.withPOSTData(postData);
 
         auto options = juce::URL::InputStreamOptions(juce::URL::ParameterHandling::inAddress)
-            .withExtraHeaders("Content-Type: application/json\nAuthorization: Bearer " + accessToken)
+            .withExtraHeaders("Content-Type: application/json\nAuthorization: Bearer " + apiKey)
             .withConnectionTimeoutMs(50000);
 
         std::unique_ptr<juce::InputStream> stream(urlWithPostData.createInputStream(options));
@@ -287,127 +235,228 @@ void ChatBarComponent::sendPromptToGenerateParameters(const juce::String& userPr
         if (stream != nullptr)
         {
             juce::String response = stream->readEntireStreamAsString();
-            DBG("Raw response from /generate-parameters endpoint: " + response);
+            DBG("Raw response from OpenAI API: " + response);
+            DBG("Response length: " + juce::String(response.length()) + " characters");
             juce::var result = juce::JSON::parse(response);
 
             if (result.isObject())
             {
                 auto* obj = result.getDynamicObject();
                 
-                // Check if this is an error response with "detail" field
-                if (obj->hasProperty("detail"))
+                // Check for OpenAI API error response
+                if (obj->hasProperty("error"))
                 {
-                    juce::String detail = obj->getProperty("detail").toString();
+                    auto errorObj = obj->getProperty("error").getDynamicObject();
+                    juce::String errorMessage = errorObj->getProperty("message").toString();
                     
-                    if (detail == "Invalid token")
+                    juce::MessageManager::callAsync([this, errorMessage]() {
+                        DBG("OpenAI API error: " + errorMessage);
+                        juce::AlertWindow::showMessageBoxAsync(
+                            juce::AlertWindow::WarningIcon,
+                            "API Error",
+                            "OpenAI API Error: " + errorMessage);
+                        if (onLoadingStateChanged)
+                        {
+                            onLoadingStateChanged(false);
+                        }
+                        requestInProgress = false;
+                    });
+                    return;
+                }
+                
+                // Parse OpenAI response format
+                if (obj->hasProperty("choices"))
+                {
+                    auto choicesArray = obj->getProperty("choices").getArray();
+                    if (choicesArray != nullptr && choicesArray->size() > 0)
+                    {
+                        auto firstChoice = choicesArray->getUnchecked(0).getDynamicObject();
+                        auto message = firstChoice->getProperty("message").getDynamicObject();
+                        juce::String content = message->getProperty("content").toString();
+                        
+                        DBG("OpenAI response content: " + content);
+                        DBG("Content length: " + juce::String(content.length()) + " characters");
+                        
+                        // Fix JSON format - convert {"key", "value"} to {"key": "value"}
+                        juce::String fixedContent = content;
+                        
+                        // More robust replacement for the comma issue
+                        // Look for pattern: "sometext", "sometext" and replace with "sometext": "sometext"
+                        juce::String result;
+                        bool inQuotes = false;
+                        bool foundFirstQuote = false;
+                        int quoteCount = 0;
+                        
+                        for (int i = 0; i < fixedContent.length(); ++i)
+                        {
+                            juce::juce_wchar c = fixedContent[i];
+                            
+                            if (c == '"')
+                            {
+                                quoteCount++;
+                                if (quoteCount % 2 == 1)
+                                    inQuotes = true;
+                                else
+                                    inQuotes = false;
+                            }
+                            
+                            // If we find a comma between quotes pairs, and the next non-space char is a quote
+                            if (c == ',' && !inQuotes && quoteCount % 2 == 0)
+                            {
+                                // Look ahead to see if next quote starts a value
+                                int nextQuotePos = i + 1;
+                                while (nextQuotePos < fixedContent.length() && 
+                                       (fixedContent[nextQuotePos] == ' ' || fixedContent[nextQuotePos] == '\t'))
+                                    nextQuotePos++;
+                                
+                                if (nextQuotePos < fixedContent.length() && fixedContent[nextQuotePos] == '"')
+                                {
+                                    result += ':';  // Replace comma with colon
+                                }
+                                else
+                                {
+                                    result += c;    // Keep normal comma
+                                }
+                            }
+                            else
+                            {
+                                result += c;
+                            }
+                        }
+                        
+                        DBG("Fixed JSON content: " + result);
+                        
+                        // Parse the JSON content from the AI response
+                        juce::var parametersResult = juce::JSON::parse(result);
+                        DBG("Parsed result - isArray: " + juce::String(parametersResult.isArray() ? "true" : "false") + 
+                            ", isObject: " + juce::String(parametersResult.isObject() ? "true" : "false") + 
+                            ", isVoid: " + juce::String(parametersResult.isVoid() ? "true" : "false"));
+                        std::map<std::string, std::string> parameterMap;
+                        
+                        if (parametersResult.isArray())
+                        {
+                            // Handle array format: [{"key": "value"}, {"key2": "value2"}]
+                            auto* parametersArray = parametersResult.getArray();
+                            for (int i = 0; i < parametersArray->size(); ++i)
+                            {
+                                auto arrayItem = parametersArray->getUnchecked(i);
+                                if (arrayItem.isObject())
+                                {
+                                    auto* itemObj = arrayItem.getDynamicObject();
+                                    for (const auto& property : itemObj->getProperties())
+                                    {
+                                        juce::String key = property.name.toString();
+                                        juce::String value = property.value.toString();
+                                        parameterMap[key.toStdString()] = value.toStdString();
+                                    }
+                                }
+                            }
+                        }
+                        else if (parametersResult.isObject())
+                        {
+                            // Handle object format: {"key": "value", "key2": "value2"}
+                            auto* parametersObj = parametersResult.getDynamicObject();
+                            
+                            for (const auto& property : parametersObj->getProperties())
+                            {
+                                juce::String key = property.name.toString();
+                                juce::String value = property.value.toString();
+                                parameterMap[key.toStdString()] = value.toStdString();
+                            }
+                        }
+                        
+                        if (!parameterMap.empty())
+                        {
+                            juce::MessageManager::callAsync([this, parameterMap]() {
+                                // Apply the AI response parameters to the synthesizer
+                                sendAIResponseToProcessor(parameterMap);
+
+                                // No credit system needed for direct OpenAI API calls
+                                if (onLoadingStateChanged)
+                                {
+                                    onLoadingStateChanged(false);
+                                }
+                                requestInProgress = false;
+                            });
+                        }
+                        else
+                        {
+                            juce::MessageManager::callAsync([this, content]() {
+                                DBG("Failed to parse parameters JSON from OpenAI response: " + content);
+                                juce::AlertWindow::showMessageBoxAsync(
+                                    juce::AlertWindow::WarningIcon,
+                                    "Response Parse Error",
+                                    "Could not parse synthesizer parameters from AI response.");
+                                if (onLoadingStateChanged)
+                                {
+                                    onLoadingStateChanged(false);
+                                }
+                                requestInProgress = false;
+                            });
+                        }
+                    }
+                    else
                     {
                         juce::MessageManager::callAsync([this]() {
-                            DBG("Invalid token response - attempting to refresh token");
-                            
-                            // Try to refresh the token
-                            if (onRefreshTokenRequested)
-                            {
-                                onRefreshTokenRequested();
-                            }
+                            DBG("No response choices found in OpenAI response");
+                            juce::AlertWindow::showMessageBoxAsync(
+                                juce::AlertWindow::WarningIcon,
+                                "Response Error",
+                                "Invalid response format from OpenAI API.");
                             if (onLoadingStateChanged)
                             {
                                 onLoadingStateChanged(false);
                             }
-                            
-                            juce::AlertWindow::showMessageBoxAsync(
-                                juce::AlertWindow::WarningIcon,
-                                "Authentication Error",
-                                "Your session has expired. Please try again or log in again if the issue persists.");
-                            
                             requestInProgress = false;
                         });
-                        return;
-                    }
-                    else
-                    {
-                        // Handle other error details
-                        juce::MessageManager::callAsync([this, detail]() {
-                            if (auto* parent = getParentComponent())
-                            {
-                                if (auto* grandParent = parent->getParentComponent())
-                                {
-                                    if (auto* editor = dynamic_cast<SummonerXSerum2AudioProcessorEditor*>(grandParent))
-                                    {
-                                        editor->showLoadingScreen(false);
-                                    }
-                                }
-                            }
-                            
-                            DBG("API error response: " + detail);
-                            juce::AlertWindow::showMessageBoxAsync(
-                                juce::AlertWindow::WarningIcon,
-                                "Error",
-                                "Server error: " + detail);
-                            requestInProgress = false;
-                        });
-                        return;
                     }
                 }
-                
-                // If we get here, it's a successful response with parameters
-                std::map<std::string, std::string> parameterMap;
-                for (const auto& property : obj->getProperties())
+                else
                 {
-                    juce::String key = property.name.toString();
-                    juce::String value = property.value.toString();
-                    parameterMap[key.toStdString()] = value.toStdString();
-                }
-
-                juce::MessageManager::callAsync([this, parameterMap]() {
-                    // Apply the AI response parameters to the synthesizer
-                    sendAIResponseToProcessor(parameterMap);
-
-                    // Update credits after successful response
-                    int credits = fetchUserCredits();
-                    setCredits(credits);
-                    
-                    // Notify editor to update other components
-                    if (onCreditsUpdated && credits >= 0) {
-                        onCreditsUpdated(credits);
-                    }
-
-                    if (onLoadingStateChanged)
-                    {
-                        onLoadingStateChanged(false);
-                    }
-                    requestInProgress = false;
+                    juce::MessageManager::callAsync([this]() {
+                        DBG("No choices found in OpenAI response");
+                        juce::AlertWindow::showMessageBoxAsync(
+                            juce::AlertWindow::WarningIcon,
+                            "Response Error",
+                            "No response choices found in OpenAI API response.");
+                        if (onLoadingStateChanged)
+                        {
+                            onLoadingStateChanged(false);
+                        }
+                        requestInProgress = false;
                     });
+                }
             }
             else
             {
                 juce::MessageManager::callAsync([this, response]() {
-                    DBG("Failed to parse response from /generate-parameters: " + response);
+                    DBG("Failed to parse OpenAI response: " + response);
                     juce::AlertWindow::showMessageBoxAsync(
                         juce::AlertWindow::WarningIcon,
                         "Error",
-                        "Failed to generate parameters: " + response);
+                        "Failed to parse OpenAI API response: " + response);
                     if (onLoadingStateChanged)
                     {
                         onLoadingStateChanged(false);
                     }
                     requestInProgress = false;
-                    });
+                });
             }
         }
         else
         {
             juce::MessageManager::callAsync([this]() {
-                DBG("Failed to connect to /generate-parameters endpoint");
+                DBG("Failed to connect to OpenAI API");
                 juce::AlertWindow::showMessageBoxAsync(
                     juce::AlertWindow::WarningIcon,
                     "Connection Error",
-                    "Failed to connect to the server. Please try again.");
+                    "Failed to connect to OpenAI API. Please check your internet connection.");
                 if (onLoadingStateChanged)
                 {
                     onLoadingStateChanged(false);
                 }
                 requestInProgress = false;
-                });
+            });
         }
         }).detach();
 }
@@ -425,11 +474,7 @@ void ChatBarComponent::sendAIResponseToProcessor(const std::map<std::string, std
     
     DBG("ChatBarComponent: Parameter application complete - " << successful << " successful, " << failed << " failed");
     
-    // Provide feedback to the UI if callback is set
-    if (onParameterApplicationResult)
-    {
-        onParameterApplicationResult(successful, failed);
-    }
+    // Parameter application complete - no callback needed
     
     // Show alert if there were failures
     if (failed > 0 && successful == 0)
@@ -453,347 +498,30 @@ void ChatBarComponent::sendAIResponseToProcessor(const std::map<std::string, std
     }
 }
 
-void ChatBarComponent::setCredits(int credits)
-{
-    creditsLabel.setText("Credits: " + juce::String(credits), juce::dontSendNotification);
-    
-    // Set color to red if credits are 0, otherwise white
-    if (credits == 0) {
-        creditsLabel.setColour(juce::Label::textColourId, juce::Colours::red);
-    } else {
-        creditsLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    }
-}
+// No credits system needed
 
-int ChatBarComponent::fetchUserCredits()
-{
-    juce::String accessToken = appProps.getUserSettings()->getValue("accessToken", "");
-    if (accessToken.isEmpty())
-    {
-        DBG("No access token available to fetch credits");
-        return -1; // Return -1 to indicate error, not legitimate 0 credits
-    }
-
-    juce::URL url("https://ydr97n8vxe.execute-api.us-east-2.amazonaws.com/prod/get-credits");
-
-    auto options = juce::URL::InputStreamOptions(juce::URL::ParameterHandling::inPostData)
-        .withExtraHeaders("Authorization: Bearer " + accessToken)
-        .withConnectionTimeoutMs(50000);
-
-    std::unique_ptr<juce::InputStream> stream(url.createInputStream(options));
-
-    if (stream != nullptr)
-    {
-        juce::String response = stream->readEntireStreamAsString();
-        DBG("Received response from /get-credits endpoint: " + response);
-        juce::var result = juce::JSON::parse(response);
-        
-        if (result.isObject())
-        {
-            auto* obj = result.getDynamicObject();
-            
-            // Check if this is an error response with "detail" field
-            if (obj->hasProperty("detail"))
-            {
-                juce::String detail = obj->getProperty("detail").toString();
-                DBG("Credits fetch error in ChatBar: " + detail);
-                
-                if (detail == "Invalid token")
-                {
-                    DBG("Token is invalid during credit fetch - returning error");
-                    // Don't handle logout here, let the parent component handle it
-                }
-                return -1; // Return -1 to indicate error
-            }
-            else if (obj->hasProperty("credits"))
-            {
-                // Successful response with credits
-                int credits = obj->getProperty("credits").toString().getIntValue();
-                DBG("Parsed credits: " + juce::String(credits));
-                return credits;
-            }
-            else
-            {
-                DBG("No credits field found in response");
-                return -1; // Return -1 to indicate error
-            }
-        }
-        else
-        {
-            DBG("Invalid JSON response format");
-            return -1; // Return -1 to indicate error
-        }
-    }
-    DBG("Failed to fetch credits: No response from server");
-    return -1; // Return -1 to indicate error
-}
+// No credit system needed for direct API calls
 
 void ChatBarComponent::mouseDown(const juce::MouseEvent& event)
 {
-    if (event.originalComponent == &creditsLabel)
-    {
-        showCreditsModal();
-    }
+    // No credits functionality needed
 }
 
 void ChatBarComponent::mouseEnter(const juce::MouseEvent& event)
 {
-    if (event.originalComponent == &creditsLabel)
-    {
-        creditsLabelHovered = true;
-        repaint();
-    }
+    // No credits functionality needed
 }
 
 void ChatBarComponent::mouseExit(const juce::MouseEvent& event)
 {
-    if (event.originalComponent == &creditsLabel)
-    {
-        creditsLabelHovered = false;
-        repaint();
-    }
+    // No credits functionality needed
 }
 
-void ChatBarComponent::showCreditsModal()
-{
-    if (creditsModal == nullptr)
-    {
-        creditsModal = std::make_unique<CreditsModalWindow>();
-        creditsModal->onCloseClicked = [this]() {
-            creditsModal->setVisible(false);
-            removeChildComponent(creditsModal.get());
-        };
-        creditsModal->onPurchaseClicked = [this]() {
-            juce::AlertWindow::showMessageBoxAsync(
-                juce::AlertWindow::InfoIcon,
-                "Purchase Credits",
-                "Credit purchasing functionality will be implemented soon!");
-        };
-    }
-    
-    addAndMakeVisible(creditsModal.get());
-    creditsModal->setBounds(getLocalBounds());
-    creditsModal->toFront(true);
-    
-    // Automatically refresh credits when modal is opened
-    DBG("Credits modal opened - refreshing credits");
-    refreshCreditsFromModal();
-}
+// No credits modal needed
 
-void ChatBarComponent::refreshCreditsFromModal()
-{
-    // Use the existing fetchUserCredits method but with improved error handling
-    std::thread([this]() {
-        DBG("Modal credit refresh - starting background fetch");
-        
-        int newCredits = fetchUserCredits();
-        
-        // Update the UI on the main thread
-        juce::MessageManager::callAsync([this, newCredits]() {
-            if (newCredits >= 0) // Only update if we got a valid response (0 or positive credits)
-            {
-                DBG("Modal credit refresh - updating to: " << newCredits);
-                setCredits(newCredits);
-                
-                // Update stored credits too
-                appProps.getUserSettings()->setValue("credits", newCredits);
-                appProps.getUserSettings()->save();
-                
-                DBG("Credits successfully refreshed from modal");
-            }
-            else
-            {
-                DBG("Modal credit refresh - failed to get valid credits, keeping current value");
-            }
-        });
-    }).detach();
-}
+// No credits modal refresh needed
 
-// CreditsModalWindow Implementation
-ChatBarComponent::CreditsModalWindow::CreditsModalWindow()
-{
-    // Close button (red X)
-    addAndMakeVisible(closeButton);
-    closeButton.setButtonText("X");
-    closeButton.setColour(juce::TextButton::buttonColourId, juce::Colours::red);
-    closeButton.setColour(juce::TextButton::textColourOnId, juce::Colours::white);
-    closeButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
-    closeButton.setLookAndFeel(&closeButtonLookAndFeel);
-    closeButton.onClick = [this]() {
-        if (onCloseClicked)
-            onCloseClicked();
-    };
-    
-    // Title label
-    addAndMakeVisible(titleLabel);
-    titleLabel.setText("Credits Information", juce::dontSendNotification);
-    titleLabel.setFont(juce::Font("Press Start 2P", 20.0f, juce::Font::plain));
-    titleLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    titleLabel.setJustificationType(juce::Justification::centred);
-    
-    // Info label
-    addAndMakeVisible(infoLabel);
-    infoLabel.setText("Each prompt you submit consumes 1 credit.",
-                     juce::dontSendNotification);
-    infoLabel.setFont(juce::Font("Press Start 2P", 16.0f, juce::Font::plain));
-    infoLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    infoLabel.setJustificationType(juce::Justification::centred);
-    
-    // Purchase button
-    addAndMakeVisible(purchaseButton);
-    purchaseButton.setButtonText("Purchase Credits");
-    purchaseButton.setColour(juce::TextButton::buttonColourId, juce::Colours::darkblue);
-    purchaseButton.setColour(juce::TextButton::textColourOnId, juce::Colours::white);
-    purchaseButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
-    purchaseButton.setLookAndFeel(&purchaseButtonLookAndFeel);
-    purchaseButton.onClick = [this]() {
-        if (onPurchaseClicked)
-            onPurchaseClicked();
-    };
-}
-
-void ChatBarComponent::CreditsModalWindow::paint(juce::Graphics& g)
-{
-    // Semi-transparent overlay
-    g.fillAll(juce::Colours::black.withAlpha(0.7f));
-    
-    // Modal window background - made larger
-    auto modalBounds = getLocalBounds().reduced(60).withSizeKeepingCentre(600, 450);
-    g.setColour(juce::Colours::black);
-    g.fillRect(modalBounds);
-    
-    // Border
-    g.setColour(juce::Colours::black);
-    g.drawRect(modalBounds, 2);
-}
-
-void ChatBarComponent::CreditsModalWindow::resized()
-{
-    auto modalBounds = getLocalBounds().reduced(60).withSizeKeepingCentre(600, 450);
-    
-    // Close button in top-right
-    closeButton.setBounds(modalBounds.getRight() - 35, modalBounds.getY() + 15, 25, 25);
-    
-    // Title
-    titleLabel.setBounds(modalBounds.getX() + 30, modalBounds.getY() + 30, modalBounds.getWidth() - 60, 40);
-    
-    // Info text - larger area for better text spacing
-    infoLabel.setBounds(modalBounds.getX() + 30, modalBounds.getY() + 90, modalBounds.getWidth() - 60, 280);
-    
-    // Purchase button
-    purchaseButton.setBounds(modalBounds.getCentreX() - 100, modalBounds.getBottom() - 60, 200, 35);
-}
-
-void ChatBarComponent::showOutOfCreditsModal()
-{
-    if (outOfCreditsModal == nullptr)
-    {
-        outOfCreditsModal = std::make_unique<OutOfCreditsModalWindow>();
-        outOfCreditsModal->onCloseClicked = [this]() {
-            outOfCreditsModal->setVisible(false);
-            removeChildComponent(outOfCreditsModal.get());
-        };
-        outOfCreditsModal->onPurchaseClicked = [this]() {
-            juce::AlertWindow::showMessageBoxAsync(
-                juce::AlertWindow::InfoIcon,
-                "Purchase Credits",
-                "Credit purchasing functionality will be implemented soon!");
-        };
-    }
-    
-    addAndMakeVisible(outOfCreditsModal.get());
-    outOfCreditsModal->setBounds(getLocalBounds());
-    outOfCreditsModal->toFront(true);
-}
-
-// OutOfCreditsModalWindow Implementation
-ChatBarComponent::OutOfCreditsModalWindow::OutOfCreditsModalWindow()
-{
-    // Close button (red X)
-    addAndMakeVisible(closeButton);
-    closeButton.setButtonText("X");
-    closeButton.setColour(juce::TextButton::buttonColourId, juce::Colours::red);
-    closeButton.setColour(juce::TextButton::textColourOnId, juce::Colours::white);
-    closeButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
-    closeButton.setLookAndFeel(&closeButtonLookAndFeel);
-    closeButton.onClick = [this]() {
-        if (onCloseClicked)
-            onCloseClicked();
-    };
-    
-    // Title label
-    addAndMakeVisible(titleLabel);
-    titleLabel.setText("Out of Credits", juce::dontSendNotification);
-    titleLabel.setFont(juce::Font("Press Start 2P", 20.0f, juce::Font::plain));
-    titleLabel.setColour(juce::Label::textColourId, juce::Colours::red);
-    titleLabel.setJustificationType(juce::Justification::centred);
-    
-    // No credits warning label
-    addAndMakeVisible(noCreditsLabel);
-    noCreditsLabel.setText("Purchase more to continue! :)", juce::dontSendNotification);
-    noCreditsLabel.setFont(juce::Font("Press Start 2P", 16.0f, juce::Font::plain));
-    noCreditsLabel.setColour(juce::Label::textColourId, juce::Colours::orange);
-    noCreditsLabel.setJustificationType(juce::Justification::centred);
-    
-    // Info label
-    addAndMakeVisible(infoLabel);
-    infoLabel.setText("Each sound summoned consumes 1 credit.",
-                     juce::dontSendNotification);
-    infoLabel.setFont(juce::Font("Press Start 2P", 14.0f, juce::Font::plain));
-    infoLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    infoLabel.setJustificationType(juce::Justification::centred);
-    
-    // Purchase button
-    addAndMakeVisible(purchaseButton);
-    purchaseButton.setButtonText("Get More Credits");
-    purchaseButton.setColour(juce::TextButton::buttonColourId, juce::Colours::green);
-    purchaseButton.setColour(juce::TextButton::textColourOnId, juce::Colours::white);
-    purchaseButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
-    purchaseButton.setLookAndFeel(&purchaseButtonLookAndFeel);
-    purchaseButton.onClick = [this]() {
-        if (onPurchaseClicked)
-            onPurchaseClicked();
-    };
-}
-
-void ChatBarComponent::OutOfCreditsModalWindow::paint(juce::Graphics& g)
-{
-    // Semi-transparent overlay
-    g.fillAll(juce::Colours::black.withAlpha(0.8f));
-    
-    // Modal window background
-    auto modalBounds = getLocalBounds().reduced(60).withSizeKeepingCentre(600, 500);
-    g.setColour(juce::Colours::darkred.withAlpha(0.3f));
-    g.fillRect(modalBounds);
-    
-    // Red border to emphasize the error
-    g.setColour(juce::Colours::red);
-    g.drawRect(modalBounds, 3);
-    
-    // Inner dark background
-    g.setColour(juce::Colours::black.withAlpha(0.9f));
-    g.fillRect(modalBounds.reduced(3));
-}
-
-void ChatBarComponent::OutOfCreditsModalWindow::resized()
-{
-    auto modalBounds = getLocalBounds().reduced(60).withSizeKeepingCentre(600, 500);
-    
-    // Close button in top-right
-    closeButton.setBounds(modalBounds.getRight() - 35, modalBounds.getY() + 15, 25, 25);
-    
-    // Title
-    titleLabel.setBounds(modalBounds.getX() + 30, modalBounds.getY() + 40, modalBounds.getWidth() - 60, 40);
-    
-    // No credits warning
-    noCreditsLabel.setBounds(modalBounds.getX() + 30, modalBounds.getY() + 100, modalBounds.getWidth() - 60, 40);
-    
-    // Info text
-    infoLabel.setBounds(modalBounds.getX() + 30, modalBounds.getY() + 160, modalBounds.getWidth() - 60, 240);
-    
-    // Purchase button
-    purchaseButton.setBounds(modalBounds.getCentreX() - 100, modalBounds.getBottom() - 70, 200, 40);
-}
+// All credits modal code removed
 
 void ChatBarComponent::timerCallback()
 {

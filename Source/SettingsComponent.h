@@ -25,13 +25,7 @@ public:
     juce::String loadSavedPath();
     juce::String getPluginPath() const;
 
-    std::function<void()> onLogout;
-    std::function<void()> onLogin;
     std::function<void(bool)> onSkinChanged;
-    
-    void updateLoginState(bool isLoggedIn);
-    void setCredits(int credits);
-    int getCredits() const;
     void timerCallback() override;
 
 private:
@@ -82,16 +76,18 @@ private:
     void browseForPath();
     void savePath(const juce::String& path);
     juce::Label pluginPathLabel;
-    juce::TextButton logoutButton;
-    juce::Label creditsLabel;
-    juce::TextButton purchaseCreditsButton;
-    int currentCredits = 0;
+    // Direct API access - no authentication needed
     
     // Skin selection buttons
     juce::Label skinLabel;
     juce::TextButton defaultSkinButton;
     juce::TextButton hackerSkinButton;
     bool isHackerSkin = true;
+    
+    // OpenAI API Key input
+    juce::Label apiKeyLabel;
+    juce::TextEditor apiKeyInput;
+    juce::TextButton saveApiKeyButton;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SettingsComponent)
 };
