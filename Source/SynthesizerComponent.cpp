@@ -5645,16 +5645,16 @@ void SynthesizerComponent::layoutEffectsModule(juce::Rectangle<int>& bounds)
     effectsPresetNextButton.setBounds(presetStartX, presetY + 5, buttonWidth, buttonHeight);
     presetStartX += buttonWidth + spacing;
     
-    // Save button
-    effectsPresetSaveButton.setBounds(presetStartX, presetY + 5, buttonWidth, buttonHeight);
+    // Save button - moved up 10 pixels total
+    effectsPresetSaveButton.setBounds(presetStartX, presetY - 5, buttonWidth, buttonHeight);
     presetStartX += buttonWidth + spacing;
     
-    // Load button
-    effectsPresetLoadButton.setBounds(presetStartX, presetY + 5, buttonWidth, buttonHeight);
+    // Load button - moved up 10 pixels total
+    effectsPresetLoadButton.setBounds(presetStartX, presetY - 5, buttonWidth, buttonHeight);
     presetStartX += buttonWidth + spacing;
     
-    // Init button
-    effectsPresetInitButton.setBounds(presetStartX, presetY + 5, buttonWidth, buttonHeight);
+    // Init button - moved down 14 pixels and left 75 pixels
+    effectsPresetInitButton.setBounds(presetStartX - 75, presetY + 19, buttonWidth, buttonHeight);
     
     // Position border component (larger to encompass effects module)
     auto borderArea = juce::Rectangle<int>(centerX, centerY, effectsWidth + borderPadding * 2, effectsHeight + borderPadding * 2);
