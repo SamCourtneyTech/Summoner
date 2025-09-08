@@ -2,85 +2,13 @@
 #include <JuceHeader.h>
 #include "LookAndFeel.h"
 #include "LFOComponent.h"
+#include "UI/DraggableMacroSymbol.h"
+#include "UI/MacroSystem.h"
+#include "UI/ADSREnvelopeComponent.h"
 
 class SummonerXSerum2AudioProcessor;
 class SynthesizerComponent;
 
-// Forward declaration for draggable macro symbols
-class DraggableMacroSymbol : public juce::Component
-{
-public:
-    DraggableMacroSymbol(int macroIndex, class SynthesizerComponent* parent);
-    
-    void paint(juce::Graphics& g) override;
-    void mouseDown(const juce::MouseEvent& event) override;
-    void mouseDrag(const juce::MouseEvent& event) override;
-    void mouseUp(const juce::MouseEvent& event) override;
-    
-    void returnToOriginalPosition();
-    void setOriginalPosition(juce::Point<int> position);
-    
-private:
-    int macroIndex;
-    juce::Point<int> originalPosition;
-    juce::Point<int> dragOffset;
-    bool isDragging = false;
-    class SynthesizerComponent* parentComponent;
-    
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DraggableMacroSymbol)
-};
-
-// Macro mapping system
-struct MacroMapping
-{
-    int macroIndex;                    // Which macro (1-8)
-    juce::Slider* targetSlider;        // The linked slider/knob
-    double baseValue;                  // Value when link was created
-    double minRange;                   // Target slider's minimum value
-    double maxRange;                   // Target slider's maximum value
-    double userMinRange;               // User-adjustable minimum range (for arc sizing)
-    double userMaxRange;               // User-adjustable maximum range (for arc sizing)
-    juce::Colour indicatorColor;       // Color for the visual indicator
-    
-    MacroMapping(int macro, juce::Slider* slider, double base, double min, double max)
-        : macroIndex(macro), targetSlider(slider), baseValue(base), minRange(min), maxRange(max)
-    {
-        // Initialize user ranges to full slider range (can be adjusted by dragging arc)
-        userMinRange = min;
-        userMaxRange = max;
-        // Assign different colors for each macro
-        const juce::Colour macroColors[] = {
-            juce::Colour(0xff00ff00), // Green
-            juce::Colour(0xff0080ff), // Blue
-            juce::Colour(0xffff8000), // Orange
-            juce::Colour(0xffff00ff), // Magenta
-            juce::Colour(0xff00ffff), // Cyan
-            juce::Colour(0xffffff00), // Yellow
-            juce::Colour(0xffff0080), // Pink
-            juce::Colour(0xff8000ff)  // Purple
-        };
-        indicatorColor = macroColors[(macro - 1) % 8];
-    }
-};
-
-class ADSREnvelopeComponent : public juce::Component
-{
-public:
-    ADSREnvelopeComponent();
-    
-    void paint(juce::Graphics& g) override;
-    void resized() override;
-    
-    void updateEnvelope(float attack, float decay, float sustain, float release);
-    
-private:
-    float attackTime = 0.1f;
-    float decayTime = 0.2f;
-    float sustainLevel = 0.7f;
-    float releaseTime = 0.3f;
-    
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ADSREnvelopeComponent)
-};
 
 class ParametricEQComponent : public juce::Component
 {
@@ -1095,7 +1023,7 @@ private:
     std::unique_ptr<DraggableMacroSymbol> macroSymbol8;
     
     // Macro mapping system
-    std::vector<MacroMapping> macroMappings;
+    MacroSystem macroSystem;
     
 public:
     void createMacroMapping(int macroIndex, juce::Slider* targetSlider);
@@ -1112,13 +1040,11 @@ private:
     void updateMacroMappings(int macroIndex, double macroValue);
     void removeMacroMapping(int macroIndex, juce::Slider* targetSlider);
     void drawMacroIndicators(juce::Graphics& g);
-    void drawCircularIndicator(juce::Graphics& g, juce::Slider* slider, const MacroMapping& mapping);
     double getMacroKnobValue(int macroIndex);
     void triggerParameterUpdate(juce::Slider* slider, double newValue);
     
     // Arc interaction methods
     MacroMapping* findMacroMappingAtPosition(juce::Point<int> position);
-    bool isPointOnArc(juce::Point<int> point, juce::Point<int> center, float radius, float startAngle, float endAngle);
     void updateMappingRange(MacroMapping* mapping, juce::Point<int> dragPosition);
     
     // Arc dragging state

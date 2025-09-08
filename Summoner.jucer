@@ -36,6 +36,20 @@
           file="Source/SynthesizerComponent.cpp"/>
     <FILE id="SynthComp2" name="SynthesizerComponent.h" compile="0" resource="0"
           file="Source/SynthesizerComponent.h"/>
+    <GROUP id="{UI-COMPONENTS-GROUP}" name="UI">
+      <FILE id="DraggableMacro1" name="DraggableMacroSymbol.cpp" compile="1" resource="0"
+            file="Source/UI/DraggableMacroSymbol.cpp"/>
+      <FILE id="DraggableMacro2" name="DraggableMacroSymbol.h" compile="0" resource="0"
+            file="Source/UI/DraggableMacroSymbol.h"/>
+      <FILE id="MacroSys1" name="MacroSystem.cpp" compile="1" resource="0"
+            file="Source/UI/MacroSystem.cpp"/>
+      <FILE id="MacroSys2" name="MacroSystem.h" compile="0" resource="0"
+            file="Source/UI/MacroSystem.h"/>
+      <FILE id="ADSREnv1" name="ADSREnvelopeComponent.cpp" compile="1" resource="0"
+            file="Source/UI/ADSREnvelopeComponent.cpp"/>
+      <FILE id="ADSREnv2" name="ADSREnvelopeComponent.h" compile="0" resource="0"
+            file="Source/UI/ADSREnvelopeComponent.h"/>
+    </GROUP>
   </MAINGROUP>
   <MODULES>
     <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
