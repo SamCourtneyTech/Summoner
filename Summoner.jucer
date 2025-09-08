@@ -49,6 +49,10 @@
             file="Source/UI/ADSREnvelopeComponent.cpp"/>
       <FILE id="ADSREnv2" name="ADSREnvelopeComponent.h" compile="0" resource="0"
             file="Source/UI/ADSREnvelopeComponent.h"/>
+      <FILE id="ParamEQ1" name="ParametricEQComponent.cpp" compile="1" resource="0"
+            file="Source/UI/ParametricEQComponent.cpp"/>
+      <FILE id="ParamEQ2" name="ParametricEQComponent.h" compile="0" resource="0"
+            file="Source/UI/ParametricEQComponent.h"/>
     </GROUP>
   </MAINGROUP>
   <MODULES>
