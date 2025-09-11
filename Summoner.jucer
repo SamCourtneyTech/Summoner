@@ -53,6 +53,26 @@
             file="Source/UI/ParametricEQComponent.cpp"/>
       <FILE id="ParamEQ2" name="ParametricEQComponent.h" compile="0" resource="0"
             file="Source/UI/ParametricEQComponent.h"/>
+      <FILE id="Distortion1" name="DistortionComponent.cpp" compile="1" resource="0"
+            file="Source/UI/DistortionComponent.cpp"/>
+      <FILE id="Distortion2" name="DistortionComponent.h" compile="0" resource="0"
+            file="Source/UI/DistortionComponent.h"/>
+      <FILE id="Delay1" name="DelayComponent.cpp" compile="1" resource="0"
+            file="Source/UI/DelayComponent.cpp"/>
+      <FILE id="Delay2" name="DelayComponent.h" compile="0" resource="0"
+            file="Source/UI/DelayComponent.h"/>
+      <FILE id="Compressor1" name="CompressorComponent.cpp" compile="1" resource="0"
+            file="Source/UI/CompressorComponent.cpp"/>
+      <FILE id="Compressor2" name="CompressorComponent.h" compile="0" resource="0"
+            file="Source/UI/CompressorComponent.h"/>
+      <FILE id="Chorus1" name="ChorusComponent.cpp" compile="1" resource="0"
+            file="Source/UI/ChorusComponent.cpp"/>
+      <FILE id="Chorus2" name="ChorusComponent.h" compile="0" resource="0"
+            file="Source/UI/ChorusComponent.h"/>
+      <FILE id="Reverb1" name="ReverbComponent.cpp" compile="1" resource="0"
+            file="Source/UI/ReverbComponent.cpp"/>
+      <FILE id="Reverb2" name="ReverbComponent.h" compile="0" resource="0"
+            file="Source/UI/ReverbComponent.h"/>
     </GROUP>
   </MAINGROUP>
   <MODULES>

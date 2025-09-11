@@ -1014,15 +1014,35 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     // Create placeholder components for each effect with digital styling
     auto chorusTab = new juce::Component();
-    auto compressorTab = new juce::Component();
-    auto delayTab = new juce::Component();
-    auto distortionTab = new juce::Component();
+    // Set up DistortionComponent
+    distortionModule.setParentSynthesizer(this);
+    distortionModule.setLookAndFeels(&greenDigitalKnobLookAndFeel, &greenDigitalButtonLookAndFeel, &greenLEDNumberLookAndFeel);
+    
+    // Delay module setup
+    delayModule.setParentSynthesizer(this);
+    delayModule.setLookAndFeels(&greenDigitalKnobLookAndFeel, &greenDigitalButtonLookAndFeel, &greenLEDNumberLookAndFeel);
+    
+    // Chorus module setup
+    chorusModule.setParentSynthesizer(this);
+    chorusModule.setLookAndFeels(&greenDigitalKnobLookAndFeel, &greenDigitalButtonLookAndFeel);
+    
+    // Compressor module setup
+    compressorModule.setParentSynthesizer(this);
+    compressorModule.setLookAndFeels(&greenDigitalKnobLookAndFeel, &greenDigitalButtonLookAndFeel, &greenLEDNumberLookAndFeel);
+    
+    // Reverb module setup
+    reverbModule.setParentSynthesizer(this);
+    reverbModule.setLookAndFeels(&greenDigitalKnobLookAndFeel, &greenDigitalButtonLookAndFeel, &greenLEDNumberLookAndFeel);
     auto equalizerTab = new juce::Component();
     equalizerTab->setVisible(true);
     
     // Initialize parametric EQ component
     parametricEQ.setParentSynthesizer(this);
     parametricEQ.syncWithDSPState(); // Sync with initial DSP state
+    chorusModule.syncWithDSPState(); // Sync chorus module with initial DSP state
+    delayModule.syncWithDSPState(); // Sync delay module with initial DSP state
+    compressorModule.syncWithDSPState(); // Sync compressor module with initial DSP state
+    reverbModule.syncWithDSPState(); // Sync reverb module with initial DSP state
     parametricEQ.setVisible(true);
     equalizerTab->addAndMakeVisible(parametricEQ);
     
@@ -1324,728 +1344,26 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     phaserFeedbackKnob.addListener(this);
     phaserPhaseKnob.addListener(this);
     
-    auto reverbTab = new juce::Component();
-    
-    // Initialize reverb controls
-    // Row 1: Power and Mix controls
-    reverbPowerButton.setButtonText("REVERB ON");
-    reverbPowerButton.setClickingTogglesState(true);
-    reverbPowerButton.setToggleState(false, juce::dontSendNotification);
-    reverbPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    reverbPowerButton.setVisible(true);
-    reverbPowerButton.setBounds(68, 65, 80, 25);
-    reverbTab->addAndMakeVisible(reverbPowerButton);
-    reverbPowerButton.addListener(this);
-    
-    reverbMixKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    reverbMixKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    reverbMixKnob.setRange(0.0, 100.0, 1.0);
-    reverbMixKnob.setValue(30.0);
-    reverbMixKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    reverbMixKnob.setVisible(true);
-    reverbMixKnob.setBounds(168, 60, 40, 40);
-    reverbTab->addAndMakeVisible(reverbMixKnob);
-    reverbMixKnob.addListener(this);
-    
-    reverbMixLabel.setText("MIX", juce::dontSendNotification);
-    reverbMixLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    reverbMixLabel.setJustificationType(juce::Justification::centred);
-    reverbMixLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    reverbMixLabel.setVisible(true);
-    reverbMixLabel.setBounds(168, 102, 40, 12);
-    reverbTab->addAndMakeVisible(reverbMixLabel);
-    
-    // Row 2: Reverb Type (clickable label like distortion)
-    reverbTypeLabel.setText("TYPE", juce::dontSendNotification);
-    reverbTypeLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    reverbTypeLabel.setJustificationType(juce::Justification::centred);
-    reverbTypeLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    reverbTypeLabel.setVisible(true);
-    reverbTypeLabel.setBounds(49, 125, 200, 15);
-    reverbTab->addAndMakeVisible(reverbTypeLabel);
-    
-    // Type value label (interactive)
-    reverbTypeValueLabel.setText("HALL", juce::dontSendNotification);
-    reverbTypeValueLabel.setJustificationType(juce::Justification::centred);
-    reverbTypeValueLabel.setLookAndFeel(&greenLEDNumberLookAndFeel);
-    reverbTypeValueLabel.setInterceptsMouseClicks(true, true); // Enable mouse interaction for self and children
-    reverbTypeValueLabel.setEditable(false, false, false); // Make it respond to mouse but not editable
-    reverbTypeValueLabel.addMouseListener(this, true); // Add mouse listener with childEvents = true
-    reverbTypeValueLabel.setVisible(true);
-    reverbTypeValueLabel.setBounds(49, 145, 200, 20);
-    reverbTab->addAndMakeVisible(reverbTypeValueLabel);
-    
-    // Row 3: Low Cut and High Cut
-    reverbLowCutKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    reverbLowCutKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    reverbLowCutKnob.setRange(20.0, 1000.0, 1.0);
-    reverbLowCutKnob.setValue(80.0);
-    reverbLowCutKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    reverbLowCutKnob.setVisible(true);
-    reverbLowCutKnob.setBounds(89, 185, 50, 50);
-    reverbTab->addAndMakeVisible(reverbLowCutKnob);
-    reverbLowCutKnob.addListener(this);
-    
-    reverbLowCutLabel.setText("LOW CUT", juce::dontSendNotification);
-    reverbLowCutLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    reverbLowCutLabel.setJustificationType(juce::Justification::centred);
-    reverbLowCutLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    reverbLowCutLabel.setVisible(true);
-    reverbLowCutLabel.setBounds(89, 240, 50, 15);
-    reverbTab->addAndMakeVisible(reverbLowCutLabel);
-    
-    reverbHighCutKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    reverbHighCutKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    reverbHighCutKnob.setRange(1000.0, 20000.0, 10.0);
-    reverbHighCutKnob.setValue(8000.0);
-    reverbHighCutKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    reverbHighCutKnob.setVisible(true);
-    reverbHighCutKnob.setBounds(159, 185, 50, 50);
-    reverbTab->addAndMakeVisible(reverbHighCutKnob);
-    reverbHighCutKnob.addListener(this);
-    
-    reverbHighCutLabel.setText("HIGH CUT", juce::dontSendNotification);
-    reverbHighCutLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    reverbHighCutLabel.setJustificationType(juce::Justification::centred);
-    reverbHighCutLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    reverbHighCutLabel.setVisible(true);
-    reverbHighCutLabel.setBounds(159, 240, 50, 15);
-    reverbTab->addAndMakeVisible(reverbHighCutLabel);
-    
-    // Row 4: Size and Pre Delay
-    reverbSizeKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    reverbSizeKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    reverbSizeKnob.setRange(0.0, 100.0, 1.0);
-    reverbSizeKnob.setValue(50.0);
-    reverbSizeKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    reverbSizeKnob.setVisible(true);
-    reverbSizeKnob.setBounds(89, 265, 50, 50);
-    reverbTab->addAndMakeVisible(reverbSizeKnob);
-    reverbSizeKnob.addListener(this);
-    
-    reverbSizeLabel.setText("SIZE", juce::dontSendNotification);
-    reverbSizeLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    reverbSizeLabel.setJustificationType(juce::Justification::centred);
-    reverbSizeLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    reverbSizeLabel.setVisible(true);
-    reverbSizeLabel.setBounds(89, 320, 50, 15);
-    reverbTab->addAndMakeVisible(reverbSizeLabel);
-    
-    reverbPreDelayKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    reverbPreDelayKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    reverbPreDelayKnob.setRange(0.0, 200.0, 1.0);
-    reverbPreDelayKnob.setValue(20.0);
-    reverbPreDelayKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    reverbPreDelayKnob.setVisible(true);
-    reverbPreDelayKnob.setBounds(159, 265, 50, 50);
-    reverbTab->addAndMakeVisible(reverbPreDelayKnob);
-    reverbPreDelayKnob.addListener(this);
-    
-    reverbPreDelayLabel.setText("PRE DELAY", juce::dontSendNotification);
-    reverbPreDelayLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    reverbPreDelayLabel.setJustificationType(juce::Justification::centred);
-    reverbPreDelayLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    reverbPreDelayLabel.setVisible(true);
-    reverbPreDelayLabel.setBounds(159, 320, 50, 15);
-    reverbTab->addAndMakeVisible(reverbPreDelayLabel);
-    
-    // Row 5: Damp and Width
-    reverbDampKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    reverbDampKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    reverbDampKnob.setRange(0.0, 100.0, 1.0);
-    reverbDampKnob.setValue(50.0);
-    reverbDampKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    reverbDampKnob.setVisible(true);
-    reverbDampKnob.setBounds(89, 345, 50, 50);
-    reverbTab->addAndMakeVisible(reverbDampKnob);
-    reverbDampKnob.addListener(this);
-    
-    reverbDampLabel.setText("DAMP", juce::dontSendNotification);
-    reverbDampLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    reverbDampLabel.setJustificationType(juce::Justification::centred);
-    reverbDampLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    reverbDampLabel.setVisible(true);
-    reverbDampLabel.setBounds(89, 400, 50, 15);
-    reverbTab->addAndMakeVisible(reverbDampLabel);
-    
-    reverbWidthKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    reverbWidthKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    reverbWidthKnob.setRange(0.0, 100.0, 1.0);
-    reverbWidthKnob.setValue(80.0);
-    reverbWidthKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    reverbWidthKnob.setVisible(true);
-    reverbWidthKnob.setBounds(159, 345, 50, 50);
-    reverbTab->addAndMakeVisible(reverbWidthKnob);
-    reverbWidthKnob.addListener(this);
-    
-    reverbWidthLabel.setText("WIDTH", juce::dontSendNotification);
-    reverbWidthLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    reverbWidthLabel.setJustificationType(juce::Justification::centred);
-    reverbWidthLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    reverbWidthLabel.setVisible(true);
-    reverbWidthLabel.setBounds(159, 400, 50, 15);
-    reverbTab->addAndMakeVisible(reverbWidthLabel);
+    // REVERB EFFECT CONTROLS - now handled by ReverbComponent
     
     // Digital screen background color for tabs
     juce::Colour digitalBg = juce::Colour(0xff001100); // Dark green tint
     
-    effectsModule.addTab("CHORUS", digitalBg, chorusTab, true);
-    effectsModule.addTab("COMP", digitalBg, compressorTab, true);
-    effectsModule.addTab("DELAY", digitalBg, delayTab, true);
-    effectsModule.addTab("DIST", digitalBg, distortionTab, true);
+    effectsModule.addTab("CHORUS", digitalBg, &chorusModule, true);
+    effectsModule.addTab("COMP", digitalBg, &compressorModule, true);
+    effectsModule.addTab("DELAY", digitalBg, &delayModule, true);
+    effectsModule.addTab("DIST", digitalBg, &distortionModule, true);
     effectsModule.addTab("EQ", digitalBg, equalizerTab, true);
     effectsModule.addTab("FLANGE", digitalBg, flangerTab, true);
     effectsModule.addTab("PHASER", digitalBg, phaserTab, true);
-    effectsModule.addTab("REVERB", digitalBg, reverbTab, true);
+    effectsModule.addTab("REVERB", digitalBg, &reverbModule, true);
     
     // Apply digital screen look and feel
     effectsModule.setLookAndFeel(&digitalScreenLookAndFeel);
     
-    // CHORUS EFFECT CONTROLS
-    // Rate knob
-    chorusRateKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    chorusRateKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    chorusRateKnob.setRange(0.1, 10.0, 0.1);
-    chorusRateKnob.setValue(2.0);
-    chorusRateKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    chorusTab->addAndMakeVisible(chorusRateKnob);
+    // CHORUS EFFECT CONTROLS - now handled by ChorusComponent
     
-    chorusRateLabel.setText("RATE", juce::dontSendNotification);
-    chorusRateLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    chorusRateLabel.setJustificationType(juce::Justification::centred);
-    chorusRateLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    chorusTab->addAndMakeVisible(chorusRateLabel);
     
-    // Delay 1 knob
-    chorusDelay1Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    chorusDelay1Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    chorusDelay1Knob.setRange(1.0, 50.0, 1.0);
-    chorusDelay1Knob.setValue(20.0);
-    chorusDelay1Knob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    chorusTab->addAndMakeVisible(chorusDelay1Knob);
-    
-    chorusDelay1Label.setText("DELAY 1", juce::dontSendNotification);
-    chorusDelay1Label.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    chorusDelay1Label.setJustificationType(juce::Justification::centred);
-    chorusDelay1Label.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    chorusTab->addAndMakeVisible(chorusDelay1Label);
-    
-    // Delay 2 knob
-    chorusDelay2Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    chorusDelay2Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    chorusDelay2Knob.setRange(1.0, 50.0, 1.0);
-    chorusDelay2Knob.setValue(30.0);
-    chorusDelay2Knob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    chorusTab->addAndMakeVisible(chorusDelay2Knob);
-    
-    chorusDelay2Label.setText("DELAY 2", juce::dontSendNotification);
-    chorusDelay2Label.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    chorusDelay2Label.setJustificationType(juce::Justification::centred);
-    chorusDelay2Label.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    chorusTab->addAndMakeVisible(chorusDelay2Label);
-    
-    // Depth knob
-    chorusDepthKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    chorusDepthKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    chorusDepthKnob.setRange(0.0, 1.0, 0.01);
-    chorusDepthKnob.setValue(0.5);
-    chorusDepthKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    chorusTab->addAndMakeVisible(chorusDepthKnob);
-    
-    chorusDepthLabel.setText("DEPTH", juce::dontSendNotification);
-    chorusDepthLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    chorusDepthLabel.setJustificationType(juce::Justification::centred);
-    chorusDepthLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    chorusTab->addAndMakeVisible(chorusDepthLabel);
-    
-    // Feed knob
-    chorusFeedKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    chorusFeedKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    chorusFeedKnob.setRange(0.0, 0.9, 0.01);
-    chorusFeedKnob.setValue(0.3);
-    chorusFeedKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    chorusTab->addAndMakeVisible(chorusFeedKnob);
-    
-    chorusFeedLabel.setText("FEED", juce::dontSendNotification);
-    chorusFeedLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    chorusFeedLabel.setJustificationType(juce::Justification::centred);
-    chorusFeedLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    chorusTab->addAndMakeVisible(chorusFeedLabel);
-    
-    // LPF knob
-    chorusLpfKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    chorusLpfKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    chorusLpfKnob.setRange(0.0, 100.0, 1.0);
-    chorusLpfKnob.setValue(0.0);
-    chorusLpfKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    chorusTab->addAndMakeVisible(chorusLpfKnob);
-    
-    chorusLpfLabel.setText("LPF", juce::dontSendNotification);
-    chorusLpfLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    chorusLpfLabel.setJustificationType(juce::Justification::centred);
-    chorusLpfLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    chorusTab->addAndMakeVisible(chorusLpfLabel);
-    
-    // Mix knob
-    chorusMixKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    chorusMixKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    chorusMixKnob.setRange(0.0, 1.0, 0.01);
-    chorusMixKnob.setValue(0.5);
-    chorusMixKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    chorusTab->addAndMakeVisible(chorusMixKnob);
-    
-    chorusMixLabel.setText("MIX", juce::dontSendNotification);
-    chorusMixLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    chorusMixLabel.setJustificationType(juce::Justification::centred);
-    chorusMixLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    chorusTab->addAndMakeVisible(chorusMixLabel);
-    
-    // Power button
-    chorusPowerButton.setButtonText("CHORUS ON");
-    chorusPowerButton.setClickingTogglesState(true);
-    chorusPowerButton.setToggleState(false, juce::dontSendNotification);
-    chorusPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    chorusTab->addAndMakeVisible(chorusPowerButton);
-    
-    // Add listeners for chorus controls
-    chorusRateKnob.addListener(this);
-    chorusDelay1Knob.addListener(this);
-    chorusDelay2Knob.addListener(this);
-    chorusDepthKnob.addListener(this);
-    chorusFeedKnob.addListener(this);
-    chorusLpfKnob.addListener(this);
-    chorusMixKnob.addListener(this);
-    chorusPowerButton.addListener(this);
-    
-    // COMPRESSOR EFFECT CONTROLS
-    // Threshold knob
-    compressorThresholdKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    compressorThresholdKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    compressorThresholdKnob.setRange(-60.0, 0.0, 0.1);
-    compressorThresholdKnob.setValue(-20.0);
-    compressorThresholdKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    compressorTab->addAndMakeVisible(compressorThresholdKnob);
-    
-    compressorThresholdLabel.setText("THRESH", juce::dontSendNotification);
-    compressorThresholdLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    compressorThresholdLabel.setJustificationType(juce::Justification::centred);
-    compressorThresholdLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    compressorTab->addAndMakeVisible(compressorThresholdLabel);
-    
-    // Ratio knob
-    compressorRatioKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    compressorRatioKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    compressorRatioKnob.setRange(1.0, 20.0, 0.1);
-    compressorRatioKnob.setValue(4.0);
-    compressorRatioKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    compressorTab->addAndMakeVisible(compressorRatioKnob);
-    
-    compressorRatioLabel.setText("RATIO", juce::dontSendNotification);
-    compressorRatioLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    compressorRatioLabel.setJustificationType(juce::Justification::centred);
-    compressorRatioLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    compressorTab->addAndMakeVisible(compressorRatioLabel);
-    
-    // Attack knob
-    compressorAttackKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    compressorAttackKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    compressorAttackKnob.setRange(0.1, 100.0, 0.1);
-    compressorAttackKnob.setValue(5.0);
-    compressorAttackKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    compressorTab->addAndMakeVisible(compressorAttackKnob);
-    
-    compressorAttackLabel.setText("ATTACK", juce::dontSendNotification);
-    compressorAttackLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    compressorAttackLabel.setJustificationType(juce::Justification::centred);
-    compressorAttackLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    compressorTab->addAndMakeVisible(compressorAttackLabel);
-    
-    // Release knob
-    compressorReleaseKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    compressorReleaseKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    compressorReleaseKnob.setRange(10.0, 1000.0, 1.0);
-    compressorReleaseKnob.setValue(100.0);
-    compressorReleaseKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    compressorTab->addAndMakeVisible(compressorReleaseKnob);
-    
-    compressorReleaseLabel.setText("RELEASE", juce::dontSendNotification);
-    compressorReleaseLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    compressorReleaseLabel.setJustificationType(juce::Justification::centred);
-    compressorReleaseLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    compressorTab->addAndMakeVisible(compressorReleaseLabel);
-    
-    // Gain knob
-    compressorGainKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    compressorGainKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    compressorGainKnob.setRange(0.0, 30.0, 0.1);
-    compressorGainKnob.setValue(0.0);
-    compressorGainKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    compressorTab->addAndMakeVisible(compressorGainKnob);
-    
-    compressorGainLabel.setText("GAIN", juce::dontSendNotification);
-    compressorGainLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    compressorGainLabel.setJustificationType(juce::Justification::centred);
-    compressorGainLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    compressorTab->addAndMakeVisible(compressorGainLabel);
-    
-    // Multiband button
-    compressorMultibandButton.setButtonText("MULTIBAND");
-    compressorMultibandButton.setClickingTogglesState(true);
-    compressorMultibandButton.setToggleState(false, juce::dontSendNotification);
-    compressorMultibandButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    compressorTab->addAndMakeVisible(compressorMultibandButton);
-    
-    // Mix knob
-    compressorMixKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    compressorMixKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    compressorMixKnob.setRange(0.0, 1.0, 0.01);
-    compressorMixKnob.setValue(1.0);
-    compressorMixKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    compressorTab->addAndMakeVisible(compressorMixKnob);
-    
-    compressorMixLabel.setText("MIX", juce::dontSendNotification);
-    compressorMixLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    compressorMixLabel.setJustificationType(juce::Justification::centred);
-    compressorMixLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    compressorTab->addAndMakeVisible(compressorMixLabel);
-    
-    // Power button
-    compressorPowerButton.setButtonText("COMP ON");
-    compressorPowerButton.setClickingTogglesState(true);
-    compressorPowerButton.setToggleState(false, juce::dontSendNotification);
-    compressorPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    compressorTab->addAndMakeVisible(compressorPowerButton);
-    
-    // Compressor value displays
-    compressorRatioValueLabel.setText("4.0:1", juce::dontSendNotification);
-    compressorRatioValueLabel.setFont(juce::Font("Times New Roman", 7.0f, juce::Font::bold));
-    compressorRatioValueLabel.setJustificationType(juce::Justification::centred);
-    compressorRatioValueLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    compressorTab->addAndMakeVisible(compressorRatioValueLabel);
-    
-    compressorAttackValueLabel.setText("5.0ms", juce::dontSendNotification);
-    compressorAttackValueLabel.setFont(juce::Font("Times New Roman", 7.0f, juce::Font::bold));
-    compressorAttackValueLabel.setJustificationType(juce::Justification::centred);
-    compressorAttackValueLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    compressorTab->addAndMakeVisible(compressorAttackValueLabel);
-    
-    compressorReleaseValueLabel.setText("100ms", juce::dontSendNotification);
-    compressorReleaseValueLabel.setFont(juce::Font("Times New Roman", 7.0f, juce::Font::bold));
-    compressorReleaseValueLabel.setJustificationType(juce::Justification::centred);
-    compressorReleaseValueLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    compressorTab->addAndMakeVisible(compressorReleaseValueLabel);
-    
-    // Add listeners for compressor controls
-    compressorThresholdKnob.addListener(this);
-    compressorRatioKnob.addListener(this);
-    compressorAttackKnob.addListener(this);
-    compressorReleaseKnob.addListener(this);
-    compressorGainKnob.addListener(this);
-    compressorMixKnob.addListener(this);
-    compressorMultibandButton.addListener(this);
-    compressorPowerButton.addListener(this);
-    
-    // DELAY EFFECT CONTROLS
-    // Feedback knob
-    delayFeedbackKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    delayFeedbackKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    delayFeedbackKnob.setRange(0.0, 0.95, 0.01);
-    delayFeedbackKnob.setValue(0.3);
-    delayFeedbackKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    delayTab->addAndMakeVisible(delayFeedbackKnob);
-    
-    delayFeedbackLabel.setText("FEEDBACK", juce::dontSendNotification);
-    delayFeedbackLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    delayFeedbackLabel.setJustificationType(juce::Justification::centred);
-    delayFeedbackLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    delayTab->addAndMakeVisible(delayFeedbackLabel);
-    
-    // BPM button
-    delayBpmButton.setButtonText("BPM");
-    delayBpmButton.setClickingTogglesState(true);
-    delayBpmButton.setToggleState(true, juce::dontSendNotification);
-    delayBpmButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    delayTab->addAndMakeVisible(delayBpmButton);
-    
-    // Link button
-    delayLinkButton.setButtonText("LINK");
-    delayLinkButton.setClickingTogglesState(true);
-    delayLinkButton.setToggleState(true, juce::dontSendNotification);
-    delayLinkButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    delayTab->addAndMakeVisible(delayLinkButton);
-    
-    // Left delay time slider
-    delayLeftTimeSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    delayLeftTimeSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    delayLeftTimeSlider.setRange(1.0, 2000.0, 1.0);
-    delayLeftTimeSlider.setValue(250.0);
-    delayLeftTimeSlider.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    delayTab->addAndMakeVisible(delayLeftTimeSlider);
-    
-    delayLeftTimeLabel.setText("L TIME", juce::dontSendNotification);
-    delayLeftTimeLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    delayLeftTimeLabel.setJustificationType(juce::Justification::centred);
-    delayLeftTimeLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    delayTab->addAndMakeVisible(delayLeftTimeLabel);
-    
-    // Right delay time slider
-    delayRightTimeSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    delayRightTimeSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    delayRightTimeSlider.setRange(1.0, 2000.0, 1.0);
-    delayRightTimeSlider.setValue(375.0);
-    delayRightTimeSlider.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    delayTab->addAndMakeVisible(delayRightTimeSlider);
-    
-    delayRightTimeLabel.setText("R TIME", juce::dontSendNotification);
-    delayRightTimeLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    delayRightTimeLabel.setJustificationType(juce::Justification::centred);
-    delayRightTimeLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    delayTab->addAndMakeVisible(delayRightTimeLabel);
-    
-    // Left triplet button
-    delayLeftTripletButton.setButtonText("L 3");
-    delayLeftTripletButton.setClickingTogglesState(true);
-    delayLeftTripletButton.setToggleState(false, juce::dontSendNotification);
-    delayLeftTripletButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    delayTab->addAndMakeVisible(delayLeftTripletButton);
-    
-    // Left dot timing button
-    delayLeftDotButton.setButtonText("L .");
-    delayLeftDotButton.setClickingTogglesState(true);
-    delayLeftDotButton.setToggleState(false, juce::dontSendNotification);
-    delayLeftDotButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    delayTab->addAndMakeVisible(delayLeftDotButton);
-    
-    // Right triplet button
-    delayRightTripletButton.setButtonText("R 3");
-    delayRightTripletButton.setClickingTogglesState(true);
-    delayRightTripletButton.setToggleState(false, juce::dontSendNotification);
-    delayRightTripletButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    delayTab->addAndMakeVisible(delayRightTripletButton);
-    
-    // Right dot timing button
-    delayRightDotButton.setButtonText("R .");
-    delayRightDotButton.setClickingTogglesState(true);
-    delayRightDotButton.setToggleState(false, juce::dontSendNotification);
-    delayRightDotButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    delayTab->addAndMakeVisible(delayRightDotButton);
-    
-    // Filter frequency knob
-    delayFilterFreqKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    delayFilterFreqKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    delayFilterFreqKnob.setRange(20.0, 20000.0, 1.0);
-    delayFilterFreqKnob.setValue(8000.0);
-    delayFilterFreqKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    delayTab->addAndMakeVisible(delayFilterFreqKnob);
-    
-    delayFilterFreqLabel.setText("FREQ", juce::dontSendNotification);
-    delayFilterFreqLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    delayFilterFreqLabel.setJustificationType(juce::Justification::centred);
-    delayFilterFreqLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    delayTab->addAndMakeVisible(delayFilterFreqLabel);
-    
-    // Filter Q knob
-    delayFilterQKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    delayFilterQKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    delayFilterQKnob.setRange(0.1, 10.0, 0.1);
-    delayFilterQKnob.setValue(1.0);
-    delayFilterQKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    delayTab->addAndMakeVisible(delayFilterQKnob);
-    
-    delayFilterQLabel.setText("Q", juce::dontSendNotification);
-    delayFilterQLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    delayFilterQLabel.setJustificationType(juce::Justification::centred);
-    delayFilterQLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    delayTab->addAndMakeVisible(delayFilterQLabel);
-    
-    // Normal button
-    delayNormalButton.setButtonText("NORMAL");
-    delayNormalButton.setClickingTogglesState(true);
-    delayNormalButton.setToggleState(true, juce::dontSendNotification);
-    delayNormalButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    delayTab->addAndMakeVisible(delayNormalButton);
-    
-    // Ping-pong button
-    delayPingPongButton.setButtonText("PING-PONG");
-    delayPingPongButton.setClickingTogglesState(true);
-    delayPingPongButton.setToggleState(false, juce::dontSendNotification);
-    delayPingPongButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    delayTab->addAndMakeVisible(delayPingPongButton);
-    
-    // Mix knob
-    delayMixKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    delayMixKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    delayMixKnob.setRange(0.0, 1.0, 0.01);
-    delayMixKnob.setValue(0.25);
-    delayMixKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    delayTab->addAndMakeVisible(delayMixKnob);
-    
-    delayMixLabel.setText("MIX", juce::dontSendNotification);
-    delayMixLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    delayMixLabel.setJustificationType(juce::Justification::centred);
-    delayMixLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    delayTab->addAndMakeVisible(delayMixLabel);
-    
-    // Power button
-    delayPowerButton.setButtonText("DELAY ON");
-    delayPowerButton.setClickingTogglesState(true);
-    delayPowerButton.setToggleState(false, juce::dontSendNotification);
-    delayPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    delayTab->addAndMakeVisible(delayPowerButton);
-    
-    // DISTORTION EFFECT CONTROLS
-    // Type label
-    distortionTypeLabel.setText("TYPE", juce::dontSendNotification);
-    distortionTypeLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    distortionTypeLabel.setJustificationType(juce::Justification::centred);
-    distortionTypeLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    distortionTab->addAndMakeVisible(distortionTypeLabel);
-    
-    // Type value label (interactive)
-    distortionTypeValueLabel.setText("TUBE", juce::dontSendNotification);
-    distortionTypeValueLabel.setJustificationType(juce::Justification::centred);
-    distortionTypeValueLabel.setLookAndFeel(&greenLEDNumberLookAndFeel);
-    distortionTypeValueLabel.setInterceptsMouseClicks(true, true); // Enable mouse interaction for self and children
-    distortionTypeValueLabel.setEditable(false, false, false); // Make it respond to mouse but not editable
-    distortionTypeValueLabel.addMouseListener(this, true); // Add mouse listener with childEvents = true
-    distortionTab->addAndMakeVisible(distortionTypeValueLabel);
-    
-    // Drive knob
-    distortionDriveKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    distortionDriveKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    distortionDriveKnob.setRange(0.0, 100.0, 0.1);
-    distortionDriveKnob.setValue(50.0);
-    distortionDriveKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    distortionDriveKnob.addListener(this);
-    distortionTab->addAndMakeVisible(distortionDriveKnob);
-    
-    distortionDriveLabel.setText("DRIVE", juce::dontSendNotification);
-    distortionDriveLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    distortionDriveLabel.setJustificationType(juce::Justification::centred);
-    distortionDriveLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    distortionTab->addAndMakeVisible(distortionDriveLabel);
-    
-    // Mix knob
-    distortionMixKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    distortionMixKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    distortionMixKnob.setRange(0.0, 1.0, 0.01);
-    distortionMixKnob.setValue(1.0);
-    distortionMixKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    distortionMixKnob.addListener(this);
-    distortionTab->addAndMakeVisible(distortionMixKnob);
-    
-    distortionMixLabel.setText("MIX", juce::dontSendNotification);
-    distortionMixLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    distortionMixLabel.setJustificationType(juce::Justification::centred);
-    distortionMixLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    distortionTab->addAndMakeVisible(distortionMixLabel);
-    
-    // Power button
-    distortionPowerButton.setButtonText("DIST ON");
-    distortionPowerButton.setClickingTogglesState(true);
-    distortionPowerButton.setToggleState(false, juce::dontSendNotification);
-    distortionPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    distortionPowerButton.addListener(this);
-    distortionTab->addAndMakeVisible(distortionPowerButton);
-    
-    // Filter section label
-    distortionFilterSectionLabel.setText("FILTER", juce::dontSendNotification);
-    distortionFilterSectionLabel.setFont(juce::Font("Times New Roman", 10.0f, juce::Font::bold));
-    distortionFilterSectionLabel.setJustificationType(juce::Justification::centred);
-    distortionFilterSectionLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    distortionTab->addAndMakeVisible(distortionFilterSectionLabel);
-    
-    // DISTORTION FILTER CONTROLS
-    // Filter mode buttons (Off/Pre/Post)
-    distortionFilterOffButton.setButtonText("OFF");
-    distortionFilterOffButton.setClickingTogglesState(true);
-    distortionFilterOffButton.setToggleState(true, juce::dontSendNotification);
-    distortionFilterOffButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    distortionFilterOffButton.addListener(this);
-    distortionTab->addAndMakeVisible(distortionFilterOffButton);
-    
-    distortionFilterPreButton.setButtonText("PRE");
-    distortionFilterPreButton.setClickingTogglesState(true);
-    distortionFilterPreButton.setToggleState(false, juce::dontSendNotification);
-    distortionFilterPreButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    distortionFilterPreButton.addListener(this);
-    distortionTab->addAndMakeVisible(distortionFilterPreButton);
-    
-    distortionFilterPostButton.setButtonText("POST");
-    distortionFilterPostButton.setClickingTogglesState(true);
-    distortionFilterPostButton.setToggleState(false, juce::dontSendNotification);
-    distortionFilterPostButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    distortionFilterPostButton.addListener(this);
-    distortionTab->addAndMakeVisible(distortionFilterPostButton);
-    
-    // Filter type buttons (LP/BP/HP)
-    distortionFilterLPButton.setButtonText("LP");
-    distortionFilterLPButton.setClickingTogglesState(true);
-    distortionFilterLPButton.setToggleState(true, juce::dontSendNotification);
-    distortionFilterLPButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    distortionFilterLPButton.addListener(this);
-    distortionTab->addAndMakeVisible(distortionFilterLPButton);
-    
-    distortionFilterBPButton.setButtonText("BP");
-    distortionFilterBPButton.setClickingTogglesState(true);
-    distortionFilterBPButton.setToggleState(false, juce::dontSendNotification);
-    distortionFilterBPButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    distortionFilterBPButton.addListener(this);
-    distortionTab->addAndMakeVisible(distortionFilterBPButton);
-    
-    distortionFilterHPButton.setButtonText("HP");
-    distortionFilterHPButton.setClickingTogglesState(true);
-    distortionFilterHPButton.setToggleState(false, juce::dontSendNotification);
-    distortionFilterHPButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    distortionFilterHPButton.addListener(this);
-    distortionTab->addAndMakeVisible(distortionFilterHPButton);
-    
-    // Filter frequency knob
-    distortionFilterFreqKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    distortionFilterFreqKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    distortionFilterFreqKnob.setRange(20.0, 20000.0, 1.0);
-    distortionFilterFreqKnob.setValue(800.0);
-    distortionFilterFreqKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    distortionFilterFreqKnob.addListener(this);
-    distortionTab->addAndMakeVisible(distortionFilterFreqKnob);
-    
-    distortionFilterFreqLabel.setText("FREQ", juce::dontSendNotification);
-    distortionFilterFreqLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    distortionFilterFreqLabel.setJustificationType(juce::Justification::centred);
-    distortionFilterFreqLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    distortionTab->addAndMakeVisible(distortionFilterFreqLabel);
-    
-    // Filter Q knob
-    distortionFilterQKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    distortionFilterQKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    distortionFilterQKnob.setRange(0.1, 10.0, 0.1);
-    distortionFilterQKnob.setValue(2.0);
-    distortionFilterQKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    distortionFilterQKnob.addListener(this);
-    distortionTab->addAndMakeVisible(distortionFilterQKnob);
-    
-    distortionFilterQLabel.setText("Q", juce::dontSendNotification);
-    distortionFilterQLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    distortionFilterQLabel.setJustificationType(juce::Justification::centred);
-    distortionFilterQLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    distortionTab->addAndMakeVisible(distortionFilterQLabel);
-    
-    // Add delay listeners
-    delayFeedbackKnob.addListener(this);
-    delayBpmButton.addListener(this);
-    delayLinkButton.addListener(this);
-    delayLeftTimeSlider.addListener(this);
-    delayRightTimeSlider.addListener(this);
-    delayLeftTripletButton.addListener(this);
-    delayLeftDotButton.addListener(this);
-    delayRightTripletButton.addListener(this);
-    delayRightDotButton.addListener(this);
-    delayFilterFreqKnob.addListener(this);
-    delayFilterQKnob.addListener(this);
-    delayNormalButton.addListener(this);
-    delayPingPongButton.addListener(this);
-    delayMixKnob.addListener(this);
-    delayPowerButton.addListener(this);
     
     // EQ EFFECT CONTROLS
     // Band 1 (Left) filter type buttons
@@ -3365,38 +2683,7 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     {
         audioProcessor.setFilterResonance(static_cast<float>(filterResonanceKnob.getValue()));
     }
-    // Chorus effect sliders
-    else if (slider == &chorusRateKnob)
-    {
-        audioProcessor.setChorusRate(static_cast<float>(chorusRateKnob.getValue()));
-    }
-    else if (slider == &chorusDelay1Knob)
-    {
-        audioProcessor.setChorusDelay1(static_cast<float>(chorusDelay1Knob.getValue()));
-    }
-    else if (slider == &chorusDelay2Knob)
-    {
-        audioProcessor.setChorusDelay2(static_cast<float>(chorusDelay2Knob.getValue()));
-    }
-    else if (slider == &chorusDepthKnob)
-    {
-        audioProcessor.setChorusDepth(static_cast<float>(chorusDepthKnob.getValue()));
-    }
-    else if (slider == &chorusFeedKnob)
-    {
-        audioProcessor.setChorusFeedback(static_cast<float>(chorusFeedKnob.getValue()));
-    }
-    else if (slider == &chorusLpfKnob)
-    {
-        // Convert 0-100% to filter frequency: 0% = 20000Hz (no filter), 100% = 200Hz (heavy filter)
-        float percentage = static_cast<float>(chorusLpfKnob.getValue()) / 100.0f; // 0.0 to 1.0
-        float filterFreq = 20000.0f - (percentage * (20000.0f - 200.0f)); // 20000Hz to 200Hz
-        audioProcessor.setChorusLPF(filterFreq);
-    }
-    else if (slider == &chorusMixKnob)
-    {
-        audioProcessor.setChorusMix(static_cast<float>(chorusMixKnob.getValue()));
-    }
+    // Chorus effect sliders now handled by ChorusComponent
     // Flanger effect sliders
     else if (slider == &flangerRateKnob)
     {
@@ -3447,95 +2734,9 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     {
         audioProcessor.setPhaserFrequency(static_cast<float>(phaserFrequencyKnob.getValue()));
     }
-    // Compressor controls
-    else if (slider == &compressorThresholdKnob)
-    {
-        audioProcessor.setCompressorThreshold(static_cast<float>(compressorThresholdKnob.getValue()));
-    }
-    else if (slider == &compressorRatioKnob)
-    {
-        float ratio = static_cast<float>(compressorRatioKnob.getValue());
-        audioProcessor.setCompressorRatio(ratio);
-        compressorRatioValueLabel.setText(juce::String(ratio, 1) + ":1", juce::dontSendNotification);
-    }
-    else if (slider == &compressorAttackKnob)
-    {
-        float attack = static_cast<float>(compressorAttackKnob.getValue());
-        audioProcessor.setCompressorAttack(attack);
-        compressorAttackValueLabel.setText(juce::String(attack, 1) + "ms", juce::dontSendNotification);
-    }
-    else if (slider == &compressorReleaseKnob)
-    {
-        float release = static_cast<float>(compressorReleaseKnob.getValue());
-        audioProcessor.setCompressorRelease(release);
-        compressorReleaseValueLabel.setText(juce::String(release, 0) + "ms", juce::dontSendNotification);
-    }
-    else if (slider == &compressorGainKnob)
-    {
-        audioProcessor.setCompressorGain(static_cast<float>(compressorGainKnob.getValue()));
-    }
-    else if (slider == &compressorMixKnob)
-    {
-        audioProcessor.setCompressorMix(static_cast<float>(compressorMixKnob.getValue()));
-    }
-    else if (slider == &distortionDriveKnob)
-    {
-        audioProcessor.setDistortionDrive(static_cast<float>(distortionDriveKnob.getValue()));
-    }
-    else if (slider == &distortionMixKnob)
-    {
-        audioProcessor.setDistortionMix(static_cast<float>(distortionMixKnob.getValue()));
-    }
-    else if (slider == &distortionFilterFreqKnob)
-    {
-        audioProcessor.setDistortionFilterFreq(static_cast<float>(distortionFilterFreqKnob.getValue()));
-    }
-    else if (slider == &distortionFilterQKnob)
-    {
-        audioProcessor.setDistortionFilterQ(static_cast<float>(distortionFilterQKnob.getValue()));
-    }
+    // Compressor sliders now handled by CompressorComponent
+    // Distortion sliders now handled by DistortionComponent
     
-    // Delay effect sliders
-    else if (slider == &delayFeedbackKnob)
-    {
-        audioProcessor.setDelayFeedback(static_cast<float>(delayFeedbackKnob.getValue()));
-    }
-    else if (slider == &delayMixKnob)
-    {
-        audioProcessor.setDelayMix(static_cast<float>(delayMixKnob.getValue()));
-    }
-    else if (slider == &delayLeftTimeSlider)
-    {
-        float leftTime = static_cast<float>(delayLeftTimeSlider.getValue());
-        audioProcessor.setDelayLeftTime(leftTime);
-        
-        // If link is enabled, also update right time
-        if (delayLinkButton.getToggleState())
-        {
-            delayRightTimeSlider.setValue(leftTime, juce::dontSendNotification);
-            audioProcessor.setDelayRightTime(leftTime);
-        }
-    }
-    else if (slider == &delayRightTimeSlider)
-    {
-        float rightTime = static_cast<float>(delayRightTimeSlider.getValue());
-        audioProcessor.setDelayRightTime(rightTime);
-        
-        // If link is enabled, also update left time
-        if (delayLinkButton.getToggleState())
-        {
-            delayLeftTimeSlider.setValue(rightTime, juce::dontSendNotification);
-            audioProcessor.setDelayLeftTime(rightTime);
-        }
-    }
-    else if (slider == &delayFilterFreqKnob)
-    {
-        audioProcessor.setDelayFilterFreq(static_cast<float>(delayFilterFreqKnob.getValue()));
-    }
-    else if (slider == &delayFilterQKnob)
-    {
-        audioProcessor.setDelayFilterQ(static_cast<float>(delayFilterQKnob.getValue()));
-    }
     
     /*
     else if (slider == &pulseWidthSlider)
@@ -3544,35 +2745,7 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     }
     */
     
-    // REVERB CONTROLS
-    else if (slider == &reverbMixKnob)
-    {
-        audioProcessor.setReverbMix(static_cast<float>(reverbMixKnob.getValue()));
-    }
-    else if (slider == &reverbLowCutKnob)
-    {
-        audioProcessor.setReverbLowCut(static_cast<float>(reverbLowCutKnob.getValue()));
-    }
-    else if (slider == &reverbHighCutKnob)
-    {
-        audioProcessor.setReverbHighCut(static_cast<float>(reverbHighCutKnob.getValue()));
-    }
-    else if (slider == &reverbSizeKnob)
-    {
-        audioProcessor.setReverbSize(static_cast<float>(reverbSizeKnob.getValue()));
-    }
-    else if (slider == &reverbPreDelayKnob)
-    {
-        audioProcessor.setReverbPreDelay(static_cast<float>(reverbPreDelayKnob.getValue()));
-    }
-    else if (slider == &reverbDampKnob)
-    {
-        audioProcessor.setReverbDamping(static_cast<float>(reverbDampKnob.getValue()));
-    }
-    else if (slider == &reverbWidthKnob)
-    {
-        audioProcessor.setReverbWidth(static_cast<float>(reverbWidthKnob.getValue()));
-    }
+    // REVERB CONTROLS - now handled by ReverbComponent
     // EQ CONTROLS
     else if (slider == &eq1FreqKnob)
     {
@@ -4303,11 +3476,7 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
         audioProcessor.setEQ2Enabled(eq2OnOffButton.getToggleState());
         parametricEQ.syncWithDSPState();
     }
-    // Chorus effect power button
-    else if (button == &chorusPowerButton)
-    {
-        audioProcessor.setChorusEnabled(chorusPowerButton.getToggleState());
-    }
+    // Chorus effect power button - handled by ChorusComponent
     // Flanger effect buttons
     else if (button == &flangerPowerButton)
     {
@@ -4328,167 +3497,9 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
         // TODO: Implement BPM sync for phaser if needed
         // For now, just toggle the button state
     }
-    // Compressor effect buttons
-    else if (button == &compressorPowerButton)
-    {
-        audioProcessor.setCompressorEnabled(compressorPowerButton.getToggleState());
-    }
-    else if (button == &compressorMultibandButton)
-    {
-        audioProcessor.setCompressorMultiband(compressorMultibandButton.getToggleState());
-    }
-    else if (button == &distortionPowerButton)
-    {
-        audioProcessor.setDistortionEnabled(distortionPowerButton.getToggleState());
-    }
-    else if (button == &delayPowerButton)
-    {
-        audioProcessor.setDelayEnabled(delayPowerButton.getToggleState());
-    }
+    // Compressor buttons now handled by CompressorComponent
     
-    // Distortion filter position buttons (exclusive)
-    else if (button == &distortionFilterOffButton)
-    {
-        if (distortionFilterOffButton.getToggleState())
-        {
-            distortionFilterPreButton.setToggleState(false, juce::dontSendNotification);
-            distortionFilterPostButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setDistortionFilterPosition(0); // OFF
-        }
-        else
-        {
-            distortionFilterOffButton.setToggleState(true, juce::dontSendNotification); // Force stay on
-        }
-    }
-    else if (button == &distortionFilterPreButton)
-    {
-        if (distortionFilterPreButton.getToggleState())
-        {
-            distortionFilterOffButton.setToggleState(false, juce::dontSendNotification);
-            distortionFilterPostButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setDistortionFilterPosition(1); // PRE
-        }
-        else
-        {
-            distortionFilterPreButton.setToggleState(true, juce::dontSendNotification); // Force stay on
-        }
-    }
-    else if (button == &distortionFilterPostButton)
-    {
-        if (distortionFilterPostButton.getToggleState())
-        {
-            distortionFilterOffButton.setToggleState(false, juce::dontSendNotification);
-            distortionFilterPreButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setDistortionFilterPosition(2); // POST
-        }
-        else
-        {
-            distortionFilterPostButton.setToggleState(true, juce::dontSendNotification); // Force stay on
-        }
-    }
-    
-    // Distortion filter type buttons (exclusive)
-    else if (button == &distortionFilterLPButton)
-    {
-        if (distortionFilterLPButton.getToggleState())
-        {
-            distortionFilterBPButton.setToggleState(false, juce::dontSendNotification);
-            distortionFilterHPButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setDistortionFilterType(1); // LP
-        }
-        else
-        {
-            distortionFilterLPButton.setToggleState(true, juce::dontSendNotification); // Force stay on
-        }
-    }
-    else if (button == &distortionFilterBPButton)
-    {
-        if (distortionFilterBPButton.getToggleState())
-        {
-            distortionFilterLPButton.setToggleState(false, juce::dontSendNotification);
-            distortionFilterHPButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setDistortionFilterType(2); // BP
-        }
-        else
-        {
-            distortionFilterBPButton.setToggleState(true, juce::dontSendNotification); // Force stay on
-        }
-    }
-    else if (button == &distortionFilterHPButton)
-    {
-        if (distortionFilterHPButton.getToggleState())
-        {
-            distortionFilterLPButton.setToggleState(false, juce::dontSendNotification);
-            distortionFilterBPButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setDistortionFilterType(3); // HP
-        }
-        else
-        {
-            distortionFilterHPButton.setToggleState(true, juce::dontSendNotification); // Force stay on
-        }
-    }
-    
-    // Delay effect buttons
-    else if (button == &delayBpmButton)
-    {
-        audioProcessor.setDelaySync(delayBpmButton.getToggleState());
-    }
-    else if (button == &delayLinkButton)
-    {
-        // Link button controls if left/right times are linked
-        if (delayLinkButton.getToggleState())
-        {
-            // When linking, sync right time to left time
-            float leftTime = delayLeftTimeSlider.getValue();
-            delayRightTimeSlider.setValue(leftTime, juce::sendNotification);
-        }
-    }
-    else if (button == &delayNormalButton)
-    {
-        if (delayNormalButton.getToggleState())
-        {
-            delayPingPongButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setDelayPingPong(false);
-        }
-        else
-        {
-            delayNormalButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
-        }
-    }
-    else if (button == &delayPingPongButton)
-    {
-        if (delayPingPongButton.getToggleState())
-        {
-            delayNormalButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setDelayPingPong(true);
-        }
-        else
-        {
-            delayPingPongButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
-        }
-    }
-    else if (button == &delayLeftTripletButton)
-    {
-        audioProcessor.setDelayTriplet(delayLeftTripletButton.getToggleState());
-    }
-    else if (button == &delayLeftDotButton)
-    {
-        audioProcessor.setDelayDotted(delayLeftDotButton.getToggleState());
-    }
-    else if (button == &delayRightTripletButton)
-    {
-        audioProcessor.setDelayRTriplet(delayRightTripletButton.getToggleState());
-    }
-    else if (button == &delayRightDotButton)
-    {
-        audioProcessor.setDelayRDotted(delayRightDotButton.getToggleState());
-    }
-    
-    // REVERB CONTROLS
-    else if (button == &reverbPowerButton)
-    {
-        audioProcessor.setReverbEnabled(reverbPowerButton.getToggleState());
-    }
+    // REVERB CONTROLS - now handled by ReverbComponent
 }
 
 bool SynthesizerComponent::hitTest(int x, int y)
@@ -4602,54 +3613,7 @@ void SynthesizerComponent::mouseDown(const juce::MouseEvent& event)
         dragStartY = event.getScreenPosition().y;
         dragStartOsc2VoiceCount = osc2VoiceCountValue;
     }
-    else if (event.eventComponent == &distortionTypeValueLabel)
-    {
-        // Handle click to cycle through distortion types
-        distortionTypeValue++;
-        if (distortionTypeValue > 16)
-            distortionTypeValue = 1;
-            
-        // Update text based on type value
-        juce::StringArray typeNames = {
-            "TUBE", "SOFTCLIP", "HARDCLIP", "DIODE 1", "DIODE 2", 
-            "LINEAR FOLD", "SINE FOLD", "ZERO-SQUARE", "DOWNSAMPLE", 
-            "ASYMMETRIC", "RECTIFY", "SINE SHAPER", "STOMP BOX", 
-            "TAPE SAT", "OVERDRIVE", "SOFT SAT"
-        };
-        
-        distortionTypeValueLabel.setText(typeNames[distortionTypeValue - 1], juce::dontSendNotification);
-        
-        // Update the processor with the new distortion type
-        audioProcessor.setDistortionType(distortionTypeValue);
-        
-        // Still set up drag state in case drag events work
-        isDraggingDistortionType = true;
-        dragStartY = event.getScreenPosition().y;
-        dragStartDistortionType = distortionTypeValue;
-        juce::Logger::writeToLog("Distortion type mouseDown triggered - new type: " + typeNames[distortionTypeValue - 1]); // Debug output
-    }
-    else if (event.eventComponent == &reverbTypeValueLabel)
-    {
-        // Handle click to cycle through reverb types
-        reverbTypeValue++;
-        if (reverbTypeValue > 5)
-            reverbTypeValue = 1;
-            
-        // Update text based on type value
-        juce::StringArray reverbTypeNames = {
-            "PLATE", "HALL", "VINTAGE", "ROOM", "AMBIENCE"
-        };
-        
-        reverbTypeValueLabel.setText(reverbTypeNames[reverbTypeValue - 1], juce::dontSendNotification);
-        audioProcessor.setReverbType(reverbTypeValue);
-        
-        // Set up drag state for drag functionality
-        isDraggingReverbType = true;
-        dragStartY = event.getScreenPosition().y;
-        dragStartReverbType = reverbTypeValue;
-        
-        juce::Logger::writeToLog("Reverb type mouseDown triggered - new type: " + reverbTypeNames[reverbTypeValue - 1]); // Debug output
-    }
+    // Reverb type cycling now handled by ReverbComponent
     else if (event.eventComponent == &phaserPolesValueLabel)
     {
         // Handle click to cycle through phaser poles
@@ -4792,48 +3756,7 @@ void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
             audioProcessor.setOsc2VoiceCount(osc2VoiceCountValue);
         }
     }
-    else if (isDraggingDistortionType)
-    {
-        int deltaY = dragStartY - event.getScreenPosition().y; // Inverted: up = positive
-        int newType = dragStartDistortionType + (deltaY / 10); // 10 pixels per type
-        
-        // Clamp to valid range (1 to 16 types)
-        newType = juce::jlimit(1, 16, newType);
-        
-        if (newType != distortionTypeValue)
-        {
-            distortionTypeValue = newType;
-            
-            // Update text based on type value
-            juce::StringArray typeNames = {
-                "TUBE", "SOFTCLIP", "HARDCLIP", "DIODE 1", "DIODE 2", 
-                "LINEAR FOLD", "SINE FOLD", "ZERO-SQUARE", "DOWNSAMPLE", 
-                "ASYMMETRIC", "RECTIFY", "SINE SHAPER", "STOMP BOX", 
-                "TAPE SAT", "OVERDRIVE", "SOFT SAT"
-            };
-            
-            distortionTypeValueLabel.setText(typeNames[distortionTypeValue - 1], juce::dontSendNotification);
-            audioProcessor.setDistortionType(distortionTypeValue); // Now supported!
-        }
-    }
-    else if (isDraggingReverbType)
-    {
-        int deltaY = dragStartY - event.getScreenPosition().y; // Inverted: up = positive
-        int newType = dragStartReverbType + (deltaY / 10); // 10 pixels per type
-        
-        // Clamp to valid range (1 to 5 types)
-        newType = juce::jlimit(1, 5, newType);
-        
-        if (newType != reverbTypeValue)
-        {
-            reverbTypeValue = newType;
-            
-            // Update text based on type value
-            juce::StringArray reverbTypeNames = {"PLATE", "HALL", "VINTAGE", "ROOM", "AMBIENCE"};
-            reverbTypeValueLabel.setText(reverbTypeNames[reverbTypeValue - 1], juce::dontSendNotification);
-            audioProcessor.setReverbType(reverbTypeValue);
-        }
-    }
+    // Reverb type dragging now handled by ReverbComponent
     else if (isDraggingPhaserPoles)
     {
         int deltaY = dragStartY - event.getScreenPosition().y; // Inverted: up = positive
@@ -4922,7 +3845,6 @@ void SynthesizerComponent::mouseUp(const juce::MouseEvent& event)
     isDraggingOsc2Semitone = false;
     isDraggingOsc2FineTune = false;
     isDraggingOsc2VoiceCount = false;
-    isDraggingDistortionType = false;
     isDraggingReverbType = false;
     isDraggingPhaserPoles = false;
     
@@ -5227,304 +4149,15 @@ void SynthesizerComponent::layoutEffectsModule(juce::Rectangle<int>& bounds)
     
     // Layout effects controls within the tab content area
     auto tabContentArea = effectsArea.reduced(8, 35); // Account for tab bar and borders
-    layoutChorusControls(tabContentArea);
-    layoutCompressorControls(tabContentArea);
-    layoutDelayControls(tabContentArea);
-    layoutDistortionControls(tabContentArea);
+    // ChorusComponent handles its own layout
+    // CompressorComponent handles its own layout
+    // DelayComponent handles its own layout
+    // DistortionComponent handles its own layout
 }
 
-void SynthesizerComponent::layoutChorusControls(juce::Rectangle<int>& bounds)
-{
-    // Layout with even larger knobs and more symmetrical spacing to match FX unit style
-    auto knobSize = 62; // Further increased from 55 for even more prominence
-    auto labelHeight = 22; // Increased for better proportion with larger knobs
-    auto knobSpacing = 25; // Increased spacing for better symmetry
-    auto rowSpacing = 18; // Increased row spacing
-    auto buttonWidth = 80; // Power button width
-    auto buttonHeight = 32; // Taller power button to match larger knobs
-    
-    // Calculate positions for perfectly centered layout
-    auto totalKnobWidth = (3 * knobSize) + (2 * knobSpacing);
-    auto startX = (bounds.getWidth() - totalKnobWidth) / 2;
-    auto startY = 35; // Moved down a bit more for better spacing
-    
-    // Top row: Power button and Mix knob closer together
-    auto topRowY = startY;
-    
-    // Calculate closer positioning for power button and mix knob (moved left 20 pixels)
-    auto topRowWidth = buttonWidth + 25 + knobSize; // Button + smaller gap + knob
-    auto topRowStartX = (bounds.getWidth() - topRowWidth) / 2 - 3; // Center the top row, moved left 3px (2 + 1)
-    
-    // Power button (moved 12 pixels to the right from new position)
-    auto powerButtonX = topRowStartX + 12;
-    chorusPowerButton.setBounds(powerButtonX, topRowY + 60, buttonWidth, buttonHeight);
-    
-    // Mix knob (positioned closer to power button)
-    auto mixX = topRowStartX + buttonWidth + 25; // 25px gap instead of 40px
-    auto mixKnobY = topRowY + (buttonHeight - knobSize) / 2; // Center with power button
-    chorusMixKnob.setBounds(mixX, mixKnobY + 60, knobSize, knobSize);
-    chorusMixLabel.setBounds(mixX, mixKnobY + 60 + knobSize + 3, knobSize, labelHeight);
-    
-    // First knob row: Rate, Delay 1, Delay 2 (moved right 7 pixels and down 60 pixels)
-    auto row1Y = topRowY + std::max(buttonHeight, knobSize) + 25 + 60; // Space after top row + 60 pixels
-    auto row2StartX = startX + 7; // Moved right 7 pixels
-    
-    // Rate knob and label
-    chorusRateKnob.setBounds(row2StartX, row1Y, knobSize, knobSize);
-    chorusRateLabel.setBounds(row2StartX, row1Y + knobSize + 3, knobSize, labelHeight);
-    
-    // Delay 1 knob and label
-    auto delay1_x = row2StartX + knobSize + knobSpacing;
-    chorusDelay1Knob.setBounds(delay1_x, row1Y, knobSize, knobSize);
-    chorusDelay1Label.setBounds(delay1_x, row1Y + knobSize + 3, knobSize, labelHeight);
-    
-    // Delay 2 knob and label
-    auto delay2_x = row2StartX + 2 * (knobSize + knobSpacing);
-    chorusDelay2Knob.setBounds(delay2_x, row1Y, knobSize, knobSize);
-    chorusDelay2Label.setBounds(delay2_x, row1Y + knobSize + 3, knobSize, labelHeight);
-    
-    // Second knob row: Depth, Feed, LPF (moved right 7 pixels and down 60 pixels)
-    auto row2Y = row1Y + knobSize + labelHeight + rowSpacing;
-    auto row3StartX = startX + 7; // Moved right 7 pixels
-    
-    // Depth knob and label
-    chorusDepthKnob.setBounds(row3StartX, row2Y, knobSize, knobSize);
-    chorusDepthLabel.setBounds(row3StartX, row2Y + knobSize + 3, knobSize, labelHeight);
-    
-    // Feed knob and label
-    auto feedX = row3StartX + knobSize + knobSpacing;
-    chorusFeedKnob.setBounds(feedX, row2Y, knobSize, knobSize);
-    chorusFeedLabel.setBounds(feedX, row2Y + knobSize + 3, knobSize, labelHeight);
-    
-    // LPF knob and label
-    auto lpfX = row3StartX + 2 * (knobSize + knobSpacing);
-    chorusLpfKnob.setBounds(lpfX, row2Y, knobSize, knobSize);
-    chorusLpfLabel.setBounds(lpfX, row2Y + knobSize + 3, knobSize, labelHeight);
-}
 
-void SynthesizerComponent::layoutCompressorControls(juce::Rectangle<int>& bounds)
-{
-    // Layout with same large knobs and symmetrical spacing as chorus
-    auto knobSize = 62; // Same size as chorus for consistency
-    auto labelHeight = 22; // Same as chorus
-    auto knobSpacing = 25; // Same spacing as chorus
-    auto rowSpacing = 18; // Same row spacing as chorus
-    auto buttonWidth = 100; // Wider button for "MULTIBAND" text
-    auto buttonHeight = 32; // Same height as chorus power button
-    
-    // Calculate positions for perfectly centered layout
-    auto totalKnobWidth = (3 * knobSize) + (2 * knobSpacing);
-    auto startX = (bounds.getWidth() - totalKnobWidth) / 2;
-    auto startY = 35; // Same positioning as chorus
-    
-    // Top row: Power button (left) and Mix knob (right)
-    auto topRowY = startY;
-    
-    // Power button (moved 28 pixels to the right)
-    auto powerButtonX = startX + 28;
-    compressorPowerButton.setBounds(powerButtonX, topRowY + 60, buttonWidth, buttonHeight);
-    
-    // Mix knob (positioned on right side, moved left 37 pixels with row)
-    auto mixX = startX + 2 * (knobSize + knobSpacing) - 37; // Right side position, moved left 37px
-    auto mixKnobY = topRowY + 60 + (buttonHeight - knobSize) / 2; // Center with power button
-    compressorMixKnob.setBounds(mixX, mixKnobY, knobSize, knobSize);
-    compressorMixLabel.setBounds(mixX, mixKnobY + knobSize + 3, knobSize, labelHeight);
-    
-    // First knob row: Threshold, Ratio, Attack (moved right 7 pixels and down 60 pixels)
-    auto row1Y = topRowY + std::max(buttonHeight, knobSize) + 25 + 60; // Space after top row + 60 pixels down
-    auto row2StartX = startX + 7; // Moved right 7 pixels
-    
-    // Threshold knob and label
-    compressorThresholdKnob.setBounds(row2StartX, row1Y, knobSize, knobSize);
-    compressorThresholdLabel.setBounds(row2StartX, row1Y + knobSize + 3, knobSize, labelHeight);
-    
-    // Ratio knob and label
-    auto ratio_x = row2StartX + knobSize + knobSpacing;
-    compressorRatioKnob.setBounds(ratio_x, row1Y, knobSize, knobSize);
-    compressorRatioLabel.setBounds(ratio_x, row1Y + knobSize + 3, knobSize, labelHeight);
-    compressorRatioValueLabel.setBounds(ratio_x, row1Y + knobSize + labelHeight + 6, knobSize, 12);
-    
-    // Attack knob and label
-    auto attack_x = row2StartX + 2 * (knobSize + knobSpacing);
-    compressorAttackKnob.setBounds(attack_x, row1Y, knobSize, knobSize);
-    compressorAttackLabel.setBounds(attack_x, row1Y + knobSize + 3, knobSize, labelHeight);
-    compressorAttackValueLabel.setBounds(attack_x, row1Y + knobSize + labelHeight + 6, knobSize, 12);
-    
-    // Second knob row: Release, Gain, and Multiband button (moved right 7 pixels and down 60 pixels)
-    auto row2Y = row1Y + knobSize + labelHeight + rowSpacing;
-    auto row3StartX = startX + 7; // Moved right 7 pixels
-    
-    // Release knob and label
-    compressorReleaseKnob.setBounds(row3StartX, row2Y, knobSize, knobSize);
-    compressorReleaseLabel.setBounds(row3StartX, row2Y + knobSize + 3, knobSize, labelHeight);
-    compressorReleaseValueLabel.setBounds(row3StartX, row2Y + knobSize + labelHeight + 6, knobSize, 12);
-    
-    // Gain knob and label (using updated ratio_x from row 2)
-    auto gainX = row3StartX + knobSize + knobSpacing;
-    compressorGainKnob.setBounds(gainX, row2Y, knobSize, knobSize);
-    compressorGainLabel.setBounds(gainX, row2Y + knobSize + 3, knobSize, labelHeight);
-    
-    // Multiband button (moved 20 pixels to the left)
-    auto multibandY = row2Y + (knobSize - buttonHeight) / 2; // Center with knobs
-    compressorMultibandButton.setBounds(attack_x - 20, multibandY, buttonWidth, buttonHeight);
-}
 
-void SynthesizerComponent::layoutDelayControls(juce::Rectangle<int>& bounds)
-{
-    // Layout with same large knobs and green styling as other effects
-    auto knobSize = 62; // Same size as other effects for consistency
-    auto labelHeight = 22; // Same as other effects
-    auto knobSpacing = 20; // Slightly tighter spacing due to more controls
-    auto rowSpacing = 15; // Tighter row spacing
-    auto buttonWidth = 70; // Standard button width
-    auto buttonHeight = 28; // Standard button height
-    auto smallButtonWidth = 35; // For triplet/dot buttons
-    
-    // Calculate positions for layout
-    auto startY = 25; // Same as other effects but slightly higher due to more rows
-    
-    // Row 1: Delay ON button and Mix knob (top row, moved right 3 pixels)
-    auto row1Y = startY;
-    auto powerButtonX = (bounds.getWidth() - buttonWidth - knobSpacing - knobSize) / 2 + 3;
-    delayPowerButton.setBounds(powerButtonX, row1Y, buttonWidth, buttonHeight);
-    
-    // Mix knob in same row as power button
-    auto mixRow1X = powerButtonX + buttonWidth + knobSpacing;
-    delayMixKnob.setBounds(mixRow1X, row1Y - (knobSize - buttonHeight) / 2, knobSize, knobSize);
-    delayMixLabel.setBounds(mixRow1X, row1Y - (knobSize - buttonHeight) / 2 + knobSize + 3, knobSize, labelHeight);
-    
-    // Row 2: BPM and LINK buttons (moved right 7 pixels)
-    auto row2Y = row1Y + std::max(buttonHeight, knobSize) + 20;
-    auto bpmX = bounds.getWidth() / 2 - buttonWidth - 10 + 7;
-    delayBpmButton.setBounds(bpmX, row2Y, buttonWidth, buttonHeight);
-    
-    auto linkX = bounds.getWidth() / 2 + 10 + 7;
-    delayLinkButton.setBounds(linkX, row2Y, buttonWidth, buttonHeight);
-    
-    // Row 3: Left Time, Feedback, Right Time knobs (moved right 6 pixels)
-    auto row3Y = row2Y + buttonHeight + 20;
-    auto totalKnobWidth = (3 * knobSize) + (2 * knobSpacing);
-    auto knobStartX = (bounds.getWidth() - totalKnobWidth) / 2 + 6;
-    
-    // Left time
-    delayLeftTimeSlider.setBounds(knobStartX, row3Y, knobSize, knobSize);
-    delayLeftTimeLabel.setBounds(knobStartX, row3Y + knobSize + 3, knobSize, labelHeight);
-    
-    // Feedback (center)
-    auto feedbackX = knobStartX + knobSize + knobSpacing;
-    delayFeedbackKnob.setBounds(feedbackX, row3Y, knobSize, knobSize);
-    delayFeedbackLabel.setBounds(feedbackX, row3Y + knobSize + 3, knobSize, labelHeight);
-    
-    // Right time
-    auto rightTimeX = knobStartX + 2 * (knobSize + knobSpacing);
-    delayRightTimeSlider.setBounds(rightTimeX, row3Y, knobSize, knobSize);
-    delayRightTimeLabel.setBounds(rightTimeX, row3Y + knobSize + 3, knobSize, labelHeight);
-    
-    // Row 4: Triplet and dot buttons under time knobs (moved right 3 pixels with row 3)
-    auto row4Y = row3Y + knobSize + labelHeight + 10;
-    
-    // Left triplet and dot buttons (under left time) - positioned relative to knobStartX which already moved 3px
-    auto leftTripletX = knobStartX + (knobSize - 2 * smallButtonWidth - 5) / 2;
-    delayLeftTripletButton.setBounds(leftTripletX, row4Y, smallButtonWidth, buttonHeight);
-    delayLeftDotButton.setBounds(leftTripletX + smallButtonWidth + 5, row4Y, smallButtonWidth, buttonHeight);
-    
-    // Right triplet and dot buttons (under right time) - positioned relative to rightTimeX which moved with knobStartX
-    auto rightTripletX = rightTimeX + (knobSize - 2 * smallButtonWidth - 5) / 2;
-    delayRightTripletButton.setBounds(rightTripletX, row4Y, smallButtonWidth, buttonHeight);
-    delayRightDotButton.setBounds(rightTripletX + smallButtonWidth + 5, row4Y, smallButtonWidth, buttonHeight);
-    
-    // Row 5: Filter Freq and Filter Q knobs (separate row, moved right 7 pixels)
-    auto row5Y = row4Y + buttonHeight + 15;
-    auto filterKnobWidth = (2 * knobSize) + knobSpacing;
-    auto filterKnobStartX = (bounds.getWidth() - filterKnobWidth) / 2 + 7;
-    
-    delayFilterFreqKnob.setBounds(filterKnobStartX, row5Y, knobSize, knobSize);
-    delayFilterFreqLabel.setBounds(filterKnobStartX, row5Y + knobSize + 3, knobSize, labelHeight);
-    
-    auto filterQX = filterKnobStartX + knobSize + knobSpacing;
-    delayFilterQKnob.setBounds(filterQX, row5Y, knobSize, knobSize);
-    delayFilterQLabel.setBounds(filterQX, row5Y + knobSize + 3, knobSize, labelHeight);
-    
-    // Row 6: Normal and Ping-Pong buttons (separate row, moved right 6 pixels)
-    auto row6Y = row5Y + knobSize + labelHeight + 15;
-    auto buttonStartX = (bounds.getWidth() - buttonWidth) / 2 + 6;
-    delayNormalButton.setBounds(buttonStartX, row6Y, buttonWidth, buttonHeight);
-    delayPingPongButton.setBounds(buttonStartX, row6Y + buttonHeight + 5, buttonWidth, buttonHeight);
-}
 
-void SynthesizerComponent::layoutDistortionControls(juce::Rectangle<int>& bounds)
-{
-    // Layout with same large knobs and green styling as other effects
-    auto knobSize = 62; // Same size as other effects for consistency
-    auto labelHeight = 22; // Same as other effects
-    auto knobSpacing = 25; // Tighter spacing due to more controls
-    auto buttonWidth = 65; // Smaller buttons to fit more
-    auto buttonHeight = 28; // Standard button height
-    auto typeBoxWidth = 120; // Width for distortion type selector
-    auto typeBoxHeight = 35; // Height for distortion type selector
-    auto smallButtonWidth = 45; // For LP/BP/HP buttons
-    
-    auto startY = 25; // Higher positioning for more rows
-    
-    // Row 1: Power button and Mix knob (moved down 65 pixels)
-    auto row1Y = startY + 65;
-    auto powerButtonX = (bounds.getWidth() - buttonWidth - knobSpacing - knobSize) / 2 + 5;
-    distortionPowerButton.setBounds(powerButtonX, row1Y - 4, buttonWidth, buttonHeight);
-    
-    // Mix knob in same row as power button
-    auto mixRow1X = powerButtonX + buttonWidth + knobSpacing;
-    distortionMixKnob.setBounds(mixRow1X, row1Y - (knobSize - buttonHeight) / 2 - 4, knobSize, knobSize);
-    distortionMixLabel.setBounds(mixRow1X, row1Y - (knobSize - buttonHeight) / 2 + knobSize - 12 - 4, knobSize, labelHeight);
-    
-    // Row 2: Type selector, Drive knob (moved up 45 pixels from previous position)
-    auto row2Y = row1Y + buttonHeight + 20; // Moved up 45 pixels total
-    auto totalMainWidth = typeBoxWidth + knobSpacing + knobSize; // Only type + drive now
-    auto mainStartX = (bounds.getWidth() - totalMainWidth) / 2 - 6; // Moved left 6 pixels from center (10 - 4)
-    
-    // Type selector area
-    auto typeY = row2Y + (knobSize - typeBoxHeight) / 2;
-    distortionTypeValueLabel.setBounds(mainStartX, typeY, typeBoxWidth, typeBoxHeight);
-    distortionTypeLabel.setBounds(mainStartX, typeY + typeBoxHeight + 3, typeBoxWidth, labelHeight);
-    
-    // Drive knob and label
-    auto drive_x = mainStartX + typeBoxWidth + knobSpacing;
-    distortionDriveKnob.setBounds(drive_x, row2Y, knobSize, knobSize);
-    distortionDriveLabel.setBounds(drive_x, row2Y + knobSize - 12, knobSize, labelHeight);
-    
-    // Mix knob moved to row 1 - no longer here
-    
-    // Filter section label (moved down 30 pixels from current position)
-    auto filterLabelY = row2Y + knobSize + labelHeight;
-    distortionFilterSectionLabel.setBounds((bounds.getWidth() - 60) / 2 + 6, filterLabelY, 60, 15);
-    
-    // Row 3: Filter mode buttons (Off/Pre/Post) - moved down 40 pixels to avoid clashing
-    auto row3Y = filterLabelY + 25;
-    
-    // Filter mode buttons (Off/Pre/Post) - centered (moved left 20 pixels)
-    auto filterModeWidth = 3 * smallButtonWidth + 2 * 5; // Total width of 3 buttons + spacing
-    auto filterModeStartX = (bounds.getWidth() - filterModeWidth) / 2 + 6;
-    distortionFilterOffButton.setBounds(filterModeStartX, row3Y, smallButtonWidth, buttonHeight);
-    distortionFilterPreButton.setBounds(filterModeStartX + smallButtonWidth + 5, row3Y, smallButtonWidth, buttonHeight);
-    distortionFilterPostButton.setBounds(filterModeStartX + 2 * (smallButtonWidth + 5), row3Y, smallButtonWidth, buttonHeight);
-    
-    // Row 4: Filter type buttons (LP/BP/HP) - separate row
-    auto row4Y = row3Y + buttonHeight + 15;
-    auto filterTypeWidth = 3 * smallButtonWidth + 2 * 5; // Total width of 3 buttons + spacing
-    auto filterTypeStartX = (bounds.getWidth() - filterTypeWidth) / 2 + 6;
-    distortionFilterLPButton.setBounds(filterTypeStartX, row4Y, smallButtonWidth, buttonHeight);
-    distortionFilterBPButton.setBounds(filterTypeStartX + smallButtonWidth + 5, row4Y, smallButtonWidth, buttonHeight);
-    distortionFilterHPButton.setBounds(filterTypeStartX + 2 * (smallButtonWidth + 5), row4Y, smallButtonWidth, buttonHeight);
-    
-    // Row 5: Filter knobs (Freq, Q) - separate row below buttons (moved up 20 pixels total)
-    auto row5Y = row4Y + buttonHeight;
-    auto filterKnobStartX = (bounds.getWidth() - (2 * knobSize) - knobSpacing) / 2 + 8; // Moved right 8 pixels (11 - 3)
-    
-    distortionFilterFreqKnob.setBounds(filterKnobStartX, row5Y, knobSize, knobSize);
-    distortionFilterFreqLabel.setBounds(filterKnobStartX, row5Y + knobSize - 12, knobSize, labelHeight);
-    
-    distortionFilterQKnob.setBounds(filterKnobStartX + knobSize + knobSpacing, row5Y, knobSize, knobSize);
-    distortionFilterQLabel.setBounds(filterKnobStartX + knobSize + knobSpacing, row5Y + knobSize - 12, knobSize, labelHeight);
-}
 
 void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
 {
@@ -6744,13 +5377,11 @@ juce::Slider* SynthesizerComponent::findSliderAt(juce::Point<int> position)
         &eq1NewFreqKnob, &eq1NewQKnob, &eq1NewGainKnob, &eq2NewFreqKnob, &eq2NewQKnob, &eq2NewGainKnob,
         
         // Effects controls
-        &chorusRateKnob, &chorusDelay1Knob, &chorusDelay2Knob, &chorusDepthKnob, &chorusFeedKnob, &chorusLpfKnob, &chorusMixKnob,
+        &chorusModule.chorusRateKnob, &chorusModule.chorusDelay1Knob, &chorusModule.chorusDelay2Knob, &chorusModule.chorusDepthKnob, &chorusModule.chorusFeedKnob, &chorusModule.chorusLpfKnob, &chorusModule.chorusMixKnob,
         &flangerMixKnob, &flangerRateKnob, &flangerDepthKnob, &flangerFeedbackKnob, &flangerPhaseKnob,
         &phaserMixKnob, &phaserRateKnob, &phaserDepth1Knob, &phaserDepth2Knob, &phaserFeedbackKnob, &phaserPhaseKnob, &phaserFrequencyKnob,
-        &compressorThresholdKnob, &compressorRatioKnob, &compressorAttackKnob, &compressorReleaseKnob, &compressorGainKnob, &compressorMixKnob,
-        &distortionDriveKnob, &distortionMixKnob, &distortionFilterFreqKnob, &distortionFilterQKnob,
-        &delayMixKnob, &delayFeedbackKnob, &delayFilterFreqKnob, &delayFilterQKnob,
-        &reverbMixKnob, &reverbSizeKnob, &reverbPreDelayKnob, &reverbLowCutKnob, &reverbHighCutKnob, &reverbDampKnob, &reverbWidthKnob
+        &compressorModule.compressorThresholdKnob, &compressorModule.compressorRatioKnob, &compressorModule.compressorAttackKnob, &compressorModule.compressorReleaseKnob, &compressorModule.compressorGainKnob, &compressorModule.compressorMixKnob,
+        &reverbModule.reverbMixKnob, &reverbModule.reverbSizeKnob, &reverbModule.reverbPreDelayKnob, &reverbModule.reverbLowCutKnob, &reverbModule.reverbHighCutKnob, &reverbModule.reverbDampKnob, &reverbModule.reverbWidthKnob
     };
     
     // Use MacroSystem to find slider at position with coordinate conversion
@@ -6986,33 +5617,33 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
     {
         audioProcessor.setOsc2Phase(static_cast<float>(newValue));
     }
-    // Chorus FX
-    else if (slider == &chorusRateKnob)
+    // Chorus FX - handled by ChorusComponent
+    else if (slider == &chorusModule.chorusRateKnob)
     {
         audioProcessor.setChorusRate(static_cast<float>(newValue));
     }
-    else if (slider == &chorusDelay1Knob)
+    else if (slider == &chorusModule.chorusDelay1Knob)
     {
         audioProcessor.setChorusDelay1(static_cast<float>(newValue));
     }
-    else if (slider == &chorusDelay2Knob)
+    else if (slider == &chorusModule.chorusDelay2Knob)
     {
         audioProcessor.setChorusDelay2(static_cast<float>(newValue));
     }
-    else if (slider == &chorusDepthKnob)
+    else if (slider == &chorusModule.chorusDepthKnob)
     {
         audioProcessor.setChorusDepth(static_cast<float>(newValue));
     }
-    else if (slider == &chorusFeedKnob)
+    else if (slider == &chorusModule.chorusFeedKnob)
     {
         audioProcessor.setChorusFeedback(static_cast<float>(newValue));
     }
-    else if (slider == &chorusLpfKnob)
+    else if (slider == &chorusModule.chorusLpfKnob)
     {
         float filterFreq = juce::jmap(static_cast<float>(newValue), 0.0f, 1.0f, 20.0f, 20000.0f);
         audioProcessor.setChorusLPF(filterFreq);
     }
-    else if (slider == &chorusMixKnob)
+    else if (slider == &chorusModule.chorusMixKnob)
     {
         audioProcessor.setChorusMix(static_cast<float>(newValue));
     }
@@ -7066,97 +5697,36 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
     {
         audioProcessor.setPhaserFrequency(static_cast<float>(newValue));
     }
-    // Compressor FX
-    else if (slider == &compressorThresholdKnob)
+    // Compressor FX - handled by CompressorComponent
+    else if (slider == &compressorModule.compressorThresholdKnob)
     {
         audioProcessor.setCompressorThreshold(static_cast<float>(newValue));
     }
-    else if (slider == &compressorRatioKnob)
+    else if (slider == &compressorModule.compressorRatioKnob)
     {
         float ratio = juce::jmap(static_cast<float>(newValue), 0.0f, 1.0f, 1.0f, 20.0f);
         audioProcessor.setCompressorRatio(ratio);
     }
-    else if (slider == &compressorAttackKnob)
+    else if (slider == &compressorModule.compressorAttackKnob)
     {
         float attack = juce::jmap(static_cast<float>(newValue), 0.0f, 1.0f, 0.1f, 100.0f);
         audioProcessor.setCompressorAttack(attack);
     }
-    else if (slider == &compressorReleaseKnob)
+    else if (slider == &compressorModule.compressorReleaseKnob)
     {
         float release = juce::jmap(static_cast<float>(newValue), 0.0f, 1.0f, 1.0f, 1000.0f);
         audioProcessor.setCompressorRelease(release);
     }
-    else if (slider == &compressorGainKnob)
+    else if (slider == &compressorModule.compressorGainKnob)
     {
         audioProcessor.setCompressorGain(static_cast<float>(newValue));
     }
-    else if (slider == &compressorMixKnob)
+    else if (slider == &compressorModule.compressorMixKnob)
     {
         audioProcessor.setCompressorMix(static_cast<float>(newValue));
     }
-    // Distortion FX
-    else if (slider == &distortionDriveKnob)
-    {
-        audioProcessor.setDistortionDrive(static_cast<float>(newValue));
-    }
-    else if (slider == &distortionMixKnob)
-    {
-        audioProcessor.setDistortionMix(static_cast<float>(newValue));
-    }
-    else if (slider == &distortionFilterFreqKnob)
-    {
-        audioProcessor.setDistortionFilterFreq(static_cast<float>(newValue));
-    }
-    else if (slider == &distortionFilterQKnob)
-    {
-        audioProcessor.setDistortionFilterQ(static_cast<float>(newValue));
-    }
     // Delay FX
-    else if (slider == &delayFeedbackKnob)
-    {
-        audioProcessor.setDelayFeedback(static_cast<float>(newValue));
-    }
-    else if (slider == &delayMixKnob)
-    {
-        audioProcessor.setDelayMix(static_cast<float>(newValue));
-    }
-    else if (slider == &delayFilterFreqKnob)
-    {
-        audioProcessor.setDelayFilterFreq(static_cast<float>(newValue));
-    }
-    else if (slider == &delayFilterQKnob)
-    {
-        audioProcessor.setDelayFilterQ(static_cast<float>(newValue));
-    }
-    // Reverb FX
-    else if (slider == &reverbMixKnob)
-    {
-        audioProcessor.setReverbMix(static_cast<float>(newValue));
-    }
-    else if (slider == &reverbLowCutKnob)
-    {
-        audioProcessor.setReverbLowCut(static_cast<float>(newValue));
-    }
-    else if (slider == &reverbHighCutKnob)
-    {
-        audioProcessor.setReverbHighCut(static_cast<float>(newValue));
-    }
-    else if (slider == &reverbSizeKnob)
-    {
-        audioProcessor.setReverbSize(static_cast<float>(newValue));
-    }
-    else if (slider == &reverbPreDelayKnob)
-    {
-        audioProcessor.setReverbPreDelay(static_cast<float>(newValue));
-    }
-    else if (slider == &reverbDampKnob)
-    {
-        audioProcessor.setReverbDamping(static_cast<float>(newValue));
-    }
-    else if (slider == &reverbWidthKnob)
-    {
-        audioProcessor.setReverbWidth(static_cast<float>(newValue));
-    }
+    // Reverb FX - now handled by ReverbComponent
 }
 
 MacroMapping* SynthesizerComponent::findMacroMappingAtPosition(juce::Point<int> position)
@@ -7359,39 +5929,15 @@ void SynthesizerComponent::updateAllGuiControls()
     
     // Effects controls - update the knobs with loaded preset values
     
-    // Chorus controls
-    chorusRateKnob.setValue(audioProcessor.getChorusRate(), juce::dontSendNotification);
-    chorusDelay1Knob.setValue(audioProcessor.getChorusDelay1(), juce::dontSendNotification);
-    chorusDelay2Knob.setValue(audioProcessor.getChorusDelay2(), juce::dontSendNotification);
-    chorusDepthKnob.setValue(audioProcessor.getChorusDepth(), juce::dontSendNotification);
-    chorusFeedKnob.setValue(audioProcessor.getChorusFeedback(), juce::dontSendNotification);
-    chorusLpfKnob.setValue(audioProcessor.getChorusLPF(), juce::dontSendNotification);
-    chorusMixKnob.setValue(audioProcessor.getChorusMix(), juce::dontSendNotification);
-    chorusPowerButton.setToggleState(audioProcessor.getChorusEnabled(), juce::dontSendNotification);
+    // Chorus controls - handled by ChorusComponent
+    chorusModule.syncWithDSPState();
     
-    // Compressor controls
-    compressorThresholdKnob.setValue(audioProcessor.getCompressorThreshold(), juce::dontSendNotification);
-    compressorRatioKnob.setValue(audioProcessor.getCompressorRatio(), juce::dontSendNotification);
-    compressorAttackKnob.setValue(audioProcessor.getCompressorAttack(), juce::dontSendNotification);
-    compressorReleaseKnob.setValue(audioProcessor.getCompressorRelease(), juce::dontSendNotification);
-    compressorGainKnob.setValue(audioProcessor.getCompressorGain(), juce::dontSendNotification);
-    compressorMixKnob.setValue(audioProcessor.getCompressorMix(), juce::dontSendNotification);
-    compressorPowerButton.setToggleState(audioProcessor.getCompressorEnabled(), juce::dontSendNotification);
-    compressorMultibandButton.setToggleState(audioProcessor.getCompressorMultiband(), juce::dontSendNotification);
+    // Compressor controls - handled by CompressorComponent
+    compressorModule.syncWithDSPState();
     
-    // Delay controls
-    delayFeedbackKnob.setValue(audioProcessor.getDelayFeedback(), juce::dontSendNotification);
-    delayFilterFreqKnob.setValue(audioProcessor.getDelayFilterFreq(), juce::dontSendNotification);
-    delayFilterQKnob.setValue(audioProcessor.getDelayFilterQ(), juce::dontSendNotification);
-    delayMixKnob.setValue(audioProcessor.getDelayMix(), juce::dontSendNotification);
-    delayPowerButton.setToggleState(audioProcessor.getDelayEnabled(), juce::dontSendNotification);
+    // Delay controls - handled by DelayComponent
+    delayModule.syncWithDSPState();
     
-    // Distortion controls
-    distortionDriveKnob.setValue(audioProcessor.getDistortionDrive(), juce::dontSendNotification);
-    distortionMixKnob.setValue(audioProcessor.getDistortionMix(), juce::dontSendNotification);
-    distortionFilterFreqKnob.setValue(audioProcessor.getDistortionFilterFreq(), juce::dontSendNotification);
-    distortionFilterQKnob.setValue(audioProcessor.getDistortionFilterQ(), juce::dontSendNotification);
-    distortionPowerButton.setToggleState(audioProcessor.getDistortionEnabled(), juce::dontSendNotification);
     
     // EQ controls
     eq1FreqKnob.setValue(audioProcessor.getEQ1Frequency(), juce::dontSendNotification);
@@ -7420,15 +5966,8 @@ void SynthesizerComponent::updateAllGuiControls()
     phaserPhaseKnob.setValue(audioProcessor.getPhaserPhase(), juce::dontSendNotification);
     phaserPowerButton.setToggleState(audioProcessor.getPhaserEnabled(), juce::dontSendNotification);
     
-    // Reverb controls
-    reverbMixKnob.setValue(audioProcessor.getReverbMix(), juce::dontSendNotification);
-    reverbLowCutKnob.setValue(audioProcessor.getReverbLowCut(), juce::dontSendNotification);
-    reverbHighCutKnob.setValue(audioProcessor.getReverbHighCut(), juce::dontSendNotification);
-    reverbSizeKnob.setValue(audioProcessor.getReverbSize(), juce::dontSendNotification);
-    reverbPreDelayKnob.setValue(audioProcessor.getReverbPreDelay(), juce::dontSendNotification);
-    reverbDampKnob.setValue(audioProcessor.getReverbDamping(), juce::dontSendNotification);
-    reverbWidthKnob.setValue(audioProcessor.getReverbWidth(), juce::dontSendNotification);
-    reverbPowerButton.setToggleState(audioProcessor.getReverbEnabled(), juce::dontSendNotification);
+    // Reverb controls - now handled by ReverbComponent
+    reverbModule.syncWithDSPState();
     
     // Macro controls (commented out - not implemented in processor)
     // macro1Knob.setValue(audioProcessor.getMacro1(), juce::dontSendNotification);

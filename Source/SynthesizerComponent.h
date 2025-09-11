@@ -6,6 +6,11 @@
 #include "UI/MacroSystem.h"
 #include "UI/ADSREnvelopeComponent.h"
 #include "UI/ParametricEQComponent.h"
+#include "UI/DistortionComponent.h"
+#include "UI/DelayComponent.h"
+#include "UI/CompressorComponent.h"
+#include "UI/ChorusComponent.h"
+#include "UI/ReverbComponent.h"
 
 class SummonerXSerum2AudioProcessor;
 class SynthesizerComponent;
@@ -15,6 +20,11 @@ class SynthesizerComponent;
 class SynthesizerComponent : public juce::Component, private juce::Slider::Listener, private juce::Button::Listener
 {
     friend class ParametricEQComponent;
+    friend class DistortionComponent;
+    friend class DelayComponent;
+    friend class CompressorComponent;
+    friend class ChorusComponent;
+    friend class ReverbComponent;
 public:
     explicit SynthesizerComponent(SummonerXSerum2AudioProcessor& processor);
     ~SynthesizerComponent() override;
@@ -47,9 +57,6 @@ public:
     void layoutPhaseControls(juce::Rectangle<int>& bounds);
     void layoutLFOModule(juce::Rectangle<int>& bounds);
     void layoutEffectsModule(juce::Rectangle<int>& bounds);
-    void layoutChorusControls(juce::Rectangle<int>& bounds);
-    void layoutCompressorControls(juce::Rectangle<int>& bounds);
-    void layoutDelayControls(juce::Rectangle<int>& bounds);
     void layoutDistortionControls(juce::Rectangle<int>& bounds);
     void layoutEQControls(juce::Rectangle<int>& bounds);
     void layoutSecondOscillator(juce::Rectangle<int>& bounds);
@@ -1000,88 +1007,17 @@ private:
     juce::Point<int> dragStartPoint;
     bool draggingMinRange = false;
     
-    // Chorus effect controls
-    juce::Slider chorusRateKnob;
-    juce::Label chorusRateLabel;
-    juce::Slider chorusDelay1Knob;
-    juce::Label chorusDelay1Label;
-    juce::Slider chorusDelay2Knob;
-    juce::Label chorusDelay2Label;
-    juce::Slider chorusDepthKnob;
-    juce::Label chorusDepthLabel;
-    juce::Slider chorusFeedKnob;
-    juce::Label chorusFeedLabel;
-    juce::Slider chorusLpfKnob;
-    juce::Label chorusLpfLabel;
-    juce::Slider chorusMixKnob;
-    juce::Label chorusMixLabel;
-    juce::TextButton chorusPowerButton;
+    // Chorus effect controls - now handled by ChorusComponent
+    ChorusComponent chorusModule;
     
     // Compressor effect controls
-    juce::Slider compressorThresholdKnob;
-    juce::Label compressorThresholdLabel;
-    juce::Slider compressorRatioKnob;
-    juce::Label compressorRatioLabel;
-    juce::Slider compressorAttackKnob;
-    juce::Label compressorAttackLabel;
-    juce::Slider compressorReleaseKnob;
-    juce::Label compressorReleaseLabel;
-    juce::Slider compressorGainKnob;
-    juce::Label compressorGainLabel;
-    juce::TextButton compressorMultibandButton;
-    juce::Slider compressorMixKnob;
-    juce::Label compressorMixLabel;
-    juce::TextButton compressorPowerButton;
-    
-    // Compressor value displays
-    juce::Label compressorRatioValueLabel;
-    juce::Label compressorAttackValueLabel;
-    juce::Label compressorReleaseValueLabel;
+    CompressorComponent compressorModule;
     
     // Delay effect controls
-    juce::Slider delayFeedbackKnob;
-    juce::Label delayFeedbackLabel;
-    juce::TextButton delayBpmButton;
-    juce::TextButton delayLinkButton;
-    juce::Slider delayLeftTimeSlider;
-    juce::Label delayLeftTimeLabel;
-    juce::Slider delayRightTimeSlider;
-    juce::Label delayRightTimeLabel;
-    juce::TextButton delayLeftTripletButton;
-    juce::TextButton delayLeftDotButton;
-    juce::TextButton delayRightTripletButton;
-    juce::TextButton delayRightDotButton;
-    juce::Slider delayFilterFreqKnob;
-    juce::Label delayFilterFreqLabel;
-    juce::Slider delayFilterQKnob;
-    juce::Label delayFilterQLabel;
-    juce::TextButton delayNormalButton;
-    juce::TextButton delayPingPongButton;
-    juce::Slider delayMixKnob;
-    juce::Label delayMixLabel;
-    juce::TextButton delayPowerButton;
+    DelayComponent delayModule;
     
     // Distortion effect controls
-    juce::Label distortionTypeLabel;
-    juce::Label distortionTypeValueLabel;
-    juce::Slider distortionDriveKnob;
-    juce::Label distortionDriveLabel;
-    juce::Slider distortionMixKnob;
-    juce::Label distortionMixLabel;
-    juce::TextButton distortionPowerButton;
-    
-    // Distortion filter controls
-    juce::Label distortionFilterSectionLabel;
-    juce::TextButton distortionFilterOffButton;
-    juce::TextButton distortionFilterPreButton;
-    juce::TextButton distortionFilterPostButton;
-    juce::TextButton distortionFilterLPButton;
-    juce::TextButton distortionFilterBPButton;
-    juce::TextButton distortionFilterHPButton;
-    juce::Slider distortionFilterFreqKnob;
-    juce::Label distortionFilterFreqLabel;
-    juce::Slider distortionFilterQKnob;
-    juce::Label distortionFilterQLabel;
+    DistortionComponent distortionModule;
     
     // EQ effect controls
     ParametricEQComponent parametricEQ;
@@ -1164,24 +1100,8 @@ private:
     juce::Slider phaserPhaseKnob;
     juce::Label phaserPhaseLabel;
     
-    // Reverb effect controls
-    juce::TextButton reverbPowerButton;
-    juce::Slider reverbMixKnob;
-    juce::Label reverbMixLabel;
-    juce::Label reverbTypeLabel;
-    juce::Label reverbTypeValueLabel;
-    juce::Slider reverbLowCutKnob;
-    juce::Label reverbLowCutLabel;
-    juce::Slider reverbHighCutKnob;
-    juce::Label reverbHighCutLabel;
-    juce::Slider reverbSizeKnob;
-    juce::Label reverbSizeLabel;
-    juce::Slider reverbPreDelayKnob;
-    juce::Label reverbPreDelayLabel;
-    juce::Slider reverbDampKnob;
-    juce::Label reverbDampLabel;
-    juce::Slider reverbWidthKnob;
-    juce::Label reverbWidthLabel;
+    // Reverb effect controls - now handled by ReverbComponent
+    ReverbComponent reverbModule;
     
     // Octave control state
     int octaveValue = 0;
@@ -1227,14 +1147,12 @@ private:
     bool isDraggingOsc2VoiceCount = false;
     int dragStartOsc2VoiceCount = 0;
     
-    // Distortion type control state
-    int distortionTypeValue = 1; // 1-16 for different distortion types
-    bool isDraggingDistortionType = false;
+    // Distortion type control state - now handled by DistortionComponent
     int reverbTypeValue = 2; // 1-5 for different reverb types (1=Plate, 2=Hall, 3=Vintage, 4=Room, 5=Ambience)
     bool isDraggingReverbType = false;
     int phaserPolesValue = 4; // 1-16 for number of poles
     bool isDraggingPhaserPoles = false;
-    int dragStartDistortionType = 0;
+    // dragStartDistortionType moved to DistortionComponent
     int dragStartReverbType = 0;
     int dragStartPhaserPoles = 0;
     
