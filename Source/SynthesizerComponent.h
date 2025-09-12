@@ -11,6 +11,7 @@
 #include "UI/CompressorComponent.h"
 #include "UI/ChorusComponent.h"
 #include "UI/ReverbComponent.h"
+#include "UI/PhaserComponent.h"
 
 class SummonerXSerum2AudioProcessor;
 class SynthesizerComponent;
@@ -25,6 +26,7 @@ class SynthesizerComponent : public juce::Component, private juce::Slider::Liste
     friend class CompressorComponent;
     friend class ChorusComponent;
     friend class ReverbComponent;
+    friend class PhaserComponent;
 public:
     explicit SynthesizerComponent(SummonerXSerum2AudioProcessor& processor);
     ~SynthesizerComponent() override;
@@ -1080,25 +1082,8 @@ private:
     juce::Slider flangerPhaseKnob;
     juce::Label flangerPhaseLabel;
     
-    // Phaser effect controls
-    juce::TextButton phaserPowerButton;
-    juce::Slider phaserMixKnob;
-    juce::Label phaserMixLabel;
-    juce::Slider phaserRateKnob;
-    juce::Label phaserRateLabel;
-    juce::TextButton phaserBpmButton;
-    juce::Label phaserPolesValueLabel;
-    juce::Label phaserPolesLabel;
-    juce::Slider phaserDepth1Knob;
-    juce::Label phaserDepth1Label;
-    juce::Slider phaserDepth2Knob;
-    juce::Label phaserDepth2Label;
-    juce::Slider phaserFrequencyKnob;
-    juce::Label phaserFrequencyLabel;
-    juce::Slider phaserFeedbackKnob;
-    juce::Label phaserFeedbackLabel;
-    juce::Slider phaserPhaseKnob;
-    juce::Label phaserPhaseLabel;
+    // Phaser effect controls - now handled by PhaserComponent
+    PhaserComponent phaserModule;
     
     // Reverb effect controls - now handled by ReverbComponent
     ReverbComponent reverbModule;

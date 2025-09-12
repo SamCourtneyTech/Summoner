@@ -73,6 +73,10 @@
             file="Source/UI/ReverbComponent.cpp"/>
       <FILE id="Reverb2" name="ReverbComponent.h" compile="0" resource="0"
             file="Source/UI/ReverbComponent.h"/>
+      <FILE id="Phaser1" name="PhaserComponent.cpp" compile="1" resource="0"
+            file="Source/UI/PhaserComponent.cpp"/>
+      <FILE id="Phaser2" name="PhaserComponent.h" compile="0" resource="0"
+            file="Source/UI/PhaserComponent.h"/>
     </GROUP>
   </MAINGROUP>
   <MODULES>

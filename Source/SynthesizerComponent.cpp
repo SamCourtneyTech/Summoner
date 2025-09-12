@@ -1042,6 +1042,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     chorusModule.syncWithDSPState(); // Sync chorus module with initial DSP state
     delayModule.syncWithDSPState(); // Sync delay module with initial DSP state
     compressorModule.syncWithDSPState(); // Sync compressor module with initial DSP state
+    phaserModule.syncWithDSPState(); // Sync phaser module with initial DSP state
     reverbModule.syncWithDSPState(); // Sync reverb module with initial DSP state
     parametricEQ.setVisible(true);
     equalizerTab->addAndMakeVisible(parametricEQ);
@@ -1175,174 +1176,9 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     flangerFeedbackKnob.addListener(this);
     flangerPhaseKnob.addListener(this);
     
-    auto phaserTab = new juce::Component();
-    
-    // Initialize phaser controls
-    // Row 1: Power and Mix controls
-    phaserPowerButton.setButtonText("PHASER ON");
-    phaserPowerButton.setClickingTogglesState(true);
-    phaserPowerButton.setToggleState(false, juce::dontSendNotification);
-    phaserPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    phaserPowerButton.setVisible(true);
-    phaserPowerButton.setBounds(69, 65, 80, 25);
-    phaserTab->addAndMakeVisible(phaserPowerButton);
-    
-    phaserMixKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    phaserMixKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    phaserMixKnob.setRange(0.0, 100.0, 1.0);
-    phaserMixKnob.setValue(50.0);
-    phaserMixKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    phaserMixKnob.setVisible(true);
-    phaserMixKnob.setBounds(169, 60, 40, 40);
-    phaserTab->addAndMakeVisible(phaserMixKnob);
-    
-    phaserMixLabel.setText("MIX", juce::dontSendNotification);
-    phaserMixLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    phaserMixLabel.setJustificationType(juce::Justification::centred);
-    phaserMixLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    phaserMixLabel.setVisible(true);
-    phaserMixLabel.setBounds(169, 102, 40, 12);
-    phaserTab->addAndMakeVisible(phaserMixLabel);
-    
-    // Row 2: Rate, BPM Sync, and Poles
-    phaserRateKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    phaserRateKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    phaserRateKnob.setRange(0.1, 10.0, 0.1);
-    phaserRateKnob.setValue(1.0);
-    phaserRateKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    phaserRateKnob.setVisible(true);
-    phaserRateKnob.setBounds(83, 125, 50, 50);
-    phaserTab->addAndMakeVisible(phaserRateKnob);
-    
-    phaserRateLabel.setText("RATE", juce::dontSendNotification);
-    phaserRateLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    phaserRateLabel.setJustificationType(juce::Justification::centred);
-    phaserRateLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    phaserRateLabel.setVisible(true);
-    phaserRateLabel.setBounds(83, 180, 50, 15);
-    phaserTab->addAndMakeVisible(phaserRateLabel);
-    
-    phaserBpmButton.setButtonText("BPM SYNC");
-    phaserBpmButton.setClickingTogglesState(true);
-    phaserBpmButton.setToggleState(false, juce::dontSendNotification);
-    phaserBpmButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    phaserBpmButton.setVisible(true);
-    phaserBpmButton.setBounds(153, 140, 70, 25);
-    phaserTab->addAndMakeVisible(phaserBpmButton);
-    
-    phaserPolesValueLabel.setText("4 POLES", juce::dontSendNotification);
-    phaserPolesValueLabel.setLookAndFeel(&greenLEDNumberLookAndFeel);
-    phaserPolesValueLabel.setInterceptsMouseClicks(true, true);
-    phaserPolesValueLabel.addMouseListener(this, true);
-    phaserPolesValueLabel.setVisible(true);
-    phaserPolesValueLabel.setBounds(98, 200, 100, 25);
-    phaserTab->addAndMakeVisible(phaserPolesValueLabel);
-    
-    phaserPolesLabel.setText("POLES", juce::dontSendNotification);
-    phaserPolesLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    phaserPolesLabel.setJustificationType(juce::Justification::centred);
-    phaserPolesLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    phaserPolesLabel.setVisible(true);
-    phaserPolesLabel.setBounds(98, 230, 100, 15);
-    phaserTab->addAndMakeVisible(phaserPolesLabel);
-    
-    // Row 3: Depth 1 and Depth 2a 
-    phaserDepth1Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    phaserDepth1Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    phaserDepth1Knob.setRange(0.0, 100.0, 1.0);
-    phaserDepth1Knob.setValue(50.0);
-    phaserDepth1Knob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    phaserDepth1Knob.setVisible(true);
-    phaserDepth1Knob.setBounds(89, 260, 50, 50);
-    phaserTab->addAndMakeVisible(phaserDepth1Knob);
-    
-    phaserDepth1Label.setText("DEPTH 1", juce::dontSendNotification);
-    phaserDepth1Label.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    phaserDepth1Label.setJustificationType(juce::Justification::centred);
-    phaserDepth1Label.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    phaserDepth1Label.setVisible(true);
-    phaserDepth1Label.setBounds(89, 315, 50, 15);
-    phaserTab->addAndMakeVisible(phaserDepth1Label);
-    
-    phaserDepth2Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    phaserDepth2Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    phaserDepth2Knob.setRange(0.0, 100.0, 1.0);
-    phaserDepth2Knob.setValue(30.0);
-    phaserDepth2Knob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    phaserDepth2Knob.setVisible(true);
-    phaserDepth2Knob.setBounds(159, 260, 50, 50);
-    phaserTab->addAndMakeVisible(phaserDepth2Knob);
-    
-    phaserDepth2Label.setText("DEPTH 2", juce::dontSendNotification);
-    phaserDepth2Label.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    phaserDepth2Label.setJustificationType(juce::Justification::centred);
-    phaserDepth2Label.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    phaserDepth2Label.setVisible(true);
-    phaserDepth2Label.setBounds(159, 315, 50, 15);
-    phaserTab->addAndMakeVisible(phaserDepth2Label);
-    
-    // Row 4: Frequency, Feedback, and Phase
-    phaserFrequencyKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    phaserFrequencyKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    phaserFrequencyKnob.setRange(20.0, 2000.0, 1.0);
-    phaserFrequencyKnob.setValue(500.0);
-    phaserFrequencyKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    phaserFrequencyKnob.setVisible(true);
-    phaserFrequencyKnob.setBounds(54, 340, 50, 50);
-    phaserTab->addAndMakeVisible(phaserFrequencyKnob);
-    
-    phaserFrequencyLabel.setText("FREQ", juce::dontSendNotification);
-    phaserFrequencyLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    phaserFrequencyLabel.setJustificationType(juce::Justification::centred);
-    phaserFrequencyLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    phaserFrequencyLabel.setVisible(true);
-    phaserFrequencyLabel.setBounds(54, 395, 50, 15);
-    phaserTab->addAndMakeVisible(phaserFrequencyLabel);
-    
-    phaserFeedbackKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    phaserFeedbackKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    phaserFeedbackKnob.setRange(0.0, 100.0, 1.0);
-    phaserFeedbackKnob.setValue(25.0);
-    phaserFeedbackKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    phaserFeedbackKnob.setVisible(true);
-    phaserFeedbackKnob.setBounds(124, 340, 50, 50);
-    phaserTab->addAndMakeVisible(phaserFeedbackKnob);
-    
-    phaserFeedbackLabel.setText("FEEDBACK", juce::dontSendNotification);
-    phaserFeedbackLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    phaserFeedbackLabel.setJustificationType(juce::Justification::centred);
-    phaserFeedbackLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    phaserFeedbackLabel.setVisible(true);
-    phaserFeedbackLabel.setBounds(124, 395, 50, 15);
-    phaserTab->addAndMakeVisible(phaserFeedbackLabel);
-    
-    phaserPhaseKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    phaserPhaseKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    phaserPhaseKnob.setRange(0.0, 360.0, 1.0);
-    phaserPhaseKnob.setValue(0.0);
-    phaserPhaseKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    phaserPhaseKnob.setVisible(true);
-    phaserPhaseKnob.setBounds(194, 340, 50, 50);
-    phaserTab->addAndMakeVisible(phaserPhaseKnob);
-    
-    phaserPhaseLabel.setText("PHASE", juce::dontSendNotification);
-    phaserPhaseLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    phaserPhaseLabel.setJustificationType(juce::Justification::centred);
-    phaserPhaseLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    phaserPhaseLabel.setVisible(true);
-    phaserPhaseLabel.setBounds(194, 395, 50, 15);
-    phaserTab->addAndMakeVisible(phaserPhaseLabel);
-    
-    // Add listeners for phaser controls
-    phaserPowerButton.addListener(this);
-    phaserMixKnob.addListener(this);
-    phaserRateKnob.addListener(this);
-    phaserBpmButton.addListener(this);
-    phaserDepth1Knob.addListener(this);
-    phaserDepth2Knob.addListener(this);
-    phaserFrequencyKnob.addListener(this);
-    phaserFeedbackKnob.addListener(this);
-    phaserPhaseKnob.addListener(this);
+    // Initialize phaser module
+    phaserModule.setParentSynthesizer(this);
+    phaserModule.setLookAndFeels(&greenDigitalKnobLookAndFeel, &greenDigitalButtonLookAndFeel, &greenLEDNumberLookAndFeel);
     
     // REVERB EFFECT CONTROLS - now handled by ReverbComponent
     
@@ -1355,7 +1191,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     effectsModule.addTab("DIST", digitalBg, &distortionModule, true);
     effectsModule.addTab("EQ", digitalBg, equalizerTab, true);
     effectsModule.addTab("FLANGE", digitalBg, flangerTab, true);
-    effectsModule.addTab("PHASER", digitalBg, phaserTab, true);
+    effectsModule.addTab("PHASER", digitalBg, &phaserModule, true);
     effectsModule.addTab("REVERB", digitalBg, &reverbModule, true);
     
     // Apply digital screen look and feel
@@ -2705,35 +2541,7 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     {
         audioProcessor.setFlangerPhase(static_cast<float>(flangerPhaseKnob.getValue()));
     }
-    // Phaser effect sliders
-    else if (slider == &phaserRateKnob)
-    {
-        audioProcessor.setPhaserRate(static_cast<float>(phaserRateKnob.getValue()));
-    }
-    else if (slider == &phaserDepth1Knob)
-    {
-        audioProcessor.setPhaserDepth1(static_cast<float>(phaserDepth1Knob.getValue()));
-    }
-    else if (slider == &phaserDepth2Knob)
-    {
-        audioProcessor.setPhaserDepth2(static_cast<float>(phaserDepth2Knob.getValue()));
-    }
-    else if (slider == &phaserFeedbackKnob)
-    {
-        audioProcessor.setPhaserFeedback(static_cast<float>(phaserFeedbackKnob.getValue()));
-    }
-    else if (slider == &phaserMixKnob)
-    {
-        audioProcessor.setPhaserMix(static_cast<float>(phaserMixKnob.getValue()));
-    }
-    else if (slider == &phaserPhaseKnob)
-    {
-        audioProcessor.setPhaserPhase(static_cast<float>(phaserPhaseKnob.getValue()));
-    }
-    else if (slider == &phaserFrequencyKnob)
-    {
-        audioProcessor.setPhaserFrequency(static_cast<float>(phaserFrequencyKnob.getValue()));
-    }
+    // Phaser effect sliders - now handled by PhaserComponent
     // Compressor sliders now handled by CompressorComponent
     // Distortion sliders now handled by DistortionComponent
     
@@ -3487,16 +3295,7 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
         // TODO: Implement BPM sync for flanger if needed
         // For now, just toggle the button state
     }
-    // Phaser effect buttons
-    else if (button == &phaserPowerButton)
-    {
-        audioProcessor.setPhaserEnabled(phaserPowerButton.getToggleState());
-    }
-    else if (button == &phaserBpmButton)
-    {
-        // TODO: Implement BPM sync for phaser if needed
-        // For now, just toggle the button state
-    }
+    // Phaser effect buttons - now handled by PhaserComponent
     // Compressor buttons now handled by CompressorComponent
     
     // REVERB CONTROLS - now handled by ReverbComponent
@@ -3614,23 +3413,7 @@ void SynthesizerComponent::mouseDown(const juce::MouseEvent& event)
         dragStartOsc2VoiceCount = osc2VoiceCountValue;
     }
     // Reverb type cycling now handled by ReverbComponent
-    else if (event.eventComponent == &phaserPolesValueLabel)
-    {
-        // Handle click to cycle through phaser poles
-        phaserPolesValue++;
-        if (phaserPolesValue > 16)
-            phaserPolesValue = 1;
-            
-        // Update text based on poles value
-        phaserPolesValueLabel.setText(juce::String(phaserPolesValue) + " POLES", juce::dontSendNotification);
-        
-        // Set up drag state for drag functionality
-        isDraggingPhaserPoles = true;
-        dragStartY = event.getScreenPosition().y;
-        dragStartPhaserPoles = phaserPolesValue;
-        
-        juce::Logger::writeToLog("Phaser poles mouseDown triggered - new poles: " + juce::String(phaserPolesValue)); // Debug output
-    }
+    // Phaser poles value label clicking now handled by PhaserComponent
 }
 
 void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
@@ -3757,23 +3540,7 @@ void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
         }
     }
     // Reverb type dragging now handled by ReverbComponent
-    else if (isDraggingPhaserPoles)
-    {
-        int deltaY = dragStartY - event.getScreenPosition().y; // Inverted: up = positive
-        int newPoles = dragStartPhaserPoles + (deltaY / 8); // 8 pixels per pole
-        
-        // Clamp to valid range (1 to 16 poles)
-        newPoles = juce::jlimit(1, 16, newPoles);
-        
-        if (newPoles != phaserPolesValue)
-        {
-            phaserPolesValue = newPoles;
-            
-            // Update text based on poles value
-            phaserPolesValueLabel.setText(juce::String(phaserPolesValue) + " POLES", juce::dontSendNotification);
-            // audioProcessor.setPhaserPoles(phaserPolesValue); // Add this when audio processor supports it
-        }
-    }
+    // Phaser poles dragging now handled by PhaserComponent
     
     // Handle arc dragging
     if (isDraggingArc && draggedMapping != nullptr)
@@ -3846,7 +3613,7 @@ void SynthesizerComponent::mouseUp(const juce::MouseEvent& event)
     isDraggingOsc2FineTune = false;
     isDraggingOsc2VoiceCount = false;
     isDraggingReverbType = false;
-    isDraggingPhaserPoles = false;
+    // isDraggingPhaserPoles handled by PhaserComponent
     
     // Cleanup arc dragging
     if (isDraggingArc)
@@ -5379,7 +5146,7 @@ juce::Slider* SynthesizerComponent::findSliderAt(juce::Point<int> position)
         // Effects controls
         &chorusModule.chorusRateKnob, &chorusModule.chorusDelay1Knob, &chorusModule.chorusDelay2Knob, &chorusModule.chorusDepthKnob, &chorusModule.chorusFeedKnob, &chorusModule.chorusLpfKnob, &chorusModule.chorusMixKnob,
         &flangerMixKnob, &flangerRateKnob, &flangerDepthKnob, &flangerFeedbackKnob, &flangerPhaseKnob,
-        &phaserMixKnob, &phaserRateKnob, &phaserDepth1Knob, &phaserDepth2Knob, &phaserFeedbackKnob, &phaserPhaseKnob, &phaserFrequencyKnob,
+        &phaserModule.phaserMixKnob, &phaserModule.phaserRateKnob, &phaserModule.phaserDepth1Knob, &phaserModule.phaserDepth2Knob, &phaserModule.phaserFeedbackKnob, &phaserModule.phaserPhaseKnob, &phaserModule.phaserFrequencyKnob,
         &compressorModule.compressorThresholdKnob, &compressorModule.compressorRatioKnob, &compressorModule.compressorAttackKnob, &compressorModule.compressorReleaseKnob, &compressorModule.compressorGainKnob, &compressorModule.compressorMixKnob,
         &reverbModule.reverbMixKnob, &reverbModule.reverbSizeKnob, &reverbModule.reverbPreDelayKnob, &reverbModule.reverbLowCutKnob, &reverbModule.reverbHighCutKnob, &reverbModule.reverbDampKnob, &reverbModule.reverbWidthKnob
     };
@@ -5668,35 +5435,7 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
     {
         audioProcessor.setFlangerPhase(static_cast<float>(newValue));
     }
-    // Phaser FX
-    else if (slider == &phaserRateKnob)
-    {
-        audioProcessor.setPhaserRate(static_cast<float>(newValue));
-    }
-    else if (slider == &phaserDepth1Knob)
-    {
-        audioProcessor.setPhaserDepth1(static_cast<float>(newValue));
-    }
-    else if (slider == &phaserDepth2Knob)
-    {
-        audioProcessor.setPhaserDepth2(static_cast<float>(newValue));
-    }
-    else if (slider == &phaserFeedbackKnob)
-    {
-        audioProcessor.setPhaserFeedback(static_cast<float>(newValue));
-    }
-    else if (slider == &phaserMixKnob)
-    {
-        audioProcessor.setPhaserMix(static_cast<float>(newValue));
-    }
-    else if (slider == &phaserPhaseKnob)
-    {
-        audioProcessor.setPhaserPhase(static_cast<float>(newValue));
-    }
-    else if (slider == &phaserFrequencyKnob)
-    {
-        audioProcessor.setPhaserFrequency(static_cast<float>(newValue));
-    }
+    // Phaser FX - now handled by PhaserComponent
     // Compressor FX - handled by CompressorComponent
     else if (slider == &compressorModule.compressorThresholdKnob)
     {
@@ -5956,15 +5695,8 @@ void SynthesizerComponent::updateAllGuiControls()
     flangerPhaseKnob.setValue(audioProcessor.getFlangerPhase(), juce::dontSendNotification);
     flangerPowerButton.setToggleState(audioProcessor.getFlangerEnabled(), juce::dontSendNotification);
     
-    // Phaser controls
-    phaserMixKnob.setValue(audioProcessor.getPhaserMix(), juce::dontSendNotification);
-    phaserRateKnob.setValue(audioProcessor.getPhaserRate(), juce::dontSendNotification);
-    phaserDepth1Knob.setValue(audioProcessor.getPhaserDepth1(), juce::dontSendNotification);
-    phaserDepth2Knob.setValue(audioProcessor.getPhaserDepth2(), juce::dontSendNotification);
-    phaserFrequencyKnob.setValue(audioProcessor.getPhaserFrequency(), juce::dontSendNotification);
-    phaserFeedbackKnob.setValue(audioProcessor.getPhaserFeedback(), juce::dontSendNotification);
-    phaserPhaseKnob.setValue(audioProcessor.getPhaserPhase(), juce::dontSendNotification);
-    phaserPowerButton.setToggleState(audioProcessor.getPhaserEnabled(), juce::dontSendNotification);
+    // Phaser controls - now handled by PhaserComponent
+    phaserModule.syncWithDSPState();
     
     // Reverb controls - now handled by ReverbComponent
     reverbModule.syncWithDSPState();
