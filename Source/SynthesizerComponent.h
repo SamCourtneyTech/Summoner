@@ -12,6 +12,7 @@
 #include "UI/ChorusComponent.h"
 #include "UI/ReverbComponent.h"
 #include "UI/PhaserComponent.h"
+#include "UI/FlangerComponent.h"
 
 class SummonerXSerum2AudioProcessor;
 class SynthesizerComponent;
@@ -27,6 +28,7 @@ class SynthesizerComponent : public juce::Component, private juce::Slider::Liste
     friend class ChorusComponent;
     friend class ReverbComponent;
     friend class PhaserComponent;
+    friend class FlangerComponent;
 public:
     explicit SynthesizerComponent(SummonerXSerum2AudioProcessor& processor);
     ~SynthesizerComponent() override;
@@ -1068,19 +1070,8 @@ private:
     juce::Slider eq2NewGainKnob;     // New gain knob for band 2
     juce::Label eq2NewGainLabel;
     
-    // Flanger effect controls
-    juce::TextButton flangerPowerButton;
-    juce::Slider flangerMixKnob;
-    juce::Label flangerMixLabel;
-    juce::Slider flangerRateKnob;
-    juce::Label flangerRateLabel;
-    juce::TextButton flangerBpmButton;
-    juce::Slider flangerDepthKnob;
-    juce::Label flangerDepthLabel;
-    juce::Slider flangerFeedbackKnob;
-    juce::Label flangerFeedbackLabel;
-    juce::Slider flangerPhaseKnob;
-    juce::Label flangerPhaseLabel;
+    // Flanger effect controls - now handled by FlangerComponent
+    FlangerComponent flangerModule;
     
     // Phaser effect controls - now handled by PhaserComponent
     PhaserComponent phaserModule;

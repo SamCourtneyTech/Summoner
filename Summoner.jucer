@@ -77,6 +77,10 @@
             file="Source/UI/PhaserComponent.cpp"/>
       <FILE id="Phaser2" name="PhaserComponent.h" compile="0" resource="0"
             file="Source/UI/PhaserComponent.h"/>
+      <FILE id="Flanger1" name="FlangerComponent.cpp" compile="1" resource="0"
+            file="Source/UI/FlangerComponent.cpp"/>
+      <FILE id="Flanger2" name="FlangerComponent.h" compile="0" resource="0"
+            file="Source/UI/FlangerComponent.h"/>
     </GROUP>
   </MAINGROUP>
   <MODULES>

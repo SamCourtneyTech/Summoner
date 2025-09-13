@@ -1042,6 +1042,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     chorusModule.syncWithDSPState(); // Sync chorus module with initial DSP state
     delayModule.syncWithDSPState(); // Sync delay module with initial DSP state
     compressorModule.syncWithDSPState(); // Sync compressor module with initial DSP state
+    flangerModule.syncWithDSPState(); // Sync flanger module with initial DSP state
     phaserModule.syncWithDSPState(); // Sync phaser module with initial DSP state
     reverbModule.syncWithDSPState(); // Sync reverb module with initial DSP state
     parametricEQ.setVisible(true);
@@ -1060,121 +1061,9 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     // Set initial bounds with space for button above (will be properly laid out in resized())
     parametricEQ.setBounds(0, 95, 300, 200);
     
-    auto flangerTab = new juce::Component();
-    
-    // Initialize flanger controls
-    // Row 1: Power and Mix controls
-    flangerPowerButton.setButtonText("FLANGER ON");
-    flangerPowerButton.setClickingTogglesState(true);
-    flangerPowerButton.setToggleState(false, juce::dontSendNotification);
-    flangerPowerButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    flangerPowerButton.setVisible(true);
-    flangerPowerButton.setBounds(68, 130, 80, 25);
-    flangerTab->addAndMakeVisible(flangerPowerButton);
-    
-    flangerMixKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    flangerMixKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    flangerMixKnob.setRange(0.0, 100.0, 1.0);
-    flangerMixKnob.setValue(50.0);
-    flangerMixKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    flangerMixKnob.setVisible(true);
-    flangerMixKnob.setBounds(168, 125, 40, 40);
-    flangerTab->addAndMakeVisible(flangerMixKnob);
-    
-    flangerMixLabel.setText("MIX", juce::dontSendNotification);
-    flangerMixLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    flangerMixLabel.setJustificationType(juce::Justification::centred);
-    flangerMixLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    flangerMixLabel.setVisible(true);
-    flangerMixLabel.setBounds(168, 167, 40, 12);
-    flangerTab->addAndMakeVisible(flangerMixLabel);
-    
-    // Row 2: Rate, BPM Sync, and Depth
-    flangerRateKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    flangerRateKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    flangerRateKnob.setRange(0.1, 10.0, 0.1);
-    flangerRateKnob.setValue(1.0);
-    flangerRateKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    flangerRateKnob.setVisible(true);
-    flangerRateKnob.setBounds(86, 190, 50, 50);
-    flangerTab->addAndMakeVisible(flangerRateKnob);
-    
-    flangerRateLabel.setText("RATE", juce::dontSendNotification);
-    flangerRateLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    flangerRateLabel.setJustificationType(juce::Justification::centred);
-    flangerRateLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    flangerRateLabel.setVisible(true);
-    flangerRateLabel.setBounds(86, 245, 50, 15);
-    flangerTab->addAndMakeVisible(flangerRateLabel);
-    
-    flangerBpmButton.setButtonText("BPM SYNC");
-    flangerBpmButton.setClickingTogglesState(true);
-    flangerBpmButton.setToggleState(false, juce::dontSendNotification);
-    flangerBpmButton.setLookAndFeel(&greenDigitalButtonLookAndFeel);
-    flangerBpmButton.setVisible(true);
-    flangerBpmButton.setBounds(146, 205, 70, 25);
-    flangerTab->addAndMakeVisible(flangerBpmButton);
-    
-    flangerDepthKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    flangerDepthKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    flangerDepthKnob.setRange(0.0, 100.0, 1.0);
-    flangerDepthKnob.setValue(50.0);
-    flangerDepthKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    flangerDepthKnob.setVisible(true);
-    flangerDepthKnob.setBounds(195, 270, 50, 50);
-    flangerTab->addAndMakeVisible(flangerDepthKnob);
-    
-    flangerDepthLabel.setText("DEPTH", juce::dontSendNotification);
-    flangerDepthLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    flangerDepthLabel.setJustificationType(juce::Justification::centred);
-    flangerDepthLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    flangerDepthLabel.setVisible(true);
-    flangerDepthLabel.setBounds(195, 325, 50, 15);
-    flangerTab->addAndMakeVisible(flangerDepthLabel);
-    
-    // Row 3: Feedback and Phase
-    flangerFeedbackKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    flangerFeedbackKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    flangerFeedbackKnob.setRange(0.0, 100.0, 1.0);
-    flangerFeedbackKnob.setValue(25.0);
-    flangerFeedbackKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    flangerFeedbackKnob.setVisible(true);
-    flangerFeedbackKnob.setBounds(51, 270, 50, 50);
-    flangerTab->addAndMakeVisible(flangerFeedbackKnob);
-    
-    flangerFeedbackLabel.setText("FEEDBACK", juce::dontSendNotification);
-    flangerFeedbackLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    flangerFeedbackLabel.setJustificationType(juce::Justification::centred);
-    flangerFeedbackLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    flangerFeedbackLabel.setVisible(true);
-    flangerFeedbackLabel.setBounds(51, 325, 50, 15);
-    flangerTab->addAndMakeVisible(flangerFeedbackLabel);
-    
-    flangerPhaseKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    flangerPhaseKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    flangerPhaseKnob.setRange(0.0, 360.0, 1.0);
-    flangerPhaseKnob.setValue(0.0);
-    flangerPhaseKnob.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    flangerPhaseKnob.setVisible(true);
-    flangerPhaseKnob.setBounds(125, 270, 50, 50);
-    flangerTab->addAndMakeVisible(flangerPhaseKnob);
-    
-    flangerPhaseLabel.setText("PHASE", juce::dontSendNotification);
-    flangerPhaseLabel.setFont(juce::Font("Times New Roman", 8.0f, juce::Font::bold));
-    flangerPhaseLabel.setJustificationType(juce::Justification::centred);
-    flangerPhaseLabel.setLookAndFeel(&greenDigitalKnobLookAndFeel);
-    flangerPhaseLabel.setVisible(true);
-    flangerPhaseLabel.setBounds(125, 325, 50, 15);
-    flangerTab->addAndMakeVisible(flangerPhaseLabel);
-    
-    // Add listeners for flanger controls
-    flangerPowerButton.addListener(this);
-    flangerMixKnob.addListener(this);
-    flangerRateKnob.addListener(this);
-    flangerBpmButton.addListener(this);
-    flangerDepthKnob.addListener(this);
-    flangerFeedbackKnob.addListener(this);
-    flangerPhaseKnob.addListener(this);
+    // Initialize flanger module
+    flangerModule.setParentSynthesizer(this);
+    flangerModule.setLookAndFeels(&greenDigitalKnobLookAndFeel, &greenDigitalButtonLookAndFeel, &greenLEDNumberLookAndFeel);
     
     // Initialize phaser module
     phaserModule.setParentSynthesizer(this);
@@ -1190,7 +1079,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     effectsModule.addTab("DELAY", digitalBg, &delayModule, true);
     effectsModule.addTab("DIST", digitalBg, &distortionModule, true);
     effectsModule.addTab("EQ", digitalBg, equalizerTab, true);
-    effectsModule.addTab("FLANGE", digitalBg, flangerTab, true);
+    effectsModule.addTab("FLANGE", digitalBg, &flangerModule, true);
     effectsModule.addTab("PHASER", digitalBg, &phaserModule, true);
     effectsModule.addTab("REVERB", digitalBg, &reverbModule, true);
     
@@ -2520,27 +2409,7 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
         audioProcessor.setFilterResonance(static_cast<float>(filterResonanceKnob.getValue()));
     }
     // Chorus effect sliders now handled by ChorusComponent
-    // Flanger effect sliders
-    else if (slider == &flangerRateKnob)
-    {
-        audioProcessor.setFlangerRate(static_cast<float>(flangerRateKnob.getValue()));
-    }
-    else if (slider == &flangerDepthKnob)
-    {
-        audioProcessor.setFlangerDepth(static_cast<float>(flangerDepthKnob.getValue()));
-    }
-    else if (slider == &flangerFeedbackKnob)
-    {
-        audioProcessor.setFlangerFeedback(static_cast<float>(flangerFeedbackKnob.getValue()));
-    }
-    else if (slider == &flangerMixKnob)
-    {
-        audioProcessor.setFlangerMix(static_cast<float>(flangerMixKnob.getValue()));
-    }
-    else if (slider == &flangerPhaseKnob)
-    {
-        audioProcessor.setFlangerPhase(static_cast<float>(flangerPhaseKnob.getValue()));
-    }
+    // Flanger effect sliders - now handled by FlangerComponent
     // Phaser effect sliders - now handled by PhaserComponent
     // Compressor sliders now handled by CompressorComponent
     // Distortion sliders now handled by DistortionComponent
@@ -3285,16 +3154,7 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
         parametricEQ.syncWithDSPState();
     }
     // Chorus effect power button - handled by ChorusComponent
-    // Flanger effect buttons
-    else if (button == &flangerPowerButton)
-    {
-        audioProcessor.setFlangerEnabled(flangerPowerButton.getToggleState());
-    }
-    else if (button == &flangerBpmButton)
-    {
-        // TODO: Implement BPM sync for flanger if needed
-        // For now, just toggle the button state
-    }
+    // Flanger effect buttons - now handled by FlangerComponent
     // Phaser effect buttons - now handled by PhaserComponent
     // Compressor buttons now handled by CompressorComponent
     
@@ -5145,7 +5005,7 @@ juce::Slider* SynthesizerComponent::findSliderAt(juce::Point<int> position)
         
         // Effects controls
         &chorusModule.chorusRateKnob, &chorusModule.chorusDelay1Knob, &chorusModule.chorusDelay2Knob, &chorusModule.chorusDepthKnob, &chorusModule.chorusFeedKnob, &chorusModule.chorusLpfKnob, &chorusModule.chorusMixKnob,
-        &flangerMixKnob, &flangerRateKnob, &flangerDepthKnob, &flangerFeedbackKnob, &flangerPhaseKnob,
+        &flangerModule.flangerMixKnob, &flangerModule.flangerRateKnob, &flangerModule.flangerDepthKnob, &flangerModule.flangerFeedbackKnob, &flangerModule.flangerPhaseKnob,
         &phaserModule.phaserMixKnob, &phaserModule.phaserRateKnob, &phaserModule.phaserDepth1Knob, &phaserModule.phaserDepth2Knob, &phaserModule.phaserFeedbackKnob, &phaserModule.phaserPhaseKnob, &phaserModule.phaserFrequencyKnob,
         &compressorModule.compressorThresholdKnob, &compressorModule.compressorRatioKnob, &compressorModule.compressorAttackKnob, &compressorModule.compressorReleaseKnob, &compressorModule.compressorGainKnob, &compressorModule.compressorMixKnob,
         &reverbModule.reverbMixKnob, &reverbModule.reverbSizeKnob, &reverbModule.reverbPreDelayKnob, &reverbModule.reverbLowCutKnob, &reverbModule.reverbHighCutKnob, &reverbModule.reverbDampKnob, &reverbModule.reverbWidthKnob
@@ -5414,27 +5274,7 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
     {
         audioProcessor.setChorusMix(static_cast<float>(newValue));
     }
-    // Flanger FX
-    else if (slider == &flangerRateKnob)
-    {
-        audioProcessor.setFlangerRate(static_cast<float>(newValue));
-    }
-    else if (slider == &flangerDepthKnob)
-    {
-        audioProcessor.setFlangerDepth(static_cast<float>(newValue));
-    }
-    else if (slider == &flangerFeedbackKnob)
-    {
-        audioProcessor.setFlangerFeedback(static_cast<float>(newValue));
-    }
-    else if (slider == &flangerMixKnob)
-    {
-        audioProcessor.setFlangerMix(static_cast<float>(newValue));
-    }
-    else if (slider == &flangerPhaseKnob)
-    {
-        audioProcessor.setFlangerPhase(static_cast<float>(newValue));
-    }
+    // Flanger FX - now handled by FlangerComponent
     // Phaser FX - now handled by PhaserComponent
     // Compressor FX - handled by CompressorComponent
     else if (slider == &compressorModule.compressorThresholdKnob)
@@ -5687,13 +5527,8 @@ void SynthesizerComponent::updateAllGuiControls()
     eq2GainKnob.setValue(audioProcessor.getEQ2Gain(), juce::dontSendNotification);
     eqOnOffButton.setToggleState(audioProcessor.getEQEnabled(), juce::dontSendNotification);
     
-    // Flanger controls
-    flangerMixKnob.setValue(audioProcessor.getFlangerMix(), juce::dontSendNotification);
-    flangerRateKnob.setValue(audioProcessor.getFlangerRate(), juce::dontSendNotification);
-    flangerDepthKnob.setValue(audioProcessor.getFlangerDepth(), juce::dontSendNotification);
-    flangerFeedbackKnob.setValue(audioProcessor.getFlangerFeedback(), juce::dontSendNotification);
-    flangerPhaseKnob.setValue(audioProcessor.getFlangerPhase(), juce::dontSendNotification);
-    flangerPowerButton.setToggleState(audioProcessor.getFlangerEnabled(), juce::dontSendNotification);
+    // Flanger controls - now handled by FlangerComponent
+    flangerModule.syncWithDSPState();
     
     // Phaser controls - now handled by PhaserComponent
     phaserModule.syncWithDSPState();
