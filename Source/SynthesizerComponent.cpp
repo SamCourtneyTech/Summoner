@@ -754,110 +754,11 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     osc2AdsrLinkButton.addListener(this);
     addAndMakeVisible(osc2AdsrLinkButton);
     
-    // FILTER CONTROLS
-    filterCutoffLabel.setText("CUTOFF", juce::dontSendNotification);
-    filterCutoffLabel.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
-    filterCutoffLabel.setJustificationType(juce::Justification::centred);
-    filterCutoffLabel.setLookAndFeel(&engravedLabelLookAndFeel);
-    addAndMakeVisible(filterCutoffLabel);
-    
-    filterCutoffKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    filterCutoffKnob.setRange(20.0, 20000.0, 1.0);
-    filterCutoffKnob.setValue(1000.0);
-    filterCutoffKnob.setSkewFactorFromMidPoint(1000.0);
-    filterCutoffKnob.setTextBoxStyle(juce::Slider::TextBoxRight, false, 80, 20);
-    filterCutoffKnob.setLookAndFeel(&digitalFilterKnobLookAndFeel);
-    filterCutoffKnob.addListener(this);
-    addAndMakeVisible(filterCutoffKnob);
-    
-    // Filter Resonance knob
-    filterResonanceKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    filterResonanceKnob.setRange(0.0, 1.0, 0.01);
-    filterResonanceKnob.setValue(0.0);
-    filterResonanceKnob.setTextBoxStyle(juce::Slider::TextBoxRight, false, 80, 20);
-    filterResonanceKnob.setLookAndFeel(&digitalFilterKnobLookAndFeel);
-    filterResonanceKnob.addListener(this);
-    addAndMakeVisible(filterResonanceKnob);
-    
-    // Filter Resonance label
-    filterResonanceLabel.setText("RES", juce::dontSendNotification);
-    filterResonanceLabel.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
-    filterResonanceLabel.setJustificationType(juce::Justification::centred);
-    filterResonanceLabel.setLookAndFeel(&engravedLabelLookAndFeel);
-    addAndMakeVisible(filterResonanceLabel);
-    
-    // OSC filter enable buttons
-    osc1FilterEnableButton.setButtonText("OSC 1");
-    osc1FilterEnableButton.setClickingTogglesState(true);
-    osc1FilterEnableButton.setToggleState(false, juce::dontSendNotification); // Off by default
-    osc1FilterEnableButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    osc1FilterEnableButton.addListener(this);
-    addAndMakeVisible(osc1FilterEnableButton);
-    
-    osc2FilterEnableButton.setButtonText("OSC 2");
-    osc2FilterEnableButton.setClickingTogglesState(true);
-    osc2FilterEnableButton.setToggleState(false, juce::dontSendNotification); // Off by default
-    osc2FilterEnableButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    osc2FilterEnableButton.addListener(this);
-    addAndMakeVisible(osc2FilterEnableButton);
-    
-    // Filter type buttons (Low-pass and High-pass) - radio button behavior
-    filterLPButton.setButtonText("LP");
-    filterLPButton.setClickingTogglesState(true);
-    filterLPButton.setToggleState(true, juce::dontSendNotification); // LP selected by default
-    filterLPButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    filterLPButton.addListener(this);
-    addAndMakeVisible(filterLPButton);
-    
-    filterHPButton.setButtonText("HP");
-    filterHPButton.setClickingTogglesState(true);
-    filterHPButton.setToggleState(false, juce::dontSendNotification); // HP off by default
-    filterHPButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    filterHPButton.addListener(this);
-    addAndMakeVisible(filterHPButton);
-    
-    filterBPButton.setButtonText("BP");
-    filterBPButton.setClickingTogglesState(true);
-    filterBPButton.setToggleState(false, juce::dontSendNotification); // BP off by default
-    filterBPButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    filterBPButton.addListener(this);
-    addAndMakeVisible(filterBPButton);
-    
-    filterNotchButton.setButtonText("NTCH");
-    filterNotchButton.setClickingTogglesState(true);
-    filterNotchButton.setToggleState(false, juce::dontSendNotification); // NOTCH off by default
-    filterNotchButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    filterNotchButton.addListener(this);
-    addAndMakeVisible(filterNotchButton);
-    
-    filterCombButton.setButtonText("COMB");
-    filterCombButton.setClickingTogglesState(true);
-    filterCombButton.setToggleState(false, juce::dontSendNotification); // COMB off by default
-    filterCombButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    filterCombButton.addListener(this);
-    addAndMakeVisible(filterCombButton);
-    
-    filterFormantButton.setButtonText("FMNT");
-    filterFormantButton.setClickingTogglesState(true);
-    filterFormantButton.setToggleState(false, juce::dontSendNotification); // FORMANT off by default
-    filterFormantButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    filterFormantButton.addListener(this);
-    addAndMakeVisible(filterFormantButton);
-    
-    // Filter slope buttons (12dB and 24dB) - radio button behavior
-    filter12dBButton.setButtonText("12dB");
-    filter12dBButton.setClickingTogglesState(true);
-    filter12dBButton.setToggleState(true, juce::dontSendNotification); // 12dB selected by default
-    filter12dBButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    filter12dBButton.addListener(this);
-    addAndMakeVisible(filter12dBButton);
-    
-    filter24dBButton.setButtonText("24dB");
-    filter24dBButton.setClickingTogglesState(true);
-    filter24dBButton.setToggleState(false, juce::dontSendNotification); // 24dB off by default
-    filter24dBButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    filter24dBButton.addListener(this);
-    addAndMakeVisible(filter24dBButton);
+    // FILTER CONTROLS - now handled by FilterControlComponent
+    filterModule.setParentSynthesizer(this);
+    addAndMakeVisible(filterModule);
+    filterModule.setLookAndFeels(&greenDigitalKnobLookAndFeel, &greenDigitalButtonLookAndFeel, &greenLEDNumberLookAndFeel);
+    filterModule.syncWithDSPState();
     
     // MACRO CONTROLS - 4 placeholder knobs
     macro1Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -1517,18 +1418,6 @@ SynthesizerComponent::~SynthesizerComponent()
     osc2ReleaseLabel.setLookAndFeel(nullptr);
     osc2AdsrLinkButton.setLookAndFeel(nullptr);
     
-    // Filter controls cleanup
-    filterCutoffKnob.setLookAndFeel(nullptr);
-    filterCutoffLabel.setLookAndFeel(nullptr);
-    filterResonanceKnob.setLookAndFeel(nullptr);
-    filterResonanceLabel.setLookAndFeel(nullptr);
-    osc1FilterEnableButton.setLookAndFeel(nullptr);
-    osc2FilterEnableButton.setLookAndFeel(nullptr);
-    filterLPButton.setLookAndFeel(nullptr);
-    filterHPButton.setLookAndFeel(nullptr);
-    filterBPButton.setLookAndFeel(nullptr);
-    filter12dBButton.setLookAndFeel(nullptr);
-    filter24dBButton.setLookAndFeel(nullptr);
     osc2DetuneKnob.setLookAndFeel(nullptr);
     osc2DetuneLabel.setLookAndFeel(nullptr);
     osc2StereoKnob.setLookAndFeel(nullptr);
@@ -2400,14 +2289,7 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     {
         audioProcessor.setOsc2Phase(static_cast<float>(osc2PhaseKnob.getValue()));
     }
-    else if (slider == &filterCutoffKnob)
-    {
-        audioProcessor.setFilterCutoff(static_cast<float>(filterCutoffKnob.getValue()));
-    }
-    else if (slider == &filterResonanceKnob)
-    {
-        audioProcessor.setFilterResonance(static_cast<float>(filterResonanceKnob.getValue()));
-    }
+    // Filter controls now handled by FilterControlComponent
     // Chorus effect sliders now handled by ChorusComponent
     // Flanger effect sliders - now handled by FlangerComponent
     // Phaser effect sliders - now handled by PhaserComponent
@@ -2856,182 +2738,7 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
             updateEnvelopeDisplay();
         }
     }
-    else if (button == &osc1FilterEnableButton)
-    {
-        audioProcessor.setOsc1FilterEnabled(osc1FilterEnableButton.getToggleState());
-    }
-    else if (button == &osc2FilterEnableButton)
-    {
-        audioProcessor.setOsc2FilterEnabled(osc2FilterEnableButton.getToggleState());
-    }
-    else if (button == &filterLPButton)
-    {
-        // Radio button behavior - LP cannot be unselected, only HP can be selected instead
-        if (!filterLPButton.getToggleState())
-        {
-            // Prevent deselection - keep LP selected
-            filterLPButton.setToggleState(true, juce::dontSendNotification);
-            return;
-        }
-        
-        // LP selected - deselect all other filters
-        filterHPButton.setToggleState(false, juce::dontSendNotification);
-        filterBPButton.setToggleState(false, juce::dontSendNotification);
-        filterNotchButton.setToggleState(false, juce::dontSendNotification);
-        filterCombButton.setToggleState(false, juce::dontSendNotification);
-        filterFormantButton.setToggleState(false, juce::dontSendNotification);
-        audioProcessor.setFilterLPEnabled(true);
-        audioProcessor.setFilterHPEnabled(false);
-        audioProcessor.setFilterBPEnabled(false);
-        audioProcessor.setFilterNotchEnabled(false);
-        audioProcessor.setFilterCombEnabled(false);
-        audioProcessor.setFilterFormantEnabled(false);
-    }
-    else if (button == &filterHPButton)
-    {
-        // Radio button behavior - HP cannot be unselected, only LP can be selected instead
-        if (!filterHPButton.getToggleState())
-        {
-            // Prevent deselection - keep HP selected
-            filterHPButton.setToggleState(true, juce::dontSendNotification);
-            return;
-        }
-        
-        // HP selected - deselect all other filters
-        filterLPButton.setToggleState(false, juce::dontSendNotification);
-        filterBPButton.setToggleState(false, juce::dontSendNotification);
-        filterNotchButton.setToggleState(false, juce::dontSendNotification);
-        filterCombButton.setToggleState(false, juce::dontSendNotification);
-        filterFormantButton.setToggleState(false, juce::dontSendNotification);
-        audioProcessor.setFilterLPEnabled(false);
-        audioProcessor.setFilterHPEnabled(true);
-        audioProcessor.setFilterBPEnabled(false);
-        audioProcessor.setFilterNotchEnabled(false);
-        audioProcessor.setFilterCombEnabled(false);
-        audioProcessor.setFilterFormantEnabled(false);
-    }
-    else if (button == &filterBPButton)
-    {
-        // Radio button behavior - BP cannot be unselected, only LP or HP can be selected instead
-        if (!filterBPButton.getToggleState())
-        {
-            // Prevent deselection - keep BP selected
-            filterBPButton.setToggleState(true, juce::dontSendNotification);
-            return;
-        }
-        
-        // BP selected - deselect all other filters
-        filterLPButton.setToggleState(false, juce::dontSendNotification);
-        filterHPButton.setToggleState(false, juce::dontSendNotification);
-        filterNotchButton.setToggleState(false, juce::dontSendNotification);
-        filterCombButton.setToggleState(false, juce::dontSendNotification);
-        filterFormantButton.setToggleState(false, juce::dontSendNotification);
-        audioProcessor.setFilterLPEnabled(false);
-        audioProcessor.setFilterHPEnabled(false);
-        audioProcessor.setFilterBPEnabled(true);
-        audioProcessor.setFilterNotchEnabled(false);
-        audioProcessor.setFilterCombEnabled(false);
-        audioProcessor.setFilterFormantEnabled(false);
-    }
-    else if (button == &filterNotchButton)
-    {
-        // Radio button behavior - Notch cannot be unselected, only LP, HP, or BP can be selected instead
-        if (!filterNotchButton.getToggleState())
-        {
-            // Prevent deselection - keep Notch selected
-            filterNotchButton.setToggleState(true, juce::dontSendNotification);
-            return;
-        }
-        
-        // Notch selected - deselect all other filters
-        filterLPButton.setToggleState(false, juce::dontSendNotification);
-        filterHPButton.setToggleState(false, juce::dontSendNotification);
-        filterBPButton.setToggleState(false, juce::dontSendNotification);
-        filterCombButton.setToggleState(false, juce::dontSendNotification);
-        filterFormantButton.setToggleState(false, juce::dontSendNotification);
-        audioProcessor.setFilterLPEnabled(false);
-        audioProcessor.setFilterHPEnabled(false);
-        audioProcessor.setFilterBPEnabled(false);
-        audioProcessor.setFilterNotchEnabled(true);
-        audioProcessor.setFilterCombEnabled(false);
-        audioProcessor.setFilterFormantEnabled(false);
-    }
-    else if (button == &filterCombButton)
-    {
-        // Radio button behavior - Comb cannot be unselected, only LP, HP, BP, or Notch can be selected instead
-        if (!filterCombButton.getToggleState())
-        {
-            // Prevent deselection - keep Comb selected
-            filterCombButton.setToggleState(true, juce::dontSendNotification);
-            return;
-        }
-        
-        // Comb selected - deselect LP, HP, BP, Notch, and Formant
-        filterLPButton.setToggleState(false, juce::dontSendNotification);
-        filterHPButton.setToggleState(false, juce::dontSendNotification);
-        filterBPButton.setToggleState(false, juce::dontSendNotification);
-        filterNotchButton.setToggleState(false, juce::dontSendNotification);
-        filterFormantButton.setToggleState(false, juce::dontSendNotification);
-        audioProcessor.setFilterLPEnabled(false);
-        audioProcessor.setFilterHPEnabled(false);
-        audioProcessor.setFilterBPEnabled(false);
-        audioProcessor.setFilterNotchEnabled(false);
-        audioProcessor.setFilterCombEnabled(true);
-        audioProcessor.setFilterFormantEnabled(false);
-    }
-    else if (button == &filterFormantButton)
-    {
-        // Radio button behavior - Formant cannot be unselected, only other filters can be selected instead
-        if (!filterFormantButton.getToggleState())
-        {
-            // Prevent deselection - keep Formant selected
-            filterFormantButton.setToggleState(true, juce::dontSendNotification);
-            return;
-        }
-        
-        // Formant selected - deselect all other filters
-        filterLPButton.setToggleState(false, juce::dontSendNotification);
-        filterHPButton.setToggleState(false, juce::dontSendNotification);
-        filterBPButton.setToggleState(false, juce::dontSendNotification);
-        filterNotchButton.setToggleState(false, juce::dontSendNotification);
-        filterCombButton.setToggleState(false, juce::dontSendNotification);
-        audioProcessor.setFilterLPEnabled(false);
-        audioProcessor.setFilterHPEnabled(false);
-        audioProcessor.setFilterBPEnabled(false);
-        audioProcessor.setFilterNotchEnabled(false);
-        audioProcessor.setFilterCombEnabled(false);
-        audioProcessor.setFilterFormantEnabled(true);
-    }
-    else if (button == &filter12dBButton)
-    {
-        // Radio button behavior - 12dB cannot be unselected, only 24dB can be selected instead
-        if (!filter12dBButton.getToggleState())
-        {
-            // Prevent deselection - keep 12dB selected
-            filter12dBButton.setToggleState(true, juce::dontSendNotification);
-            return;
-        }
-        
-        // 12dB selected - deselect 24dB
-        filter24dBButton.setToggleState(false, juce::dontSendNotification);
-        audioProcessor.setFilter12dBEnabled(true);
-        audioProcessor.setFilter24dBEnabled(false);
-    }
-    else if (button == &filter24dBButton)
-    {
-        // Radio button behavior - 24dB cannot be unselected, only 12dB can be selected instead
-        if (!filter24dBButton.getToggleState())
-        {
-            // Prevent deselection - keep 24dB selected
-            filter24dBButton.setToggleState(true, juce::dontSendNotification);
-            return;
-        }
-        
-        // 24dB selected - deselect 12dB
-        filter12dBButton.setToggleState(false, juce::dontSendNotification);
-        audioProcessor.setFilter12dBEnabled(false);
-        audioProcessor.setFilter24dBEnabled(true);
-    }
+    // Filter controls now handled by FilterControlComponent
     // EQ On/Off button
     else if (button == &eqOnOffButton)
     {
@@ -4036,88 +3743,8 @@ void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
     // Store bounds for background drawing
     filterSectionBounds = juce::Rectangle<int>(filterSectionX, filterSectionY, filterSectionWidth, filterSectionHeight);
     
-    // Single row of filter type and slope buttons in landscape format
-    auto filterButtonHeight = 25;
-    auto filterButtonSpacing = 3; // Even more reduced spacing for narrower row
-    
-    // Calculate button widths and positions for landscape layout
-    auto typeButtonWidth = 45;
-    auto slopeButtonWidth = 50;
-    auto totalButtonsWidth = (6 * typeButtonWidth) + (2 * slopeButtonWidth) + (7 * filterButtonSpacing);
-    auto buttonsStartX = filterSectionX + (filterSectionWidth - totalButtonsWidth) / 2;
-    
-    auto currentX = buttonsStartX;
-    
-    // Filter type buttons in single row: LP, HP, BP, NOTCH, COMB, FORMANT (lowered by 40px)
-    auto filterButtonsY = filterSectionY + 43;
-    auto filterLPButtonArea = juce::Rectangle<int>(currentX, filterButtonsY, typeButtonWidth, filterButtonHeight);
-    filterLPButton.setBounds(filterLPButtonArea);
-    currentX += typeButtonWidth + filterButtonSpacing;
-    
-    auto filterHPButtonArea = juce::Rectangle<int>(currentX, filterButtonsY, typeButtonWidth, filterButtonHeight);
-    filterHPButton.setBounds(filterHPButtonArea);
-    currentX += typeButtonWidth + filterButtonSpacing;
-    
-    auto filterBPButtonArea = juce::Rectangle<int>(currentX, filterButtonsY, typeButtonWidth, filterButtonHeight);
-    filterBPButton.setBounds(filterBPButtonArea);
-    currentX += typeButtonWidth + filterButtonSpacing;
-    
-    auto filterNotchButtonArea = juce::Rectangle<int>(currentX, filterButtonsY, typeButtonWidth, filterButtonHeight);
-    filterNotchButton.setBounds(filterNotchButtonArea);
-    currentX += typeButtonWidth + filterButtonSpacing;
-    
-    auto filterCombButtonArea = juce::Rectangle<int>(currentX, filterButtonsY, typeButtonWidth, filterButtonHeight);
-    filterCombButton.setBounds(filterCombButtonArea);
-    currentX += typeButtonWidth + filterButtonSpacing;
-    
-    auto filterFormantButtonArea = juce::Rectangle<int>(currentX, filterButtonsY, typeButtonWidth, filterButtonHeight);
-    filterFormantButton.setBounds(filterFormantButtonArea);
-    currentX += typeButtonWidth + filterButtonSpacing;
-    
-    // Filter slope buttons continue in same row
-    auto filter12dBButtonArea = juce::Rectangle<int>(currentX, filterButtonsY, slopeButtonWidth, filterButtonHeight);
-    filter12dBButton.setBounds(filter12dBButtonArea);
-    currentX += slopeButtonWidth + filterButtonSpacing;
-    
-    auto filter24dBButtonArea = juce::Rectangle<int>(currentX, filterButtonsY, slopeButtonWidth, filterButtonHeight);
-    filter24dBButton.setBounds(filter24dBButtonArea);
-    
-    // Knobs row below buttons - landscape layout with OSC enable buttons
-    auto filterKnobRowY = filterButtonsY + filterButtonHeight - 2;
-    auto filterKnobWidth = 80;
-    auto filterKnobHeight = 60;
-    auto filterKnobSpacing = 20;
-    auto oscButtonWidth = 60;
-    auto oscButtonHeight = 30;
-    
-    // Calculate total width for knobs and osc buttons layout
-    auto filterTotalKnobsWidth = (2 * filterKnobWidth) + (2 * oscButtonWidth) + (3 * filterKnobSpacing);
-    auto filterKnobsStartX = filterSectionX + (filterSectionWidth - filterTotalKnobsWidth) / 2;
-    
-    currentX = filterKnobsStartX;
-    
-    // OSC1 Filter Enable button
-    auto osc1FilterButtonArea = juce::Rectangle<int>(currentX, filterKnobRowY + (filterKnobHeight - oscButtonHeight) / 2, oscButtonWidth, oscButtonHeight);
-    osc1FilterEnableButton.setBounds(osc1FilterButtonArea);
-    currentX += oscButtonWidth + filterKnobSpacing;
-    
-    // Filter cutoff knob
-    auto filterCutoffKnobArea = juce::Rectangle<int>(currentX, filterKnobRowY, filterKnobWidth, filterKnobHeight);
-    filterCutoffKnob.setBounds(filterCutoffKnobArea);
-    auto filterCutoffLabelArea = juce::Rectangle<int>(filterCutoffKnobArea.getX() - 15, filterCutoffKnobArea.getY() + 2, filterKnobWidth, 20);
-    filterCutoffLabel.setBounds(filterCutoffLabelArea);
-    currentX += filterKnobWidth + filterKnobSpacing;
-    
-    // Filter Resonance knob
-    auto filterResonanceKnobArea = juce::Rectangle<int>(currentX, filterKnobRowY, filterKnobWidth, filterKnobHeight);
-    filterResonanceKnob.setBounds(filterResonanceKnobArea);
-    auto filterResonanceLabelArea = juce::Rectangle<int>(filterResonanceKnobArea.getX() - 21, filterResonanceKnobArea.getY() + 2, filterKnobWidth, 20);
-    filterResonanceLabel.setBounds(filterResonanceLabelArea);
-    currentX += filterKnobWidth + filterKnobSpacing;
-    
-    // OSC2 Filter Enable button
-    auto osc2FilterButtonArea = juce::Rectangle<int>(currentX, filterKnobRowY + (filterKnobHeight - oscButtonHeight) / 2, oscButtonWidth, oscButtonHeight);
-    osc2FilterEnableButton.setBounds(osc2FilterButtonArea);
+    // Filter section - handled by FilterControlComponent
+    filterModule.setBounds(filterSectionBounds);
 }
 
 // ============================================================================
@@ -4998,7 +4625,7 @@ juce::Slider* SynthesizerComponent::findSliderAt(juce::Point<int> position)
         &osc2AttackKnob, &osc2DecayKnob, &osc2SustainKnob, &osc2ReleaseKnob,
         
         // Filter controls
-        &filterCutoffKnob, &filterResonanceKnob,
+        &filterModule.filterCutoffKnob, &filterModule.filterResonanceKnob,
         
         // EQ controls - using only the NEW knobs to avoid duplicates
         &eq1NewFreqKnob, &eq1NewQKnob, &eq1NewGainKnob, &eq2NewFreqKnob, &eq2NewQKnob, &eq2NewGainKnob,
@@ -5113,14 +4740,7 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
     }
     // Add more slider checks as needed for other parameters
     // For now, focusing on the main commonly-used parameters
-    else if (slider == &filterCutoffKnob)
-    {
-        audioProcessor.setFilterCutoff(static_cast<float>(newValue));
-    }
-    else if (slider == &filterResonanceKnob)
-    {
-        audioProcessor.setFilterResonance(static_cast<float>(newValue));
-    }
+    // Filter controls now handled by FilterControlComponent
     // EQ parameters
     else if (slider == &eq1FreqKnob)
     {
@@ -5500,11 +5120,8 @@ void SynthesizerComponent::updateAllGuiControls()
     osc2WhiteNoiseButton.setToggleState(osc2Type == 4, juce::dontSendNotification);
     osc2PinkNoiseButton.setToggleState(osc2Type == 5, juce::dontSendNotification);
     
-    // Filter controls
-    filterCutoffKnob.setValue(audioProcessor.getFilterCutoff(), juce::dontSendNotification);
-    filterResonanceKnob.setValue(audioProcessor.getFilterResonance(), juce::dontSendNotification);
-    osc1FilterEnableButton.setToggleState(audioProcessor.getOsc1FilterEnabled(), juce::dontSendNotification);
-    osc2FilterEnableButton.setToggleState(audioProcessor.getOsc2FilterEnabled(), juce::dontSendNotification);
+    // Filter controls - handled by FilterControlComponent
+    filterModule.syncWithDSPState();
     
     // Effects controls - update the knobs with loaded preset values
     

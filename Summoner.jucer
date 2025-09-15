@@ -81,6 +81,10 @@
             file="Source/UI/FlangerComponent.cpp"/>
       <FILE id="Flanger2" name="FlangerComponent.h" compile="0" resource="0"
             file="Source/UI/FlangerComponent.h"/>
+      <FILE id="FilterControl1" name="FilterControlComponent.cpp" compile="1" resource="0"
+            file="Source/UI/FilterControlComponent.cpp"/>
+      <FILE id="FilterControl2" name="FilterControlComponent.h" compile="0" resource="0"
+            file="Source/UI/FilterControlComponent.h"/>
     </GROUP>
   </MAINGROUP>
   <MODULES>

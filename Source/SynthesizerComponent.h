@@ -13,6 +13,7 @@
 #include "UI/ReverbComponent.h"
 #include "UI/PhaserComponent.h"
 #include "UI/FlangerComponent.h"
+#include "UI/FilterControlComponent.h"
 
 class SummonerXSerum2AudioProcessor;
 class SynthesizerComponent;
@@ -29,6 +30,7 @@ class SynthesizerComponent : public juce::Component, private juce::Slider::Liste
     friend class ReverbComponent;
     friend class PhaserComponent;
     friend class FlangerComponent;
+    friend class FilterControlComponent;
 public:
     explicit SynthesizerComponent(SummonerXSerum2AudioProcessor& processor);
     ~SynthesizerComponent() override;
@@ -935,21 +937,6 @@ private:
     juce::Label osc2ReleaseLabel;
     juce::TextButton osc2AdsrLinkButton;
     
-    // Filter controls
-    juce::Slider filterCutoffKnob;
-    juce::Label filterCutoffLabel;
-    juce::Slider filterResonanceKnob;
-    juce::Label filterResonanceLabel;
-    juce::TextButton osc1FilterEnableButton;
-    juce::TextButton osc2FilterEnableButton;
-    juce::TextButton filterLPButton;
-    juce::TextButton filterHPButton;
-    juce::TextButton filterBPButton;
-    juce::TextButton filterNotchButton;
-    juce::TextButton filterCombButton;
-    juce::TextButton filterFormantButton;
-    juce::TextButton filter12dBButton;
-    juce::TextButton filter24dBButton;
     
     // Macro controls
     RestrictedHitSlider macro1Knob;
@@ -1078,6 +1065,9 @@ private:
     
     // Reverb effect controls - now handled by ReverbComponent
     ReverbComponent reverbModule;
+    
+    // Filter controls - now handled by FilterControlComponent
+    FilterControlComponent filterModule;
     
     // Octave control state
     int octaveValue = 0;
