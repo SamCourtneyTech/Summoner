@@ -25,7 +25,7 @@ public:
     void syncWithDSPState();
     
     // Look and Feel setup
-    void setLookAndFeels(juce::LookAndFeel* digitalKnobLAF, juce::LookAndFeel* digitalButtonLAF, juce::LookAndFeel* ledNumberLAF);
+    void setLookAndFeels(juce::LookAndFeel* filterKnobLAF, juce::LookAndFeel* labelLAF, juce::LookAndFeel* buttonLAF);
     
     // Layout
     void layoutControls(juce::Rectangle<int> bounds);

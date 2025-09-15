@@ -757,7 +757,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     // FILTER CONTROLS - now handled by FilterControlComponent
     filterModule.setParentSynthesizer(this);
     addAndMakeVisible(filterModule);
-    filterModule.setLookAndFeels(&greenDigitalKnobLookAndFeel, &greenDigitalButtonLookAndFeel, &greenLEDNumberLookAndFeel);
+    filterModule.setLookAndFeels(&digitalFilterKnobLookAndFeel, &engravedLabelLookAndFeel, &customWaveButtonLookAndFeel);
     filterModule.syncWithDSPState();
     
     // MACRO CONTROLS - 4 placeholder knobs

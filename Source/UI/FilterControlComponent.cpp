@@ -295,31 +295,31 @@ void FilterControlComponent::syncWithDSPState()
     osc2FilterEnableButton.setToggleState(parentSynthesizer->audioProcessor.getOsc2FilterEnabled(), juce::dontSendNotification);
 }
 
-void FilterControlComponent::setLookAndFeels(juce::LookAndFeel* digitalKnobLAF, juce::LookAndFeel* digitalButtonLAF, juce::LookAndFeel* ledNumberLAF)
+void FilterControlComponent::setLookAndFeels(juce::LookAndFeel* filterKnobLAF, juce::LookAndFeel* labelLAF, juce::LookAndFeel* buttonLAF)
 {
     // Filter knobs
-    filterCutoffKnob.setLookAndFeel(digitalKnobLAF);
-    filterResonanceKnob.setLookAndFeel(digitalKnobLAF);
+    filterCutoffKnob.setLookAndFeel(filterKnobLAF);
+    filterResonanceKnob.setLookAndFeel(filterKnobLAF);
     
     // Filter labels
-    filterCutoffLabel.setLookAndFeel(digitalKnobLAF);
-    filterResonanceLabel.setLookAndFeel(digitalKnobLAF);
+    filterCutoffLabel.setLookAndFeel(labelLAF);
+    filterResonanceLabel.setLookAndFeel(labelLAF);
     
     // OSC filter enable buttons
-    osc1FilterEnableButton.setLookAndFeel(digitalButtonLAF);
-    osc2FilterEnableButton.setLookAndFeel(digitalButtonLAF);
+    osc1FilterEnableButton.setLookAndFeel(buttonLAF);
+    osc2FilterEnableButton.setLookAndFeel(buttonLAF);
     
     // Filter type buttons
-    filterLPButton.setLookAndFeel(digitalButtonLAF);
-    filterHPButton.setLookAndFeel(digitalButtonLAF);
-    filterBPButton.setLookAndFeel(digitalButtonLAF);
-    filterNotchButton.setLookAndFeel(digitalButtonLAF);
-    filterCombButton.setLookAndFeel(digitalButtonLAF);
-    filterFormantButton.setLookAndFeel(digitalButtonLAF);
+    filterLPButton.setLookAndFeel(buttonLAF);
+    filterHPButton.setLookAndFeel(buttonLAF);
+    filterBPButton.setLookAndFeel(buttonLAF);
+    filterNotchButton.setLookAndFeel(buttonLAF);
+    filterCombButton.setLookAndFeel(buttonLAF);
+    filterFormantButton.setLookAndFeel(buttonLAF);
     
     // Filter slope buttons
-    filter12dBButton.setLookAndFeel(digitalButtonLAF);
-    filter24dBButton.setLookAndFeel(digitalButtonLAF);
+    filter12dBButton.setLookAndFeel(buttonLAF);
+    filter24dBButton.setLookAndFeel(buttonLAF);
 }
 
 void FilterControlComponent::layoutControls(juce::Rectangle<int> bounds)
