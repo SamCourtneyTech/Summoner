@@ -14,6 +14,7 @@
 #include "UI/PhaserComponent.h"
 #include "UI/FlangerComponent.h"
 #include "UI/FilterControlComponent.h"
+#include "UI/MacroControlsComponent.h"
 
 class SummonerXSerum2AudioProcessor;
 class SynthesizerComponent;
@@ -937,55 +938,23 @@ private:
     juce::Label osc2ReleaseLabel;
     juce::TextButton osc2AdsrLinkButton;
     
-    
-    // Macro controls
-    RestrictedHitSlider macro1Knob;
-    juce::Label macro1Label;
-    RestrictedHitSlider macro2Knob;
-    juce::Label macro2Label;
-    RestrictedHitSlider macro3Knob;
-    juce::Label macro3Label;
-    RestrictedHitSlider macro4Knob;
-    juce::Label macro4Label;
-    RestrictedHitSlider macro5Knob;
-    juce::Label macro5Label;
-    RestrictedHitSlider macro6Knob;
-    juce::Label macro6Label;
-    RestrictedHitSlider macro7Knob;
-    juce::Label macro7Label;
-    RestrictedHitSlider macro8Knob;
-    juce::Label macro8Label;
-    
-    // Draggable macro mapping symbols
-    std::unique_ptr<DraggableMacroSymbol> macroSymbol1;
-    std::unique_ptr<DraggableMacroSymbol> macroSymbol2;
-    std::unique_ptr<DraggableMacroSymbol> macroSymbol3;
-    std::unique_ptr<DraggableMacroSymbol> macroSymbol4;
-    std::unique_ptr<DraggableMacroSymbol> macroSymbol5;
-    std::unique_ptr<DraggableMacroSymbol> macroSymbol6;
-    std::unique_ptr<DraggableMacroSymbol> macroSymbol7;
-    std::unique_ptr<DraggableMacroSymbol> macroSymbol8;
-    
-    // Macro mapping system
-    MacroSystem macroSystem;
+
+    // Macro controls component
+    MacroControlsComponent macroControls;
     
 public:
     void createMacroMapping(int macroIndex, juce::Slider* targetSlider);
     juce::Slider* findSliderAt(juce::Point<int> position);
-    
+    void triggerParameterUpdate(juce::Slider* slider, double newValue);
+
     // Preset management functions
     void showSavePresetDialog();
     void showLoadPresetDialog();
     void showInitPresetDialog();
     void updatePresetDisplay();
     void updateAllGuiControls();
-    
+
 private:
-    void updateMacroMappings(int macroIndex, double macroValue);
-    void removeMacroMapping(int macroIndex, juce::Slider* targetSlider);
-    void drawMacroIndicators(juce::Graphics& g);
-    double getMacroKnobValue(int macroIndex);
-    void triggerParameterUpdate(juce::Slider* slider, double newValue);
     
     // Arc interaction methods
     MacroMapping* findMacroMappingAtPosition(juce::Point<int> position);

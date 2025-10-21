@@ -85,6 +85,10 @@
             file="Source/UI/FilterControlComponent.cpp"/>
       <FILE id="FilterControl2" name="FilterControlComponent.h" compile="0" resource="0"
             file="Source/UI/FilterControlComponent.h"/>
+      <FILE id="MacroControls1" name="MacroControlsComponent.cpp" compile="1" resource="0"
+            file="Source/UI/MacroControlsComponent.cpp"/>
+      <FILE id="MacroControls2" name="MacroControlsComponent.h" compile="0" resource="0"
+            file="Source/UI/MacroControlsComponent.h"/>
     </GROUP>
   </MAINGROUP>
   <MODULES>

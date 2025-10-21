@@ -2,209 +2,14 @@
 #include "PluginProcessor.h"
 #include <set>
 
-// DraggableMacroSymbol implementation
-DraggableMacroSymbol::DraggableMacroSymbol(int index, SynthesizerComponent* parent) 
-    : macroIndex(index), parentComponent(parent)
-{
-    setSize(35, 35); // Even larger size for better visibility
-}
-
-void DraggableMacroSymbol::paint(juce::Graphics& g)
-{
-    auto bounds = getLocalBounds().toFloat();
-    
-    // Set color based on drag state
-    if (isDragging)
-        g.setColour(juce::Colour(0xff00ff00)); // Bright green when dragging
-    else
-        g.setColour(juce::Colour(0xff888888)); // Gray when idle
-    
-    // Draw the * symbol - even larger font for bigger symbol
-    g.setFont(juce::Font(28.0f, juce::Font::bold));
-    g.drawText("*", bounds, juce::Justification::centred);
-}
-
-void DraggableMacroSymbol::mouseDown(const juce::MouseEvent& event)
-{
-    isDragging = true;
-    dragOffset = event.getPosition();
-    
-    // Bring this component to the front so it stays visible over FX modules during drag
-    toFront(true);
-    
-    repaint();
-}
-
-void DraggableMacroSymbol::mouseDrag(const juce::MouseEvent& event)
-{
-    if (isDragging)
-    {
-        auto newPosition = getPosition() + event.getPosition() - dragOffset;
-        setTopLeftPosition(newPosition);
-    }
-}
-
-void DraggableMacroSymbol::mouseUp(const juce::MouseEvent& event)
-{
-    if (isDragging)
-    {
-        isDragging = false;
-        repaint();
-        
-        // Check if we dropped on a slider/knob
-        // Use more robust coordinate conversion that works with nested components
-        auto globalPosition = getScreenPosition() + event.getPosition();
-        auto relativePosition = parentComponent->getLocalPoint(nullptr, globalPosition);
-        
-        // Find if there's a slider at the drop position
-        if (auto* targetSlider = parentComponent->findSliderAt(relativePosition))
-        {
-            // Create macro mapping
-            parentComponent->createMacroMapping(macroIndex, targetSlider);
-        }
-        
-        // Auto-return to original position after drop
-        returnToOriginalPosition();
-    }
-}
-
-void DraggableMacroSymbol::returnToOriginalPosition()
-{
-    setTopLeftPosition(originalPosition);
-}
-
-void DraggableMacroSymbol::setOriginalPosition(juce::Point<int> position)
-{
-    originalPosition = position;
-    setTopLeftPosition(position);
-}
-
-ADSREnvelopeComponent::ADSREnvelopeComponent()
-{
-}
-
-void ADSREnvelopeComponent::paint(juce::Graphics& g)
-{
-    auto bounds = getLocalBounds();
-    
-    // Draw metallic outline (like knobs) - outer dark frame
-    g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(bounds.toFloat(), 8.0f);
-    
-    // Inner metallic frame
-    auto metalBounds = bounds.toFloat().reduced(3.0f);
-    g.setColour(juce::Colour(0xff1a1a1a));
-    g.fillRoundedRectangle(metalBounds, 6.0f);
-    
-    // Metallic highlight
-    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(metalBounds.reduced(1.0f), 5.0f, 1.0f);
-    
-    
-    // Draw background inside the frames
-    auto innerBounds = bounds.toFloat().reduced(8.0f);
-    g.setColour(juce::Colour(0xff0f0f1f).withAlpha(0.7f));
-    g.fillRoundedRectangle(innerBounds, 4.0f);
-    
-    // Calculate envelope curve (adjust for the additional frames)
-    bounds.reduce(16, 16); // More reduction to account for larger metallic + white frames
-    auto width = bounds.getWidth();
-    auto height = bounds.getHeight();
-    
-    if (width <= 0 || height <= 0) return;
-    
-    // Calculate time divisions
-    auto totalTime = attackTime + decayTime + 0.5f + releaseTime; // 0.5s sustain for visualization
-    auto attackWidth = (attackTime / totalTime) * width;
-    auto decayWidth = (decayTime / totalTime) * width;
-    auto sustainWidth = (0.5f / totalTime) * width;
-    auto releaseWidth = (releaseTime / totalTime) * width;
-    
-    // Create envelope path
-    juce::Path envelopePath;
-    
-    // Start at bottom left
-    envelopePath.startNewSubPath(bounds.getX(), bounds.getBottom());
-    
-    // Attack phase - rise to top
-    envelopePath.lineTo(bounds.getX() + attackWidth, bounds.getY());
-    
-    // Decay phase - fall to sustain level
-    auto sustainY = bounds.getY() + height * (1.0f - sustainLevel);
-    envelopePath.lineTo(bounds.getX() + attackWidth + decayWidth, sustainY);
-    
-    // Sustain phase - hold level
-    envelopePath.lineTo(bounds.getX() + attackWidth + decayWidth + sustainWidth, sustainY);
-    
-    // Release phase - fall to bottom
-    envelopePath.lineTo(bounds.getX() + attackWidth + decayWidth + sustainWidth + releaseWidth, bounds.getBottom());
-    
-    // Draw the envelope curve
-    g.setColour(juce::Colours::white);
-    g.strokePath(envelopePath, juce::PathStrokeType(2.0f));
-    
-    // Draw fill under curve
-    juce::Path fillPath = envelopePath;
-    fillPath.lineTo(bounds.getX() + attackWidth + decayWidth + sustainWidth + releaseWidth, bounds.getBottom());
-    fillPath.lineTo(bounds.getX(), bounds.getBottom());
-    fillPath.closeSubPath();
-    
-    g.setColour(juce::Colours::white.withAlpha(0.1f));
-    g.fillPath(fillPath);
-    
-    // Draw grid lines
-    g.setColour(juce::Colours::white.withAlpha(0.2f));
-    
-    // Horizontal lines
-    for (int i = 1; i < 4; ++i)
-    {
-        auto y = bounds.getY() + (height * i / 4.0f);
-        g.drawLine(bounds.getX(), y, bounds.getRight(), y, 0.5f);
-    }
-    
-    // Vertical phase dividers
-    g.setColour(juce::Colours::white.withAlpha(0.3f));
-    auto x1 = bounds.getX() + attackWidth;
-    auto x2 = bounds.getX() + attackWidth + decayWidth;
-    auto x3 = bounds.getX() + attackWidth + decayWidth + sustainWidth;
-    
-    g.drawLine(x1, bounds.getY(), x1, bounds.getBottom(), 0.5f);
-    g.drawLine(x2, bounds.getY(), x2, bounds.getBottom(), 0.5f);
-    g.drawLine(x3, bounds.getY(), x3, bounds.getBottom(), 0.5f);
-    
-    // Draw phase labels
-    g.setColour(juce::Colours::white.withAlpha(0.6f));
-    g.setFont(juce::Font("Press Start 2P", 8.0f, juce::Font::plain));
-    
-    // Only draw labels if there's enough space
-    if (attackWidth > 20)
-        g.drawText("A", juce::Rectangle<int>(bounds.getX(), bounds.getY(), attackWidth, 12), juce::Justification::centred);
-    if (decayWidth > 20)
-        g.drawText("D", juce::Rectangle<int>(bounds.getX() + attackWidth, bounds.getY(), decayWidth, 12), juce::Justification::centred);
-    if (sustainWidth > 20)
-        g.drawText("S", juce::Rectangle<int>(bounds.getX() + attackWidth + decayWidth, bounds.getY(), sustainWidth, 12), juce::Justification::centred);
-    if (releaseWidth > 20)
-        g.drawText("R", juce::Rectangle<int>(bounds.getX() + attackWidth + decayWidth + sustainWidth, bounds.getY(), releaseWidth, 12), juce::Justification::centred);
-}
-
-void ADSREnvelopeComponent::resized()
-{
-    repaint();
-}
-
-void ADSREnvelopeComponent::updateEnvelope(float attack, float decay, float sustain, float release)
-{
-    attackTime = attack;
-    decayTime = decay;
-    sustainLevel = sustain;
-    releaseTime = release;
-    repaint();
-}
-
 
 SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& processor)
-    : audioProcessor(processor), effectsModule(juce::TabbedButtonBar::TabsAtTop)
+    : audioProcessor(processor),
+      effectsModule(juce::TabbedButtonBar::TabsAtTop),
+      macroControls(*this, processor, &simpleKnobLookAndFeel, &engravedLabelLookAndFeel)
 {
+    addAndMakeVisible(macroControls);
+
     // VOLUME CONTROLS GROUP - Row 4 (MOVEABLE)
     volumeControlsVolumeLabel.setText("VOLUME", juce::dontSendNotification);
     volumeControlsVolumeLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
@@ -761,136 +566,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     filterModule.syncWithDSPState();
     
     // MACRO CONTROLS - 4 placeholder knobs
-    macro1Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    macro1Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    macro1Knob.setRange(0.0, 1.0, 0.01);
-    macro1Knob.setValue(0.5);
-    macro1Knob.setLookAndFeel(&simpleKnobLookAndFeel);
-    macro1Knob.addListener(this);
-    addAndMakeVisible(macro1Knob);
-    
-    macro1Label.setText("MACRO 1", juce::dontSendNotification);
-    macro1Label.setJustificationType(juce::Justification::centred);
-    macro1Label.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
-    macro1Label.setLookAndFeel(&engravedLabelLookAndFeel);
-    addAndMakeVisible(macro1Label);
-    
-    macro2Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    macro2Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    macro2Knob.setRange(0.0, 1.0, 0.01);
-    macro2Knob.setValue(0.5);
-    macro2Knob.setLookAndFeel(&simpleKnobLookAndFeel);
-    macro2Knob.addListener(this);
-    addAndMakeVisible(macro2Knob);
-    
-    macro2Label.setText("MACRO 2", juce::dontSendNotification);
-    macro2Label.setJustificationType(juce::Justification::centred);
-    macro2Label.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
-    macro2Label.setLookAndFeel(&engravedLabelLookAndFeel);
-    addAndMakeVisible(macro2Label);
-    
-    macro3Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    macro3Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    macro3Knob.setRange(0.0, 1.0, 0.01);
-    macro3Knob.setValue(0.5);
-    macro3Knob.setLookAndFeel(&simpleKnobLookAndFeel);
-    macro3Knob.addListener(this);
-    addAndMakeVisible(macro3Knob);
-    
-    macro3Label.setText("MACRO 3", juce::dontSendNotification);
-    macro3Label.setJustificationType(juce::Justification::centred);
-    macro3Label.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
-    macro3Label.setLookAndFeel(&engravedLabelLookAndFeel);
-    addAndMakeVisible(macro3Label);
-    
-    macro4Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    macro4Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    macro4Knob.setRange(0.0, 1.0, 0.01);
-    macro4Knob.setValue(0.5);
-    macro4Knob.setLookAndFeel(&simpleKnobLookAndFeel);
-    macro4Knob.addListener(this);
-    addAndMakeVisible(macro4Knob);
-    
-    macro4Label.setText("MACRO 4", juce::dontSendNotification);
-    macro4Label.setJustificationType(juce::Justification::centred);
-    macro4Label.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
-    macro4Label.setLookAndFeel(&engravedLabelLookAndFeel);
-    addAndMakeVisible(macro4Label);
-    
-    macro5Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    macro5Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    macro5Knob.setRange(0.0, 1.0, 0.01);
-    macro5Knob.setValue(0.5);
-    macro5Knob.setLookAndFeel(&simpleKnobLookAndFeel);
-    macro5Knob.addListener(this);
-    addAndMakeVisible(macro5Knob);
-    
-    macro5Label.setText("MACRO 5", juce::dontSendNotification);
-    macro5Label.setJustificationType(juce::Justification::centred);
-    macro5Label.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
-    macro5Label.setLookAndFeel(&engravedLabelLookAndFeel);
-    addAndMakeVisible(macro5Label);
-    
-    macro6Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    macro6Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    macro6Knob.setRange(0.0, 1.0, 0.01);
-    macro6Knob.setValue(0.5);
-    macro6Knob.setLookAndFeel(&simpleKnobLookAndFeel);
-    macro6Knob.addListener(this);
-    addAndMakeVisible(macro6Knob);
-    
-    macro6Label.setText("MACRO 6", juce::dontSendNotification);
-    macro6Label.setJustificationType(juce::Justification::centred);
-    macro6Label.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
-    macro6Label.setLookAndFeel(&engravedLabelLookAndFeel);
-    addAndMakeVisible(macro6Label);
-    
-    macro7Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    macro7Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    macro7Knob.setRange(0.0, 1.0, 0.01);
-    macro7Knob.setValue(0.5);
-    macro7Knob.setLookAndFeel(&simpleKnobLookAndFeel);
-    macro7Knob.addListener(this);
-    addAndMakeVisible(macro7Knob);
-    
-    macro7Label.setText("MACRO 7", juce::dontSendNotification);
-    macro7Label.setJustificationType(juce::Justification::centred);
-    macro7Label.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
-    macro7Label.setLookAndFeel(&engravedLabelLookAndFeel);
-    addAndMakeVisible(macro7Label);
-    
-    macro8Knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    macro8Knob.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    macro8Knob.setRange(0.0, 1.0, 0.01);
-    macro8Knob.setValue(0.5);
-    macro8Knob.setLookAndFeel(&simpleKnobLookAndFeel);
-    macro8Knob.addListener(this);
-    addAndMakeVisible(macro8Knob);
-    
-    macro8Label.setText("MACRO 8", juce::dontSendNotification);
-    macro8Label.setJustificationType(juce::Justification::centred);
-    macro8Label.setFont(juce::Font("Times New Roman", 9.0f, juce::Font::bold));
-    macro8Label.setLookAndFeel(&engravedLabelLookAndFeel);
-    addAndMakeVisible(macro8Label);
-    
-    // Initialize draggable macro symbols
-    macroSymbol1 = std::make_unique<DraggableMacroSymbol>(1, this);
-    macroSymbol2 = std::make_unique<DraggableMacroSymbol>(2, this);
-    macroSymbol3 = std::make_unique<DraggableMacroSymbol>(3, this);
-    macroSymbol4 = std::make_unique<DraggableMacroSymbol>(4, this);
-    macroSymbol5 = std::make_unique<DraggableMacroSymbol>(5, this);
-    macroSymbol6 = std::make_unique<DraggableMacroSymbol>(6, this);
-    macroSymbol7 = std::make_unique<DraggableMacroSymbol>(7, this);
-    macroSymbol8 = std::make_unique<DraggableMacroSymbol>(8, this);
-    
-    addAndMakeVisible(*macroSymbol1);
-    addAndMakeVisible(*macroSymbol2);
-    addAndMakeVisible(*macroSymbol3);
-    addAndMakeVisible(*macroSymbol4);
-    addAndMakeVisible(*macroSymbol5);
-    addAndMakeVisible(*macroSymbol6);
-    addAndMakeVisible(*macroSymbol7);
-    addAndMakeVisible(*macroSymbol8);
+    // Macro controls now handled by MacroControlsComponent
     
     // ADSR ENVELOPE VISUALIZER GROUP - Row 2 (MOVEABLE)
     addAndMakeVisible(adsrEnvelopeVisualizer);
@@ -1422,17 +1098,9 @@ SynthesizerComponent::~SynthesizerComponent()
     osc2DetuneLabel.setLookAndFeel(nullptr);
     osc2StereoKnob.setLookAndFeel(nullptr);
     osc2StereoLabel.setLookAndFeel(nullptr);
-    
-    // Reset macro knobs look and feel
-    macro1Knob.setLookAndFeel(nullptr);
-    macro2Knob.setLookAndFeel(nullptr);
-    macro3Knob.setLookAndFeel(nullptr);
-    macro4Knob.setLookAndFeel(nullptr);
-    macro5Knob.setLookAndFeel(nullptr);
-    macro6Knob.setLookAndFeel(nullptr);
-    macro7Knob.setLookAndFeel(nullptr);
-    macro8Knob.setLookAndFeel(nullptr);
-    
+
+    // Macro controls cleanup now handled by MacroControlsComponent
+
     // Reset effects preset controls look and feel
     effectsPresetPrevButton.setLookAndFeel(nullptr);
     effectsPresetNextButton.setLookAndFeel(nullptr);
@@ -2026,7 +1694,7 @@ void SynthesizerComponent::paintOverChildren(juce::Graphics& g)
     }
     
     // Draw macro indicators on top of everything
-    drawMacroIndicators(g);
+    macroControls.drawMacroIndicators(g);
 }
 
 void SynthesizerComponent::resized()
@@ -2067,76 +1735,9 @@ void SynthesizerComponent::resized()
     // Store bounds for background drawing (with reduced padding for less width) - keep background at original position
     auto backgroundY = totalBounds.getHeight() - totalMacroHeight - 20; // Original background position
     macroKnobsBounds = juce::Rectangle<int>(macroStartX - 40, backgroundY - 13, totalMacroWidth + 80, totalMacroHeight + 11);
-    
-    // Top row (Macro 1, 2, 3, 4)
-    auto topRowY = macroY;
-    
-    // Macro 1
-    auto macro1Area = juce::Rectangle<int>(macroStartX, topRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
-    auto macro1LabelArea = juce::Rectangle<int>(macroStartX - 7, topRowY + macroKnobSize - 6, macroKnobSize + 15, macroLabelHeight);
-    macro1Label.setBounds(macro1LabelArea);
-    macro1Knob.setBounds(macro1Area.removeFromTop(macroKnobSize));
-    
-    // Macro 2
-    auto macro2Area = juce::Rectangle<int>(macroStartX + macroKnobSize + macroKnobSpacing, topRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
-    auto macro2LabelArea = juce::Rectangle<int>(macroStartX + macroKnobSize + macroKnobSpacing - 7, topRowY + macroKnobSize - 6, macroKnobSize + 15, macroLabelHeight);
-    macro2Label.setBounds(macro2LabelArea);
-    macro2Knob.setBounds(macro2Area.removeFromTop(macroKnobSize));
-    
-    // Macro 3
-    auto macro3Area = juce::Rectangle<int>(macroStartX + 2 * (macroKnobSize + macroKnobSpacing), topRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
-    auto macro3LabelArea = juce::Rectangle<int>(macroStartX + 2 * (macroKnobSize + macroKnobSpacing) - 7, topRowY + macroKnobSize - 6, macroKnobSize + 15, macroLabelHeight);
-    macro3Label.setBounds(macro3LabelArea);
-    macro3Knob.setBounds(macro3Area.removeFromTop(macroKnobSize));
-    
-    // Macro 4
-    auto macro4Area = juce::Rectangle<int>(macroStartX + 3 * (macroKnobSize + macroKnobSpacing), topRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
-    auto macro4LabelArea = juce::Rectangle<int>(macroStartX + 3 * (macroKnobSize + macroKnobSpacing) - 7, topRowY + macroKnobSize - 6, macroKnobSize + 15, macroLabelHeight);
-    macro4Label.setBounds(macro4LabelArea);
-    macro4Knob.setBounds(macro4Area.removeFromTop(macroKnobSize));
-    
-    // Bottom row (Macro 5, 6, 7, 8)
-    auto bottomRowY = topRowY + macroKnobSize + macroLabelHeight + macroRowSpacing - 20;
-    
-    // Macro 5
-    auto macro5Area = juce::Rectangle<int>(macroStartX, bottomRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
-    auto macro5LabelArea = juce::Rectangle<int>(macroStartX - 7, bottomRowY + macroKnobSize - 6, macroKnobSize + 15, macroLabelHeight);
-    macro5Label.setBounds(macro5LabelArea);
-    macro5Knob.setBounds(macro5Area.removeFromTop(macroKnobSize));
-    
-    // Macro 6
-    auto macro6Area = juce::Rectangle<int>(macroStartX + macroKnobSize + macroKnobSpacing, bottomRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
-    auto macro6LabelArea = juce::Rectangle<int>(macroStartX + macroKnobSize + macroKnobSpacing - 7, bottomRowY + macroKnobSize - 6, macroKnobSize + 15, macroLabelHeight);
-    macro6Label.setBounds(macro6LabelArea);
-    macro6Knob.setBounds(macro6Area.removeFromTop(macroKnobSize));
-    
-    // Macro 7
-    auto macro7Area = juce::Rectangle<int>(macroStartX + 2 * (macroKnobSize + macroKnobSpacing), bottomRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
-    auto macro7LabelArea = juce::Rectangle<int>(macroStartX + 2 * (macroKnobSize + macroKnobSpacing) - 7, bottomRowY + macroKnobSize - 6, macroKnobSize + 15, macroLabelHeight);
-    macro7Label.setBounds(macro7LabelArea);
-    macro7Knob.setBounds(macro7Area.removeFromTop(macroKnobSize));
-    
-    // Macro 8
-    auto macro8Area = juce::Rectangle<int>(macroStartX + 3 * (macroKnobSize + macroKnobSpacing), bottomRowY, macroKnobSize, macroKnobSize + macroLabelHeight);
-    auto macro8LabelArea = juce::Rectangle<int>(macroStartX + 3 * (macroKnobSize + macroKnobSpacing) - 7, bottomRowY + macroKnobSize - 6, macroKnobSize + 15, macroLabelHeight);
-    macro8Label.setBounds(macro8LabelArea);
-    macro8Knob.setBounds(macro8Area.removeFromTop(macroKnobSize));
-    
-    // Position draggable macro symbols to the right of each macro knob
-    auto symbolOffsetX = macroKnobSize + 8 - 8 - 10 - 3 - 3 - 6 + 3; // 8px to the right of each knob, then 8px left, then 10px more left, then 3px more left, then 3px more left, then 6px more left, then 3px right
-    auto symbolOffsetY = (macroKnobSize - 35) / 2 + 4 + 5 - 1 - 1 - 1; // Center vertically with knob (updated for 35px symbol), then 4px down, then 5px more down, then 1px up, then 1px more up, then 1px more up
-    
-    // Top row symbols (Macro 1-4)
-    macroSymbol1->setOriginalPosition({macroStartX + symbolOffsetX, topRowY + symbolOffsetY});
-    macroSymbol2->setOriginalPosition({macroStartX + macroKnobSize + macroKnobSpacing + symbolOffsetX, topRowY + symbolOffsetY});
-    macroSymbol3->setOriginalPosition({macroStartX + 2 * (macroKnobSize + macroKnobSpacing) + symbolOffsetX, topRowY + symbolOffsetY});
-    macroSymbol4->setOriginalPosition({macroStartX + 3 * (macroKnobSize + macroKnobSpacing) + symbolOffsetX, topRowY + symbolOffsetY});
-    
-    // Bottom row symbols (Macro 5-8)
-    macroSymbol5->setOriginalPosition({macroStartX + symbolOffsetX, bottomRowY + symbolOffsetY});
-    macroSymbol6->setOriginalPosition({macroStartX + macroKnobSize + macroKnobSpacing + symbolOffsetX, bottomRowY + symbolOffsetY});
-    macroSymbol7->setOriginalPosition({macroStartX + 2 * (macroKnobSize + macroKnobSpacing) + symbolOffsetX, bottomRowY + symbolOffsetY});
-    macroSymbol8->setOriginalPosition({macroStartX + 3 * (macroKnobSize + macroKnobSpacing) + symbolOffsetX, bottomRowY + symbolOffsetY});
+
+    // Position MacroControlsComponent
+    macroControls.setBounds(macroStartX, macroY, totalMacroWidth, totalMacroHeight);
 }
 
 void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
@@ -2398,38 +1999,7 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
         parametricEQ.repaint();
     }
     // Macro knobs - update all linked parameters
-    else if (slider == &macro1Knob)
-    {
-        updateMacroMappings(1, macro1Knob.getValue());
-    }
-    else if (slider == &macro2Knob)
-    {
-        updateMacroMappings(2, macro2Knob.getValue());
-    }
-    else if (slider == &macro3Knob)
-    {
-        updateMacroMappings(3, macro3Knob.getValue());
-    }
-    else if (slider == &macro4Knob)
-    {
-        updateMacroMappings(4, macro4Knob.getValue());
-    }
-    else if (slider == &macro5Knob)
-    {
-        updateMacroMappings(5, macro5Knob.getValue());
-    }
-    else if (slider == &macro6Knob)
-    {
-        updateMacroMappings(6, macro6Knob.getValue());
-    }
-    else if (slider == &macro7Knob)
-    {
-        updateMacroMappings(7, macro7Knob.getValue());
-    }
-    else if (slider == &macro8Knob)
-    {
-        updateMacroMappings(8, macro8Knob.getValue());
-    }
+    // Macro controls now handled by MacroControlsComponent
 }
 
 void SynthesizerComponent::buttonClicked(juce::Button* button)
@@ -4562,54 +4132,7 @@ void SynthesizerComponent::drawMacroKnobsBackground(juce::Graphics& g, juce::Rec
 
 void SynthesizerComponent::createMacroMapping(int macroIndex, juce::Slider* targetSlider)
 {
-    if (!targetSlider) return;
-    
-    // Use the MacroSystem to create the mapping
-    macroSystem.createMacroMapping(macroIndex, targetSlider);
-    
-    // Trigger repaint to show new indicator
-    repaint();
-}
-
-void SynthesizerComponent::updateMacroMappings(int macroIndex, double macroValue)
-{
-    // Use MacroSystem to update mappings
-    macroSystem.updateMacroMappings(macroIndex, macroValue);
-    
-    // Handle any additional parameter updates for specific sliders
-    for (auto& mapping : macroSystem.getMacroMappings())
-    {
-        if (mapping.macroIndex == macroIndex && mapping.targetSlider)
-        {
-            // Calculate proportional offset from base value
-            // When macro = 0.0, target stays at baseValue
-            // When macro = 1.0, target goes to baseValue + (range * direction)
-            
-            // Use user-defined range instead of full slider range
-            double userRange = mapping.userMaxRange - mapping.userMinRange;
-            double offset = (macroValue - 0.5) * userRange; // -0.5 to +0.5 range for bidirectional control
-            double newValue = mapping.baseValue + offset;
-            
-            // Clamp to user-defined range (which is within slider's valid range)
-            newValue = juce::jlimit(mapping.userMinRange, mapping.userMaxRange, newValue);
-            
-            // Update the target slider value but don't send notification to avoid visual movement
-            // We want the parameter to change but the knob to stay visually at its base position
-            mapping.targetSlider->setValue(newValue, juce::dontSendNotification);
-            
-            // Manually trigger the parameter update to the audio processor
-            triggerParameterUpdate(mapping.targetSlider, newValue);
-        }
-    }
-    
-    // Trigger visual update for the circular indicators
-    repaint();
-}
-
-void SynthesizerComponent::removeMacroMapping(int macroIndex, juce::Slider* targetSlider)
-{
-    macroSystem.removeMacroMapping(macroIndex, targetSlider);
-    repaint();
+    macroControls.createMacroMapping(macroIndex, targetSlider);
 }
 
 juce::Slider* SynthesizerComponent::findSliderAt(juce::Point<int> position)
@@ -4639,31 +4162,10 @@ juce::Slider* SynthesizerComponent::findSliderAt(juce::Point<int> position)
     };
     
     // Use MacroSystem to find slider at position with coordinate conversion
-    return macroSystem.findSliderAt(position, allSliders);
+    return macroControls.getMacroSystem().findSliderAt(position, allSliders);
 }
 
 
-void SynthesizerComponent::drawMacroIndicators(juce::Graphics& g)
-{
-    // Use MacroSystem to draw macro indicators
-    macroSystem.drawMacroIndicators(g);
-}
-
-
-double SynthesizerComponent::getMacroKnobValue(int macroIndex)
-{
-    switch (macroIndex) {
-        case 1: return macro1Knob.getValue();
-        case 2: return macro2Knob.getValue();
-        case 3: return macro3Knob.getValue();
-        case 4: return macro4Knob.getValue();
-        case 5: return macro5Knob.getValue();
-        case 6: return macro6Knob.getValue();
-        case 7: return macro7Knob.getValue();
-        case 8: return macro8Knob.getValue();
-        default: return 0.5; // Default center position
-    }
-}
 
 void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double newValue)
 {
@@ -4930,13 +4432,13 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
 
 MacroMapping* SynthesizerComponent::findMacroMappingAtPosition(juce::Point<int> position)
 {
-    return macroSystem.findMacroMappingAtPosition(position);
+    return macroControls.getMacroSystem().findMacroMappingAtPosition(position);
 }
 
 
 void SynthesizerComponent::updateMappingRange(MacroMapping* mapping, juce::Point<int> dragPosition)
 {
-    macroSystem.updateMappingRange(mapping, dragPosition);
+    macroControls.getMacroSystem().updateMappingRange(mapping, dragPosition);
     repaint();
 }
 
