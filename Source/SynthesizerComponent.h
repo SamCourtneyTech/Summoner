@@ -15,6 +15,7 @@
 #include "UI/FlangerComponent.h"
 #include "UI/FilterControlComponent.h"
 #include "UI/MacroControlsComponent.h"
+#include "UI/SecondOscillatorComponent.h"
 
 class SummonerXSerum2AudioProcessor;
 class SynthesizerComponent;
@@ -802,10 +803,7 @@ private:
     
     // ADSR ENVELOPE VISUALIZER GROUP - Row 2 (MOVEABLE)
     ADSREnvelopeComponent adsrEnvelopeVisualizer;
-    
-    // OSCILLATOR 2 ADSR ENVELOPE VISUALIZER
-    ADSREnvelopeComponent osc2AdsrEnvelopeVisualizer;
-    
+
     // LFO MODULE
     LFOModuleComponent lfoModule;
     
@@ -900,44 +898,9 @@ private:
     juce::TextButton waveTypeWhiteNoiseButton;
     juce::TextButton waveTypePinkNoiseButton;
     juce::TextButton waveTypeRandomPhaseButton;
-    
-    // SECOND OSCILLATOR CONTROLS - Row 6 (MOVEABLE)
-    juce::TextButton osc2SineButton;
-    juce::TextButton osc2SawButton;
-    juce::TextButton osc2SquareButton;
-    juce::TextButton osc2TriangleButton;
-    juce::TextButton osc2WhiteNoiseButton;
-    juce::TextButton osc2PinkNoiseButton;
-    juce::Slider osc2VolumeKnob;
-    juce::Label osc2VolumeLabel;
-    juce::Slider osc2DetuneKnob;
-    juce::Label osc2DetuneLabel;
-    juce::Slider osc2StereoKnob;
-    juce::Label osc2StereoLabel;
-    juce::Label osc2VoicesLabel;
-    juce::Label osc2VoicesValueLabel;
-    juce::Slider osc2PanKnob;
-    juce::Label osc2PanLabel;
-    juce::Label osc2OctaveLabel;
-    juce::Label osc2OctaveValueLabel;
-    juce::Label osc2SemitoneLabel;
-    juce::Label osc2SemitoneValueLabel;
-    juce::Label osc2FineTuneLabel;
-    juce::Label osc2FineTuneValueLabel;
-    juce::TextButton osc2RandomPhaseButton;
-    juce::Slider osc2PhaseKnob;
-    juce::Label osc2PhaseLabel;
-    juce::Label osc2TitleLabel;
-    juce::Slider osc2AttackKnob;
-    juce::Label osc2AttackLabel;
-    juce::Slider osc2DecayKnob;
-    juce::Label osc2DecayLabel;
-    juce::Slider osc2SustainKnob;
-    juce::Label osc2SustainLabel;
-    juce::Slider osc2ReleaseKnob;
-    juce::Label osc2ReleaseLabel;
-    juce::TextButton osc2AdsrLinkButton;
-    
+
+    // SECOND OSCILLATOR - Component
+    SecondOscillatorComponent secondOscillator;
 
     // Macro controls component
     MacroControlsComponent macroControls;
@@ -1058,29 +1021,6 @@ private:
     int voiceCountValue = 1;
     bool isDraggingVoiceCount = false;
     int dragStartVoiceCount = 0;
-    
-    // Oscillator 2 ADSR original values (stored when linking is enabled)
-    float osc2OriginalAttack = 0.1f;
-    float osc2OriginalDecay = 0.2f;
-    float osc2OriginalSustain = 0.7f;
-    float osc2OriginalRelease = 0.3f;
-    
-    // Oscillator 2 pitch control state
-    int osc2OctaveValue = 0;
-    bool isDraggingOsc2Octave = false;
-    int dragStartOsc2Octave = 0;
-    
-    int osc2SemitoneValue = 0;
-    bool isDraggingOsc2Semitone = false;
-    int dragStartOsc2Semitone = 0;
-    
-    int osc2FineTuneValue = 0;
-    bool isDraggingOsc2FineTune = false;
-    int dragStartOsc2FineTune = 0;
-    
-    int osc2VoiceCountValue = 1;
-    bool isDraggingOsc2VoiceCount = false;
-    int dragStartOsc2VoiceCount = 0;
     
     // Distortion type control state - now handled by DistortionComponent
     int reverbTypeValue = 2; // 1-5 for different reverb types (1=Plate, 2=Hall, 3=Vintage, 4=Room, 5=Ambience)

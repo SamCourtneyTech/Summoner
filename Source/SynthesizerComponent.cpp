@@ -6,8 +6,10 @@
 SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& processor)
     : audioProcessor(processor),
       effectsModule(juce::TabbedButtonBar::TabsAtTop),
+      secondOscillator(*this, processor, &customKnobLookAndFeel, &customWaveButtonLookAndFeel, &ledLabelLookAndFeel, &ledNumberLookAndFeel),
       macroControls(*this, processor, &simpleKnobLookAndFeel, &engravedLabelLookAndFeel)
 {
+    addAndMakeVisible(secondOscillator);
     addAndMakeVisible(macroControls);
 
     // VOLUME CONTROLS GROUP - Row 4 (MOVEABLE)
@@ -295,270 +297,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     waveTypeRandomPhaseButton.setToggleState(true, juce::dontSendNotification); // Default to random phase ON
     waveTypeRandomPhaseButton.addListener(this);
     addAndMakeVisible(waveTypeRandomPhaseButton);
-    
-    // SECOND OSCILLATOR CONTROLS - Row 6 (MOVEABLE)
-    // osc2TitleLabel removed
-    
-    osc2SineButton.setButtonText("SIN");
-    osc2SineButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    osc2SineButton.setClickingTogglesState(true);
-    osc2SineButton.setToggleState(false, juce::dontSendNotification); // Sine not selected by default
-    osc2SineButton.addListener(this);
-    addAndMakeVisible(osc2SineButton);
-    
-    osc2VoicesLabel.setText("VOICES", juce::dontSendNotification);
-    osc2VoicesLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    osc2VoicesLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    osc2VoicesLabel.setJustificationType(juce::Justification::centred);
-    osc2VoicesLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(osc2VoicesLabel);
-    
-    osc2VoicesValueLabel.setText("1", juce::dontSendNotification);
-    osc2VoicesValueLabel.setFont(juce::Font("Press Start 2P", 12.0f, juce::Font::plain));
-    osc2VoicesValueLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    osc2VoicesValueLabel.setJustificationType(juce::Justification::centred);
-    osc2VoicesValueLabel.setLookAndFeel(&ledNumberLookAndFeel);
-    osc2VoicesValueLabel.setInterceptsMouseClicks(true, false);
-    osc2VoicesValueLabel.addMouseListener(this, false);
-    addAndMakeVisible(osc2VoicesValueLabel);
-    
-    osc2PanLabel.setText("PAN", juce::dontSendNotification);
-    osc2PanLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    osc2PanLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    osc2PanLabel.setJustificationType(juce::Justification::centred);
-    osc2PanLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(osc2PanLabel);
-    
-    osc2PanKnob.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    osc2PanKnob.setRange(-1.0, 1.0, 0.01);
-    osc2PanKnob.setValue(0.0);
-    osc2PanKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    osc2PanKnob.setLookAndFeel(&customKnobLookAndFeel);
-    osc2PanKnob.addListener(this);
-    addAndMakeVisible(osc2PanKnob);
-    
-    osc2OctaveLabel.setText("OCTAVE", juce::dontSendNotification);
-    osc2OctaveLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    osc2OctaveLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    osc2OctaveLabel.setJustificationType(juce::Justification::centred);
-    osc2OctaveLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(osc2OctaveLabel);
-    
-    osc2OctaveValueLabel.setText("0", juce::dontSendNotification);
-    osc2OctaveValueLabel.setFont(juce::Font("Press Start 2P", 12.0f, juce::Font::plain));
-    osc2OctaveValueLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    osc2OctaveValueLabel.setJustificationType(juce::Justification::centred);
-    osc2OctaveValueLabel.setLookAndFeel(&ledNumberLookAndFeel);
-    osc2OctaveValueLabel.setInterceptsMouseClicks(true, false);
-    osc2OctaveValueLabel.addMouseListener(this, false);
-    addAndMakeVisible(osc2OctaveValueLabel);
-    
-    osc2SemitoneLabel.setText("SEMI", juce::dontSendNotification);
-    osc2SemitoneLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    osc2SemitoneLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    osc2SemitoneLabel.setJustificationType(juce::Justification::centred);
-    osc2SemitoneLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(osc2SemitoneLabel);
-    
-    osc2SemitoneValueLabel.setText("0", juce::dontSendNotification);
-    osc2SemitoneValueLabel.setFont(juce::Font("Press Start 2P", 12.0f, juce::Font::plain));
-    osc2SemitoneValueLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    osc2SemitoneValueLabel.setJustificationType(juce::Justification::centred);
-    osc2SemitoneValueLabel.setLookAndFeel(&ledNumberLookAndFeel);
-    osc2SemitoneValueLabel.setInterceptsMouseClicks(true, false);
-    osc2SemitoneValueLabel.addMouseListener(this, false);
-    addAndMakeVisible(osc2SemitoneValueLabel);
-    
-    osc2FineTuneLabel.setText("FINE", juce::dontSendNotification);
-    osc2FineTuneLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    osc2FineTuneLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    osc2FineTuneLabel.setJustificationType(juce::Justification::centred);
-    osc2FineTuneLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(osc2FineTuneLabel);
-    
-    osc2FineTuneValueLabel.setText("0", juce::dontSendNotification);
-    osc2FineTuneValueLabel.setFont(juce::Font("Press Start 2P", 12.0f, juce::Font::plain));
-    osc2FineTuneValueLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    osc2FineTuneValueLabel.setJustificationType(juce::Justification::centred);
-    osc2FineTuneValueLabel.setLookAndFeel(&ledNumberLookAndFeel);
-    osc2FineTuneValueLabel.setInterceptsMouseClicks(true, false);
-    osc2FineTuneValueLabel.addMouseListener(this, false);
-    addAndMakeVisible(osc2FineTuneValueLabel);
-    
-    osc2RandomPhaseButton.setButtonText("RND PHASE");
-    osc2RandomPhaseButton.setClickingTogglesState(true);
-    osc2RandomPhaseButton.setToggleState(true, juce::dontSendNotification); // Enabled by default
-    osc2RandomPhaseButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    osc2RandomPhaseButton.addListener(this);
-    addAndMakeVisible(osc2RandomPhaseButton);
-    
-    osc2PhaseLabel.setText("PHASE", juce::dontSendNotification);
-    osc2PhaseLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    osc2PhaseLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    osc2PhaseLabel.setJustificationType(juce::Justification::centred);
-    osc2PhaseLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(osc2PhaseLabel);
 
-    osc2PhaseKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    osc2PhaseKnob.setRange(0.0, 360.0, 1.0);
-    osc2PhaseKnob.setValue(0.0);
-    osc2PhaseKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 60, 20);
-    osc2PhaseKnob.setLookAndFeel(&customKnobLookAndFeel);
-    osc2PhaseKnob.addListener(this);
-    addAndMakeVisible(osc2PhaseKnob);
-    
-    // Set oscillator 2 to saw wave and enable it by default
-    audioProcessor.setOsc2Enabled(true);
-    audioProcessor.setOsc2Type(1); // 1 = saw wave
-    
-    osc2SawButton.setButtonText("SAW");
-    osc2SawButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    osc2SawButton.setClickingTogglesState(true);
-    osc2SawButton.setToggleState(true, juce::dontSendNotification); // Start selected
-    osc2SawButton.addListener(this);
-    addAndMakeVisible(osc2SawButton);
-    
-    osc2SquareButton.setButtonText("SQR");
-    osc2SquareButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    osc2SquareButton.setClickingTogglesState(true);
-    osc2SquareButton.setToggleState(false, juce::dontSendNotification); // Start unselected
-    osc2SquareButton.addListener(this);
-    addAndMakeVisible(osc2SquareButton);
-    
-    osc2TriangleButton.setButtonText("TRI");
-    osc2TriangleButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    osc2TriangleButton.setClickingTogglesState(true);
-    osc2TriangleButton.setToggleState(false, juce::dontSendNotification); // Start unselected
-    osc2TriangleButton.addListener(this);
-    addAndMakeVisible(osc2TriangleButton);
-    
-    osc2WhiteNoiseButton.setButtonText("WHT");
-    osc2WhiteNoiseButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    osc2WhiteNoiseButton.setClickingTogglesState(true);
-    osc2WhiteNoiseButton.setToggleState(false, juce::dontSendNotification); // Start unselected
-    osc2WhiteNoiseButton.addListener(this);
-    addAndMakeVisible(osc2WhiteNoiseButton);
-    
-    osc2PinkNoiseButton.setButtonText("PNK");
-    osc2PinkNoiseButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    osc2PinkNoiseButton.setClickingTogglesState(true);
-    osc2PinkNoiseButton.setToggleState(false, juce::dontSendNotification); // Start unselected
-    osc2PinkNoiseButton.addListener(this);
-    addAndMakeVisible(osc2PinkNoiseButton);
-    
-    osc2VolumeKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    osc2VolumeKnob.setRange(0.0, 1.0, 0.01); // Same range as oscillator 1
-    osc2VolumeKnob.setValue(0.0); // Start oscillator 2 at 0 volume (off by default)
-    osc2VolumeKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    osc2VolumeKnob.setLookAndFeel(&customKnobLookAndFeel);
-    osc2VolumeKnob.addListener(this);
-    addAndMakeVisible(osc2VolumeKnob);
-
-    osc2DetuneKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    osc2DetuneKnob.setRange(0.0, 1.0, 0.01);
-    osc2DetuneKnob.setValue(0.0); // Start at 0 detune
-    osc2DetuneKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    osc2DetuneKnob.setLookAndFeel(&customKnobLookAndFeel);
-    osc2DetuneKnob.addListener(this);
-    addAndMakeVisible(osc2DetuneKnob);
-
-    osc2StereoKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    osc2StereoKnob.setRange(0.0, 1.0, 0.01);
-    osc2StereoKnob.setValue(0.5); // Start at 50% stereo width
-    osc2StereoKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    osc2StereoKnob.setLookAndFeel(&customKnobLookAndFeel);
-    osc2StereoKnob.addListener(this);
-    addAndMakeVisible(osc2StereoKnob);
-    
-    osc2VolumeLabel.setText("VOLUME", juce::dontSendNotification);
-    osc2VolumeLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    osc2VolumeLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    osc2VolumeLabel.setJustificationType(juce::Justification::centred);
-    osc2VolumeLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(osc2VolumeLabel);
-
-    osc2DetuneLabel.setText("DETUNE", juce::dontSendNotification);
-    osc2DetuneLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    osc2DetuneLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    osc2DetuneLabel.setJustificationType(juce::Justification::centred);
-    osc2DetuneLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(osc2DetuneLabel);
-
-    osc2StereoLabel.setText("STEREO", juce::dontSendNotification);
-    osc2StereoLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    osc2StereoLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    osc2StereoLabel.setJustificationType(juce::Justification::centred);
-    osc2StereoLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(osc2StereoLabel);
-    
-    // Oscillator 2 ADSR controls
-    osc2AttackLabel.setText("ATTACK", juce::dontSendNotification);
-    osc2AttackLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    osc2AttackLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    osc2AttackLabel.setJustificationType(juce::Justification::centred);
-    osc2AttackLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(osc2AttackLabel);
-    
-    osc2AttackKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    osc2AttackKnob.setRange(0.01, 2.0, 0.01);
-    osc2AttackKnob.setValue(0.1);
-    osc2AttackKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    osc2AttackKnob.setLookAndFeel(&customKnobLookAndFeel);
-    osc2AttackKnob.addListener(this);
-    addAndMakeVisible(osc2AttackKnob);
-    
-    osc2DecayLabel.setText("DECAY", juce::dontSendNotification);
-    osc2DecayLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    osc2DecayLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    osc2DecayLabel.setJustificationType(juce::Justification::centred);
-    osc2DecayLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(osc2DecayLabel);
-    
-    osc2DecayKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    osc2DecayKnob.setRange(0.01, 2.0, 0.01);
-    osc2DecayKnob.setValue(0.2);
-    osc2DecayKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    osc2DecayKnob.setLookAndFeel(&customKnobLookAndFeel);
-    osc2DecayKnob.addListener(this);
-    addAndMakeVisible(osc2DecayKnob);
-    
-    osc2SustainLabel.setText("SUSTAIN", juce::dontSendNotification);
-    osc2SustainLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    osc2SustainLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    osc2SustainLabel.setJustificationType(juce::Justification::centred);
-    osc2SustainLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(osc2SustainLabel);
-    
-    osc2SustainKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    osc2SustainKnob.setRange(0.0, 1.0, 0.01);
-    osc2SustainKnob.setValue(0.7);
-    osc2SustainKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    osc2SustainKnob.setLookAndFeel(&customKnobLookAndFeel);
-    osc2SustainKnob.addListener(this);
-    addAndMakeVisible(osc2SustainKnob);
-    
-    osc2ReleaseLabel.setText("RELEASE", juce::dontSendNotification);
-    osc2ReleaseLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    osc2ReleaseLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    osc2ReleaseLabel.setJustificationType(juce::Justification::centred);
-    osc2ReleaseLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(osc2ReleaseLabel);
-    
-    osc2ReleaseKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    osc2ReleaseKnob.setRange(0.01, 3.0, 0.01);
-    osc2ReleaseKnob.setValue(0.3);
-    osc2ReleaseKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    osc2ReleaseKnob.setLookAndFeel(&customKnobLookAndFeel);
-    osc2ReleaseKnob.addListener(this);
-    addAndMakeVisible(osc2ReleaseKnob);
-    
-    osc2AdsrLinkButton.setButtonText("OSC1 ADSR");
-    osc2AdsrLinkButton.setClickingTogglesState(true);
-    osc2AdsrLinkButton.setToggleState(false, juce::dontSendNotification); // Off by default
-    osc2AdsrLinkButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    osc2AdsrLinkButton.addListener(this);
-    addAndMakeVisible(osc2AdsrLinkButton);
-    
     // FILTER CONTROLS - now handled by FilterControlComponent
     filterModule.setParentSynthesizer(this);
     addAndMakeVisible(filterModule);
@@ -570,10 +309,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     
     // ADSR ENVELOPE VISUALIZER GROUP - Row 2 (MOVEABLE)
     addAndMakeVisible(adsrEnvelopeVisualizer);
-    
-    // OSCILLATOR 2 ADSR ENVELOPE VISUALIZER
-    addAndMakeVisible(osc2AdsrEnvelopeVisualizer);
-    
+
     // LFO MODULE
     lfoModule.setLookAndFeel(&customKnobLookAndFeel, &customWaveButtonLookAndFeel, &ledLabelLookAndFeel);
     addAndMakeVisible(lfoModule);
@@ -1060,45 +796,7 @@ SynthesizerComponent::~SynthesizerComponent()
     pitchControlsSemitoneValueLabel.setLookAndFeel(nullptr);
     pitchControlsFineTuneValueLabel.setLookAndFeel(nullptr);
     pitchControlsVoiceCountValueLabel.setLookAndFeel(nullptr);
-    
-    // Reset oscillator 2 controls look and feel
-    osc2SineButton.setLookAndFeel(nullptr);
-    osc2SawButton.setLookAndFeel(nullptr);
-    osc2SquareButton.setLookAndFeel(nullptr);
-    osc2TriangleButton.setLookAndFeel(nullptr);
-    osc2WhiteNoiseButton.setLookAndFeel(nullptr);
-    osc2PinkNoiseButton.setLookAndFeel(nullptr);
-    osc2VolumeKnob.setLookAndFeel(nullptr);
-    osc2VolumeLabel.setLookAndFeel(nullptr);
-    // osc2VoicesKnob uses default look and feel (no custom styling needed)
-    osc2VoicesLabel.setLookAndFeel(nullptr);
-    osc2PanKnob.setLookAndFeel(nullptr);
-    osc2PanLabel.setLookAndFeel(nullptr);
-    // osc2OctaveKnob uses default look and feel (no custom styling needed)
-    osc2OctaveLabel.setLookAndFeel(nullptr);
-    // osc2SemitoneKnob uses default look and feel (no custom styling needed)
-    osc2SemitoneLabel.setLookAndFeel(nullptr);
-    // osc2FineTuneKnob uses default look and feel (no custom styling needed)
-    osc2FineTuneLabel.setLookAndFeel(nullptr);
-    osc2RandomPhaseButton.setLookAndFeel(nullptr);
-    osc2PhaseKnob.setLookAndFeel(nullptr);
-    osc2PhaseLabel.setLookAndFeel(nullptr);
-    osc2TitleLabel.setLookAndFeel(nullptr);
-    osc2AttackKnob.setLookAndFeel(nullptr);
-    osc2AttackLabel.setLookAndFeel(nullptr);
-    osc2DecayKnob.setLookAndFeel(nullptr);
-    osc2DecayLabel.setLookAndFeel(nullptr);
-    osc2SustainKnob.setLookAndFeel(nullptr);
-    osc2SustainLabel.setLookAndFeel(nullptr);
-    osc2ReleaseKnob.setLookAndFeel(nullptr);
-    osc2ReleaseLabel.setLookAndFeel(nullptr);
-    osc2AdsrLinkButton.setLookAndFeel(nullptr);
-    
-    osc2DetuneKnob.setLookAndFeel(nullptr);
-    osc2DetuneLabel.setLookAndFeel(nullptr);
-    osc2StereoKnob.setLookAndFeel(nullptr);
-    osc2StereoLabel.setLookAndFeel(nullptr);
-
+    // Oscillator 2 cleanup now handled by SecondOscillatorComponent
     // Macro controls cleanup now handled by MacroControlsComponent
 
     // Reset effects preset controls look and feel
@@ -1765,131 +1463,56 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     else if (slider == &adsrAttackKnob)
     {
         audioProcessor.setOsc1Attack(static_cast<float>(adsrAttackKnob.getValue()));
-        
-        // If ADSR is linked, also update oscillator 2
-        if (osc2AdsrLinkButton.getToggleState())
+
+        // If ADSR is linked, update oscillator 2 via secondOscillator component
+        if (secondOscillator.getAdsrLinkButton().getToggleState())
         {
-            osc2AttackKnob.setValue(adsrAttackKnob.getValue(), juce::dontSendNotification);
+            secondOscillator.getAttackKnob().setValue(adsrAttackKnob.getValue(), juce::dontSendNotification);
             audioProcessor.setOsc2Attack(static_cast<float>(adsrAttackKnob.getValue()));
         }
-        
+
         updateEnvelopeDisplay();
     }
     else if (slider == &adsrDecayKnob)
     {
         audioProcessor.setOsc1Decay(static_cast<float>(adsrDecayKnob.getValue()));
-        
-        // If ADSR is linked, also update oscillator 2
-        if (osc2AdsrLinkButton.getToggleState())
+
+        // If ADSR is linked, update oscillator 2 via secondOscillator component
+        if (secondOscillator.getAdsrLinkButton().getToggleState())
         {
-            osc2DecayKnob.setValue(adsrDecayKnob.getValue(), juce::dontSendNotification);
+            secondOscillator.getDecayKnob().setValue(adsrDecayKnob.getValue(), juce::dontSendNotification);
             audioProcessor.setOsc2Decay(static_cast<float>(adsrDecayKnob.getValue()));
         }
-        
+
         updateEnvelopeDisplay();
     }
     else if (slider == &adsrSustainKnob)
     {
         audioProcessor.setOsc1Sustain(static_cast<float>(adsrSustainKnob.getValue()));
-        
-        // If ADSR is linked, also update oscillator 2
-        if (osc2AdsrLinkButton.getToggleState())
+
+        // If ADSR is linked, update oscillator 2 via secondOscillator component
+        if (secondOscillator.getAdsrLinkButton().getToggleState())
         {
-            osc2SustainKnob.setValue(adsrSustainKnob.getValue(), juce::dontSendNotification);
+            secondOscillator.getSustainKnob().setValue(adsrSustainKnob.getValue(), juce::dontSendNotification);
             audioProcessor.setOsc2Sustain(static_cast<float>(adsrSustainKnob.getValue()));
         }
-        
+
         updateEnvelopeDisplay();
     }
     else if (slider == &adsrReleaseKnob)
     {
         audioProcessor.setOsc1Release(static_cast<float>(adsrReleaseKnob.getValue()));
-        
-        // If ADSR is linked, also update oscillator 2
-        if (osc2AdsrLinkButton.getToggleState())
+
+        // If ADSR is linked, update oscillator 2 via secondOscillator component
+        if (secondOscillator.getAdsrLinkButton().getToggleState())
         {
-            osc2ReleaseKnob.setValue(adsrReleaseKnob.getValue(), juce::dontSendNotification);
+            secondOscillator.getReleaseKnob().setValue(adsrReleaseKnob.getValue(), juce::dontSendNotification);
             audioProcessor.setOsc2Release(static_cast<float>(adsrReleaseKnob.getValue()));
         }
-        
+
         updateEnvelopeDisplay();
     }
-    else if (slider == &osc2VolumeKnob)
-    {
-        audioProcessor.setOsc2Volume(static_cast<float>(osc2VolumeKnob.getValue()));
-    }
-    else if (slider == &osc2DetuneKnob)
-    {
-        audioProcessor.setOsc2Detune(static_cast<float>(osc2DetuneKnob.getValue()));
-    }
-    else if (slider == &osc2StereoKnob)
-    {
-        audioProcessor.setOsc2Stereo(static_cast<float>(osc2StereoKnob.getValue()));
-    }
-    else if (slider == &osc2AttackKnob)
-    {
-        audioProcessor.setOsc2Attack(static_cast<float>(osc2AttackKnob.getValue()));
-        
-        // If ADSR is linked, also update oscillator 1
-        if (osc2AdsrLinkButton.getToggleState())
-        {
-            adsrAttackKnob.setValue(osc2AttackKnob.getValue(), juce::dontSendNotification);
-            audioProcessor.setOsc2Attack(static_cast<float>(osc2AttackKnob.getValue()));
-        }
-        
-        updateEnvelopeDisplay();
-    }
-    else if (slider == &osc2DecayKnob)
-    {
-        audioProcessor.setOsc2Decay(static_cast<float>(osc2DecayKnob.getValue()));
-        
-        // If ADSR is linked, also update oscillator 1
-        if (osc2AdsrLinkButton.getToggleState())
-        {
-            adsrDecayKnob.setValue(osc2DecayKnob.getValue(), juce::dontSendNotification);
-            audioProcessor.setOsc2Decay(static_cast<float>(osc2DecayKnob.getValue()));
-        }
-        
-        updateEnvelopeDisplay();
-    }
-    else if (slider == &osc2SustainKnob)
-    {
-        audioProcessor.setOsc2Sustain(static_cast<float>(osc2SustainKnob.getValue()));
-        
-        // If ADSR is linked, also update oscillator 1
-        if (osc2AdsrLinkButton.getToggleState())
-        {
-            adsrSustainKnob.setValue(osc2SustainKnob.getValue(), juce::dontSendNotification);
-            audioProcessor.setOsc2Sustain(static_cast<float>(osc2SustainKnob.getValue()));
-        }
-        
-        updateEnvelopeDisplay();
-    }
-    else if (slider == &osc2ReleaseKnob)
-    {
-        audioProcessor.setOsc2Release(static_cast<float>(osc2ReleaseKnob.getValue()));
-        
-        // If ADSR is linked, also update oscillator 1
-        if (osc2AdsrLinkButton.getToggleState())
-        {
-            adsrReleaseKnob.setValue(osc2ReleaseKnob.getValue(), juce::dontSendNotification);
-            audioProcessor.setOsc2Release(static_cast<float>(osc2ReleaseKnob.getValue()));
-        }
-        
-        updateEnvelopeDisplay();
-    }
-    // osc2VoicesKnob removed - now handled by mouse events
-    else if (slider == &osc2PanKnob)
-    {
-        audioProcessor.setOsc2Pan(static_cast<float>(osc2PanKnob.getValue()));
-    }
-    // osc2OctaveKnob removed - now handled by mouse events
-    // osc2SemitoneKnob removed - now handled by mouse events
-    // osc2FineTuneKnob removed - now handled by mouse events
-    else if (slider == &osc2PhaseKnob)
-    {
-        audioProcessor.setOsc2Phase(static_cast<float>(osc2PhaseKnob.getValue()));
-    }
+    // Oscillator 2 slider handling now in SecondOscillatorComponent
     // Filter controls now handled by FilterControlComponent
     // Chorus effect sliders now handled by ChorusComponent
     // Flanger effect sliders - now handled by FlangerComponent
@@ -2105,209 +1728,7 @@ void SynthesizerComponent::buttonClicked(juce::Button* button)
         // Random phase button is independent - doesn't affect other buttons
         audioProcessor.setOsc1RandomPhase(waveTypeRandomPhaseButton.getToggleState());
     }
-    else if (button == &osc2SineButton)
-    {
-        if (osc2SineButton.getToggleState())
-        {
-            // Select sine wave for oscillator 2
-            osc2SawButton.setToggleState(false, juce::dontSendNotification);
-            osc2SquareButton.setToggleState(false, juce::dontSendNotification);
-            osc2TriangleButton.setToggleState(false, juce::dontSendNotification);
-            osc2WhiteNoiseButton.setToggleState(false, juce::dontSendNotification);
-            osc2PinkNoiseButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setOsc2Type(0); // 0 = sine
-            audioProcessor.setOsc2Enabled(true);
-        }
-        else
-        {
-            // If deselecting sine, keep at least one selected
-            if (!osc2SawButton.getToggleState() && !osc2SquareButton.getToggleState() && !osc2TriangleButton.getToggleState() && !osc2WhiteNoiseButton.getToggleState() && !osc2PinkNoiseButton.getToggleState())
-            {
-                osc2SineButton.setToggleState(true, juce::dontSendNotification);
-            }
-            else
-            {
-                audioProcessor.setOsc2Enabled(false);
-            }
-        }
-    }
-    else if (button == &osc2SawButton)
-    {
-        if (osc2SawButton.getToggleState())
-        {
-            // Select saw wave for oscillator 2
-            osc2SineButton.setToggleState(false, juce::dontSendNotification);
-            osc2SquareButton.setToggleState(false, juce::dontSendNotification);
-            osc2TriangleButton.setToggleState(false, juce::dontSendNotification);
-            osc2WhiteNoiseButton.setToggleState(false, juce::dontSendNotification);
-            osc2PinkNoiseButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setOsc2Type(1); // 1 = saw
-            audioProcessor.setOsc2Enabled(true);
-        }
-        else
-        {
-            // If deselecting saw, keep at least one selected
-            if (!osc2SineButton.getToggleState() && !osc2SquareButton.getToggleState() && !osc2TriangleButton.getToggleState() && !osc2WhiteNoiseButton.getToggleState() && !osc2PinkNoiseButton.getToggleState())
-            {
-                osc2SawButton.setToggleState(true, juce::dontSendNotification);
-            }
-            else
-            {
-                audioProcessor.setOsc2Enabled(false);
-            }
-        }
-    }
-    else if (button == &osc2SquareButton)
-    {
-        if (osc2SquareButton.getToggleState())
-        {
-            // Select square wave for oscillator 2
-            osc2SineButton.setToggleState(false, juce::dontSendNotification);
-            osc2SawButton.setToggleState(false, juce::dontSendNotification);
-            osc2TriangleButton.setToggleState(false, juce::dontSendNotification);
-            osc2WhiteNoiseButton.setToggleState(false, juce::dontSendNotification);
-            osc2PinkNoiseButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setOsc2Type(2); // 2 = square
-            audioProcessor.setOsc2Enabled(true);
-        }
-        else
-        {
-            // If deselecting square, keep at least one selected
-            if (!osc2SineButton.getToggleState() && !osc2SawButton.getToggleState() && !osc2TriangleButton.getToggleState() && !osc2WhiteNoiseButton.getToggleState() && !osc2PinkNoiseButton.getToggleState())
-            {
-                osc2SquareButton.setToggleState(true, juce::dontSendNotification);
-            }
-            else
-            {
-                audioProcessor.setOsc2Enabled(false);
-            }
-        }
-    }
-    else if (button == &osc2TriangleButton)
-    {
-        if (osc2TriangleButton.getToggleState())
-        {
-            // Select triangle wave for oscillator 2
-            osc2SineButton.setToggleState(false, juce::dontSendNotification);
-            osc2SawButton.setToggleState(false, juce::dontSendNotification);
-            osc2SquareButton.setToggleState(false, juce::dontSendNotification);
-            osc2WhiteNoiseButton.setToggleState(false, juce::dontSendNotification);
-            osc2PinkNoiseButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setOsc2Type(3); // 3 = triangle
-            audioProcessor.setOsc2Enabled(true);
-        }
-        else
-        {
-            // If deselecting triangle, keep at least one selected
-            if (!osc2SineButton.getToggleState() && !osc2SawButton.getToggleState() && !osc2SquareButton.getToggleState() && !osc2WhiteNoiseButton.getToggleState() && !osc2PinkNoiseButton.getToggleState())
-            {
-                osc2TriangleButton.setToggleState(true, juce::dontSendNotification);
-            }
-            else
-            {
-                audioProcessor.setOsc2Enabled(false);
-            }
-        }
-    }
-    else if (button == &osc2WhiteNoiseButton)
-    {
-        if (osc2WhiteNoiseButton.getToggleState())
-        {
-            // Select white noise for oscillator 2
-            osc2SineButton.setToggleState(false, juce::dontSendNotification);
-            osc2SawButton.setToggleState(false, juce::dontSendNotification);
-            osc2SquareButton.setToggleState(false, juce::dontSendNotification);
-            osc2TriangleButton.setToggleState(false, juce::dontSendNotification);
-            osc2PinkNoiseButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setOsc2Type(4); // 4 = white noise
-            audioProcessor.setOsc2Enabled(true);
-        }
-        else
-        {
-            // If deselecting white noise, keep at least one selected
-            if (!osc2SineButton.getToggleState() && !osc2SawButton.getToggleState() && !osc2SquareButton.getToggleState() && !osc2TriangleButton.getToggleState() && !osc2PinkNoiseButton.getToggleState())
-            {
-                osc2WhiteNoiseButton.setToggleState(true, juce::dontSendNotification);
-            }
-            else
-            {
-                audioProcessor.setOsc2Enabled(false);
-            }
-        }
-    }
-    else if (button == &osc2PinkNoiseButton)
-    {
-        if (osc2PinkNoiseButton.getToggleState())
-        {
-            // Select pink noise for oscillator 2
-            osc2SineButton.setToggleState(false, juce::dontSendNotification);
-            osc2SawButton.setToggleState(false, juce::dontSendNotification);
-            osc2SquareButton.setToggleState(false, juce::dontSendNotification);
-            osc2TriangleButton.setToggleState(false, juce::dontSendNotification);
-            osc2WhiteNoiseButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setOsc2Type(5); // 5 = pink noise
-            audioProcessor.setOsc2Enabled(true);
-        }
-        else
-        {
-            // If deselecting pink noise, keep at least one selected
-            if (!osc2SineButton.getToggleState() && !osc2SawButton.getToggleState() && !osc2SquareButton.getToggleState() && !osc2TriangleButton.getToggleState() && !osc2WhiteNoiseButton.getToggleState())
-            {
-                osc2PinkNoiseButton.setToggleState(true, juce::dontSendNotification);
-            }
-            else
-            {
-                audioProcessor.setOsc2Enabled(false);
-            }
-        }
-    }
-    else if (button == &osc2RandomPhaseButton)
-    {
-        audioProcessor.setOsc2RandomPhase(osc2RandomPhaseButton.getToggleState());
-    }
-    else if (button == &osc2AdsrLinkButton)
-    {
-        if (osc2AdsrLinkButton.getToggleState())
-        {
-            // Store oscillator 2's current ADSR values before linking
-            osc2OriginalAttack = static_cast<float>(osc2AttackKnob.getValue());
-            osc2OriginalDecay = static_cast<float>(osc2DecayKnob.getValue());
-            osc2OriginalSustain = static_cast<float>(osc2SustainKnob.getValue());
-            osc2OriginalRelease = static_cast<float>(osc2ReleaseKnob.getValue());
-            
-            // Link oscillator 2 ADSR to oscillator 1 - copy current values
-            osc2AttackKnob.setValue(adsrAttackKnob.getValue(), juce::dontSendNotification);
-            osc2DecayKnob.setValue(adsrDecayKnob.getValue(), juce::dontSendNotification);
-            osc2SustainKnob.setValue(adsrSustainKnob.getValue(), juce::dontSendNotification);
-            osc2ReleaseKnob.setValue(adsrReleaseKnob.getValue(), juce::dontSendNotification);
-            
-            // Update audio processor with linked values
-            audioProcessor.setOsc2Attack(static_cast<float>(adsrAttackKnob.getValue()));
-            audioProcessor.setOsc2Decay(static_cast<float>(adsrDecayKnob.getValue()));
-            audioProcessor.setOsc2Sustain(static_cast<float>(adsrSustainKnob.getValue()));
-            audioProcessor.setOsc2Release(static_cast<float>(adsrReleaseKnob.getValue()));
-            
-            // Update the envelope display
-            updateEnvelopeDisplay();
-        }
-        else
-        {
-            // Restore oscillator 2's original ADSR values when unlinking
-            osc2AttackKnob.setValue(osc2OriginalAttack, juce::dontSendNotification);
-            osc2DecayKnob.setValue(osc2OriginalDecay, juce::dontSendNotification);
-            osc2SustainKnob.setValue(osc2OriginalSustain, juce::dontSendNotification);
-            osc2ReleaseKnob.setValue(osc2OriginalRelease, juce::dontSendNotification);
-            
-            // Update audio processor with restored values
-            audioProcessor.setOsc2Attack(osc2OriginalAttack);
-            audioProcessor.setOsc2Decay(osc2OriginalDecay);
-            audioProcessor.setOsc2Sustain(osc2OriginalSustain);
-            audioProcessor.setOsc2Release(osc2OriginalRelease);
-            
-            // Update the envelope display
-            updateEnvelopeDisplay();
-        }
-    }
+    // Oscillator 2 button handling now in SecondOscillatorComponent
     // Filter controls now handled by FilterControlComponent
     // EQ On/Off button
     else if (button == &eqOnOffButton)
@@ -2524,31 +1945,7 @@ void SynthesizerComponent::mouseDown(const juce::MouseEvent& event)
         dragStartY = event.getScreenPosition().y;
         dragStartVoiceCount = voiceCountValue;
     }
-    // Oscillator 2 pitch controls
-    else if (event.eventComponent == &osc2OctaveValueLabel)
-    {
-        isDraggingOsc2Octave = true;
-        dragStartY = event.getScreenPosition().y;
-        dragStartOsc2Octave = osc2OctaveValue;
-    }
-    else if (event.eventComponent == &osc2SemitoneValueLabel)
-    {
-        isDraggingOsc2Semitone = true;
-        dragStartY = event.getScreenPosition().y;
-        dragStartOsc2Semitone = osc2SemitoneValue;
-    }
-    else if (event.eventComponent == &osc2FineTuneValueLabel)
-    {
-        isDraggingOsc2FineTune = true;
-        dragStartY = event.getScreenPosition().y;
-        dragStartOsc2FineTune = osc2FineTuneValue;
-    }
-    else if (event.eventComponent == &osc2VoicesValueLabel)
-    {
-        isDraggingOsc2VoiceCount = true;
-        dragStartY = event.getScreenPosition().y;
-        dragStartOsc2VoiceCount = osc2VoiceCountValue;
-    }
+    // Oscillator 2 pitch controls now handled by SecondOscillatorComponent
     // Reverb type cycling now handled by ReverbComponent
     // Phaser poles value label clicking now handled by PhaserComponent
 }
@@ -2615,67 +2012,7 @@ void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
             audioProcessor.setOsc1VoiceCount(voiceCountValue);
         }
     }
-    // Oscillator 2 pitch controls
-    else if (isDraggingOsc2Octave)
-    {
-        int deltaY = dragStartY - event.getScreenPosition().y; // Inverted: up = positive
-        int newOctave = dragStartOsc2Octave + (deltaY / 10); // 10 pixels per octave
-        
-        // Clamp to valid range
-        newOctave = juce::jlimit(-4, 4, newOctave);
-        
-        if (newOctave != osc2OctaveValue)
-        {
-            osc2OctaveValue = newOctave;
-            osc2OctaveValueLabel.setText(juce::String(osc2OctaveValue), juce::dontSendNotification);
-            audioProcessor.setOsc2Octave(osc2OctaveValue);
-        }
-    }
-    else if (isDraggingOsc2Semitone)
-    {
-        int deltaY = dragStartY - event.getScreenPosition().y; // Inverted: up = positive
-        int newSemitone = dragStartOsc2Semitone + (deltaY / 5); // 5 pixels per semitone
-        
-        // Clamp to valid range (-12 to +12 semitones)
-        newSemitone = juce::jlimit(-12, 12, newSemitone);
-        
-        if (newSemitone != osc2SemitoneValue)
-        {
-            osc2SemitoneValue = newSemitone;
-            osc2SemitoneValueLabel.setText(juce::String(osc2SemitoneValue), juce::dontSendNotification);
-            audioProcessor.setOsc2Semitone(osc2SemitoneValue);
-        }
-    }
-    else if (isDraggingOsc2FineTune)
-    {
-        int deltaY = dragStartY - event.getScreenPosition().y; // Inverted: up = positive
-        int newFineTune = dragStartOsc2FineTune + (deltaY / 2); // 2 pixels per cent
-        
-        // Clamp to valid range (-100 to +100 cents)
-        newFineTune = juce::jlimit(-100, 100, newFineTune);
-        
-        if (newFineTune != osc2FineTuneValue)
-        {
-            osc2FineTuneValue = newFineTune;
-            osc2FineTuneValueLabel.setText(juce::String(osc2FineTuneValue), juce::dontSendNotification);
-            audioProcessor.setOsc2FineTune(osc2FineTuneValue);
-        }
-    }
-    else if (isDraggingOsc2VoiceCount)
-    {
-        int deltaY = dragStartY - event.getScreenPosition().y; // Inverted: up = positive
-        int newVoiceCount = dragStartOsc2VoiceCount + (deltaY / 8); // 8 pixels per voice
-        
-        // Clamp to valid range (1 to 16 voices)
-        newVoiceCount = juce::jlimit(1, 16, newVoiceCount);
-        
-        if (newVoiceCount != osc2VoiceCountValue)
-        {
-            osc2VoiceCountValue = newVoiceCount;
-            osc2VoicesValueLabel.setText(juce::String(osc2VoiceCountValue), juce::dontSendNotification);
-            audioProcessor.setOsc2VoiceCount(osc2VoiceCountValue);
-        }
-    }
+    // Oscillator 2 pitch controls dragging now handled by SecondOscillatorComponent
     // Reverb type dragging now handled by ReverbComponent
     // Phaser poles dragging now handled by PhaserComponent
     
@@ -2744,11 +2081,7 @@ void SynthesizerComponent::mouseUp(const juce::MouseEvent& event)
     isDraggingSemitone = false;
     isDraggingFineTune = false;
     isDraggingVoiceCount = false;
-    // Oscillator 2 drag states
-    isDraggingOsc2Octave = false;
-    isDraggingOsc2Semitone = false;
-    isDraggingOsc2FineTune = false;
-    isDraggingOsc2VoiceCount = false;
+    // Oscillator 2 drag states now handled by SecondOscillatorComponent
     isDraggingReverbType = false;
     // isDraggingPhaserPoles handled by PhaserComponent
     
@@ -2769,13 +2102,9 @@ void SynthesizerComponent::updateEnvelopeDisplay()
         static_cast<float>(adsrSustainKnob.getValue()),
         static_cast<float>(adsrReleaseKnob.getValue())
     );
-    
-    osc2AdsrEnvelopeVisualizer.updateEnvelope(
-        static_cast<float>(osc2AttackKnob.getValue()),
-        static_cast<float>(osc2DecayKnob.getValue()),
-        static_cast<float>(osc2SustainKnob.getValue()),
-        static_cast<float>(osc2ReleaseKnob.getValue())
-    );
+
+    // Oscillator 2 envelope display now handled by SecondOscillatorComponent
+    secondOscillator.updateEnvelopeDisplay();
 }
 
 // ============================================================================
@@ -3065,251 +2394,44 @@ void SynthesizerComponent::layoutEffectsModule(juce::Rectangle<int>& bounds)
 
 void SynthesizerComponent::layoutSecondOscillator(juce::Rectangle<int>& bounds)
 {
-    // Move to top-right position - use a specific position instead of removing from bounds
-    auto totalWidth = getWidth();
-    auto totalHeight = getHeight();
-    
     // Position oscillator 2 in top-right corner - match oscillator 1 size exactly
-    auto osc2Width = 320 + 63 + 24; // Same calculation as oscillator 1: tuning width + padding + border = 407
-    auto osc2Height = 40 + 7 + 60 + 15 + 100 + 20 + 100 + 40 + 80 + 20 + 80 + 20 + 24; // Same calculation as oscillator 1: all sections + spacing + border = 606
-    auto osc2X = totalWidth - osc2Width - 20; // 20px margin to touch wood border
-    auto osc2Y = 20; // 20px margin from top edge
-    
+    auto totalWidth = getWidth();
+    auto osc2Width = 320 + 63 + 24; // Same calculation as oscillator 1
+    auto osc2Height = 40 + 7 + 60 + 15 + 100 + 20 + 100 + 40 + 80 + 20 + 80 + 20 + 24;
+    auto osc2X = totalWidth - osc2Width - 20;
+    auto osc2Y = 20;
+
     auto osc2Section = juce::Rectangle<int>(osc2X, osc2Y, osc2Width, osc2Height);
-    
-    // Apply group offset for MOVEABLE Second Oscillator Group (Row 6)
+
+    // Apply group offset
     auto offsetOsc2Section = osc2Section.translated(
-        static_cast<int>(secondOscillatorGroupOffsetX), 
+        static_cast<int>(secondOscillatorGroupOffsetX),
         static_cast<int>(secondOscillatorGroupOffsetY)
     );
-    
-    // Store bounds for background drawing (with offset applied)
+
+    // Store bounds for background drawing
     secondOscillatorBounds = offsetOsc2Section;
-    
-    // Layout similar to oscillator 1 - organized in rows
-    auto workingArea = offsetOsc2Section;
-    
-    // Title label (emblem)
-    auto titleHeight = 20;
-    auto titleArea = workingArea.removeFromTop(titleHeight);
-    osc2TitleLabel.setBounds(titleArea);
-    
-    workingArea.removeFromTop(15); // reduced spacing to push buttons up slightly
-    
-    // Wave type buttons row - stretch to align pink noise button with right screw
-    auto buttonHeight = 40; // Match oscillator 1 height
-    auto waveButtonsRow = workingArea.removeFromTop(buttonHeight);
-    auto buttonWidth = 55; // Back to previous setting
-    auto screwInset = 15; // Screw position from edge (from background drawing code)
-    auto buttonStartX = 17; // Move buttons slightly to the right
-    
-    // Calculate spacing to stretch row so pink noise button aligns with right screw (extend further)
-    auto availableWidth = waveButtonsRow.getWidth() - buttonStartX - screwInset - buttonWidth + 8; // Add 8px stretch for more extension
-    auto totalButtonWidth = 6 * buttonWidth; // Total width of all buttons
-    auto totalSpacingWidth = availableWidth - totalButtonWidth + buttonWidth; // Available space for 5 gaps
-    auto buttonSpacing = totalSpacingWidth / 5; // Spacing between buttons
-    
-    auto buttonArea = waveButtonsRow.withX(waveButtonsRow.getX() + buttonStartX);
-    
-    // Set button bounds with explicit height like oscillator 1
-    osc2SineButton.setBounds(buttonArea.getX(), buttonArea.getY(), buttonWidth, buttonHeight);
-    buttonArea.removeFromLeft(buttonWidth + buttonSpacing);
-    
-    osc2SawButton.setBounds(buttonArea.getX(), buttonArea.getY(), buttonWidth, buttonHeight);
-    buttonArea.removeFromLeft(buttonWidth + buttonSpacing);
-    
-    osc2SquareButton.setBounds(buttonArea.getX(), buttonArea.getY(), buttonWidth, buttonHeight);
-    buttonArea.removeFromLeft(buttonWidth + buttonSpacing);
-    
-    osc2TriangleButton.setBounds(buttonArea.getX(), buttonArea.getY(), buttonWidth, buttonHeight);
-    buttonArea.removeFromLeft(buttonWidth + buttonSpacing);
-    
-    osc2WhiteNoiseButton.setBounds(buttonArea.getX(), buttonArea.getY(), buttonWidth, buttonHeight);
-    buttonArea.removeFromLeft(buttonWidth + buttonSpacing);
-    
-    osc2PinkNoiseButton.setBounds(buttonArea.getX(), buttonArea.getY(), buttonWidth, buttonHeight);
-    
-    workingArea.removeFromTop(5); // reduced spacing between rows
-    
-    // ADSR envelope visualizer row - match oscillator 1 proportions exactly
-    auto envelopeHeight = 60; // Match oscillator 1 height
-    auto osc2EnvelopeArea = workingArea.removeFromTop(envelopeHeight);
-    // Use the same width calculation as oscillator 1's original bounds
-    auto originalBounds = getLocalBounds();
-    originalBounds.reduce(20, 20);
-    auto envelopeWidth = originalBounds.getWidth() / 3; // Match oscillator 1 exact calculation
-    auto centeredEnvelopeArea = osc2EnvelopeArea.withSizeKeepingCentre(envelopeWidth, envelopeHeight);
-    osc2AdsrEnvelopeVisualizer.setBounds(centeredEnvelopeArea.translated(2, 1));
-    
-    workingArea.removeFromTop(5); // reduced spacing between envelope and knobs
-    
-    // Apply offset to all elements below ADSR visualizer
-    auto elementsOffset = juce::Point<int>(-6, 12); // Move left 6px, down 12px
-    workingArea = workingArea.translated(elementsOffset.x, elementsOffset.y);
-    
-    // ADSR knobs row - match oscillator 1 dimensions
-    auto knobHeight = 80; // Match oscillator 1 knob height
-    auto knobLabelHeight = 20; // Match oscillator 1 label height
-    auto adsrKnobsRow = workingArea.removeFromTop(knobHeight + knobLabelHeight);
-    auto knobWidth = 80;
-    auto knobSpacing = 15; // Match oscillator 1 spacing
-    
-    // Stretch the ADSR knobs row 12 pixels and shift right 6 pixels (attack stays in place)
-    auto totalKnobWidth = 4 * knobWidth + 3 * knobSpacing + 12; // Add 12px stretch
-    auto knobStartX = (adsrKnobsRow.getWidth() - totalKnobWidth) / 2 + 6; // Shift right 6px
-    auto knobArea = adsrKnobsRow.withX(adsrKnobsRow.getX() + knobStartX).withWidth(totalKnobWidth);
-    auto stretchedSpacing = knobSpacing + (12.0f / 3.0f); // Distribute extra 12px across 3 gaps
-    
-    // Attack knob
-    auto attackArea = knobArea.removeFromLeft(knobWidth);
-    osc2AttackLabel.setBounds(attackArea.removeFromTop(knobLabelHeight));
-    osc2AttackKnob.setBounds(attackArea);
-    knobArea.removeFromLeft(stretchedSpacing);
-    
-    // Decay knob
-    auto decayArea = knobArea.removeFromLeft(knobWidth);
-    osc2DecayLabel.setBounds(decayArea.removeFromTop(knobLabelHeight));
-    osc2DecayKnob.setBounds(decayArea);
-    knobArea.removeFromLeft(stretchedSpacing);
-    
-    // Sustain knob
-    auto sustainArea = knobArea.removeFromLeft(knobWidth);
-    osc2SustainLabel.setBounds(sustainArea.removeFromTop(knobLabelHeight));
-    osc2SustainKnob.setBounds(sustainArea);
-    knobArea.removeFromLeft(stretchedSpacing);
-    
-    // Release knob
-    auto releaseArea = knobArea.removeFromLeft(knobWidth);
-    osc2ReleaseLabel.setBounds(releaseArea.removeFromTop(knobLabelHeight));
-    osc2ReleaseKnob.setBounds(releaseArea);
-    
-    // Position ADSR Link button at bottom right of oscillator 1
+
+    // Position the SecondOscillatorComponent
+    secondOscillator.setBounds(offsetOsc2Section);
+
+    // Position ADSR Link button (relative to oscillator 1's volumeKnobsBounds)
     auto linkButtonHeight = 25;
     auto linkButtonWidth = 100;
     auto linkButtonArea = juce::Rectangle<int>(
-        volumeKnobsBounds.getRight() - linkButtonWidth - 40 + 760, // 760px to the right (5px left from 765)
-        volumeKnobsBounds.getBottom() - linkButtonHeight - 5 + 160, // 160px lower than bottom edge of oscillator 1 (10px higher)
+        volumeKnobsBounds.getRight() - linkButtonWidth - 40 + 760,
+        volumeKnobsBounds.getBottom() - linkButtonHeight - 5 + 160,
         linkButtonWidth,
         linkButtonHeight
     );
-    osc2AdsrLinkButton.setBounds(linkButtonArea);
-    
-    // No spacing needed since link button is now outside the row flow
-    
-    // First additional row - knobs (volume, detune, stereo, pan) - move down 15 pixels
-    workingArea.removeFromTop(20); // increased spacing to push rows down 15px
-    auto knobsRow = workingArea.removeFromTop(knobHeight + knobLabelHeight);
-    
-    // Stretch the stereo knobs row 12 pixels and shift right 6 pixels (volume stays in place)
-    auto totalKnobsWidth = 4 * knobWidth + 3 * knobSpacing + 12; // Add 12px stretch
-    auto knobsStartX = (knobsRow.getWidth() - totalKnobsWidth) / 2 + 6; // Shift right 6px
-    auto knobsArea = knobsRow.withX(knobsRow.getX() + knobsStartX).withWidth(totalKnobsWidth);
-    auto stretchedKnobSpacing = knobSpacing + (12.0f / 3.0f); // Distribute extra 12px across 3 gaps
-    
-    // Volume knob
-    auto volumeArea = knobsArea.removeFromLeft(knobWidth);
-    osc2VolumeLabel.setBounds(volumeArea.removeFromTop(knobLabelHeight));
-    osc2VolumeKnob.setBounds(volumeArea);
-    knobsArea.removeFromLeft(stretchedKnobSpacing);
-    
-    // Detune knob
-    auto detuneArea = knobsArea.removeFromLeft(knobWidth);
-    osc2DetuneLabel.setBounds(detuneArea.removeFromTop(knobLabelHeight));
-    osc2DetuneKnob.setBounds(detuneArea);
-    knobsArea.removeFromLeft(stretchedKnobSpacing);
-    
-    // Stereo knob
-    auto stereoArea = knobsArea.removeFromLeft(knobWidth);
-    osc2StereoLabel.setBounds(stereoArea.removeFromTop(knobLabelHeight));
-    osc2StereoKnob.setBounds(stereoArea);
-    knobsArea.removeFromLeft(stretchedKnobSpacing);
-    
-    // Pan knob
-    auto panArea = knobsArea.removeFromLeft(knobWidth);
-    osc2PanLabel.setBounds(panArea.removeFromTop(knobLabelHeight));
-    osc2PanKnob.setBounds(panArea);
-    
-    workingArea.removeFromTop(33); // increased spacing to move pitch controls down 28px
-    
-    // Second additional row - pitch controls (octave, semitone, fine tune, voices) - label style like oscillator 1
-    auto pitchControlsHeight = 50; // 20 for label + 30 for value
-    auto pitchControlsRow = workingArea.removeFromTop(pitchControlsHeight);
-    
-    // Store bounds for background drawing
-    osc2PitchControlsBounds = pitchControlsRow;
-    
-    // Move the pitch controls 20 pixels to the right
-    auto pitchControlWidth = 60; // Match oscillator 1
-    auto pitchControlSpacing = 10; // Match oscillator 1
-    auto totalPitchControlsWidth = 4 * pitchControlWidth + 3 * pitchControlSpacing;
-    auto pitchControlsStartX = (pitchControlsRow.getWidth() - totalPitchControlsWidth) / 2 - 36; // Move 36px left from center
-    auto pitchControlsArea = pitchControlsRow.withX(pitchControlsRow.getX() + pitchControlsStartX).withWidth(totalPitchControlsWidth);
-    
-    // Octave control
-    auto octaveArea = pitchControlsArea.removeFromLeft(pitchControlWidth);
-    osc2OctaveLabel.setBounds(octaveArea.removeFromTop(20));
-    osc2OctaveValueLabel.setBounds(octaveArea.removeFromTop(30));
-    pitchControlsArea.removeFromLeft(pitchControlSpacing);
-    
-    // Semitone control
-    auto semitoneArea = pitchControlsArea.removeFromLeft(pitchControlWidth);
-    osc2SemitoneLabel.setBounds(semitoneArea.removeFromTop(20));
-    osc2SemitoneValueLabel.setBounds(semitoneArea.removeFromTop(30));
-    pitchControlsArea.removeFromLeft(pitchControlSpacing);
-    
-    // Fine tune control
-    auto fineTuneArea = pitchControlsArea.removeFromLeft(pitchControlWidth);
-    osc2FineTuneLabel.setBounds(fineTuneArea.removeFromTop(20));
-    osc2FineTuneValueLabel.setBounds(fineTuneArea.removeFromTop(30));
-    pitchControlsArea.removeFromLeft(pitchControlSpacing);
-    
-    // Voices control
-    auto voicesArea = pitchControlsArea.removeFromLeft(pitchControlWidth);
-    osc2VoicesLabel.setBounds(voicesArea.removeFromTop(20));
-    osc2VoicesValueLabel.setBounds(voicesArea.removeFromTop(30));
-    
-    workingArea.removeFromTop(5); // reduced spacing between sliders and random phase button
-    
-    // Random phase button and phase knob row - increase height for better knob visibility
-    auto phaseControlsRow = workingArea.removeFromTop(100);
-    
-    // Position random phase button and phase knob side by side - move 40px left
-    auto randomPhaseButtonWidth = 100; // Match oscillator 1 width
-    auto phaseControlsWidth = randomPhaseButtonWidth + knobSpacing + knobWidth;
-    auto phaseControlsStartX = (phaseControlsRow.getWidth() - phaseControlsWidth) / 2 - 70; // Move 70px left
-    auto phaseControlsArea = phaseControlsRow.withX(phaseControlsRow.getX() + phaseControlsStartX).withWidth(phaseControlsWidth);
-    
-    // Random phase button (left side)
-    auto randomPhaseButtonArea = phaseControlsArea.removeFromLeft(randomPhaseButtonWidth);
-    // Center the button vertically in the row, then move up 5px
-    auto randomPhaseButtonHeight = 40; // Match oscillator 1 height
-    auto buttonVerticalOffset = (phaseControlsRow.getHeight() - randomPhaseButtonHeight) / 2 - 3; // Move up 3px (was 5px, now down 2px)
-    randomPhaseButtonArea = randomPhaseButtonArea.withY(randomPhaseButtonArea.getY() + buttonVerticalOffset).withHeight(randomPhaseButtonHeight);
-    // Move button 2 pixels to the left
-    randomPhaseButtonArea = randomPhaseButtonArea.translated(-2, 0);
-    osc2RandomPhaseButton.setBounds(randomPhaseButtonArea);
-    
-    phaseControlsArea.removeFromLeft(knobSpacing);
-    
-    // Phase knob (right side)
-    auto phaseKnobArea = phaseControlsArea.removeFromLeft(knobWidth);
-    
-    // Store bounds for background drawing - use the full area before any modifications
-    osc2PhaseControlsBounds = phaseKnobArea;
-    
-    auto phaseLabelArea = phaseKnobArea.removeFromTop(15); // Reduced from 20 to 15 to bring label closer
-    osc2PhaseLabel.setBounds(phaseLabelArea.translated(0, 31)); // Move label down 31 pixels (28 + 3)
-    
-    // Match oscillator 1 phase knob size: 80 width × 60 height, move down 33px
-    auto matchingKnobArea = juce::Rectangle<int>(phaseKnobArea.getX(), phaseKnobArea.getY() + 33, 80, 60);
-    osc2PhaseKnob.setBounds(matchingKnobArea);
-    
+    secondOscillator.getAdsrLinkButton().setBounds(linkButtonArea);
+
     // Filter section positioning - under oscillator 2 in landscape format
     auto filterSectionX = offsetOsc2Section.getX();
-    auto filterSectionY = offsetOsc2Section.getBottom() - 5; // Overlap 5px with oscillator 2
+    auto filterSectionY = offsetOsc2Section.getBottom() - 5;
     auto filterSectionWidth = offsetOsc2Section.getWidth();
-    auto filterSectionHeight = 141; // Height for buttons + knobs + spacing
-    
+    auto filterSectionHeight = 141;
+
     // Store bounds for background drawing
     filterSectionBounds = juce::Rectangle<int>(filterSectionX, filterSectionY, filterSectionWidth, filterSectionHeight);
     
@@ -4141,11 +3263,11 @@ juce::Slider* SynthesizerComponent::findSliderAt(juce::Point<int> position)
     std::vector<juce::Slider*> allSliders = {
         // Volume and oscillator controls
         &volumeControlsVolumeKnob, &volumeControlsDetuneKnob, &volumeControlsStereoWidthKnob, &volumeControlsPanKnob,
-        &phaseControlsPhaseKnob, &osc2VolumeKnob, &osc2DetuneKnob, &osc2StereoKnob, &osc2PanKnob, &osc2PhaseKnob,
-        
+        &phaseControlsPhaseKnob, &secondOscillator.getVolumeKnob(), &secondOscillator.getDetuneKnob(), &secondOscillator.getStereoKnob(), &secondOscillator.getPanKnob(), &secondOscillator.getPhaseKnob(),
+
         // ADSR controls
         &adsrAttackKnob, &adsrDecayKnob, &adsrSustainKnob, &adsrReleaseKnob,
-        &osc2AttackKnob, &osc2DecayKnob, &osc2SustainKnob, &osc2ReleaseKnob,
+        &secondOscillator.getAttackKnob(), &secondOscillator.getDecayKnob(), &secondOscillator.getSustainKnob(), &secondOscillator.getReleaseKnob(),
         
         // Filter controls
         &filterModule.filterCutoffKnob, &filterModule.filterResonanceKnob,
@@ -4195,49 +3317,49 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
     else if (slider == &adsrAttackKnob)
     {
         audioProcessor.setOsc1Attack(static_cast<float>(newValue));
-        
-        // If ADSR is linked, also update oscillator 2
-        if (osc2AdsrLinkButton.getToggleState())
+
+        // If ADSR is linked, also update oscillator 2 via secondOscillator component
+        if (secondOscillator.getAdsrLinkButton().getToggleState())
         {
             audioProcessor.setOsc2Attack(static_cast<float>(newValue));
         }
-        
+
         updateEnvelopeDisplay();
     }
     else if (slider == &adsrDecayKnob)
     {
         audioProcessor.setOsc1Decay(static_cast<float>(newValue));
-        
-        // If ADSR is linked, also update oscillator 2
-        if (osc2AdsrLinkButton.getToggleState())
+
+        // If ADSR is linked, also update oscillator 2 via secondOscillator component
+        if (secondOscillator.getAdsrLinkButton().getToggleState())
         {
             audioProcessor.setOsc2Decay(static_cast<float>(newValue));
         }
-        
+
         updateEnvelopeDisplay();
     }
     else if (slider == &adsrSustainKnob)
     {
         audioProcessor.setOsc1Sustain(static_cast<float>(newValue));
-        
-        // If ADSR is linked, also update oscillator 2
-        if (osc2AdsrLinkButton.getToggleState())
+
+        // If ADSR is linked, also update oscillator 2 via secondOscillator component
+        if (secondOscillator.getAdsrLinkButton().getToggleState())
         {
             audioProcessor.setOsc2Sustain(static_cast<float>(newValue));
         }
-        
+
         updateEnvelopeDisplay();
     }
     else if (slider == &adsrReleaseKnob)
     {
         audioProcessor.setOsc1Release(static_cast<float>(newValue));
-        
-        // If ADSR is linked, also update oscillator 2
-        if (osc2AdsrLinkButton.getToggleState())
+
+        // If ADSR is linked, also update oscillator 2 via secondOscillator component
+        if (secondOscillator.getAdsrLinkButton().getToggleState())
         {
             audioProcessor.setOsc2Release(static_cast<float>(newValue));
         }
-        
+
         updateEnvelopeDisplay();
     }
     // Add more slider checks as needed for other parameters
@@ -4305,67 +3427,7 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
         audioProcessor.setEQ2Gain(static_cast<float>(newValue));
         parametricEQ.syncWithDSPState();
     }
-    // Oscillator 2 controls
-    else if (slider == &osc2VolumeKnob)
-    {
-        audioProcessor.setOsc2Volume(static_cast<float>(newValue));
-    }
-    else if (slider == &osc2DetuneKnob)
-    {
-        audioProcessor.setOsc2Detune(static_cast<float>(newValue));
-    }
-    else if (slider == &osc2StereoKnob)
-    {
-        audioProcessor.setOsc2Stereo(static_cast<float>(newValue));
-    }
-    else if (slider == &osc2AttackKnob)
-    {
-        audioProcessor.setOsc2Attack(static_cast<float>(newValue));
-        // If ADSR is linked, also update main ADSR
-        if (osc2AdsrLinkButton.getToggleState())
-        {
-            audioProcessor.setOsc1Attack(static_cast<float>(newValue));
-        }
-        updateEnvelopeDisplay();
-    }
-    else if (slider == &osc2DecayKnob)
-    {
-        audioProcessor.setOsc2Decay(static_cast<float>(newValue));
-        // If ADSR is linked, also update main ADSR
-        if (osc2AdsrLinkButton.getToggleState())
-        {
-            audioProcessor.setOsc1Decay(static_cast<float>(newValue));
-        }
-        updateEnvelopeDisplay();
-    }
-    else if (slider == &osc2SustainKnob)
-    {
-        audioProcessor.setOsc2Sustain(static_cast<float>(newValue));
-        // If ADSR is linked, also update main ADSR
-        if (osc2AdsrLinkButton.getToggleState())
-        {
-            audioProcessor.setOsc1Sustain(static_cast<float>(newValue));
-        }
-        updateEnvelopeDisplay();
-    }
-    else if (slider == &osc2ReleaseKnob)
-    {
-        audioProcessor.setOsc2Release(static_cast<float>(newValue));
-        // If ADSR is linked, also update main ADSR
-        if (osc2AdsrLinkButton.getToggleState())
-        {
-            audioProcessor.setOsc1Release(static_cast<float>(newValue));
-        }
-        updateEnvelopeDisplay();
-    }
-    else if (slider == &osc2PanKnob)
-    {
-        audioProcessor.setOsc2Pan(static_cast<float>(newValue));
-    }
-    else if (slider == &osc2PhaseKnob)
-    {
-        audioProcessor.setOsc2Phase(static_cast<float>(newValue));
-    }
+    // Oscillator 2 controls now handled by SecondOscillatorComponent
     // Chorus FX - handled by ChorusComponent
     else if (slider == &chorusModule.chorusRateKnob)
     {
@@ -4599,28 +3661,8 @@ void SynthesizerComponent::updateAllGuiControls()
     waveTypePinkNoiseButton.setToggleState(osc1Type == 5, juce::dontSendNotification);
     waveTypeRandomPhaseButton.setToggleState(osc1Type == 6, juce::dontSendNotification);
     
-    // Oscillator 2 controls
-    osc2VolumeKnob.setValue(audioProcessor.getOsc2Volume(), juce::dontSendNotification);
-    osc2DetuneKnob.setValue(audioProcessor.getOsc2Detune(), juce::dontSendNotification);
-    osc2StereoKnob.setValue(audioProcessor.getOsc2Stereo(), juce::dontSendNotification);
-    osc2PanKnob.setValue(audioProcessor.getOsc2Pan(), juce::dontSendNotification);
-    osc2PhaseKnob.setValue(audioProcessor.getOsc2Phase(), juce::dontSendNotification);
-    osc2RandomPhaseButton.setToggleState(audioProcessor.getOsc2RandomPhase(), juce::dontSendNotification);
-    
-    // Oscillator 2 ADSR
-    osc2AttackKnob.setValue(audioProcessor.getOsc2Attack(), juce::dontSendNotification);
-    osc2DecayKnob.setValue(audioProcessor.getOsc2Decay(), juce::dontSendNotification);
-    osc2SustainKnob.setValue(audioProcessor.getOsc2Sustain(), juce::dontSendNotification);
-    osc2ReleaseKnob.setValue(audioProcessor.getOsc2Release(), juce::dontSendNotification);
-    
-    // Update oscillator 2 wave type buttons
-    int osc2Type = audioProcessor.getOsc2Type();
-    osc2SineButton.setToggleState(osc2Type == 0, juce::dontSendNotification);
-    osc2SawButton.setToggleState(osc2Type == 1, juce::dontSendNotification);
-    osc2SquareButton.setToggleState(osc2Type == 2, juce::dontSendNotification);
-    osc2TriangleButton.setToggleState(osc2Type == 3, juce::dontSendNotification);
-    osc2WhiteNoiseButton.setToggleState(osc2Type == 4, juce::dontSendNotification);
-    osc2PinkNoiseButton.setToggleState(osc2Type == 5, juce::dontSendNotification);
+    // Oscillator 2 controls now handled by SecondOscillatorComponent
+    secondOscillator.updateAllGuiControls();
     
     // Filter controls - handled by FilterControlComponent
     filterModule.syncWithDSPState();

@@ -89,6 +89,10 @@
             file="Source/UI/MacroControlsComponent.cpp"/>
       <FILE id="MacroControls2" name="MacroControlsComponent.h" compile="0" resource="0"
             file="Source/UI/MacroControlsComponent.h"/>
+      <FILE id="SecondOsc1" name="SecondOscillatorComponent.cpp" compile="1" resource="0"
+            file="Source/UI/SecondOscillatorComponent.cpp"/>
+      <FILE id="SecondOsc2" name="SecondOscillatorComponent.h" compile="0" resource="0"
+            file="Source/UI/SecondOscillatorComponent.h"/>
     </GROUP>
   </MAINGROUP>
   <MODULES>
