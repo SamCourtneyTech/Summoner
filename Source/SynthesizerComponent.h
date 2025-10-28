@@ -16,6 +16,7 @@
 #include "UI/FilterControlComponent.h"
 #include "UI/MacroControlsComponent.h"
 #include "UI/SecondOscillatorComponent.h"
+#include "UI/VolumeControlsComponent.h"
 #include "UI/SimpleKnobLookAndFeel.h"
 #include "UI/DigitalScreenLookAndFeel.h"
 #include "UI/DigitalButtonLookAndFeel.h"
@@ -184,15 +185,10 @@ private:
     // Placeholder UI elements for the synthesizer
     juce::Label titleLabel;
     juce::Label placeholderLabel;
+
     // VOLUME CONTROLS GROUP - Row 4 (MOVEABLE)
-    RestrictedHitSlider volumeControlsVolumeKnob;
-    juce::Label volumeControlsVolumeLabel;
-    RestrictedHitSlider volumeControlsDetuneKnob;
-    juce::Label volumeControlsDetuneLabel;
-    RestrictedHitSlider volumeControlsStereoWidthKnob;
-    juce::Label volumeControlsStereoWidthLabel;
-    RestrictedHitSlider volumeControlsPanKnob;
-    juce::Label volumeControlsPanLabel;
+    VolumeControlsComponent volumeControls;
+
     // PHASE CONTROLS GROUP - (STATIONARY)
     RestrictedHitSlider phaseControlsPhaseKnob;
     juce::Label phaseControlsPhaseLabel;

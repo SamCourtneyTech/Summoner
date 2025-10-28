@@ -7,72 +7,13 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     : audioProcessor(processor),
       effectsModule(juce::TabbedButtonBar::TabsAtTop),
       secondOscillator(*this, processor, &customKnobLookAndFeel, &customWaveButtonLookAndFeel, &ledLabelLookAndFeel, &ledNumberLookAndFeel),
-      macroControls(*this, processor, &simpleKnobLookAndFeel, &engravedLabelLookAndFeel)
+      macroControls(*this, processor, &simpleKnobLookAndFeel, &engravedLabelLookAndFeel),
+      volumeControls(processor, &customKnobLookAndFeel, &ledLabelLookAndFeel)
 {
     addAndMakeVisible(secondOscillator);
     addAndMakeVisible(macroControls);
+    addAndMakeVisible(volumeControls);
 
-    // VOLUME CONTROLS GROUP - Row 4 (MOVEABLE)
-    volumeControlsVolumeLabel.setText("VOLUME", juce::dontSendNotification);
-    volumeControlsVolumeLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    volumeControlsVolumeLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    volumeControlsVolumeLabel.setJustificationType(juce::Justification::centred);
-    volumeControlsVolumeLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(volumeControlsVolumeLabel);
-    
-    volumeControlsVolumeKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    volumeControlsVolumeKnob.setRange(0.0, 1.0, 0.01);
-    volumeControlsVolumeKnob.setValue(0.75); // Start oscillator 1 at 75% volume
-    volumeControlsVolumeKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    volumeControlsVolumeKnob.setLookAndFeel(&customKnobLookAndFeel);
-    volumeControlsVolumeKnob.addListener(this);
-    addAndMakeVisible(volumeControlsVolumeKnob);
-    
-    volumeControlsDetuneLabel.setText("DETUNE", juce::dontSendNotification);
-    volumeControlsDetuneLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    volumeControlsDetuneLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    volumeControlsDetuneLabel.setJustificationType(juce::Justification::centred);
-    volumeControlsDetuneLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(volumeControlsDetuneLabel);
-
-    volumeControlsDetuneKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    volumeControlsDetuneKnob.setRange(0.0, 1.0, 0.01);
-    volumeControlsDetuneKnob.setValue(0.0);
-    volumeControlsDetuneKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    volumeControlsDetuneKnob.setLookAndFeel(&customKnobLookAndFeel);
-    volumeControlsDetuneKnob.addListener(this);
-    addAndMakeVisible(volumeControlsDetuneKnob);
-    
-    volumeControlsStereoWidthLabel.setText("STEREO", juce::dontSendNotification);
-    volumeControlsStereoWidthLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    volumeControlsStereoWidthLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    volumeControlsStereoWidthLabel.setJustificationType(juce::Justification::centred);
-    volumeControlsStereoWidthLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(volumeControlsStereoWidthLabel);
-
-    volumeControlsStereoWidthKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    volumeControlsStereoWidthKnob.setRange(0.0, 1.0, 0.01);
-    volumeControlsStereoWidthKnob.setValue(0.5);
-    volumeControlsStereoWidthKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    volumeControlsStereoWidthKnob.setLookAndFeel(&customKnobLookAndFeel);
-    volumeControlsStereoWidthKnob.addListener(this);
-    addAndMakeVisible(volumeControlsStereoWidthKnob);
-    
-    volumeControlsPanLabel.setText("PAN", juce::dontSendNotification);
-    volumeControlsPanLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    volumeControlsPanLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    volumeControlsPanLabel.setJustificationType(juce::Justification::centred);
-    volumeControlsPanLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(volumeControlsPanLabel);
-
-    volumeControlsPanKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    volumeControlsPanKnob.setRange(-50.0, 50.0, 1.0);
-    volumeControlsPanKnob.setValue(0.0);
-    volumeControlsPanKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    volumeControlsPanKnob.setLookAndFeel(&customKnobLookAndFeel);
-    volumeControlsPanKnob.addListener(this);
-    addAndMakeVisible(volumeControlsPanKnob);
-    
     // PHASE CONTROLS GROUP - (STATIONARY)
     phaseControlsPhaseLabel.setText("PHASE", juce::dontSendNotification);
     phaseControlsPhaseLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
@@ -775,12 +716,8 @@ SynthesizerComponent::~SynthesizerComponent()
     waveTypeWhiteNoiseButton.setLookAndFeel(nullptr);
     waveTypePinkNoiseButton.setLookAndFeel(nullptr);
     waveTypeRandomPhaseButton.setLookAndFeel(nullptr);
-    
+
     // Reset LED label look and feel
-    volumeControlsVolumeLabel.setLookAndFeel(nullptr);
-    volumeControlsDetuneLabel.setLookAndFeel(nullptr);
-    volumeControlsStereoWidthLabel.setLookAndFeel(nullptr);
-    volumeControlsPanLabel.setLookAndFeel(nullptr);
     phaseControlsPhaseLabel.setLookAndFeel(nullptr);
     adsrAttackLabel.setLookAndFeel(nullptr);
     adsrDecayLabel.setLookAndFeel(nullptr);
@@ -1440,23 +1377,7 @@ void SynthesizerComponent::resized()
 
 void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
 {
-    if (slider == &volumeControlsVolumeKnob)
-    {
-        audioProcessor.setOsc1Volume(static_cast<float>(volumeControlsVolumeKnob.getValue()));
-    }
-    else if (slider == &volumeControlsDetuneKnob)
-    {
-        audioProcessor.setOsc1Detune(static_cast<float>(volumeControlsDetuneKnob.getValue()));
-    }
-    else if (slider == &volumeControlsStereoWidthKnob)
-    {
-        audioProcessor.setOsc1StereoWidth(static_cast<float>(volumeControlsStereoWidthKnob.getValue()));
-    }
-    else if (slider == &volumeControlsPanKnob)
-    {
-        audioProcessor.setOsc1Pan(static_cast<float>(volumeControlsPanKnob.getValue()));
-    }
-    else if (slider == &phaseControlsPhaseKnob)
+    if (slider == &phaseControlsPhaseKnob)
     {
         audioProcessor.setOsc1Phase(static_cast<float>(phaseControlsPhaseKnob.getValue()));
     }
@@ -2211,41 +2132,19 @@ void SynthesizerComponent::layoutVolumeKnobs(juce::Rectangle<int>& bounds)
     auto controlHeight = 100;
     bounds.removeFromTop(20); // spacing
     auto volumeRow = bounds.removeFromTop(controlHeight);
-    
+
     // Apply group offset for MOVEABLE Volume Controls Group (Row 4)
     auto volumeSection = volumeRow.removeFromLeft(volumeRow.getWidth() / 3);
     auto offsetVolumeSection = volumeSection.translated(
-        static_cast<int>(volumeControlsGroupOffsetX), 
+        static_cast<int>(volumeControlsGroupOffsetX),
         static_cast<int>(volumeControlsGroupOffsetY)
     );
-    
+
     // Store bounds for background drawing (with offset applied)
     volumeKnobsBounds = offsetVolumeSection;
-    
-    auto adsrKnobWidth = (offsetVolumeSection.getWidth() - 45) / 4;
-    auto workingRow = offsetVolumeSection;
-    
-    auto volumeKnobArea = workingRow.removeFromLeft(adsrKnobWidth);
-    volumeControlsVolumeLabel.setBounds(volumeKnobArea.removeFromTop(20));
-    volumeControlsVolumeKnob.setBounds(volumeKnobArea);
-    
-    workingRow.removeFromLeft(15); // spacing
-    
-    auto detuneSection = workingRow.removeFromLeft(adsrKnobWidth);
-    volumeControlsDetuneLabel.setBounds(detuneSection.removeFromTop(20));
-    volumeControlsDetuneKnob.setBounds(detuneSection);
-    
-    workingRow.removeFromLeft(15); // spacing
-    
-    auto stereoWidthSection = workingRow.removeFromLeft(adsrKnobWidth);
-    volumeControlsStereoWidthLabel.setBounds(stereoWidthSection.removeFromTop(20));
-    volumeControlsStereoWidthKnob.setBounds(stereoWidthSection);
-    
-    workingRow.removeFromLeft(15); // spacing
-    
-    auto panSection = workingRow;
-    volumeControlsPanLabel.setBounds(panSection.removeFromTop(20));
-    volumeControlsPanKnob.setBounds(panSection);
+
+    // Set the component bounds - it will handle internal layout
+    volumeControls.setBounds(offsetVolumeSection);
 }
 
 void SynthesizerComponent::layoutOctaveControls(juce::Rectangle<int>& bounds)
@@ -3262,7 +3161,7 @@ juce::Slider* SynthesizerComponent::findSliderAt(juce::Point<int> position)
     // List of all sliders to check for drop detection
     std::vector<juce::Slider*> allSliders = {
         // Volume and oscillator controls
-        &volumeControlsVolumeKnob, &volumeControlsDetuneKnob, &volumeControlsStereoWidthKnob, &volumeControlsPanKnob,
+        &volumeControls.getVolumeKnob(), &volumeControls.getDetuneKnob(), &volumeControls.getStereoWidthKnob(), &volumeControls.getPanKnob(),
         &phaseControlsPhaseKnob, &secondOscillator.getVolumeKnob(), &secondOscillator.getDetuneKnob(), &secondOscillator.getStereoKnob(), &secondOscillator.getPanKnob(), &secondOscillator.getPhaseKnob(),
 
         // ADSR controls
@@ -3294,19 +3193,19 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
     // Mirror the logic from sliderValueChanged to update audio processor parameters
     // without sending slider notifications (to avoid visual movement)
     
-    if (slider == &volumeControlsVolumeKnob)
+    if (slider == &volumeControls.getVolumeKnob())
     {
         audioProcessor.setOsc1Volume(static_cast<float>(newValue));
     }
-    else if (slider == &volumeControlsDetuneKnob)
+    else if (slider == &volumeControls.getDetuneKnob())
     {
         audioProcessor.setOsc1Detune(static_cast<float>(newValue));
     }
-    else if (slider == &volumeControlsStereoWidthKnob)
+    else if (slider == &volumeControls.getStereoWidthKnob())
     {
         audioProcessor.setOsc1StereoWidth(static_cast<float>(newValue));
     }
-    else if (slider == &volumeControlsPanKnob)
+    else if (slider == &volumeControls.getPanKnob())
     {
         audioProcessor.setOsc1Pan(static_cast<float>(newValue));
     }
@@ -3636,10 +3535,7 @@ void SynthesizerComponent::updatePresetDisplay()
 void SynthesizerComponent::updateAllGuiControls()
 {
     // Main synthesizer controls (using correct control names)
-    volumeControlsVolumeKnob.setValue(audioProcessor.getOsc1Volume(), juce::dontSendNotification);
-    volumeControlsDetuneKnob.setValue(audioProcessor.getOsc1Detune(), juce::dontSendNotification);
-    volumeControlsStereoWidthKnob.setValue(audioProcessor.getOsc1StereoWidth(), juce::dontSendNotification);
-    volumeControlsPanKnob.setValue(audioProcessor.getOsc1Pan(), juce::dontSendNotification);
+    volumeControls.updateAllGuiControls();
     phaseControlsPhaseKnob.setValue(audioProcessor.getOsc1Phase(), juce::dontSendNotification);
     
     // Main ADSR envelope

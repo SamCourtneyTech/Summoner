@@ -22,7 +22,8 @@
       "Bash(\"/Users/samcourtney/Documents/JUCE NEW/JUCE/Projucer.app/Contents/MacOS/Projucer\" --resave \"Summoner.jucer\" --verbose)",
       "Bash(open:*)",
       "Bash(make:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(\"/Users/samcourtney/Documents/JUCE NEW/JUCE/Projucer.app/Contents/MacOS/Projucer\" --resave \"/Users/samcourtney/Documents/JUCE Projects/Summoner x Serum 2/Summoner-x-Serum-2/Summoner.jucer\")"
     ],
     "deny": []
   }

@@ -93,6 +93,10 @@
             file="Source/UI/SecondOscillatorComponent.cpp"/>
       <FILE id="SecondOsc2" name="SecondOscillatorComponent.h" compile="0" resource="0"
             file="Source/UI/SecondOscillatorComponent.h"/>
+      <FILE id="VolumeControls1" name="VolumeControlsComponent.cpp" compile="1" resource="0"
+            file="Source/UI/VolumeControlsComponent.cpp"/>
+      <FILE id="VolumeControls2" name="VolumeControlsComponent.h" compile="0" resource="0"
+            file="Source/UI/VolumeControlsComponent.h"/>
     </GROUP>
   </MAINGROUP>
   <MODULES>
