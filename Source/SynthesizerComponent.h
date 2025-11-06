@@ -26,6 +26,7 @@
 #include "UI/GreenLEDNumberLookAndFeel.h"
 #include "UI/DigitalFilterKnobLookAndFeel.h"
 #include "UI/EngravedLabelLookAndFeel.h"
+#include "UI/EQControlsComponent.h"
 
 class SummonerXSerum2AudioProcessor;
 class SynthesizerComponent;
@@ -267,54 +268,11 @@ private:
     
     // Distortion effect controls
     DistortionComponent distortionModule;
-    
-    // EQ effect controls
+
+    // EQ effect controls - now handled by EQControlsComponent
     ParametricEQComponent parametricEQ;
-    juce::TextButton eqOnOffButton;
-    
-    // Band 1 (Left) controls
-    juce::TextButton eq1ShelfButton;
-    juce::TextButton eq1PeakButton;
-    juce::TextButton eq1PassButton;
-    juce::TextButton eq1OnOffButton;  // Individual band 1 on/off
-    juce::Slider eq1FreqKnob;
-    juce::Label eq1FreqLabel;
-    juce::Slider eq1QKnob;
-    juce::Label eq1QLabel;
-    juce::Slider eq1GainKnob;
-    juce::Label eq1GainLabel;
-    
-    // Band 2 (Right) controls
-    juce::TextButton eq2ShelfButton;
-    juce::TextButton eq2PeakButton;
-    juce::TextButton eq2PassButton;
-    juce::TextButton eq2OnOffButton;  // Individual band 2 on/off
-    juce::Slider eq2FreqKnob;
-    juce::Label eq2FreqLabel;
-    juce::Slider eq2QKnob;
-    juce::Label eq2QLabel;
-    juce::Slider eq2GainKnob;
-    juce::Label eq2GainLabel;
-    
-    // EQ Point labels
-    juce::Label eq1PointLabel;
-    juce::Label eq2PointLabel;
-    
-    // Additional EQ controls in their own row
-    juce::Slider eq1NewFreqKnob;     // New frequency knob for band 1
-    juce::Label eq1NewFreqLabel;
-    juce::Slider eq1NewQKnob;        // New Q knob for band 1
-    juce::Label eq1NewQLabel;
-    juce::Slider eq1NewGainKnob;     // New gain knob for band 1
-    juce::Label eq1NewGainLabel;
-    
-    juce::Slider eq2NewFreqKnob;     // New frequency knob for band 2  
-    juce::Label eq2NewFreqLabel;
-    juce::Slider eq2NewQKnob;        // New Q knob for band 2
-    juce::Label eq2NewQLabel;
-    juce::Slider eq2NewGainKnob;     // New gain knob for band 2
-    juce::Label eq2NewGainLabel;
-    
+    EQControlsComponent eqControls;
+
     // Flanger effect controls - now handled by FlangerComponent
     FlangerComponent flangerModule;
     

@@ -53,6 +53,10 @@
             file="Source/UI/ParametricEQComponent.cpp"/>
       <FILE id="ParamEQ2" name="ParametricEQComponent.h" compile="0" resource="0"
             file="Source/UI/ParametricEQComponent.h"/>
+      <FILE id="EQControls1" name="EQControlsComponent.cpp" compile="1" resource="0"
+            file="Source/UI/EQControlsComponent.cpp"/>
+      <FILE id="EQControls2" name="EQControlsComponent.h" compile="0" resource="0"
+            file="Source/UI/EQControlsComponent.h"/>
       <FILE id="Distortion1" name="DistortionComponent.cpp" compile="1" resource="0"
             file="Source/UI/DistortionComponent.cpp"/>
       <FILE id="Distortion2" name="DistortionComponent.h" compile="0" resource="0"

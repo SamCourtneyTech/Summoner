@@ -157,14 +157,14 @@ void ParametricEQComponent::updateKnobsFromBand(int bandIndex)
     
     if (bandIndex == 0)
     {
-        // Update Band 1 knobs (both sets)
-        parentSynthesizer->eq1FreqKnob.setValue(bands[0].frequency, juce::dontSendNotification);
-        parentSynthesizer->eq1QKnob.setValue(bands[0].q, juce::dontSendNotification);
-        parentSynthesizer->eq1GainKnob.setValue(bands[0].gain, juce::dontSendNotification);
-        parentSynthesizer->eq1NewFreqKnob.setValue(bands[0].frequency, juce::dontSendNotification);
-        parentSynthesizer->eq1NewQKnob.setValue(bands[0].q, juce::dontSendNotification);
-        parentSynthesizer->eq1NewGainKnob.setValue(bands[0].gain, juce::dontSendNotification);
-        
+        // Update Band 1 knobs (both sets) - now accessed through eqControls
+        parentSynthesizer->eqControls.getEQ1FreqKnob().setValue(bands[0].frequency, juce::dontSendNotification);
+        parentSynthesizer->eqControls.getEQ1QKnob().setValue(bands[0].q, juce::dontSendNotification);
+        parentSynthesizer->eqControls.getEQ1GainKnob().setValue(bands[0].gain, juce::dontSendNotification);
+        parentSynthesizer->eqControls.getEQ1NewFreqKnob().setValue(bands[0].frequency, juce::dontSendNotification);
+        parentSynthesizer->eqControls.getEQ1NewQKnob().setValue(bands[0].q, juce::dontSendNotification);
+        parentSynthesizer->eqControls.getEQ1NewGainKnob().setValue(bands[0].gain, juce::dontSendNotification);
+
         // Update audio processor DSP
         parentSynthesizer->audioProcessor.setEQ1Frequency(bands[0].frequency);
         parentSynthesizer->audioProcessor.setEQ1Q(bands[0].q);
@@ -172,14 +172,14 @@ void ParametricEQComponent::updateKnobsFromBand(int bandIndex)
     }
     else if (bandIndex == 1)
     {
-        // Update Band 2 knobs (both sets)
-        parentSynthesizer->eq2FreqKnob.setValue(bands[1].frequency, juce::dontSendNotification);
-        parentSynthesizer->eq2QKnob.setValue(bands[1].q, juce::dontSendNotification);
-        parentSynthesizer->eq2GainKnob.setValue(bands[1].gain, juce::dontSendNotification);
-        parentSynthesizer->eq2NewFreqKnob.setValue(bands[1].frequency, juce::dontSendNotification);
-        parentSynthesizer->eq2NewQKnob.setValue(bands[1].q, juce::dontSendNotification);
-        parentSynthesizer->eq2NewGainKnob.setValue(bands[1].gain, juce::dontSendNotification);
-        
+        // Update Band 2 knobs (both sets) - now accessed through eqControls
+        parentSynthesizer->eqControls.getEQ2FreqKnob().setValue(bands[1].frequency, juce::dontSendNotification);
+        parentSynthesizer->eqControls.getEQ2QKnob().setValue(bands[1].q, juce::dontSendNotification);
+        parentSynthesizer->eqControls.getEQ2GainKnob().setValue(bands[1].gain, juce::dontSendNotification);
+        parentSynthesizer->eqControls.getEQ2NewFreqKnob().setValue(bands[1].frequency, juce::dontSendNotification);
+        parentSynthesizer->eqControls.getEQ2NewQKnob().setValue(bands[1].q, juce::dontSendNotification);
+        parentSynthesizer->eqControls.getEQ2NewGainKnob().setValue(bands[1].gain, juce::dontSendNotification);
+
         // Update audio processor DSP
         parentSynthesizer->audioProcessor.setEQ2Frequency(bands[1].frequency);
         parentSynthesizer->audioProcessor.setEQ2Q(bands[1].q);
@@ -222,9 +222,9 @@ void ParametricEQComponent::syncWithDSPState()
     else if (eq2Type == 1) bands[1].filterType = Shelf;
     else if (eq2Type == 2) bands[1].filterType = Pass;
     
-    // Sync band enable states with UI buttons
-    parentSynthesizer->eq1OnOffButton.setToggleState(parentSynthesizer->audioProcessor.getEQ1Enabled(), juce::dontSendNotification);
-    parentSynthesizer->eq2OnOffButton.setToggleState(parentSynthesizer->audioProcessor.getEQ2Enabled(), juce::dontSendNotification);
+    // Sync band enable states with UI buttons - now accessed through eqControls
+    parentSynthesizer->eqControls.getEQ1OnOffButton().setToggleState(parentSynthesizer->audioProcessor.getEQ1Enabled(), juce::dontSendNotification);
+    parentSynthesizer->eqControls.getEQ2OnOffButton().setToggleState(parentSynthesizer->audioProcessor.getEQ2Enabled(), juce::dontSendNotification);
     
     // Update visual positions based on frequency/gain
     resized(); // This will update graphPosition for each band
