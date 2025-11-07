@@ -4,7 +4,9 @@
       "Bash(xcodebuild:*)",
       "Bash(open:*)",
       "Bash(xcode-select:*)",
-      "Bash(sudo xcode-select:*)"
+      "Bash(sudo xcode-select:*)",
+      "Bash(mdfind:*)",
+      "Bash(\"/Users/samcourtney/Documents/JUCE NEW/JUCE/Projucer.app/Contents/MacOS/Projucer\" --resave \"../../Summoner.jucer\")"
     ],
     "deny": [],
     "ask": []

@@ -15,6 +15,10 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
       eqControls(*this, processor),
       presetManagement(processor)
 {
+    // Initialize the macro mapping manager
+    macroMappingManager = std::make_unique<MacroMappingManager>(macroControls, processor);
+    macroMappingManager->setParentComponent(this);
+
     addAndMakeVisible(secondOscillator);
     addAndMakeVisible(macroControls);
     addAndMakeVisible(volumeControls);
@@ -1619,11 +1623,17 @@ void SynthesizerComponent::drawMacroKnobsBackground(juce::Graphics& g, juce::Rec
 
 void SynthesizerComponent::createMacroMapping(int macroIndex, juce::Slider* targetSlider)
 {
-    macroControls.createMacroMapping(macroIndex, targetSlider);
+    if (macroMappingManager)
+    {
+        macroMappingManager->createMacroMapping(macroIndex, targetSlider);
+    }
 }
 
 juce::Slider* SynthesizerComponent::findSliderAt(juce::Point<int> position)
 {
+    if (!macroMappingManager)
+        return nullptr;
+
     // List of all sliders to check for drop detection
     std::vector<juce::Slider*> allSliders = {
         // Volume and oscillator controls
@@ -1633,14 +1643,14 @@ juce::Slider* SynthesizerComponent::findSliderAt(juce::Point<int> position)
         // ADSR controls
         &adsrKnobs.getAttackKnob(), &adsrKnobs.getDecayKnob(), &adsrKnobs.getSustainKnob(), &adsrKnobs.getReleaseKnob(),
         &secondOscillator.getAttackKnob(), &secondOscillator.getDecayKnob(), &secondOscillator.getSustainKnob(), &secondOscillator.getReleaseKnob(),
-        
+
         // Filter controls
         &filterModule.filterCutoffKnob, &filterModule.filterResonanceKnob,
-        
+
         // EQ controls - using only the NEW knobs to avoid duplicates
         &eqControls.getEQ1NewFreqKnob(), &eqControls.getEQ1NewQKnob(), &eqControls.getEQ1NewGainKnob(),
         &eqControls.getEQ2NewFreqKnob(), &eqControls.getEQ2NewQKnob(), &eqControls.getEQ2NewGainKnob(),
-        
+
         // Effects controls
         &chorusModule.chorusRateKnob, &chorusModule.chorusDelay1Knob, &chorusModule.chorusDelay2Knob, &chorusModule.chorusDepthKnob, &chorusModule.chorusFeedKnob, &chorusModule.chorusLpfKnob, &chorusModule.chorusMixKnob,
         &flangerModule.flangerMixKnob, &flangerModule.flangerRateKnob, &flangerModule.flangerDepthKnob, &flangerModule.flangerFeedbackKnob, &flangerModule.flangerPhaseKnob,
@@ -1648,303 +1658,50 @@ juce::Slider* SynthesizerComponent::findSliderAt(juce::Point<int> position)
         &compressorModule.compressorThresholdKnob, &compressorModule.compressorRatioKnob, &compressorModule.compressorAttackKnob, &compressorModule.compressorReleaseKnob, &compressorModule.compressorGainKnob, &compressorModule.compressorMixKnob,
         &reverbModule.reverbMixKnob, &reverbModule.reverbSizeKnob, &reverbModule.reverbPreDelayKnob, &reverbModule.reverbLowCutKnob, &reverbModule.reverbHighCutKnob, &reverbModule.reverbDampKnob, &reverbModule.reverbWidthKnob
     };
-    
-    // Use MacroSystem to find slider at position with coordinate conversion
-    return macroControls.getMacroSystem().findSliderAt(position, allSliders);
+
+    // Use MacroMappingManager to find slider at position with coordinate conversion
+    return macroMappingManager->findSliderAt(position, allSliders);
 }
 
 
 
 void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double newValue)
 {
-    // Mirror the logic from sliderValueChanged to update audio processor parameters
-    // without sending slider notifications (to avoid visual movement)
-    
-    if (slider == &volumeControls.getVolumeKnob())
+    // Delegate to MacroMappingManager
+    if (macroMappingManager)
     {
-        audioProcessor.setOsc1Volume(static_cast<float>(newValue));
+        macroMappingManager->triggerParameterUpdate(slider, newValue);
     }
-    else if (slider == &volumeControls.getDetuneKnob())
-    {
-        audioProcessor.setOsc1Detune(static_cast<float>(newValue));
-    }
-    else if (slider == &volumeControls.getStereoWidthKnob())
-    {
-        audioProcessor.setOsc1StereoWidth(static_cast<float>(newValue));
-    }
-    else if (slider == &volumeControls.getPanKnob())
-    {
-        audioProcessor.setOsc1Pan(static_cast<float>(newValue));
-    }
-    else if (slider == &phaseControlsPhaseKnob)
-    {
-        audioProcessor.setOsc1Phase(static_cast<float>(newValue));
-    }
-    else if (slider == &adsrKnobs.getAttackKnob())
-    {
-        audioProcessor.setOsc1Attack(static_cast<float>(newValue));
-
-        // If ADSR is linked, also update oscillator 2 via secondOscillator component
-        if (secondOscillator.getAdsrLinkButton().getToggleState())
-        {
-            audioProcessor.setOsc2Attack(static_cast<float>(newValue));
-        }
-
-        updateEnvelopeDisplay();
-    }
-    else if (slider == &adsrKnobs.getDecayKnob())
-    {
-        audioProcessor.setOsc1Decay(static_cast<float>(newValue));
-
-        // If ADSR is linked, also update oscillator 2 via secondOscillator component
-        if (secondOscillator.getAdsrLinkButton().getToggleState())
-        {
-            audioProcessor.setOsc2Decay(static_cast<float>(newValue));
-        }
-
-        updateEnvelopeDisplay();
-    }
-    else if (slider == &adsrKnobs.getSustainKnob())
-    {
-        audioProcessor.setOsc1Sustain(static_cast<float>(newValue));
-
-        // If ADSR is linked, also update oscillator 2 via secondOscillator component
-        if (secondOscillator.getAdsrLinkButton().getToggleState())
-        {
-            audioProcessor.setOsc2Sustain(static_cast<float>(newValue));
-        }
-
-        updateEnvelopeDisplay();
-    }
-    else if (slider == &adsrKnobs.getReleaseKnob())
-    {
-        audioProcessor.setOsc1Release(static_cast<float>(newValue));
-
-        // If ADSR is linked, also update oscillator 2 via secondOscillator component
-        if (secondOscillator.getAdsrLinkButton().getToggleState())
-        {
-            audioProcessor.setOsc2Release(static_cast<float>(newValue));
-        }
-
-        updateEnvelopeDisplay();
-    }
-    // Add more slider checks as needed for other parameters
-    // For now, focusing on the main commonly-used parameters
-    // Filter controls now handled by FilterControlComponent
-    // EQ parameters - now handled by EQControlsComponent
-    else if (slider == &eqControls.getEQ1FreqKnob())
-    {
-        audioProcessor.setEQ1Frequency(static_cast<float>(newValue));
-        parametricEQ.syncWithDSPState();
-    }
-    else if (slider == &eqControls.getEQ1QKnob())
-    {
-        audioProcessor.setEQ1Q(static_cast<float>(newValue));
-        parametricEQ.syncWithDSPState();
-    }
-    else if (slider == &eqControls.getEQ1GainKnob())
-    {
-        audioProcessor.setEQ1Gain(static_cast<float>(newValue));
-        parametricEQ.syncWithDSPState();
-    }
-    else if (slider == &eqControls.getEQ2FreqKnob())
-    {
-        audioProcessor.setEQ2Frequency(static_cast<float>(newValue));
-        parametricEQ.syncWithDSPState();
-    }
-    else if (slider == &eqControls.getEQ2QKnob())
-    {
-        audioProcessor.setEQ2Q(static_cast<float>(newValue));
-        parametricEQ.syncWithDSPState();
-    }
-    else if (slider == &eqControls.getEQ2GainKnob())
-    {
-        audioProcessor.setEQ2Gain(static_cast<float>(newValue));
-        parametricEQ.syncWithDSPState();
-    }
-    // New EQ knobs
-    else if (slider == &eqControls.getEQ1NewFreqKnob())
-    {
-        audioProcessor.setEQ1Frequency(static_cast<float>(newValue));
-        parametricEQ.syncWithDSPState();
-    }
-    else if (slider == &eqControls.getEQ1NewQKnob())
-    {
-        audioProcessor.setEQ1Q(static_cast<float>(newValue));
-        parametricEQ.syncWithDSPState();
-    }
-    else if (slider == &eqControls.getEQ1NewGainKnob())
-    {
-        audioProcessor.setEQ1Gain(static_cast<float>(newValue));
-        parametricEQ.syncWithDSPState();
-    }
-    else if (slider == &eqControls.getEQ2NewFreqKnob())
-    {
-        audioProcessor.setEQ2Frequency(static_cast<float>(newValue));
-        parametricEQ.syncWithDSPState();
-    }
-    else if (slider == &eqControls.getEQ2NewQKnob())
-    {
-        audioProcessor.setEQ2Q(static_cast<float>(newValue));
-        parametricEQ.syncWithDSPState();
-    }
-    else if (slider == &eqControls.getEQ2NewGainKnob())
-    {
-        audioProcessor.setEQ2Gain(static_cast<float>(newValue));
-        parametricEQ.syncWithDSPState();
-    }
-    // Oscillator 2 controls now handled by SecondOscillatorComponent
-    // Chorus FX - handled by ChorusComponent
-    else if (slider == &chorusModule.chorusRateKnob)
-    {
-        audioProcessor.setChorusRate(static_cast<float>(newValue));
-    }
-    else if (slider == &chorusModule.chorusDelay1Knob)
-    {
-        audioProcessor.setChorusDelay1(static_cast<float>(newValue));
-    }
-    else if (slider == &chorusModule.chorusDelay2Knob)
-    {
-        audioProcessor.setChorusDelay2(static_cast<float>(newValue));
-    }
-    else if (slider == &chorusModule.chorusDepthKnob)
-    {
-        audioProcessor.setChorusDepth(static_cast<float>(newValue));
-    }
-    else if (slider == &chorusModule.chorusFeedKnob)
-    {
-        audioProcessor.setChorusFeedback(static_cast<float>(newValue));
-    }
-    else if (slider == &chorusModule.chorusLpfKnob)
-    {
-        float filterFreq = juce::jmap(static_cast<float>(newValue), 0.0f, 1.0f, 20.0f, 20000.0f);
-        audioProcessor.setChorusLPF(filterFreq);
-    }
-    else if (slider == &chorusModule.chorusMixKnob)
-    {
-        audioProcessor.setChorusMix(static_cast<float>(newValue));
-    }
-    // Flanger FX - now handled by FlangerComponent
-    // Phaser FX - now handled by PhaserComponent
-    // Compressor FX - handled by CompressorComponent
-    else if (slider == &compressorModule.compressorThresholdKnob)
-    {
-        audioProcessor.setCompressorThreshold(static_cast<float>(newValue));
-    }
-    else if (slider == &compressorModule.compressorRatioKnob)
-    {
-        float ratio = juce::jmap(static_cast<float>(newValue), 0.0f, 1.0f, 1.0f, 20.0f);
-        audioProcessor.setCompressorRatio(ratio);
-    }
-    else if (slider == &compressorModule.compressorAttackKnob)
-    {
-        float attack = juce::jmap(static_cast<float>(newValue), 0.0f, 1.0f, 0.1f, 100.0f);
-        audioProcessor.setCompressorAttack(attack);
-    }
-    else if (slider == &compressorModule.compressorReleaseKnob)
-    {
-        float release = juce::jmap(static_cast<float>(newValue), 0.0f, 1.0f, 1.0f, 1000.0f);
-        audioProcessor.setCompressorRelease(release);
-    }
-    else if (slider == &compressorModule.compressorGainKnob)
-    {
-        audioProcessor.setCompressorGain(static_cast<float>(newValue));
-    }
-    else if (slider == &compressorModule.compressorMixKnob)
-    {
-        audioProcessor.setCompressorMix(static_cast<float>(newValue));
-    }
-    // Delay FX
-    // Reverb FX - now handled by ReverbComponent
 }
 
 MacroMapping* SynthesizerComponent::findMacroMappingAtPosition(juce::Point<int> position)
 {
-    return macroControls.getMacroSystem().findMacroMappingAtPosition(position);
+    if (macroMappingManager)
+    {
+        return macroMappingManager->findMacroMappingAtPosition(position);
+    }
+    return nullptr;
 }
 
 
 void SynthesizerComponent::updateMappingRange(MacroMapping* mapping, juce::Point<int> dragPosition)
 {
-    macroControls.getMacroSystem().updateMappingRange(mapping, dragPosition);
-    repaint();
+    if (macroMappingManager)
+    {
+        macroMappingManager->updateMappingRange(mapping, dragPosition);
+    }
 }
 
 // Preset Management - now handled by PresetManagementComponent
 
 void SynthesizerComponent::updateAllGuiControls()
 {
-    // Main synthesizer controls (using correct control names)
-    volumeControls.updateAllGuiControls();
-    pitchControls.updateAllGuiControls();
-    phaseControlsPhaseKnob.setValue(audioProcessor.getOsc1Phase(), juce::dontSendNotification);
-    
-    // Main ADSR envelope
-    adsrKnobs.getAttackKnob().setValue(audioProcessor.getOsc1Attack(), juce::dontSendNotification);
-    adsrKnobs.getDecayKnob().setValue(audioProcessor.getOsc1Decay(), juce::dontSendNotification);
-    adsrKnobs.getSustainKnob().setValue(audioProcessor.getOsc1Sustain(), juce::dontSendNotification);
-    adsrKnobs.getReleaseKnob().setValue(audioProcessor.getOsc1Release(), juce::dontSendNotification);
-    
-    // Oscillator 1 controls
-    pulseWidthSlider.setValue(audioProcessor.getOsc1PulseWidth(), juce::dontSendNotification);
-    
-    // Update oscillator 1 wave type buttons
-    int osc1Type = audioProcessor.getOsc1Type();
-    waveTypeSelector.getSineButton().setToggleState(osc1Type == 0, juce::dontSendNotification);
-    waveTypeSelector.getSawButton().setToggleState(osc1Type == 1, juce::dontSendNotification);
-    waveTypeSelector.getSquareButton().setToggleState(osc1Type == 2, juce::dontSendNotification);
-    waveTypeSelector.getTriangleButton().setToggleState(osc1Type == 3, juce::dontSendNotification);
-    waveTypeSelector.getWhiteNoiseButton().setToggleState(osc1Type == 4, juce::dontSendNotification);
-    waveTypeSelector.getPinkNoiseButton().setToggleState(osc1Type == 5, juce::dontSendNotification);
-    waveTypeSelector.getRandomPhaseButton().setToggleState(osc1Type == 6, juce::dontSendNotification);
-    
-    // Oscillator 2 controls now handled by SecondOscillatorComponent
-    secondOscillator.updateAllGuiControls();
-    
-    // Filter controls - handled by FilterControlComponent
-    filterModule.syncWithDSPState();
-    
-    // Effects controls - update the knobs with loaded preset values
-    
-    // Chorus controls - handled by ChorusComponent
-    chorusModule.syncWithDSPState();
-    
-    // Compressor controls - handled by CompressorComponent
-    compressorModule.syncWithDSPState();
-    
-    // Delay controls - handled by DelayComponent
-    delayModule.syncWithDSPState();
-    
-    
-    // EQ controls - now handled by EQControlsComponent
-    eqControls.syncWithDSPState();
-    
-    // Flanger controls - now handled by FlangerComponent
-    flangerModule.syncWithDSPState();
-    
-    // Phaser controls - now handled by PhaserComponent
-    phaserModule.syncWithDSPState();
-    
-    // Reverb controls - now handled by ReverbComponent
-    reverbModule.syncWithDSPState();
-    
-    // Macro controls (commented out - not implemented in processor)
-    // macro1Knob.setValue(audioProcessor.getMacro1(), juce::dontSendNotification);
-    // macro2Knob.setValue(audioProcessor.getMacro2(), juce::dontSendNotification);
-    // macro3Knob.setValue(audioProcessor.getMacro3(), juce::dontSendNotification);
-    // macro4Knob.setValue(audioProcessor.getMacro4(), juce::dontSendNotification);
-    // macro5Knob.setValue(audioProcessor.getMacro5(), juce::dontSendNotification);
-    // macro6Knob.setValue(audioProcessor.getMacro6(), juce::dontSendNotification);
-    // macro7Knob.setValue(audioProcessor.getMacro7(), juce::dontSendNotification);
-    // macro8Knob.setValue(audioProcessor.getMacro8(), juce::dontSendNotification);
-    
-    // Update envelope display
-    updateEnvelopeDisplay();
-
-    // Update preset display - now handled by PresetManagementComponent
-    presetManagement.updatePresetDisplay();
-
-    // Trigger a repaint to update the visuals
-    repaint();
+    // Delegate to MacroMappingManager
+    if (macroMappingManager)
+    {
+        std::map<juce::String, juce::Component*> allComponents;
+        // The MacroMappingManager will handle all the GUI updates
+        macroMappingManager->updateAllGuiControls(allComponents);
+    }
 }
 

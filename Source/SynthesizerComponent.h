@@ -33,9 +33,11 @@
 #include "UI/WaveTypeSelectorComponent.h"
 #include "UI/OscillatorBackgroundPainter.h"
 #include "UI/ADSRKnobsComponent.h"
+#include "MacroMappingManager.h"
 
 class SummonerXSerum2AudioProcessor;
 class SynthesizerComponent;
+class MacroMappingManager;
 
 
 
@@ -50,6 +52,7 @@ class SynthesizerComponent : public juce::Component, private juce::Slider::Liste
     friend class PhaserComponent;
     friend class FlangerComponent;
     friend class FilterControlComponent;
+    friend class MacroMappingManager;
 public:
     explicit SynthesizerComponent(SummonerXSerum2AudioProcessor& processor);
     ~SynthesizerComponent() override;
@@ -182,7 +185,10 @@ private:
 
     // Macro controls component
     MacroControlsComponent macroControls;
-    
+
+    // Macro mapping manager - handles all macro mapping logic
+    std::unique_ptr<MacroMappingManager> macroMappingManager;
+
 public:
     void createMacroMapping(int macroIndex, juce::Slider* targetSlider);
     juce::Slider* findSliderAt(juce::Point<int> position);
@@ -190,7 +196,7 @@ public:
     void updateAllGuiControls();
 
 private:
-    
+
     // Arc interaction methods
     MacroMapping* findMacroMappingAtPosition(juce::Point<int> position);
     void updateMappingRange(MacroMapping* mapping, juce::Point<int> dragPosition);

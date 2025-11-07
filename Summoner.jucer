@@ -40,6 +40,10 @@
           file="Source/SynthesizerComponent.cpp"/>
     <FILE id="SynthComp2" name="SynthesizerComponent.h" compile="0" resource="0"
           file="Source/SynthesizerComponent.h"/>
+    <FILE id="MacroMgr1" name="MacroMappingManager.cpp" compile="1" resource="0"
+          file="Source/MacroMappingManager.cpp"/>
+    <FILE id="MacroMgr2" name="MacroMappingManager.h" compile="0" resource="0"
+          file="Source/MacroMappingManager.h"/>
     <GROUP id="{UI-COMPONENTS-GROUP}" name="UI">
       <FILE id="fLyTnV" name="OscillatorBackgroundPainter.cpp" compile="1"
             resource="0" file="Source/UI/OscillatorBackgroundPainter.cpp"/>
