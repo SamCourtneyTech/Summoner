@@ -9,7 +9,8 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
       secondOscillator(*this, processor, &customKnobLookAndFeel, &customWaveButtonLookAndFeel, &ledLabelLookAndFeel, &ledNumberLookAndFeel),
       macroControls(*this, processor, &simpleKnobLookAndFeel, &engravedLabelLookAndFeel),
       volumeControls(processor, &customKnobLookAndFeel, &ledLabelLookAndFeel),
-      eqControls(*this, processor)
+      eqControls(*this, processor),
+      presetManagement(processor)
 {
     addAndMakeVisible(secondOscillator);
     addAndMakeVisible(macroControls);
@@ -339,69 +340,23 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     effectsModule.setLookAndFeel(&digitalScreenLookAndFeel);
     
     // CHORUS EFFECT CONTROLS - now handled by ChorusComponent
-    
-    
-    
-    
-    // EFFECTS PRESET CONTROLS - Placeholder functionality
-    effectsPresetPrevButton.setButtonText("<");
-    effectsPresetPrevButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    addAndMakeVisible(effectsPresetPrevButton);
-    
-    effectsPresetNextButton.setButtonText(">");
-    effectsPresetNextButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    addAndMakeVisible(effectsPresetNextButton);
-    
-    effectsPresetNameLabel.setText("DEFAULT", juce::dontSendNotification);
-    effectsPresetNameLabel.setJustificationType(juce::Justification::centred);
-    effectsPresetNameLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    effectsPresetNameLabel.setColour(juce::Label::textColourId, juce::Colour(0xff00ff00));
-    addAndMakeVisible(effectsPresetNameLabel);
-    
-    effectsPresetSaveButton.setButtonText("SAVE");
-    effectsPresetSaveButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    addAndMakeVisible(effectsPresetSaveButton);
-    
-    effectsPresetLoadButton.setButtonText("LOAD");
-    effectsPresetLoadButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    addAndMakeVisible(effectsPresetLoadButton);
-    
-    effectsPresetInitButton.setButtonText("INIT");
-    effectsPresetInitButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    addAndMakeVisible(effectsPresetInitButton);
-    
-    // Set up preset button callbacks
-    effectsPresetSaveButton.onClick = [this]() {
-        showSavePresetDialog();
-    };
-    
-    effectsPresetLoadButton.onClick = [this]() {
-        showLoadPresetDialog();
-    };
-    
-    effectsPresetInitButton.onClick = [this]() {
-        showInitPresetDialog();
-    };
-    
-    effectsPresetPrevButton.onClick = [this]() {
-        audioProcessor.previousPreset();
-        updatePresetDisplay();
-    };
-    
-    effectsPresetNextButton.onClick = [this]() {
-        audioProcessor.nextPreset();
-        updatePresetDisplay();
-    };
-    
+
+    // EFFECTS PRESET CONTROLS - now handled by PresetManagementComponent
+    presetManagement.getPrevButton().setLookAndFeel(&customWaveButtonLookAndFeel);
+    presetManagement.getNextButton().setLookAndFeel(&customWaveButtonLookAndFeel);
+    presetManagement.getSaveButton().setLookAndFeel(&customWaveButtonLookAndFeel);
+    presetManagement.getLoadButton().setLookAndFeel(&customWaveButtonLookAndFeel);
+    presetManagement.getInitButton().setLookAndFeel(&customWaveButtonLookAndFeel);
+    addAndMakeVisible(presetManagement);
+
     // Add border component behind effects module
     addAndMakeVisible(effectsBorder);
     addAndMakeVisible(effectsModule);
     
     // Initialize envelope display with default values
     updateEnvelopeDisplay();
-    
-    // Initialize preset display
-    updatePresetDisplay();
+
+    // Initialize preset display - now handled by PresetManagementComponent (initialized in its constructor)
 }
 
 SynthesizerComponent::~SynthesizerComponent()
@@ -437,14 +392,8 @@ SynthesizerComponent::~SynthesizerComponent()
     pitchControlsVoiceCountValueLabel.setLookAndFeel(nullptr);
     // Oscillator 2 cleanup now handled by SecondOscillatorComponent
     // Macro controls cleanup now handled by MacroControlsComponent
+    // Preset management cleanup now handled by PresetManagementComponent
 
-    // Reset effects preset controls look and feel
-    effectsPresetPrevButton.setLookAndFeel(nullptr);
-    effectsPresetNextButton.setLookAndFeel(nullptr);
-    effectsPresetSaveButton.setLookAndFeel(nullptr);
-    effectsPresetLoadButton.setLookAndFeel(nullptr);
-    effectsPresetInitButton.setLookAndFeel(nullptr);
-    
     // pulseWidthSlider.setLookAndFeel(nullptr); // commented out
 }
 
@@ -1722,42 +1671,19 @@ void SynthesizerComponent::layoutEffectsModule(juce::Rectangle<int>& bounds)
     int centerX = (totalBounds.getWidth() - effectsWidth - borderPadding * 2) / 2;
     int centerY = (totalBounds.getHeight() - effectsHeight - borderPadding * 2) / 2 - 50; // Move up 30px total for preset controls
     
-    // Preset controls area above the effects module
+    // Preset controls area above the effects module - now handled by PresetManagementComponent
     auto presetControlsHeight = 35;
     auto presetY = centerY - presetControlsHeight - 10; // 10px gap above effects module
-    
-    // Preset controls layout
+
+    // Position the preset management component
     auto buttonWidth = 40;
     auto buttonHeight = 25;
     auto labelWidth = 120;
     auto spacing = 10;
-    
-    // Calculate positions for preset controls (centered above effects module)
     auto totalPresetWidth = (4 * buttonWidth) + labelWidth + (4 * spacing);
     auto presetStartX = centerX + borderPadding + (effectsWidth - totalPresetWidth) / 2;
-    
-    // Previous button
-    effectsPresetPrevButton.setBounds(presetStartX, presetY + 5, buttonWidth, buttonHeight);
-    presetStartX += buttonWidth + spacing;
-    
-    // Preset name label
-    effectsPresetNameLabel.setBounds(presetStartX, presetY, labelWidth, presetControlsHeight);
-    presetStartX += labelWidth + spacing;
-    
-    // Next button
-    effectsPresetNextButton.setBounds(presetStartX, presetY + 5, buttonWidth, buttonHeight);
-    presetStartX += buttonWidth + spacing;
-    
-    // Save button - moved up 10 pixels total
-    effectsPresetSaveButton.setBounds(presetStartX, presetY - 5, buttonWidth, buttonHeight);
-    presetStartX += buttonWidth + spacing;
-    
-    // Load button - moved up 10 pixels total
-    effectsPresetLoadButton.setBounds(presetStartX, presetY - 5, buttonWidth, buttonHeight);
-    presetStartX += buttonWidth + spacing;
-    
-    // Init button - moved down 14 pixels and left 75 pixels
-    effectsPresetInitButton.setBounds(presetStartX - 75, presetY + 19, buttonWidth, buttonHeight);
+
+    presetManagement.setBounds(presetStartX, presetY, totalPresetWidth, presetControlsHeight);
     
     // Position border component (larger to encompass effects module)
     auto borderArea = juce::Rectangle<int>(centerX, centerY, effectsWidth + borderPadding * 2, effectsHeight + borderPadding * 2);
@@ -2892,134 +2818,7 @@ void SynthesizerComponent::updateMappingRange(MacroMapping* mapping, juce::Point
     repaint();
 }
 
-// Preset Management Implementation
-
-void SynthesizerComponent::showSavePresetDialog()
-{
-    // Create default filename with timestamp
-    juce::String defaultName = "MyPreset_" + juce::String(juce::Time::getCurrentTime().formatted("%Y%m%d_%H%M%S"));
-    juce::File defaultFile = audioProcessor.getPresetDirectory().getChildFile(defaultName + ".sxs2");
-    
-    auto chooser = std::make_shared<juce::FileChooser>("Save Preset",
-                                                       defaultFile,
-                                                       "*.sxs2",
-                                                       true);
-    
-    chooser->launchAsync(juce::FileBrowserComponent::saveMode | juce::FileBrowserComponent::canSelectFiles,
-                        [this, chooser](const juce::FileChooser& fc) mutable
-                        {
-                            auto file = fc.getResult();
-                            if (file == juce::File{})
-                                return;
-                                
-                            if (file.existsAsFile())
-                            {
-                                // File already exists, ask for confirmation
-                                int result = juce::AlertWindow::showYesNoCancelBox(
-                                    juce::AlertWindow::QuestionIcon,
-                                    "File Exists",
-                                    "The file \"" + file.getFileName() + "\" already exists. Do you want to replace it?",
-                                    "Replace",
-                                    "Cancel",
-                                    "",
-                                    nullptr,
-                                    nullptr);
-                                    
-                                if (result != 1) // If not "Replace"
-                                    return;
-                            }
-                            
-                            // Ensure the file has the correct extension
-                            if (!file.hasFileExtension(".sxs2"))
-                            {
-                                file = file.withFileExtension(".sxs2");
-                            }
-                            
-                            // Save the preset
-                            if (audioProcessor.savePresetToFile(file, "User created preset"))
-                            {
-                                juce::MessageManager::callAsync([this, file]() {
-                                    updatePresetDisplay();
-                                    juce::AlertWindow::showMessageBoxAsync(
-                                        juce::AlertWindow::InfoIcon,
-                                        "Success",
-                                        "Preset saved successfully to:\n" + file.getFullPathName());
-                                });
-                            }
-                            else
-                            {
-                                juce::MessageManager::callAsync([file]() {
-                                    juce::AlertWindow::showMessageBoxAsync(
-                                        juce::AlertWindow::WarningIcon,
-                                        "Error",
-                                        "Failed to save preset to:\n" + file.getFullPathName());
-                                });
-                            }
-                        });
-}
-
-void SynthesizerComponent::showLoadPresetDialog()
-{
-    auto chooser = std::make_shared<juce::FileChooser>("Load Preset",
-                                                       audioProcessor.getPresetDirectory(),
-                                                       "*.sxs2",
-                                                       true);
-    
-    chooser->launchAsync(juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles,
-                        [this, chooser](const juce::FileChooser& fc) mutable
-                        {
-                            auto file = fc.getResult();
-                            if (file == juce::File{})
-                                return;
-                                
-                            if (audioProcessor.loadPreset(file.getFullPathName()))
-                            {
-                                juce::MessageManager::callAsync([this, file]() {
-                                    updatePresetDisplay();
-                                    juce::AlertWindow::showMessageBoxAsync(
-                                        juce::AlertWindow::InfoIcon,
-                                        "Success",
-                                        "Preset '" + file.getFileNameWithoutExtension() + "' loaded successfully!");
-                                });
-                            }
-                            else
-                            {
-                                juce::MessageManager::callAsync([file]() {
-                                    juce::AlertWindow::showMessageBoxAsync(
-                                        juce::AlertWindow::WarningIcon,
-                                        "Error",
-                                        "Failed to load preset: " + file.getFileName());
-                                });
-                            }
-                        });
-}
-
-void SynthesizerComponent::showInitPresetDialog()
-{
-    juce::AlertWindow::showYesNoCancelBox(
-        juce::AlertWindow::QuestionIcon,
-        "Initialize Synthesizer",
-        "This will reset all parameters to their default values. Any unsaved changes will be lost.\n\nAre you sure you want to continue?",
-        "Yes, Initialize",
-        "Cancel",
-        juce::String(),
-        this,
-        juce::ModalCallbackFunction::create([this](int result) {
-            if (result == 1) // Yes button clicked
-            {
-                audioProcessor.initializeAllParameters();
-                updatePresetDisplay();
-            }
-        })
-    );
-}
-
-void SynthesizerComponent::updatePresetDisplay()
-{
-    effectsPresetNameLabel.setText(audioProcessor.getCurrentPresetName(), 
-                                 juce::dontSendNotification);
-    repaint();
-}
+// Preset Management - now handled by PresetManagementComponent
 
 void SynthesizerComponent::updateAllGuiControls()
 {
@@ -3088,10 +2887,10 @@ void SynthesizerComponent::updateAllGuiControls()
     
     // Update envelope display
     updateEnvelopeDisplay();
-    
-    // Update preset display
-    updatePresetDisplay();
-    
+
+    // Update preset display - now handled by PresetManagementComponent
+    presetManagement.updatePresetDisplay();
+
     // Trigger a repaint to update the visuals
     repaint();
 }

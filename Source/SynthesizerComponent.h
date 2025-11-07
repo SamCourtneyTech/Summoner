@@ -27,6 +27,7 @@
 #include "UI/DigitalFilterKnobLookAndFeel.h"
 #include "UI/EngravedLabelLookAndFeel.h"
 #include "UI/EQControlsComponent.h"
+#include "UI/PresetManagementComponent.h"
 
 class SummonerXSerum2AudioProcessor;
 class SynthesizerComponent;
@@ -141,14 +142,9 @@ private:
     
     // EFFECTS MODULE
     juce::TabbedComponent effectsModule { juce::TabbedButtonBar::TabsAtTop };
-    
-    // Effects preset controls
-    juce::TextButton effectsPresetPrevButton;
-    juce::TextButton effectsPresetNextButton;
-    juce::Label effectsPresetNameLabel;
-    juce::TextButton effectsPresetSaveButton;
-    juce::TextButton effectsPresetLoadButton;
-    juce::TextButton effectsPresetInitButton;
+
+    // Preset management component
+    PresetManagementComponent presetManagement;
     
     // Effects module border component
     class EffectsBorderComponent : public juce::Component
@@ -236,12 +232,6 @@ public:
     void createMacroMapping(int macroIndex, juce::Slider* targetSlider);
     juce::Slider* findSliderAt(juce::Point<int> position);
     void triggerParameterUpdate(juce::Slider* slider, double newValue);
-
-    // Preset management functions
-    void showSavePresetDialog();
-    void showLoadPresetDialog();
-    void showInitPresetDialog();
-    void updatePresetDisplay();
     void updateAllGuiControls();
 
 private:
