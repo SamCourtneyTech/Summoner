@@ -105,6 +105,10 @@
             file="Source/UI/VolumeControlsComponent.cpp"/>
       <FILE id="VolumeControls2" name="VolumeControlsComponent.h" compile="0" resource="0"
             file="Source/UI/VolumeControlsComponent.h"/>
+      <FILE id="EffectsBorder1" name="EffectsBorderComponent.cpp" compile="1" resource="0"
+            file="Source/UI/EffectsBorderComponent.cpp"/>
+      <FILE id="EffectsBorder2" name="EffectsBorderComponent.h" compile="0" resource="0"
+            file="Source/UI/EffectsBorderComponent.h"/>
     </GROUP>
   </MAINGROUP>
   <MODULES>

@@ -1,33 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(rg:*)",
-      "Bash(grep:*)",
-      "Bash(cat:*)",
-      "Bash(find:*)",
-      "Bash(rm:*)",
-      "Bash(mv:*)",
-      "Bash(sed:*)",
-      "Bash(awk:*)",
-      "Bash(xcodebuild:*)",
-      "Bash(ls:*)",
-      "Bash(chmod:*)",
-      "Bash(scripts/local-build.sh:*)",
-      "Bash(./scripts/local-build.sh:*)",
-      "Bash(bash:*)",
-      "Bash(clang++:*)",
-      "mcp__gemini-cli__ask-gemini",
-      "Bash(c++:*)",
-      "Bash(\"/Users/samcourtney/Documents/JUCE NEW/JUCE/Projucer.app/Contents/MacOS/Projucer\" --resave \"Summoner.jucer\")",
-      "Bash(\"/Users/samcourtney/Documents/JUCE NEW/JUCE/Projucer.app/Contents/MacOS/Projucer\" --resave \"Summoner.jucer\" --verbose)",
-      "Bash(open:*)",
-      "Bash(make:*)",
-      "Bash(git add:*)",
-      "Bash(\"/Users/samcourtney/Documents/JUCE NEW/JUCE/Projucer.app/Contents/MacOS/Projucer\" --resave \"/Users/samcourtney/Documents/JUCE Projects/Summoner x Serum 2/Summoner-x-Serum-2/Summoner.jucer\")",
-      "Bash(env)",
-      "Bash(eq[12] --include=*.cpp --include=*.h .)"
+      "Bash(xcodebuild:*)"
     ],
-    "deny": []
+    "deny": [],
+    "ask": []
   },
   "outputStyle": "default",
   "spinnerTipsEnabled": true
