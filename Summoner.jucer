@@ -37,10 +37,14 @@
     <FILE id="SynthComp2" name="SynthesizerComponent.h" compile="0" resource="0"
           file="Source/SynthesizerComponent.h"/>
     <GROUP id="{UI-COMPONENTS-GROUP}" name="UI">
-      <FILE id="DraggableMacro1" name="DraggableMacroSymbol.cpp" compile="1" resource="0"
-            file="Source/UI/DraggableMacroSymbol.cpp"/>
-      <FILE id="DraggableMacro2" name="DraggableMacroSymbol.h" compile="0" resource="0"
-            file="Source/UI/DraggableMacroSymbol.h"/>
+      <FILE id="TLohxd" name="PitchControlsComponent.cpp" compile="1" resource="0"
+            file="Source/UI/PitchControlsComponent.cpp"/>
+      <FILE id="DfIMao" name="PitchControlsComponent.h" compile="0" resource="0"
+            file="Source/UI/PitchControlsComponent.h"/>
+      <FILE id="DraggableMacro1" name="DraggableMacroSymbol.cpp" compile="1"
+            resource="0" file="Source/UI/DraggableMacroSymbol.cpp"/>
+      <FILE id="DraggableMacro2" name="DraggableMacroSymbol.h" compile="0"
+            resource="0" file="Source/UI/DraggableMacroSymbol.h"/>
       <FILE id="MacroSys1" name="MacroSystem.cpp" compile="1" resource="0"
             file="Source/UI/MacroSystem.cpp"/>
       <FILE id="MacroSys2" name="MacroSystem.h" compile="0" resource="0"
@@ -77,10 +81,10 @@
             file="Source/UI/ReverbComponent.cpp"/>
       <FILE id="Reverb2" name="ReverbComponent.h" compile="0" resource="0"
             file="Source/UI/ReverbComponent.h"/>
-      <FILE id="PresetMgmt1" name="PresetManagementComponent.cpp" compile="1" resource="0"
-            file="Source/UI/PresetManagementComponent.cpp"/>
-      <FILE id="PresetMgmt2" name="PresetManagementComponent.h" compile="0" resource="0"
-            file="Source/UI/PresetManagementComponent.h"/>
+      <FILE id="PresetMgmt1" name="PresetManagementComponent.cpp" compile="1"
+            resource="0" file="Source/UI/PresetManagementComponent.cpp"/>
+      <FILE id="PresetMgmt2" name="PresetManagementComponent.h" compile="0"
+            resource="0" file="Source/UI/PresetManagementComponent.h"/>
       <FILE id="Phaser1" name="PhaserComponent.cpp" compile="1" resource="0"
             file="Source/UI/PhaserComponent.cpp"/>
       <FILE id="Phaser2" name="PhaserComponent.h" compile="0" resource="0"
@@ -89,26 +93,26 @@
             file="Source/UI/FlangerComponent.cpp"/>
       <FILE id="Flanger2" name="FlangerComponent.h" compile="0" resource="0"
             file="Source/UI/FlangerComponent.h"/>
-      <FILE id="FilterControl1" name="FilterControlComponent.cpp" compile="1" resource="0"
-            file="Source/UI/FilterControlComponent.cpp"/>
-      <FILE id="FilterControl2" name="FilterControlComponent.h" compile="0" resource="0"
-            file="Source/UI/FilterControlComponent.h"/>
-      <FILE id="MacroControls1" name="MacroControlsComponent.cpp" compile="1" resource="0"
-            file="Source/UI/MacroControlsComponent.cpp"/>
-      <FILE id="MacroControls2" name="MacroControlsComponent.h" compile="0" resource="0"
-            file="Source/UI/MacroControlsComponent.h"/>
-      <FILE id="SecondOsc1" name="SecondOscillatorComponent.cpp" compile="1" resource="0"
-            file="Source/UI/SecondOscillatorComponent.cpp"/>
-      <FILE id="SecondOsc2" name="SecondOscillatorComponent.h" compile="0" resource="0"
-            file="Source/UI/SecondOscillatorComponent.h"/>
-      <FILE id="VolumeControls1" name="VolumeControlsComponent.cpp" compile="1" resource="0"
-            file="Source/UI/VolumeControlsComponent.cpp"/>
-      <FILE id="VolumeControls2" name="VolumeControlsComponent.h" compile="0" resource="0"
-            file="Source/UI/VolumeControlsComponent.h"/>
-      <FILE id="EffectsBorder1" name="EffectsBorderComponent.cpp" compile="1" resource="0"
-            file="Source/UI/EffectsBorderComponent.cpp"/>
-      <FILE id="EffectsBorder2" name="EffectsBorderComponent.h" compile="0" resource="0"
-            file="Source/UI/EffectsBorderComponent.h"/>
+      <FILE id="FilterControl1" name="FilterControlComponent.cpp" compile="1"
+            resource="0" file="Source/UI/FilterControlComponent.cpp"/>
+      <FILE id="FilterControl2" name="FilterControlComponent.h" compile="0"
+            resource="0" file="Source/UI/FilterControlComponent.h"/>
+      <FILE id="MacroControls1" name="MacroControlsComponent.cpp" compile="1"
+            resource="0" file="Source/UI/MacroControlsComponent.cpp"/>
+      <FILE id="MacroControls2" name="MacroControlsComponent.h" compile="0"
+            resource="0" file="Source/UI/MacroControlsComponent.h"/>
+      <FILE id="SecondOsc1" name="SecondOscillatorComponent.cpp" compile="1"
+            resource="0" file="Source/UI/SecondOscillatorComponent.cpp"/>
+      <FILE id="SecondOsc2" name="SecondOscillatorComponent.h" compile="0"
+            resource="0" file="Source/UI/SecondOscillatorComponent.h"/>
+      <FILE id="VolumeControls1" name="VolumeControlsComponent.cpp" compile="1"
+            resource="0" file="Source/UI/VolumeControlsComponent.cpp"/>
+      <FILE id="VolumeControls2" name="VolumeControlsComponent.h" compile="0"
+            resource="0" file="Source/UI/VolumeControlsComponent.h"/>
+      <FILE id="EffectsBorder1" name="EffectsBorderComponent.cpp" compile="1"
+            resource="0" file="Source/UI/EffectsBorderComponent.cpp"/>
+      <FILE id="EffectsBorder2" name="EffectsBorderComponent.h" compile="0"
+            resource="0" file="Source/UI/EffectsBorderComponent.h"/>
     </GROUP>
   </MAINGROUP>
   <MODULES>

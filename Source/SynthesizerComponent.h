@@ -29,6 +29,7 @@
 #include "UI/EQControlsComponent.h"
 #include "UI/PresetManagementComponent.h"
 #include "UI/EffectsBorderComponent.h"
+#include "UI/PitchControlsComponent.h"
 
 class SummonerXSerum2AudioProcessor;
 class SynthesizerComponent;
@@ -87,7 +88,6 @@ public:
     void drawADSREnvelopeBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
     void drawADSRKnobsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
     void drawVolumeKnobsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
-    void drawOctaveControlsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
     void drawPhaseControlsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
     void drawSecondOscillatorBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
     void drawOsc2PitchControlsBackground(juce::Graphics& g, juce::Rectangle<int> bounds);
@@ -157,6 +157,9 @@ private:
     // VOLUME CONTROLS GROUP - Row 4 (MOVEABLE)
     VolumeControlsComponent volumeControls;
 
+    // PITCH CONTROLS GROUP - Row 5 (MOVEABLE)
+    PitchControlsComponent pitchControls;
+
     // PHASE CONTROLS GROUP - (STATIONARY)
     RestrictedHitSlider phaseControlsPhaseKnob;
     juce::Label phaseControlsPhaseLabel;
@@ -173,17 +176,7 @@ private:
     // Pulse width control
     juce::Slider pulseWidthSlider;
     juce::Label pulseWidthLabel;
-    
-    // PITCH CONTROLS GROUP - Row 5 (MOVEABLE)
-    juce::Label pitchControlsOctaveLabel;
-    juce::Label pitchControlsOctaveValueLabel;
-    juce::Label pitchControlsSemitoneLabel;
-    juce::Label pitchControlsSemitoneValueLabel;
-    juce::Label pitchControlsFineTuneLabel;
-    juce::Label pitchControlsFineTuneValueLabel;
-    juce::Label pitchControlsVoiceCountLabel;
-    juce::Label pitchControlsVoiceCountValueLabel;
-    
+
     // WAVE TYPE BUTTONS GROUP - Row 1 (MOVEABLE)
     juce::TextButton waveTypeSineButton;
     juce::TextButton waveTypeSawButton;
@@ -245,28 +238,7 @@ private:
     
     // Filter controls - now handled by FilterControlComponent
     FilterControlComponent filterModule;
-    
-    // Octave control state
-    int octaveValue = 0;
-    bool isDraggingOctave = false;
-    int dragStartY = 0;
-    int dragStartOctave = 0;
-    
-    // Semitone control state
-    int semitoneValue = 0;
-    bool isDraggingSemitone = false;
-    int dragStartSemitone = 0;
-    
-    // Fine tune control state
-    int fineTuneValue = 0;
-    bool isDraggingFineTune = false;
-    int dragStartFineTune = 0;
-    
-    // Voice count control state
-    int voiceCountValue = 1;
-    bool isDraggingVoiceCount = false;
-    int dragStartVoiceCount = 0;
-    
+
     // Distortion type control state - now handled by DistortionComponent
     int reverbTypeValue = 2; // 1-5 for different reverb types (1=Plate, 2=Hall, 3=Vintage, 4=Room, 5=Ambience)
     bool isDraggingReverbType = false;

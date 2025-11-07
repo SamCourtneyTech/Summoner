@@ -9,12 +9,14 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
       secondOscillator(*this, processor, &customKnobLookAndFeel, &customWaveButtonLookAndFeel, &ledLabelLookAndFeel, &ledNumberLookAndFeel),
       macroControls(*this, processor, &simpleKnobLookAndFeel, &engravedLabelLookAndFeel),
       volumeControls(processor, &customKnobLookAndFeel, &ledLabelLookAndFeel),
+      pitchControls(processor, ledLabelLookAndFeel, ledNumberLookAndFeel),
       eqControls(*this, processor),
       presetManagement(processor)
 {
     addAndMakeVisible(secondOscillator);
     addAndMakeVisible(macroControls);
     addAndMakeVisible(volumeControls);
+    addAndMakeVisible(pitchControls);
 
     // PHASE CONTROLS GROUP - (STATIONARY)
     phaseControlsPhaseLabel.setText("PHASE", juce::dontSendNotification);
@@ -111,80 +113,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     addAndMakeVisible(pulseWidthSlider);
     addAndMakeVisible(pulseWidthLabel);
     */
-    
-    // PITCH CONTROLS GROUP - Row 5 (MOVEABLE)
-    pitchControlsOctaveLabel.setText("OCTAVE", juce::dontSendNotification);
-    pitchControlsOctaveLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    pitchControlsOctaveLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    pitchControlsOctaveLabel.setJustificationType(juce::Justification::centred);
-    pitchControlsOctaveLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(pitchControlsOctaveLabel);
-    
-    pitchControlsOctaveValueLabel.setText("0", juce::dontSendNotification);
-    pitchControlsOctaveValueLabel.setFont(juce::Font("Press Start 2P", 12.0f, juce::Font::plain));
-    pitchControlsOctaveValueLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    pitchControlsOctaveValueLabel.setColour(juce::Label::backgroundColourId, juce::Colours::transparentBlack);
-    pitchControlsOctaveValueLabel.setColour(juce::Label::outlineColourId, juce::Colours::white);
-    pitchControlsOctaveValueLabel.setJustificationType(juce::Justification::centred);
-    pitchControlsOctaveValueLabel.setLookAndFeel(&ledNumberLookAndFeel);
-    pitchControlsOctaveValueLabel.setInterceptsMouseClicks(true, false);
-    pitchControlsOctaveValueLabel.addMouseListener(this, false);
-    addAndMakeVisible(pitchControlsOctaveValueLabel);
-    
-    pitchControlsSemitoneLabel.setText("SEMI", juce::dontSendNotification);
-    pitchControlsSemitoneLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    pitchControlsSemitoneLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    pitchControlsSemitoneLabel.setJustificationType(juce::Justification::centred);
-    pitchControlsSemitoneLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(pitchControlsSemitoneLabel);
-    
-    pitchControlsSemitoneValueLabel.setText("0", juce::dontSendNotification);
-    pitchControlsSemitoneValueLabel.setFont(juce::Font("Press Start 2P", 12.0f, juce::Font::plain));
-    pitchControlsSemitoneValueLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    pitchControlsSemitoneValueLabel.setColour(juce::Label::backgroundColourId, juce::Colours::transparentBlack);
-    pitchControlsSemitoneValueLabel.setColour(juce::Label::outlineColourId, juce::Colours::white);
-    pitchControlsSemitoneValueLabel.setJustificationType(juce::Justification::centred);
-    pitchControlsSemitoneValueLabel.setLookAndFeel(&ledNumberLookAndFeel);
-    pitchControlsSemitoneValueLabel.setInterceptsMouseClicks(true, false);
-    pitchControlsSemitoneValueLabel.addMouseListener(this, false);
-    addAndMakeVisible(pitchControlsSemitoneValueLabel);
-    
-    pitchControlsFineTuneLabel.setText("FINE", juce::dontSendNotification);
-    pitchControlsFineTuneLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    pitchControlsFineTuneLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    pitchControlsFineTuneLabel.setJustificationType(juce::Justification::centred);
-    pitchControlsFineTuneLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(pitchControlsFineTuneLabel);
-    
-    pitchControlsFineTuneValueLabel.setText("0", juce::dontSendNotification);
-    pitchControlsFineTuneValueLabel.setFont(juce::Font("Press Start 2P", 12.0f, juce::Font::plain));
-    pitchControlsFineTuneValueLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    pitchControlsFineTuneValueLabel.setColour(juce::Label::backgroundColourId, juce::Colours::transparentBlack);
-    pitchControlsFineTuneValueLabel.setColour(juce::Label::outlineColourId, juce::Colours::white);
-    pitchControlsFineTuneValueLabel.setJustificationType(juce::Justification::centred);
-    pitchControlsFineTuneValueLabel.setLookAndFeel(&ledNumberLookAndFeel);
-    pitchControlsFineTuneValueLabel.setInterceptsMouseClicks(true, false);
-    pitchControlsFineTuneValueLabel.addMouseListener(this, false);
-    addAndMakeVisible(pitchControlsFineTuneValueLabel);
-    
-    pitchControlsVoiceCountLabel.setText("VOICES", juce::dontSendNotification);
-    pitchControlsVoiceCountLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    pitchControlsVoiceCountLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    pitchControlsVoiceCountLabel.setJustificationType(juce::Justification::centred);
-    pitchControlsVoiceCountLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(pitchControlsVoiceCountLabel);
-    
-    pitchControlsVoiceCountValueLabel.setText("1", juce::dontSendNotification);
-    pitchControlsVoiceCountValueLabel.setFont(juce::Font("Press Start 2P", 12.0f, juce::Font::plain));
-    pitchControlsVoiceCountValueLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    pitchControlsVoiceCountValueLabel.setColour(juce::Label::backgroundColourId, juce::Colours::transparentBlack);
-    pitchControlsVoiceCountValueLabel.setColour(juce::Label::outlineColourId, juce::Colours::white);
-    pitchControlsVoiceCountValueLabel.setJustificationType(juce::Justification::centred);
-    pitchControlsVoiceCountValueLabel.setLookAndFeel(&ledNumberLookAndFeel);
-    pitchControlsVoiceCountValueLabel.setInterceptsMouseClicks(true, false);
-    pitchControlsVoiceCountValueLabel.addMouseListener(this, false);
-    addAndMakeVisible(pitchControlsVoiceCountValueLabel);
-    
+
     // WAVE TYPE BUTTONS GROUP - Row 1 (MOVEABLE)
     waveTypeSineButton.setButtonText("SIN");
     // Custom look and feel handles all colors
@@ -380,16 +309,6 @@ SynthesizerComponent::~SynthesizerComponent()
     adsrDecayLabel.setLookAndFeel(nullptr);
     adsrSustainLabel.setLookAndFeel(nullptr);
     adsrReleaseLabel.setLookAndFeel(nullptr);
-    pitchControlsOctaveLabel.setLookAndFeel(nullptr);
-    pitchControlsSemitoneLabel.setLookAndFeel(nullptr);
-    pitchControlsFineTuneLabel.setLookAndFeel(nullptr);
-    pitchControlsVoiceCountLabel.setLookAndFeel(nullptr);
-    
-    // Reset LED number look and feel
-    pitchControlsOctaveValueLabel.setLookAndFeel(nullptr);
-    pitchControlsSemitoneValueLabel.setLookAndFeel(nullptr);
-    pitchControlsFineTuneValueLabel.setLookAndFeel(nullptr);
-    pitchControlsVoiceCountValueLabel.setLookAndFeel(nullptr);
     // Oscillator 2 cleanup now handled by SecondOscillatorComponent
     // Macro controls cleanup now handled by MacroControlsComponent
     // Preset management cleanup now handled by PresetManagementComponent
@@ -1279,30 +1198,7 @@ void SynthesizerComponent::mouseDown(const juce::MouseEvent& event)
     }
     
     // SECOND: Handle other component-specific mouse events only if no arc was clicked
-    if (event.eventComponent == &pitchControlsOctaveValueLabel)
-    {
-        isDraggingOctave = true;
-        dragStartY = event.getScreenPosition().y;
-        dragStartOctave = octaveValue;
-    }
-    else if (event.eventComponent == &pitchControlsSemitoneValueLabel)
-    {
-        isDraggingSemitone = true;
-        dragStartY = event.getScreenPosition().y;
-        dragStartSemitone = semitoneValue;
-    }
-    else if (event.eventComponent == &pitchControlsFineTuneValueLabel)
-    {
-        isDraggingFineTune = true;
-        dragStartY = event.getScreenPosition().y;
-        dragStartFineTune = fineTuneValue;
-    }
-    else if (event.eventComponent == &pitchControlsVoiceCountValueLabel)
-    {
-        isDraggingVoiceCount = true;
-        dragStartY = event.getScreenPosition().y;
-        dragStartVoiceCount = voiceCountValue;
-    }
+    // Pitch controls now handled by PitchControlsComponent
     // Oscillator 2 pitch controls now handled by SecondOscillatorComponent
     // Reverb type cycling now handled by ReverbComponent
     // Phaser poles value label clicking now handled by PhaserComponent
@@ -1310,70 +1206,11 @@ void SynthesizerComponent::mouseDown(const juce::MouseEvent& event)
 
 void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
 {
-    if (isDraggingOctave)
-    {
-        int deltaY = dragStartY - event.getScreenPosition().y; // Inverted: up = positive
-        int newOctave = dragStartOctave + (deltaY / 10); // 10 pixels per octave
-        
-        // Clamp to valid range
-        newOctave = juce::jlimit(-4, 4, newOctave);
-        
-        if (newOctave != octaveValue)
-        {
-            octaveValue = newOctave;
-            pitchControlsOctaveValueLabel.setText(juce::String(octaveValue), juce::dontSendNotification);
-            audioProcessor.setOsc1Octave(octaveValue);
-        }
-    }
-    else if (isDraggingSemitone)
-    {
-        int deltaY = dragStartY - event.getScreenPosition().y; // Inverted: up = positive
-        int newSemitone = dragStartSemitone + (deltaY / 5); // 5 pixels per semitone
-        
-        // Clamp to valid range (-12 to +12 semitones)
-        newSemitone = juce::jlimit(-12, 12, newSemitone);
-        
-        if (newSemitone != semitoneValue)
-        {
-            semitoneValue = newSemitone;
-            pitchControlsSemitoneValueLabel.setText(juce::String(semitoneValue), juce::dontSendNotification);
-            audioProcessor.setOsc1Semitone(semitoneValue);
-        }
-    }
-    else if (isDraggingFineTune)
-    {
-        int deltaY = dragStartY - event.getScreenPosition().y; // Inverted: up = positive
-        int newFineTune = dragStartFineTune + (deltaY / 2); // 2 pixels per cent
-        
-        // Clamp to valid range (-100 to +100 cents)
-        newFineTune = juce::jlimit(-100, 100, newFineTune);
-        
-        if (newFineTune != fineTuneValue)
-        {
-            fineTuneValue = newFineTune;
-            pitchControlsFineTuneValueLabel.setText(juce::String(fineTuneValue), juce::dontSendNotification);
-            audioProcessor.setOsc1FineTune(fineTuneValue);
-        }
-    }
-    else if (isDraggingVoiceCount)
-    {
-        int deltaY = dragStartY - event.getScreenPosition().y; // Inverted: up = positive
-        int newVoiceCount = dragStartVoiceCount + (deltaY / 8); // 8 pixels per voice
-        
-        // Clamp to valid range (1 to 16 voices)
-        newVoiceCount = juce::jlimit(1, 16, newVoiceCount);
-        
-        if (newVoiceCount != voiceCountValue)
-        {
-            voiceCountValue = newVoiceCount;
-            pitchControlsVoiceCountValueLabel.setText(juce::String(voiceCountValue), juce::dontSendNotification);
-            audioProcessor.setOsc1VoiceCount(voiceCountValue);
-        }
-    }
+    // Pitch controls dragging now handled by PitchControlsComponent
     // Oscillator 2 pitch controls dragging now handled by SecondOscillatorComponent
     // Reverb type dragging now handled by ReverbComponent
     // Phaser poles dragging now handled by PhaserComponent
-    
+
     // Handle arc dragging
     if (isDraggingArc && draggedMapping != nullptr)
     {
@@ -1435,14 +1272,11 @@ void SynthesizerComponent::mouseDrag(const juce::MouseEvent& event)
 
 void SynthesizerComponent::mouseUp(const juce::MouseEvent& event)
 {
-    isDraggingOctave = false;
-    isDraggingSemitone = false;
-    isDraggingFineTune = false;
-    isDraggingVoiceCount = false;
+    // Pitch control drag states now handled by PitchControlsComponent
     // Oscillator 2 drag states now handled by SecondOscillatorComponent
     isDraggingReverbType = false;
     // isDraggingPhaserPoles handled by PhaserComponent
-    
+
     // Cleanup arc dragging
     if (isDraggingArc)
     {
@@ -1588,45 +1422,20 @@ void SynthesizerComponent::layoutOctaveControls(juce::Rectangle<int>& bounds)
 {
     bounds.removeFromTop(40); // spacing
     auto bottomControlsRow = bounds.removeFromTop(80);
-    
+
     auto pitchControlsSection = bottomControlsRow.removeFromLeft(320); // Fixed width for tuning controls
-    
+
     // Apply group offset for MOVEABLE Pitch Controls Group (Row 5)
     auto offsetPitchControlsSection = pitchControlsSection.translated(
-        static_cast<int>(pitchControlsGroupOffsetX), 
+        static_cast<int>(pitchControlsGroupOffsetX),
         static_cast<int>(pitchControlsGroupOffsetY)
     );
-    
+
     // Store bounds for background drawing (with offset applied)
     octaveControlsBounds = offsetPitchControlsSection;
-    
-    auto workingRow = offsetPitchControlsSection;
-    
-    // Octave control (draggable label)
-    auto octaveArea = workingRow.removeFromLeft(60);
-    pitchControlsOctaveLabel.setBounds(octaveArea.removeFromTop(20));
-    pitchControlsOctaveValueLabel.setBounds(octaveArea.removeFromTop(30));
-    
-    workingRow.removeFromLeft(10); // spacing
-    
-    // Semitone control (draggable label)
-    auto semitoneArea = workingRow.removeFromLeft(60);
-    pitchControlsSemitoneLabel.setBounds(semitoneArea.removeFromTop(20));
-    pitchControlsSemitoneValueLabel.setBounds(semitoneArea.removeFromTop(30));
-    
-    workingRow.removeFromLeft(10); // spacing
-    
-    // Fine tune control (draggable label)
-    auto fineTuneArea = workingRow.removeFromLeft(60);
-    pitchControlsFineTuneLabel.setBounds(fineTuneArea.removeFromTop(20));
-    pitchControlsFineTuneValueLabel.setBounds(fineTuneArea.removeFromTop(30));
-    
-    workingRow.removeFromLeft(10); // spacing
-    
-    // Voice count control (draggable label)
-    auto voiceCountArea = workingRow.removeFromLeft(60);
-    pitchControlsVoiceCountLabel.setBounds(voiceCountArea.removeFromTop(20));
-    pitchControlsVoiceCountValueLabel.setBounds(voiceCountArea.removeFromTop(30));
+
+    // Set the pitch controls component bounds
+    pitchControls.setBounds(offsetPitchControlsSection);
 }
 
 void SynthesizerComponent::layoutPhaseControls(juce::Rectangle<int>& bounds)
@@ -1874,55 +1683,7 @@ void SynthesizerComponent::drawVolumeKnobsBackground(juce::Graphics& g, juce::Re
     g.drawRoundedRectangle(panSection.getCentreX() - 37, panSection.getCentreY() - 63, 74, 108, 2.0f, 1.0f);
 }
 
-void SynthesizerComponent::drawOctaveControlsBackground(juce::Graphics& g, juce::Rectangle<int> bounds)
-{
-    // Individual background boxes for tuning controls
-    auto tuningControlsRow = bounds.reduced(3, 3);
-    tuningControlsRow.removeFromLeft(2); // Shift right slightly
-    tuningControlsRow.removeFromTop(-10); // Shift up by expanding bounds
-    
-    // Octave control box
-    auto octaveControlArea = tuningControlsRow.removeFromLeft(60);
-    g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(octaveControlArea.getCentreX() - 35, octaveControlArea.getCentreY() - 48, 70, 72, 4.0f);
-    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(octaveControlArea.getCentreX() - 34, octaveControlArea.getCentreY() - 47, 68, 70, 3.0f, 2.0f);
-    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(octaveControlArea.getCentreX() - 32, octaveControlArea.getCentreY() - 45, 64, 66, 2.0f, 1.0f);
-    
-    tuningControlsRow.removeFromLeft(10); // spacing
-    
-    // Semitone control box
-    auto semitoneControlArea = tuningControlsRow.removeFromLeft(60);
-    g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(semitoneControlArea.getCentreX() - 35, semitoneControlArea.getCentreY() - 48, 70, 72, 4.0f);
-    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(semitoneControlArea.getCentreX() - 34, semitoneControlArea.getCentreY() - 47, 68, 70, 3.0f, 2.0f);
-    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(semitoneControlArea.getCentreX() - 32, semitoneControlArea.getCentreY() - 45, 64, 66, 2.0f, 1.0f);
-    
-    tuningControlsRow.removeFromLeft(10); // spacing
-    
-    // Fine tune control box
-    auto fineTuneControlArea = tuningControlsRow.removeFromLeft(60);
-    g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(fineTuneControlArea.getCentreX() - 35, fineTuneControlArea.getCentreY() - 48, 70, 72, 4.0f);
-    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(fineTuneControlArea.getCentreX() - 34, fineTuneControlArea.getCentreY() - 47, 68, 70, 3.0f, 2.0f);
-    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(fineTuneControlArea.getCentreX() - 32, fineTuneControlArea.getCentreY() - 45, 64, 66, 2.0f, 1.0f);
-    
-    tuningControlsRow.removeFromLeft(10); // spacing
-    
-    // Voice count control box
-    auto voiceCountControlArea = tuningControlsRow.removeFromLeft(60);
-    g.setColour(juce::Colour(0xff0f0f0f));
-    g.fillRoundedRectangle(voiceCountControlArea.getCentreX() - 35, voiceCountControlArea.getCentreY() - 48, 70, 72, 4.0f);
-    g.setColour(juce::Colour(0xff000000).withAlpha(0.8f));
-    g.drawRoundedRectangle(voiceCountControlArea.getCentreX() - 34, voiceCountControlArea.getCentreY() - 47, 68, 70, 3.0f, 2.0f);
-    g.setColour(juce::Colour(0xff404040).withAlpha(0.4f));
-    g.drawRoundedRectangle(voiceCountControlArea.getCentreX() - 32, voiceCountControlArea.getCentreY() - 45, 64, 66, 2.0f, 1.0f);
-}
+// drawOctaveControlsBackground removed - now handled by PitchControlsComponent
 
 void SynthesizerComponent::drawOsc2PitchControlsBackground(juce::Graphics& g, juce::Rectangle<int> bounds)
 {
@@ -2824,6 +2585,7 @@ void SynthesizerComponent::updateAllGuiControls()
 {
     // Main synthesizer controls (using correct control names)
     volumeControls.updateAllGuiControls();
+    pitchControls.updateAllGuiControls();
     phaseControlsPhaseKnob.setValue(audioProcessor.getOsc1Phase(), juce::dontSendNotification);
     
     // Main ADSR envelope
