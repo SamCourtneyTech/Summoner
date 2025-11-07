@@ -6,6 +6,7 @@
 SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& processor)
     : audioProcessor(processor),
       effectsModule(juce::TabbedButtonBar::TabsAtTop),
+      waveTypeSelector(processor),
       secondOscillator(*this, processor, &customKnobLookAndFeel, &customWaveButtonLookAndFeel, &ledLabelLookAndFeel, &ledNumberLookAndFeel),
       macroControls(*this, processor, &simpleKnobLookAndFeel, &engravedLabelLookAndFeel),
       volumeControls(processor, &customKnobLookAndFeel, &ledLabelLookAndFeel),
@@ -115,60 +116,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     */
 
     // WAVE TYPE BUTTONS GROUP - Row 1 (MOVEABLE)
-    waveTypeSineButton.setButtonText("SIN");
-    // Custom look and feel handles all colors
-    waveTypeSineButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    waveTypeSineButton.setClickingTogglesState(true);
-    waveTypeSineButton.setToggleState(false, juce::dontSendNotification); // Sine not selected by default
-    waveTypeSineButton.addListener(this);
-    addAndMakeVisible(waveTypeSineButton);
-    
-    waveTypeSawButton.setButtonText("SAW");
-    // Custom look and feel handles all colors
-    waveTypeSawButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    waveTypeSawButton.setClickingTogglesState(true);
-    waveTypeSawButton.setToggleState(true, juce::dontSendNotification); // Start with saw selected
-    waveTypeSawButton.addListener(this);
-    addAndMakeVisible(waveTypeSawButton);
-    
-    // Set oscillator 1 to saw wave by default
-    audioProcessor.setOsc1Type(1); // 1 = saw wave
-    
-    waveTypeSquareButton.setButtonText("SQR");
-    // Custom look and feel handles all colors
-    waveTypeSquareButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    waveTypeSquareButton.setClickingTogglesState(true);
-    waveTypeSquareButton.addListener(this);
-    addAndMakeVisible(waveTypeSquareButton);
-    
-    waveTypeTriangleButton.setButtonText("TRI");
-    // Custom look and feel handles all colors
-    waveTypeTriangleButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    waveTypeTriangleButton.setClickingTogglesState(true);
-    waveTypeTriangleButton.addListener(this);
-    addAndMakeVisible(waveTypeTriangleButton);
-    
-    waveTypeWhiteNoiseButton.setButtonText("WHT");
-    // Custom look and feel handles all colors
-    waveTypeWhiteNoiseButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    waveTypeWhiteNoiseButton.setClickingTogglesState(true);
-    waveTypeWhiteNoiseButton.addListener(this);
-    addAndMakeVisible(waveTypeWhiteNoiseButton);
-    
-    waveTypePinkNoiseButton.setButtonText("PNK");
-    // Custom look and feel handles all colors
-    waveTypePinkNoiseButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    waveTypePinkNoiseButton.setClickingTogglesState(true);
-    waveTypePinkNoiseButton.addListener(this);
-    addAndMakeVisible(waveTypePinkNoiseButton);
-    
-    waveTypeRandomPhaseButton.setButtonText("RND PHASE");
-    // Custom look and feel handles all colors
-    waveTypeRandomPhaseButton.setLookAndFeel(&customWaveButtonLookAndFeel);
-    waveTypeRandomPhaseButton.setClickingTogglesState(true);
-    waveTypeRandomPhaseButton.setToggleState(true, juce::dontSendNotification); // Default to random phase ON
-    waveTypeRandomPhaseButton.addListener(this);
-    addAndMakeVisible(waveTypeRandomPhaseButton);
+    addAndMakeVisible(waveTypeSelector);
 
     // FILTER CONTROLS - now handled by FilterControlComponent
     filterModule.setParentSynthesizer(this);
@@ -295,13 +243,6 @@ SynthesizerComponent::~SynthesizerComponent()
     adsrDecayKnob.setLookAndFeel(nullptr);
     adsrSustainKnob.setLookAndFeel(nullptr);
     adsrReleaseKnob.setLookAndFeel(nullptr);
-    waveTypeSineButton.setLookAndFeel(nullptr);
-    waveTypeSawButton.setLookAndFeel(nullptr);
-    waveTypeSquareButton.setLookAndFeel(nullptr);
-    waveTypeTriangleButton.setLookAndFeel(nullptr);
-    waveTypeWhiteNoiseButton.setLookAndFeel(nullptr);
-    waveTypePinkNoiseButton.setLookAndFeel(nullptr);
-    waveTypeRandomPhaseButton.setLookAndFeel(nullptr);
 
     // Reset LED label look and feel
     phaseControlsPhaseLabel.setLookAndFeel(nullptr);
@@ -1025,114 +966,14 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
 
 void SynthesizerComponent::buttonClicked(juce::Button* button)
 {
-    if (button == &waveTypeSineButton)
-    {
-        if (waveTypeSineButton.getToggleState())
-        {
-            waveTypeSawButton.setToggleState(false, juce::dontSendNotification);
-            waveTypeSquareButton.setToggleState(false, juce::dontSendNotification);
-            waveTypeTriangleButton.setToggleState(false, juce::dontSendNotification);
-            waveTypeWhiteNoiseButton.setToggleState(false, juce::dontSendNotification);
-            waveTypePinkNoiseButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setOsc1Type(0); // 0 = sine wave
-        }
-        else
-        {
-            waveTypeSineButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
-        }
-    }
-    else if (button == &waveTypeSawButton)
-    {
-        if (waveTypeSawButton.getToggleState())
-        {
-            waveTypeSineButton.setToggleState(false, juce::dontSendNotification);
-            waveTypeSquareButton.setToggleState(false, juce::dontSendNotification);
-            waveTypeTriangleButton.setToggleState(false, juce::dontSendNotification);
-            waveTypeWhiteNoiseButton.setToggleState(false, juce::dontSendNotification);
-            waveTypePinkNoiseButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setOsc1Type(1); // 1 = saw wave
-        }
-        else
-        {
-            waveTypeSawButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
-        }
-    }
-    else if (button == &waveTypeSquareButton)
-    {
-        if (waveTypeSquareButton.getToggleState())
-        {
-            waveTypeSineButton.setToggleState(false, juce::dontSendNotification);
-            waveTypeSawButton.setToggleState(false, juce::dontSendNotification);
-            waveTypeTriangleButton.setToggleState(false, juce::dontSendNotification);
-            waveTypeWhiteNoiseButton.setToggleState(false, juce::dontSendNotification);
-            waveTypePinkNoiseButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setOsc1Type(2); // 2 = square wave
-        }
-        else
-        {
-            waveTypeSquareButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
-        }
-    }
-    else if (button == &waveTypeTriangleButton)
-    {
-        if (waveTypeTriangleButton.getToggleState())
-        {
-            waveTypeSineButton.setToggleState(false, juce::dontSendNotification);
-            waveTypeSawButton.setToggleState(false, juce::dontSendNotification);
-            waveTypeSquareButton.setToggleState(false, juce::dontSendNotification);
-            waveTypeWhiteNoiseButton.setToggleState(false, juce::dontSendNotification);
-            waveTypePinkNoiseButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setOsc1Type(3); // 3 = triangle wave
-        }
-        else
-        {
-            waveTypeTriangleButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
-        }
-    }
-    else if (button == &waveTypeWhiteNoiseButton)
-    {
-        if (waveTypeWhiteNoiseButton.getToggleState())
-        {
-            waveTypeSineButton.setToggleState(false, juce::dontSendNotification);
-            waveTypeSawButton.setToggleState(false, juce::dontSendNotification);
-            waveTypeSquareButton.setToggleState(false, juce::dontSendNotification);
-            waveTypeTriangleButton.setToggleState(false, juce::dontSendNotification);
-            waveTypePinkNoiseButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setOsc1Type(4); // 4 = white noise
-        }
-        else
-        {
-            waveTypeWhiteNoiseButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
-        }
-    }
-    else if (button == &waveTypePinkNoiseButton)
-    {
-        if (waveTypePinkNoiseButton.getToggleState())
-        {
-            waveTypeSineButton.setToggleState(false, juce::dontSendNotification);
-            waveTypeSawButton.setToggleState(false, juce::dontSendNotification);
-            waveTypeSquareButton.setToggleState(false, juce::dontSendNotification);
-            waveTypeTriangleButton.setToggleState(false, juce::dontSendNotification);
-            waveTypeWhiteNoiseButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.setOsc1Type(5); // 5 = pink noise
-        }
-        else
-        {
-            waveTypePinkNoiseButton.setToggleState(true, juce::dontSendNotification); // Keep at least one selected
-        }
-    }
-    else if (button == &waveTypeRandomPhaseButton)
-    {
-        // Random phase button is independent - doesn't affect other buttons
-        audioProcessor.setOsc1RandomPhase(waveTypeRandomPhaseButton.getToggleState());
-    }
+    // Wave type button handling now in WaveTypeSelectorComponent
     // Oscillator 2 button handling now in SecondOscillatorComponent
     // Filter controls now handled by FilterControlComponent
     // Chorus effect power button - handled by ChorusComponent
     // Flanger effect buttons - now handled by FlangerComponent
     // Phaser effect buttons - now handled by PhaserComponent
     // Compressor buttons now handled by CompressorComponent
-    
+
     // REVERB CONTROLS - now handled by ReverbComponent
 }
 
@@ -1308,32 +1149,18 @@ void SynthesizerComponent::layoutWaveTypeButtons(juce::Rectangle<int>& bounds)
     auto buttonHeight = 40;
     auto buttonRow = bounds.removeFromTop(buttonHeight);
     auto buttonSection = buttonRow.removeFromLeft(bounds.getWidth() / 3); // Same width as ADSR
-    
+
     // Apply group offset for MOVEABLE Wave Type Buttons Group (Row 1)
     auto offsetButtonSection = buttonSection.translated(
-        static_cast<int>(waveTypeButtonsGroupOffsetX), 
+        static_cast<int>(waveTypeButtonsGroupOffsetX),
         static_cast<int>(waveTypeButtonsGroupOffsetY)
     );
-    auto offsetButtonRow = buttonRow.translated(
-        static_cast<int>(waveTypeButtonsGroupOffsetX), 
-        static_cast<int>(waveTypeButtonsGroupOffsetY)
-    );
-    
+
     // Store bounds for background drawing (with offset applied)
     waveButtonsBounds = offsetButtonSection;
-    
-    // Calculate button width and spacing to fill the section
-    auto totalButtons = 6;
-    auto buttonSpacing = 10;
-    auto totalSpacing = (totalButtons - 1) * buttonSpacing;
-    auto buttonWidth = (offsetButtonSection.getWidth() - totalSpacing) / totalButtons;
-    
-    waveTypeSineButton.setBounds(offsetButtonSection.getX(), offsetButtonRow.getY(), buttonWidth, buttonHeight);
-    waveTypeSawButton.setBounds(offsetButtonSection.getX() + (buttonWidth + buttonSpacing), offsetButtonRow.getY(), buttonWidth, buttonHeight);
-    waveTypeSquareButton.setBounds(offsetButtonSection.getX() + (buttonWidth + buttonSpacing) * 2, offsetButtonRow.getY(), buttonWidth, buttonHeight);
-    waveTypeTriangleButton.setBounds(offsetButtonSection.getX() + (buttonWidth + buttonSpacing) * 3, offsetButtonRow.getY(), buttonWidth, buttonHeight);
-    waveTypeWhiteNoiseButton.setBounds(offsetButtonSection.getX() + (buttonWidth + buttonSpacing) * 4, offsetButtonRow.getY(), buttonWidth, buttonHeight);
-    waveTypePinkNoiseButton.setBounds(offsetButtonSection.getX() + (buttonWidth + buttonSpacing) * 5, offsetButtonRow.getY(), buttonWidth, buttonHeight);
+
+    // Set the bounds for the wave type selector component
+    waveTypeSelector.setBounds(offsetButtonSection);
 }
 
 void SynthesizerComponent::layoutADSREnvelope(juce::Rectangle<int>& bounds)
@@ -1447,12 +1274,12 @@ void SynthesizerComponent::layoutPhaseControls(juce::Rectangle<int>& bounds)
     phaseControlsBounds = phaseRow.removeFromLeft(220); // Fixed width for phase controls
     
     auto workingRow = phaseControlsBounds;
-    
-    // Random phase button
+
+    // Random phase button (from wave type selector component)
     auto waveTypeRandomPhaseButtonWidth = 100;
     auto randomPhaseArea = workingRow.removeFromLeft(waveTypeRandomPhaseButtonWidth);
-    waveTypeRandomPhaseButton.setBounds(randomPhaseArea.removeFromTop(40));
-    
+    waveTypeSelector.getRandomPhaseButton().setBounds(randomPhaseArea.removeFromTop(40));
+
     workingRow.removeFromLeft(15); // spacing
     
     // Phase knob
@@ -2599,13 +2426,13 @@ void SynthesizerComponent::updateAllGuiControls()
     
     // Update oscillator 1 wave type buttons
     int osc1Type = audioProcessor.getOsc1Type();
-    waveTypeSineButton.setToggleState(osc1Type == 0, juce::dontSendNotification);
-    waveTypeSawButton.setToggleState(osc1Type == 1, juce::dontSendNotification);
-    waveTypeSquareButton.setToggleState(osc1Type == 2, juce::dontSendNotification);
-    waveTypeTriangleButton.setToggleState(osc1Type == 3, juce::dontSendNotification);
-    waveTypeWhiteNoiseButton.setToggleState(osc1Type == 4, juce::dontSendNotification);
-    waveTypePinkNoiseButton.setToggleState(osc1Type == 5, juce::dontSendNotification);
-    waveTypeRandomPhaseButton.setToggleState(osc1Type == 6, juce::dontSendNotification);
+    waveTypeSelector.getSineButton().setToggleState(osc1Type == 0, juce::dontSendNotification);
+    waveTypeSelector.getSawButton().setToggleState(osc1Type == 1, juce::dontSendNotification);
+    waveTypeSelector.getSquareButton().setToggleState(osc1Type == 2, juce::dontSendNotification);
+    waveTypeSelector.getTriangleButton().setToggleState(osc1Type == 3, juce::dontSendNotification);
+    waveTypeSelector.getWhiteNoiseButton().setToggleState(osc1Type == 4, juce::dontSendNotification);
+    waveTypeSelector.getPinkNoiseButton().setToggleState(osc1Type == 5, juce::dontSendNotification);
+    waveTypeSelector.getRandomPhaseButton().setToggleState(osc1Type == 6, juce::dontSendNotification);
     
     // Oscillator 2 controls now handled by SecondOscillatorComponent
     secondOscillator.updateAllGuiControls();

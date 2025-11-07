@@ -37,6 +37,10 @@
     <FILE id="SynthComp2" name="SynthesizerComponent.h" compile="0" resource="0"
           file="Source/SynthesizerComponent.h"/>
     <GROUP id="{UI-COMPONENTS-GROUP}" name="UI">
+      <FILE id="zpHLYu" name="WaveTypeSelectorComponent.cpp" compile="1"
+            resource="0" file="Source/UI/WaveTypeSelectorComponent.cpp"/>
+      <FILE id="mTpBW1" name="WaveTypeSelectorComponent.h" compile="0" resource="0"
+            file="Source/UI/WaveTypeSelectorComponent.h"/>
       <FILE id="TLohxd" name="PitchControlsComponent.cpp" compile="1" resource="0"
             file="Source/UI/PitchControlsComponent.cpp"/>
       <FILE id="DfIMao" name="PitchControlsComponent.h" compile="0" resource="0"

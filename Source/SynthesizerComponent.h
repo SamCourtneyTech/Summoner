@@ -30,6 +30,7 @@
 #include "UI/PresetManagementComponent.h"
 #include "UI/EffectsBorderComponent.h"
 #include "UI/PitchControlsComponent.h"
+#include "UI/WaveTypeSelectorComponent.h"
 
 class SummonerXSerum2AudioProcessor;
 class SynthesizerComponent;
@@ -100,10 +101,10 @@ private:
     
     // Custom look and feel for knobs
     CustomKnobLookAndFeel customKnobLookAndFeel;
-    
-    // Custom look and feel for wave buttons
+
+    // Custom look and feel for wave buttons (still used by other components)
     WaveButtonLookAndFeel customWaveButtonLookAndFeel;
-    
+
     // Custom look and feel for LED labels
     LEDLabelLookAndFeel ledLabelLookAndFeel;
     LEDNumberLookAndFeel ledNumberLookAndFeel;
@@ -178,13 +179,7 @@ private:
     juce::Label pulseWidthLabel;
 
     // WAVE TYPE BUTTONS GROUP - Row 1 (MOVEABLE)
-    juce::TextButton waveTypeSineButton;
-    juce::TextButton waveTypeSawButton;
-    juce::TextButton waveTypeSquareButton;
-    juce::TextButton waveTypeTriangleButton;
-    juce::TextButton waveTypeWhiteNoiseButton;
-    juce::TextButton waveTypePinkNoiseButton;
-    juce::TextButton waveTypeRandomPhaseButton;
+    WaveTypeSelectorComponent waveTypeSelector;
 
     // SECOND OSCILLATOR - Component
     SecondOscillatorComponent secondOscillator;
