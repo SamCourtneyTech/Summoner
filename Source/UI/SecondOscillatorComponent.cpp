@@ -681,7 +681,7 @@ void SecondOscillatorComponent::mouseDrag(const juce::MouseEvent& event)
     {
         int deltaY = dragStartY - event.getScreenY();
         int change = deltaY / 10;
-        osc2OctaveValue = juce::jlimit(-3, 3, dragStartOsc2Octave + change);
+        osc2OctaveValue = juce::jlimit(-4, 4, dragStartOsc2Octave + change);
         osc2OctaveValueLabel.setText(juce::String(osc2OctaveValue), juce::dontSendNotification);
         audioProcessor.setOsc2Octave(osc2OctaveValue);
     }
