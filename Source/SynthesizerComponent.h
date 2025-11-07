@@ -31,6 +31,7 @@
 #include "UI/EffectsBorderComponent.h"
 #include "UI/PitchControlsComponent.h"
 #include "UI/WaveTypeSelectorComponent.h"
+#include "UI/OscillatorBackgroundPainter.h"
 
 class SummonerXSerum2AudioProcessor;
 class SynthesizerComponent;

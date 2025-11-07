@@ -37,6 +37,10 @@
     <FILE id="SynthComp2" name="SynthesizerComponent.h" compile="0" resource="0"
           file="Source/SynthesizerComponent.h"/>
     <GROUP id="{UI-COMPONENTS-GROUP}" name="UI">
+      <FILE id="fLyTnV" name="OscillatorBackgroundPainter.cpp" compile="1"
+            resource="0" file="Source/UI/OscillatorBackgroundPainter.cpp"/>
+      <FILE id="P6tlC2" name="OscillatorBackgroundPainter.h" compile="0"
+            resource="0" file="Source/UI/OscillatorBackgroundPainter.h"/>
       <FILE id="zpHLYu" name="WaveTypeSelectorComponent.cpp" compile="1"
             resource="0" file="Source/UI/WaveTypeSelectorComponent.cpp"/>
       <FILE id="mTpBW1" name="WaveTypeSelectorComponent.h" compile="0" resource="0"
