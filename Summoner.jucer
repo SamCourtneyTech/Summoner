@@ -5,6 +5,10 @@
               pluginCharacteristicsValue="pluginIsSynth,pluginWantsMidiIn"
               cppLanguageStandard="17">
   <MAINGROUP id="sBXuQf" name="Summoner">
+    <FILE id="rP6I1j" name="ADSRKnobsComponent.cpp" compile="1" resource="0"
+          file="Source/UI/ADSRKnobsComponent.cpp"/>
+    <FILE id="owDokx" name="ADSRKnobsComponent.h" compile="0" resource="0"
+          file="Source/UI/ADSRKnobsComponent.h"/>
     <GROUP id="{87376E03-C05A-C098-4871-B29802E5486E}" name="Source">
       <FILE id="gb9987" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>

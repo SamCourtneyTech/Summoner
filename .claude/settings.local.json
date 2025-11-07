@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(xcodebuild:*)",
-      "Bash(open:*)"
+      "Bash(open:*)",
+      "Bash(xcode-select:*)",
+      "Bash(sudo xcode-select:*)"
     ],
     "deny": [],
     "ask": []

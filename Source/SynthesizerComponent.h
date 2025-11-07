@@ -32,6 +32,7 @@
 #include "UI/PitchControlsComponent.h"
 #include "UI/WaveTypeSelectorComponent.h"
 #include "UI/OscillatorBackgroundPainter.h"
+#include "UI/ADSRKnobsComponent.h"
 
 class SummonerXSerum2AudioProcessor;
 class SynthesizerComponent;
@@ -165,15 +166,9 @@ private:
     // PHASE CONTROLS GROUP - (STATIONARY)
     RestrictedHitSlider phaseControlsPhaseKnob;
     juce::Label phaseControlsPhaseLabel;
+
     // ADSR KNOBS GROUP - Row 3 (MOVEABLE)
-    RestrictedHitSlider adsrAttackKnob;
-    juce::Label adsrAttackLabel;
-    RestrictedHitSlider adsrDecayKnob;
-    juce::Label adsrDecayLabel;
-    RestrictedHitSlider adsrSustainKnob;
-    juce::Label adsrSustainLabel;
-    RestrictedHitSlider adsrReleaseKnob;
-    juce::Label adsrReleaseLabel;
+    ADSRKnobsComponent adsrKnobs;
     
     // Pulse width control
     juce::Slider pulseWidthSlider;

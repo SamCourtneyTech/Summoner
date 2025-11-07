@@ -7,6 +7,7 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     : audioProcessor(processor),
       effectsModule(juce::TabbedButtonBar::TabsAtTop),
       waveTypeSelector(processor),
+      adsrKnobs(processor),
       secondOscillator(*this, processor, &customKnobLookAndFeel, &customWaveButtonLookAndFeel, &ledLabelLookAndFeel, &ledNumberLookAndFeel),
       macroControls(*this, processor, &simpleKnobLookAndFeel, &engravedLabelLookAndFeel),
       volumeControls(processor, &customKnobLookAndFeel, &ledLabelLookAndFeel),
@@ -34,67 +35,29 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
     phaseControlsPhaseKnob.setLookAndFeel(&customKnobLookAndFeel);
     phaseControlsPhaseKnob.addListener(this);
     addAndMakeVisible(phaseControlsPhaseKnob);
-    
-    // ADSR KNOBS GROUP - Row 3 (MOVEABLE)
-    adsrAttackLabel.setText("ATTACK", juce::dontSendNotification);
-    adsrAttackLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    adsrAttackLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    adsrAttackLabel.setJustificationType(juce::Justification::centred);
-    adsrAttackLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(adsrAttackLabel);
-    
-    adsrAttackKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    adsrAttackKnob.setRange(0.01, 2.0, 0.01);
-    adsrAttackKnob.setValue(0.1);
-    adsrAttackKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    adsrAttackKnob.setLookAndFeel(&customKnobLookAndFeel);
-    adsrAttackKnob.addListener(this);
-    addAndMakeVisible(adsrAttackKnob);
-    
-    adsrDecayLabel.setText("DECAY", juce::dontSendNotification);
-    adsrDecayLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    adsrDecayLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    adsrDecayLabel.setJustificationType(juce::Justification::centred);
-    adsrDecayLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(adsrDecayLabel);
-    
-    adsrDecayKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    adsrDecayKnob.setRange(0.01, 2.0, 0.01);
-    adsrDecayKnob.setValue(0.2);
-    adsrDecayKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    adsrDecayKnob.setLookAndFeel(&customKnobLookAndFeel);
-    adsrDecayKnob.addListener(this);
-    addAndMakeVisible(adsrDecayKnob);
-    
-    adsrSustainLabel.setText("SUSTAIN", juce::dontSendNotification);
-    adsrSustainLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    adsrSustainLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    adsrSustainLabel.setJustificationType(juce::Justification::centred);
-    adsrSustainLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(adsrSustainLabel);
-    
-    adsrSustainKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    adsrSustainKnob.setRange(0.0, 1.0, 0.01);
-    adsrSustainKnob.setValue(0.7);
-    adsrSustainKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    adsrSustainKnob.setLookAndFeel(&customKnobLookAndFeel);
-    adsrSustainKnob.addListener(this);
-    addAndMakeVisible(adsrSustainKnob);
-    
-    adsrReleaseLabel.setText("RELEASE", juce::dontSendNotification);
-    adsrReleaseLabel.setFont(juce::Font("Press Start 2P", 10.0f, juce::Font::plain));
-    adsrReleaseLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    adsrReleaseLabel.setJustificationType(juce::Justification::centred);
-    adsrReleaseLabel.setLookAndFeel(&ledLabelLookAndFeel);
-    addAndMakeVisible(adsrReleaseLabel);
-    
-    adsrReleaseKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    adsrReleaseKnob.setRange(0.01, 3.0, 0.01);
-    adsrReleaseKnob.setValue(0.3);
-    adsrReleaseKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    adsrReleaseKnob.setLookAndFeel(&customKnobLookAndFeel);
-    adsrReleaseKnob.addListener(this);
-    addAndMakeVisible(adsrReleaseKnob);
+
+    // ADSR KNOBS GROUP - Row 3 (MOVEABLE) - now handled by ADSRKnobsComponent
+    addAndMakeVisible(adsrKnobs);
+
+    // Set up callback for envelope updates
+    adsrKnobs.onEnvelopeChanged = [this]()
+    {
+        updateEnvelopeDisplay();
+
+        // Handle ADSR linking with oscillator 2
+        if (secondOscillator.getAdsrLinkButton().getToggleState())
+        {
+            secondOscillator.getAttackKnob().setValue(adsrKnobs.getAttackKnob().getValue(), juce::dontSendNotification);
+            secondOscillator.getDecayKnob().setValue(adsrKnobs.getDecayKnob().getValue(), juce::dontSendNotification);
+            secondOscillator.getSustainKnob().setValue(adsrKnobs.getSustainKnob().getValue(), juce::dontSendNotification);
+            secondOscillator.getReleaseKnob().setValue(adsrKnobs.getReleaseKnob().getValue(), juce::dontSendNotification);
+
+            audioProcessor.setOsc2Attack(static_cast<float>(adsrKnobs.getAttackKnob().getValue()));
+            audioProcessor.setOsc2Decay(static_cast<float>(adsrKnobs.getDecayKnob().getValue()));
+            audioProcessor.setOsc2Sustain(static_cast<float>(adsrKnobs.getSustainKnob().getValue()));
+            audioProcessor.setOsc2Release(static_cast<float>(adsrKnobs.getReleaseKnob().getValue()));
+        }
+    };
     
     // Pulse width slider (commented out for now)
     /*
@@ -239,17 +202,8 @@ SynthesizerComponent::SynthesizerComponent(SummonerXSerum2AudioProcessor& proces
 SynthesizerComponent::~SynthesizerComponent()
 {
     // Reset custom look and feel to avoid dangling pointers
-    adsrAttackKnob.setLookAndFeel(nullptr);
-    adsrDecayKnob.setLookAndFeel(nullptr);
-    adsrSustainKnob.setLookAndFeel(nullptr);
-    adsrReleaseKnob.setLookAndFeel(nullptr);
-
-    // Reset LED label look and feel
     phaseControlsPhaseLabel.setLookAndFeel(nullptr);
-    adsrAttackLabel.setLookAndFeel(nullptr);
-    adsrDecayLabel.setLookAndFeel(nullptr);
-    adsrSustainLabel.setLookAndFeel(nullptr);
-    adsrReleaseLabel.setLookAndFeel(nullptr);
+    // ADSR knobs cleanup now handled by ADSRKnobsComponent
     // Oscillator 2 cleanup now handled by SecondOscillatorComponent
     // Macro controls cleanup now handled by MacroControlsComponent
     // Preset management cleanup now handled by PresetManagementComponent
@@ -475,58 +429,7 @@ void SynthesizerComponent::sliderValueChanged(juce::Slider* slider)
     {
         audioProcessor.setOsc1Phase(static_cast<float>(phaseControlsPhaseKnob.getValue()));
     }
-    else if (slider == &adsrAttackKnob)
-    {
-        audioProcessor.setOsc1Attack(static_cast<float>(adsrAttackKnob.getValue()));
-
-        // If ADSR is linked, update oscillator 2 via secondOscillator component
-        if (secondOscillator.getAdsrLinkButton().getToggleState())
-        {
-            secondOscillator.getAttackKnob().setValue(adsrAttackKnob.getValue(), juce::dontSendNotification);
-            audioProcessor.setOsc2Attack(static_cast<float>(adsrAttackKnob.getValue()));
-        }
-
-        updateEnvelopeDisplay();
-    }
-    else if (slider == &adsrDecayKnob)
-    {
-        audioProcessor.setOsc1Decay(static_cast<float>(adsrDecayKnob.getValue()));
-
-        // If ADSR is linked, update oscillator 2 via secondOscillator component
-        if (secondOscillator.getAdsrLinkButton().getToggleState())
-        {
-            secondOscillator.getDecayKnob().setValue(adsrDecayKnob.getValue(), juce::dontSendNotification);
-            audioProcessor.setOsc2Decay(static_cast<float>(adsrDecayKnob.getValue()));
-        }
-
-        updateEnvelopeDisplay();
-    }
-    else if (slider == &adsrSustainKnob)
-    {
-        audioProcessor.setOsc1Sustain(static_cast<float>(adsrSustainKnob.getValue()));
-
-        // If ADSR is linked, update oscillator 2 via secondOscillator component
-        if (secondOscillator.getAdsrLinkButton().getToggleState())
-        {
-            secondOscillator.getSustainKnob().setValue(adsrSustainKnob.getValue(), juce::dontSendNotification);
-            audioProcessor.setOsc2Sustain(static_cast<float>(adsrSustainKnob.getValue()));
-        }
-
-        updateEnvelopeDisplay();
-    }
-    else if (slider == &adsrReleaseKnob)
-    {
-        audioProcessor.setOsc1Release(static_cast<float>(adsrReleaseKnob.getValue()));
-
-        // If ADSR is linked, update oscillator 2 via secondOscillator component
-        if (secondOscillator.getAdsrLinkButton().getToggleState())
-        {
-            secondOscillator.getReleaseKnob().setValue(adsrReleaseKnob.getValue(), juce::dontSendNotification);
-            audioProcessor.setOsc2Release(static_cast<float>(adsrReleaseKnob.getValue()));
-        }
-
-        updateEnvelopeDisplay();
-    }
+    // ADSR knobs handling now in ADSRKnobsComponent
     // Oscillator 2 slider handling now in SecondOscillatorComponent
     // Filter controls now handled by FilterControlComponent
     // Chorus effect sliders now handled by ChorusComponent
@@ -713,10 +616,10 @@ void SynthesizerComponent::mouseUp(const juce::MouseEvent& event)
 void SynthesizerComponent::updateEnvelopeDisplay()
 {
     adsrEnvelopeVisualizer.updateEnvelope(
-        static_cast<float>(adsrAttackKnob.getValue()),
-        static_cast<float>(adsrDecayKnob.getValue()),
-        static_cast<float>(adsrSustainKnob.getValue()),
-        static_cast<float>(adsrReleaseKnob.getValue())
+        static_cast<float>(adsrKnobs.getAttackKnob().getValue()),
+        static_cast<float>(adsrKnobs.getDecayKnob().getValue()),
+        static_cast<float>(adsrKnobs.getSustainKnob().getValue()),
+        static_cast<float>(adsrKnobs.getReleaseKnob().getValue())
     );
 
     // Oscillator 2 envelope display now handled by SecondOscillatorComponent
@@ -772,40 +675,18 @@ void SynthesizerComponent::layoutADSRKnobs(juce::Rectangle<int>& bounds)
     auto controlHeight = 100;
     auto adsrRow = bounds.removeFromTop(controlHeight);
     auto adsrSection = adsrRow.removeFromLeft(bounds.getWidth() / 3);
-    
+
     // Apply group offset for MOVEABLE ADSR Knobs Group (Row 3)
     auto offsetAdsrSection = adsrSection.translated(
-        static_cast<int>(adsrKnobsGroupOffsetX), 
+        static_cast<int>(adsrKnobsGroupOffsetX),
         static_cast<int>(adsrKnobsGroupOffsetY)
     );
-    
+
     // Store bounds for background drawing (with offset applied)
     adsrKnobsBounds = offsetAdsrSection;
-    
-    // Calculate smaller knob width for 4 knobs in 1/3 of screen width
-    auto adsrKnobWidth = (offsetAdsrSection.getWidth() - 45) / 4; // 45 = 3 spacings of 15px each
-    
-    auto attackArea = offsetAdsrSection.removeFromLeft(adsrKnobWidth);
-    adsrAttackLabel.setBounds(attackArea.removeFromTop(20));
-    adsrAttackKnob.setBounds(attackArea);
-    
-    offsetAdsrSection.removeFromLeft(15); // spacing
-    
-    auto decayArea = offsetAdsrSection.removeFromLeft(adsrKnobWidth);
-    adsrDecayLabel.setBounds(decayArea.removeFromTop(20));
-    adsrDecayKnob.setBounds(decayArea);
-    
-    offsetAdsrSection.removeFromLeft(15); // spacing
-    
-    auto sustainArea = offsetAdsrSection.removeFromLeft(adsrKnobWidth);
-    adsrSustainLabel.setBounds(sustainArea.removeFromTop(20));
-    adsrSustainKnob.setBounds(sustainArea);
-    
-    offsetAdsrSection.removeFromLeft(15); // spacing
-    
-    auto releaseArea = offsetAdsrSection;
-    adsrReleaseLabel.setBounds(releaseArea.removeFromTop(20));
-    adsrReleaseKnob.setBounds(releaseArea);
+
+    // Set the bounds for the entire ADSRKnobsComponent
+    adsrKnobs.setBounds(offsetAdsrSection);
 }
 
 void SynthesizerComponent::layoutVolumeKnobs(juce::Rectangle<int>& bounds)
@@ -1750,7 +1631,7 @@ juce::Slider* SynthesizerComponent::findSliderAt(juce::Point<int> position)
         &phaseControlsPhaseKnob, &secondOscillator.getVolumeKnob(), &secondOscillator.getDetuneKnob(), &secondOscillator.getStereoKnob(), &secondOscillator.getPanKnob(), &secondOscillator.getPhaseKnob(),
 
         // ADSR controls
-        &adsrAttackKnob, &adsrDecayKnob, &adsrSustainKnob, &adsrReleaseKnob,
+        &adsrKnobs.getAttackKnob(), &adsrKnobs.getDecayKnob(), &adsrKnobs.getSustainKnob(), &adsrKnobs.getReleaseKnob(),
         &secondOscillator.getAttackKnob(), &secondOscillator.getDecayKnob(), &secondOscillator.getSustainKnob(), &secondOscillator.getReleaseKnob(),
         
         // Filter controls
@@ -1799,7 +1680,7 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
     {
         audioProcessor.setOsc1Phase(static_cast<float>(newValue));
     }
-    else if (slider == &adsrAttackKnob)
+    else if (slider == &adsrKnobs.getAttackKnob())
     {
         audioProcessor.setOsc1Attack(static_cast<float>(newValue));
 
@@ -1811,7 +1692,7 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
 
         updateEnvelopeDisplay();
     }
-    else if (slider == &adsrDecayKnob)
+    else if (slider == &adsrKnobs.getDecayKnob())
     {
         audioProcessor.setOsc1Decay(static_cast<float>(newValue));
 
@@ -1823,7 +1704,7 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
 
         updateEnvelopeDisplay();
     }
-    else if (slider == &adsrSustainKnob)
+    else if (slider == &adsrKnobs.getSustainKnob())
     {
         audioProcessor.setOsc1Sustain(static_cast<float>(newValue));
 
@@ -1835,7 +1716,7 @@ void SynthesizerComponent::triggerParameterUpdate(juce::Slider* slider, double n
 
         updateEnvelopeDisplay();
     }
-    else if (slider == &adsrReleaseKnob)
+    else if (slider == &adsrKnobs.getReleaseKnob())
     {
         audioProcessor.setOsc1Release(static_cast<float>(newValue));
 
@@ -1999,10 +1880,10 @@ void SynthesizerComponent::updateAllGuiControls()
     phaseControlsPhaseKnob.setValue(audioProcessor.getOsc1Phase(), juce::dontSendNotification);
     
     // Main ADSR envelope
-    adsrAttackKnob.setValue(audioProcessor.getOsc1Attack(), juce::dontSendNotification);
-    adsrDecayKnob.setValue(audioProcessor.getOsc1Decay(), juce::dontSendNotification);
-    adsrSustainKnob.setValue(audioProcessor.getOsc1Sustain(), juce::dontSendNotification);
-    adsrReleaseKnob.setValue(audioProcessor.getOsc1Release(), juce::dontSendNotification);
+    adsrKnobs.getAttackKnob().setValue(audioProcessor.getOsc1Attack(), juce::dontSendNotification);
+    adsrKnobs.getDecayKnob().setValue(audioProcessor.getOsc1Decay(), juce::dontSendNotification);
+    adsrKnobs.getSustainKnob().setValue(audioProcessor.getOsc1Sustain(), juce::dontSendNotification);
+    adsrKnobs.getReleaseKnob().setValue(audioProcessor.getOsc1Release(), juce::dontSendNotification);
     
     // Oscillator 1 controls
     pulseWidthSlider.setValue(audioProcessor.getOsc1PulseWidth(), juce::dontSendNotification);
